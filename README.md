@@ -18,4 +18,10 @@ The scope was refined after a systematic snowball search: it distinguishes pure 
 
 The zero-to-submission execution roadmap is in `research/PROJECT_EXECUTION_PLAN.md`. The confirmatory design and unresolved decisions are tracked in `research/PREREGISTRATION_DRAFT.md`; it is explicitly an unregistered draft and contains no experimental results.
 
+The first two execution-phase reports are now available:
+
+- `research/phase1-collision-freeze.md`: collision audit and frozen scope; decision is GO with a narrowed claim.
+- `research/phase2-feasibility-audit.md`: SUT, benchmark, and harness feasibility; confirmatory gate is not yet passed.
+- `research/sut-candidate-audit.csv`: machine-readable candidate matrix with confirmed, inferred, and unknown evidence states.
+
 Before staging or pushing public changes, run `scripts/check-public-boundary.sh`. It fails if manuscript, bibliography, or submission files have become tracked.

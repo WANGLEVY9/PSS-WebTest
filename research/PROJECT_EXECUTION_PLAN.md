@@ -10,6 +10,12 @@
 
 ## 1. Decision summary
 
+### Current execution status (2026-08-15)
+
+- **Phase 1 — scope/collision freeze:** GO with a narrowed testing-specific claim. The nearest newly identified paradigm precedent is Anchor/ERP-Bench, which compares pixel CUA and accessibility-resolved Playwright on enterprise workflows but does not evaluate software testing, seeded faults, UI evolution, repair, or test-suite oracles. See `phase1-collision-freeze.md`.
+- **Phase 2 — feasibility audit:** candidate path identified but gate **not yet passed**. BookStack and Indico are the provisional vertical-slice SUTs; the current arm64 machine has no Docker/Compose executable, and the WebTestPilot bundle documents linux/amd64 images. See `phase2-feasibility-audit.md` and `sut-candidate-audit.csv`.
+- No feasibility or agent trial is confirmatory evidence. The next action is to establish a reproducible container/runtime path and complete the BookStack + Indico reset/oracle smoke test.
+
 The project should not ask whether Computer Use is universally “better” than traditional UI automation. It should estimate **conditional advantages and failure boundaries**:
 
 > Under which Web UI, test-oracle, and UI-evolution conditions do pure-visual CUAs, hybrid visual-plus-structured-page agents, and accessibility-locator Playwright suites differ in defect detection, execution validity, repair effort, cost, latency, and run-to-run stability?

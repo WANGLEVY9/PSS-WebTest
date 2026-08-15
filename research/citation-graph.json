@@ -1,0 +1,32 @@
+{
+  "10.1145/3728879": {
+    "role": "seed",
+    "forward_searches": [
+      "\"Are Autonomous Web Agents Good Testers\" citations OR \"cited by\"",
+      "\"autonomous test agent\" Selenium empirical"
+    ],
+    "relevant_descendants": ["10.1007/s11219-026-09767-2", "10.1145/3797115", "10.1109/ICSME64153.2025.00104", "arXiv:2607.05031"],
+    "notes": "Semantic Scholar returned ten records on 2026-08-15 after the earlier rate-limit interval. WebTestPilot is a partial direct conflict; its full text was screened."
+  },
+  "arXiv:2603.25226": {
+    "role": "seed",
+    "forward_searches": [
+      "\"WebTestBench\" \"computer-use\" citations",
+      "\"computer use agent\" Playwright testing empirical study"
+    ],
+    "relevant_descendants": [],
+    "notes": "Very recent preprint; no qualifying CUA-versus-script testing comparison found."
+  },
+  "arXiv:2509.04198": {
+    "role": "methodological-conflict-seed",
+    "forward_searches": ["\"Are LLM Agents the New RPA\" citations"],
+    "relevant_descendants": [],
+    "notes": "The nearest direct paradigm comparison, but with RPA workload and UiPath baseline."
+  },
+  "10.1145/3797115": {
+    "role": "partial-direct-conflict-seed",
+    "forward_searches": ["Semantic Scholar forward citations", "\"WebTestPilot\" \"traditional\" testing comparison"],
+    "relevant_descendants": ["arXiv:2607.05031"],
+    "notes": "No later Web testing comparison was found among its four current forward citations; full text establishes a hybrid screenshot-plus-DOM design and a narrow 40-case locator re-identification comparison."
+  }
+}

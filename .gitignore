@@ -1,0 +1,34 @@
+# Private manuscript and submission material — never publish from this repository
+/paper/
+/private-paper/
+/submission/
+*.tex
+*.bib
+*.bst
+*.cls
+*.sty
+
+# LaTeX build output
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.pdf
+*.synctex.gz
+
+# Secrets and run artifacts
+.env
+.env.*
+!.env.example
+artifacts/*
+!artifacts/.gitkeep
+__pycache__/
+.venv/
+node_modules/
+test-results/
+playwright-report/
+blob-report/
+.DS_Store

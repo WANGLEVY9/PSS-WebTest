@@ -1,0 +1,132 @@
+{
+  "10.1145/3728879": {
+    "title": "Are Autonomous Web Agents Good Testers?",
+    "year": 2025,
+    "score": 9,
+    "status": "relevant",
+    "tier": "core-closest",
+    "source": "seed",
+    "reason": "Web E2E testing with two open autonomous test agents and 113 tests; no matched traditional script baseline.",
+    "code_or_data": "https://arxiv.org/abs/2504.01495"
+  },
+  "arXiv:2603.25226": {
+    "title": "WebTestBench: Evaluating Computer-Use Agents towards End-to-End Automated Web Testing",
+    "year": 2026,
+    "score": 9,
+    "status": "relevant",
+    "tier": "core-closest",
+    "source": "seed",
+    "reason": "Direct CUA web-testing benchmark; evaluates checklist generation and defect detection rather than CUA-versus-traditional automation.",
+    "code_or_data": "https://github.com/friedrichor/WebTestBench"
+  },
+  "arXiv:2509.04198": {
+    "title": "Are LLM Agents the New RPA? A Comparative Study with RPA Across Enterprise Workflows",
+    "year": 2025,
+    "score": 10,
+    "status": "relevant",
+    "tier": "direct-methodological-conflict",
+    "source": "forward-keyword-search",
+    "reason": "Controlled CUA versus UiPath comparison on speed, reliability and development effort, but its workload is enterprise RPA rather than Web software testing.",
+    "code_or_data": "https://arxiv.org/abs/2509.04198"
+  },
+  "10.1109/ASEW60602.2023.00028": {
+    "title": "GUI-Based Software Testing: An Automated Approach Using GPT-4 and Selenium WebDriver",
+    "year": 2023,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-web-testing",
+    "source": "backward-search-from-survey",
+    "reason": "Web GUI testing using GPT-4 plus Selenium; compared with monkey testing for branch coverage, not with traditional authored browser automation and not a visual CUA.",
+    "code_or_data": "https://doi.org/10.1109/ASEW60602.2023.00028"
+  },
+  "10.1007/s11219-026-09767-2": {
+    "title": "Reliable execution of natural language test cases for GUI applications using LLM agents",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-web-testing",
+    "source": "forward-keyword-search",
+    "reason": "Evaluates guarded LLM-agent execution and verdict errors for four natural-language test suites spanning six web apps; no conventional automation or visual-CUA comparison.",
+    "code_or_data": "https://github.com/FondationUCA-Chair-LLM/NL-test-case-runnerv2"
+  },
+  "arXiv:2605.15281": {
+    "title": "Autonomous Intelligent Agents for Natural-Language-Driven Web Execution with Integrated Security Assurance",
+    "year": 2026,
+    "score": 7,
+    "status": "possibly-relevant",
+    "tier": "adjacent-web-testing",
+    "source": "forward-keyword-search",
+    "reason": "Preprint reports comparison with manual Selenium authoring but uses DOM-aware script generation, so it is not a screenshot-driven CUA comparison. Full-text methods still require validation.",
+    "code_or_data": "https://arxiv.org/abs/2605.15281"
+  },
+  "arXiv:2412.18426": {
+    "title": "GUI Testing Arena: A Unified Benchmark for Advancing Autonomous GUI Testing Agent",
+    "year": 2024,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-gui-testing",
+    "source": "backward-keyword-search",
+    "reason": "Open visual-agent testing benchmark over mobile applications; compares MLLMs, not browser automation paradigms.",
+    "code_or_data": "https://github.com/ZJU-ACES-ISE/ChatUITest"
+  },
+  "arXiv:2506.14477": {
+    "title": "GUI-Robust: A Comprehensive Dataset for Testing GUI Agent Robustness in Real-World Anomalies",
+    "year": 2025,
+    "score": 8,
+    "status": "relevant",
+    "tier": "reusable-benchmark",
+    "source": "forward-citation-keyword-search",
+    "reason": "Open GUI-agent dataset with real-world anomaly taxonomy that can inform mutation design; includes web and desktop task traces rather than Web software-test oracles.",
+    "code_or_data": "https://github.com/chessbean1/GUI-Robust"
+  },
+  "arXiv:2401.13919": {
+    "title": "WebVoyager: Building an End-to-End Web Agent with Large Multimodal Models",
+    "year": 2024,
+    "score": 7,
+    "status": "relevant",
+    "tier": "reusable-agent",
+    "source": "seed",
+    "reason": "Web navigation comparison of visual and text-only observations; useful for CUA observation ablation, not a testing study.",
+    "code_or_data": "https://arxiv.org/abs/2401.13919"
+  },
+  "10.1145/3797115": {
+    "title": "WebTestPilot: Agentic End-to-End Web Testing against Natural Language Specification by Inferring Oracles with Symbolized GUI Elements",
+    "year": 2026,
+    "score": 10,
+    "status": "relevant",
+    "tier": "partial-direct-conflict",
+    "source": "forward-citation-from:10.1145/3728879",
+    "reason": "Hybrid screenshot-plus-DOM Web testing; its 40-case re-identification sub-study compares against XPath/CSS/Playwright, but it lacks a matched whole-suite CUA-versus-traditional comparison across operational outcomes.",
+    "code_or_data": "https://github.com/code-philia/WebTestPilot"
+  },
+  "arXiv:2509.05197": {
+    "title": "AI Agents for Web Testing: A Case Study in the Wild",
+    "year": 2025,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-web-testing",
+    "source": "expanded-keyword-search",
+    "reason": "Visual agent explores 120 public websites and reports usability issues; no matched conventional testing baseline or regression-suite comparison.",
+    "code_or_data": "https://arxiv.org/abs/2509.05197"
+  },
+  "10.1109/ICSME64153.2025.00104": {
+    "title": "XTestGen: Natural Language to Maintainable E2E Test Scripts with LLMs",
+    "year": 2025,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-hybrid-automation",
+    "source": "forward-citation-from:10.1145/3728879",
+    "reason": "A tool demonstration that turns natural language into deterministic E2E scripts; valuable hybrid alternative, not a CUA comparison experiment.",
+    "code_or_data": "https://conf.researchr.org/details/icsme-2025/icsme-2025-tool-demonstration/3/XTestGen-Natural-Language-to-Maintainable-E2E-Test-Scripts-with-LLMs"
+  },
+  "arXiv:2607.05031": {
+    "title": "LLM-Based Test Oracles: Source-of-Authority Taxonomy -- A Systematic Literature Review",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "methodological-guardrail",
+    "source": "forward-citation-from:10.1145/3728879",
+    "reason": "PRISMA SLR of 83 studies; frames oracle authority separately from mechanism and motivates independently grounded fault-detection metrics.",
+    "code_or_data": "https://arxiv.org/abs/2607.05031"
+  }
+}

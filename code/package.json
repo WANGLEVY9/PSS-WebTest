@@ -1,0 +1,15 @@
+{
+  "name": "pss-webtest",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "test:traditional": "playwright test --project=chromium",
+    "test:traditional:ui": "playwright test --ui",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "dotenv": "^16.6.1"
+  }
+}

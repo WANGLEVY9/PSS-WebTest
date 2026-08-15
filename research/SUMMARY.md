@@ -68,3 +68,7 @@ The study should be titled and framed as **an empirical, whole-workflow comparis
 2. Search IEEE Xplore, ACM DL, Scopus and Web of Science with the logged query families; record coverage/date and deduplicate by DOI.
 3. Retrieve full texts for the three nearest studies before copying any numerical result or detailed methodology into the manuscript.
 4. Perform a runnable-environment audit of WebTestBench, Chevrot's artifacts, BrowserGym, and SeeAct before selecting an experimental base.
+
+## Expanded targeted-search addendum (2026-08-15)
+
+The second-order snowball pass is recorded in [`research/phase1-expanded-search-2026-08-15.md`](phase1-expanded-search-2026-08-15.md). It adds a field-by-field matrix for Leotta et al.'s NLP/programmatic/capture-and-replay comparison, Kluge–Stocco locator evolution and repair, BEWT, conventional Playwright/Selenium tool comparisons, recent Web GUI exploration studies, Web-form generation, accessibility replay, and Web GUI maintenance mining. The result is unchanged but better bounded: no verified full three-arm matched Web software-testing conflict was found; the defensible contribution is the independent-oracle, UI-evolution/repair, cost/latency, and repeated-stability comparison.

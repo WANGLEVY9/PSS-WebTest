@@ -128,5 +128,125 @@
     "source": "forward-citation-from:10.1145/3728879",
     "reason": "PRISMA SLR of 83 studies; frames oracle authority separately from mechanism and motivates independently grounded fault-detection metrics.",
     "code_or_data": "https://arxiv.org/abs/2607.05031"
+  },
+  "10.1002/smr.2606": {
+    "title": "An empirical study to compare three web test automation approaches: NLP-based, programmable, and capture&replay",
+    "year": 2023,
+    "score": 9,
+    "status": "relevant",
+    "tier": "partial-methodological-conflict",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Matched empirical comparison of NLP-based, programmable and capture-and-replay Web automation with development/evolution cost; no screenshot CUA, a11y-locator arm, independent oracle audit or repeated stochastic CUA runs.",
+    "code_or_data": "https://doi.org/10.1002/smr.2606"
+  },
+  "10.1007/s10664-026-10903-6": {
+    "title": "Web element relocalization in evolving web applications: A comparative analysis and extension study",
+    "year": 2026,
+    "score": 9,
+    "status": "relevant",
+    "tier": "adjacent-evolution-repair",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Public 30-app, >10k-pair benchmark for locator relocalization under UI evolution; strong repair precedent, but no CUA or whole-test comparison.",
+    "code_or_data": "https://doi.org/10.1007/s10664-026-10903-6"
+  },
+  "10.1016/j.jss.2026.112849": {
+    "title": "BEWT: Extended benchmarking for end-to-end web testing",
+    "year": 2026,
+    "score": 8,
+    "status": "possibly-relevant",
+    "tier": "reusable-benchmark",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Shared benchmark and reproducible harness precedent for end-to-end Web testing; exact modality arms, oracle, mutation and reset details require local audit.",
+    "code_or_data": "https://sepl.dibris.unige.it/BEWTExtended.php"
+  },
+  "10.35784/jcsi.7119": {
+    "title": "A comparative analysis of web application test automation tools",
+    "year": 2025,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-tool-performance",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Empirical Playwright/Cypress/Selenium execution-time, CPU and RAM comparison; no CUA, oracle or evolution study.",
+    "code_or_data": "https://ph.pollub.pl/index.php/jcsi/article/view/7119"
+  },
+  "10.1016/j.jss.2020.110841": {
+    "title": "An automated model-based approach to repair test suites of evolving web applications",
+    "year": 2021,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-evolution-repair",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Empirical Web test-suite repair against Selenium breakages and WATER; informs repair success and effort outcomes, but has no visual/hybrid CUA arm.",
+    "code_or_data": "https://www.sciencedirect.com/science/article/pii/S0164121220302314"
+  },
+  "10.1016/j.jss.2023.111932": {
+    "title": "Investigating the robustness of locators in template-based Web application testing using a GUI change classification model",
+    "year": 2024,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-evolution-repair",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Benchmark of realistic GUI/layout changes and locator strategies; no screenshot CUA or independent three-arm comparison.",
+    "code_or_data": "https://doi.org/10.1016/j.jss.2023.111932"
+  },
+  "arXiv:2606.16650": {
+    "title": "Understanding Automated Web GUI Testing: An Empirical Study Across Exploration Strategies and State Abstractions",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-empirical-web-testing",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Compares model-based, RL and LLM exploration/state abstractions over six Web apps using coverage and failure revelation; no authored Playwright baseline or screenshot-only CUA comparison.",
+    "code_or_data": "https://arxiv.org/abs/2606.16650"
+  },
+  "10.1145/3735553": {
+    "title": "Large Language Models for Automated Web-Form-Test Generation",
+    "year": 2026,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-dom-generation",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Evaluates LLM Web-form test generation over 146 forms in 30 Java applications; DOM/HTML-driven generation, not screenshot CUA versus authored suite.",
+    "code_or_data": "https://doi.org/10.1145/3735553"
+  },
+  "arXiv:2506.00520": {
+    "title": "Temac: Multi-agent Web GUI testing",
+    "year": 2025,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-agent-testing",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Multi-agent Web GUI testing over six open-source applications; no conventional authored Playwright arm or independent modality comparison.",
+    "code_or_data": "https://arxiv.org/abs/2506.00520"
+  },
+  "arXiv:2504.19237": {
+    "title": "WebRLED: Reinforcement Learning for Web GUI Testing",
+    "year": 2025,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-agent-testing",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "RL Web GUI exploration over 12 open-source apps plus a field study; no screenshot CUA versus deterministic suite comparison.",
+    "code_or_data": "https://arxiv.org/abs/2504.19237"
+  },
+  "10.1145/3613904.3642777": {
+    "title": "AXNav: Replaying Accessibility Tests from Natural Language",
+    "year": 2024,
+    "score": 6,
+    "status": "possibly-relevant",
+    "tier": "adjacent-accessibility",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Natural-language accessibility replay with pixel-based UI understanding on mobile; informs accessibility oracle terminology but is not Web software testing.",
+    "code_or_data": "https://doi.org/10.1145/3613904.3642777"
+  },
+  "10.1016/j.infsof.2025.107928": {
+    "title": "Investigating the adoption and maintenance of web GUI testing: Insights from GitHub repositories",
+    "year": 2025,
+    "score": 7,
+    "status": "relevant",
+    "tier": "adjacent-ecosystem-study",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Repository mining across 472 open-source applications and multiple Web testing frameworks; motivates maintenance outcomes but is not a CUA intervention comparison.",
+    "code_or_data": "https://doi.org/10.1016/j.infsof.2025.107928"
   }
 }

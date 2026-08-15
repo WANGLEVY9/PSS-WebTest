@@ -126,6 +126,8 @@ No arm's own verdict is ground truth. Hidden state assertions, database/API chec
 
 ## 8. Sources and project files consulted
 
+The expanded targeted-search matrix and second-order snowball conclusions are recorded in [`research/phase1-expanded-search-2026-08-15.md`](phase1-expanded-search-2026-08-15.md). That addendum adds Leotta et al.'s three-way Web automation comparison, locator-evolution/repair benchmarks, BEWT, recent automated Web GUI testing studies, Web-form generation, and accessibility/replay neighbors. It does not reopen the frozen estimand; it strengthens the GO decision while narrowing the novelty claim.
+
 - `research/SUMMARY.md`
 - `research/deep-read-notes.md`
 - `research/papers-reviewed.json`

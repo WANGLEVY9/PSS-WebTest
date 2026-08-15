@@ -28,5 +28,42 @@
     "forward_searches": ["Semantic Scholar forward citations", "\"WebTestPilot\" \"traditional\" testing comparison"],
     "relevant_descendants": ["arXiv:2607.05031"],
     "notes": "No later Web testing comparison was found among its four current forward citations; full text establishes a hybrid screenshot-plus-DOM design and a narrow 40-case locator re-identification comparison."
+  },
+  "10.1007/978-3-319-08245-5_19": {
+    "role": "classical-visual-dom-seed",
+    "forward_searches": [
+      "\"Visual vs. DOM-Based Web Locators\" citations",
+      "\"Visual web test repair\"",
+      "Pesto automated migration DOM-based visual Web tests"
+    ],
+    "relevant_descendants": ["10.1002/stvr.1665", "10.1145/3236024.3236063", "10.1007/s10664-026-10903-6", "10.1145/3818665"],
+    "notes": "This classical line establishes that visual-versus-DOM Web-test robustness and maintenance are not new. Later work extends migration, repair and robust locator generation rather than CUA whole-workflow testing."
+  },
+  "10.1145/3236024.3236063": {
+    "role": "visual-repair-seed",
+    "forward_searches": [
+      "\"Visual Web Test Repair\" LLM",
+      "Web UI test repair VISTA ChatGPT ICST"
+    ],
+    "relevant_descendants": ["10.1109/ICST62969.2025.10989008", "10.1002/stvr.1893"],
+    "notes": "VISTA is an open visual repair baseline. The ICST 2025 study explicitly augments VISTA/WATER-style candidate matching with an LLM."
+  },
+  "arXiv:2410.06703": {
+    "role": "modality-benchmark-seed",
+    "forward_searches": [
+      "ST-WebAgentBench modality challenge screenshot AXTree",
+      "web agent screenshot DOM accessibility tree ablation benchmark"
+    ],
+    "relevant_descendants": ["arXiv:2607.04334"],
+    "notes": "The benchmark provides matched screenshot-advantage and structure-advantage probes outside software testing; the later state-belief study independently formalizes pixel-versus-structure reliance."
+  },
+  "openreview:94tlGxmqkN": {
+    "role": "evaluation-reliability-seed",
+    "forward_searches": [
+      "WebArena Verified reliable evaluation oracle",
+      "tool-using agents evidence admission WebArena Verified"
+    ],
+    "relevant_descendants": ["arXiv:2605.11030", "arXiv:2606.08049", "arXiv:2607.28367"],
+    "notes": "This branch motivates typed evaluators, backend/network evidence, versioned tasks, checksums, replayability and explicit broken-task/evaluator-error states."
   }
 }

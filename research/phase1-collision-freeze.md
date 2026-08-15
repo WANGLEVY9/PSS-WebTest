@@ -89,18 +89,20 @@ An agent-authored deterministic Playwright arm remains exploratory only and cann
 
 - **RQ1 (effectiveness):** Under matched intents and clean/seeded-fault Web application versions, how do the three arms differ in valid test completion and independently scored functional verdict accuracy?
 - **RQ2 (oracle):** How do differences vary by oracle authority/type (visible UI, hidden persisted state, relational/cross-state, and exploratory visual/usability oracle)?
-- **RQ3 (evolution and repair):** Under behavior-preserving DOM, accessibility-semantic, visual/layout, and interaction/runtime evolution, how do failure probability and repair effort differ?
+- **RQ3 (evolution and repair):** Under behavior-preserving ecological DOM/layout/interaction evolution, how do failure probability, semantic preservation, repair success, and active repair effort differ? Deliberately modality-adversarial perturbations are analyzed in a separate stress-test stratum.
 - **RQ4 (operations):** How do authoring/repair effort, cost, latency, action/token volume, and run-to-run stability differ, and which task/UI conditions explain the trade-offs?
 
-RQ4 is confirmatory for prespecified secondary outcomes but must not be reduced to a universal winner claim.
+- **RQ5 (decision boundary):** Which prespecified task, UI, oracle, and evolution characteristics predict relative advantage on held-out cells?
+
+RQ4 is confirmatory for prespecified secondary outcomes but must not be reduced to a universal winner claim. RQ5 remains exploratory unless a held-out validation design and prediction rule are frozen before confirmatory collection.
 
 ### Frozen outcomes
 
 Primary outcomes are intentionally limited to:
 
-1. Functional verdict balanced accuracy against known clean/faulty ground truth.
+1. Joint end-to-end verdict correctness: valid checkpoint completion plus a correct clean/fault verdict; report balanced accuracy, sensitivity, specificity, and verdict coverage.
 2. Independently scored valid test completion.
-3. Active repair effort after behavior-preserving UI evolution.
+3. Repair success with preserved oracle semantics, analyzed jointly with active effort and censoring after behavior-preserving UI evolution.
 
 Secondary outcomes: false-positive/false-negative rates, cost, wall-clock latency, authoring time, tokens/actions, retries, repeated-run failure probability, verdict disagreement, and failure categories. Every outcome must report denominators and distinguish infrastructure/evaluator errors from method failures.
 
@@ -127,6 +129,8 @@ No arm's own verdict is ground truth. Hidden state assertions, database/API chec
 ## 8. Sources and project files consulted
 
 The expanded targeted-search matrix and second-order snowball conclusions are recorded in [`research/phase1-expanded-search-2026-08-15.md`](phase1-expanded-search-2026-08-15.md). That addendum adds Leotta et al.'s three-way Web automation comparison, locator-evolution/repair benchmarks, BEWT, recent automated Web GUI testing studies, Web-form generation, and accessibility/replay neighbors. It does not reopen the frozen estimand; it strengthens the GO decision while narrowing the novelty claim.
+
+The final cross-cluster synthesis, including the classical visual-versus-DOM literature, CUA modality benchmarks, refined contribution, treatment-bundle identification limit, benchmark construction strategy, and evidence-admission rules, is in [`research/phase1-master-synthesis.md`](phase1-master-synthesis.md).
 
 - `research/SUMMARY.md`
 - `research/deep-read-notes.md`

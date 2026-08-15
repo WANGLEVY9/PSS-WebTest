@@ -11,18 +11,22 @@ This file is a protocol-development workspace. It is not a preregistration until
 
 ## A. Study identity
 
-- Working title: *Computer-Use Agents versus Traditional Web UI Test Automation: A Controlled Empirical Study*
+- Working title: *Pixels, Page Structure, or Scripts? A Controlled Empirical Study of Web UI Testing under Faults and Interface Evolution*
 - Design: repeated, matched, multi-application controlled benchmark
 - Arms: pure-visual CUA; hybrid visual + structured-page agent; accessibility-locator Playwright
 - Target population: self-hosted Web applications and end-to-end workflows satisfying the eligibility criteria below
 
+The three arms are treated as **bundled deployment strategies**. Their primary contrast does not by itself identify a pure observation-modality effect because observation, action grounding, runtime adaptation, and artifact type differ. A smaller nested modality diagnostic may compare screenshot-only with screenshot-plus-structure while holding model, prompt, action interface, and budget fixed; that diagnostic is secondary unless separately powered and preregistered.
+
 ## B. Confirmatory research questions
 
-- RQ1: What is the causal effect of testing approach, within the controlled benchmark, on valid execution and functional verdict correctness?
-- RQ2: How does that effect interact with oracle authority/type and behavior-preserving UI evolution?
-- RQ3: How does testing approach affect repair effort after UI evolution?
+- RQ1: How does testing approach affect joint end-to-end verdict correctness and valid test completion?
+- RQ2: How do those effects interact with oracle authority/type?
+- RQ3: How does testing approach affect failure probability, semantic preservation, repair success, and active repair effort after behavior-preserving UI evolution?
+- RQ4: How does testing approach affect authoring effort, monetary cost, latency, action/token volume, retries, and run-to-run stability?
+- RQ5: Which prespecified task, UI, oracle, and evolution characteristics predict relative advantage?
 
-Cost, latency, authoring effort, and run-to-run stability are prespecified secondary analyses. RQ4-style recommendation rules are exploratory unless a held-out validation design is frozen here.
+RQ1–RQ3 define the confirmatory primary outcome families. RQ4 is confirmatory for prespecified secondary outcomes. RQ5 remains exploratory unless a held-out validation design and prediction rule are frozen here before confirmatory runs.
 
 ## C. Hypotheses to finalize before registration
 
@@ -68,9 +72,9 @@ Timeouts, model refusals, browser crashes caused during the run, locator failure
 
 ## F. Primary outcomes
 
-1. Functional verdict balanced accuracy against clean/faulty ground truth.
+1. Joint end-to-end verdict correctness: the intended checkpoint is validly reached and the clean/fault verdict is correct. Report balanced accuracy, sensitivity, specificity, and verdict coverage over the clean/fault design.
 2. Valid test completion (binary), independently scored from state/trace checkpoints.
-3. Active repair effort in person-minutes after behavior-preserving UI evolution.
+3. Repair outcome after behavior-preserving UI evolution: success with preserved oracle semantics, analyzed jointly with active person-minutes and censoring for unsuccessful repair.
 
 ### Secondary outcomes
 
@@ -95,7 +99,8 @@ False-positive/false-negative rates; authoring effort; monetary cost; latency; t
 
 - Clean baseline.
 - Seeded functional fault families: wrong state transition, persisted-data corruption, missing/incorrect validation, authorization violation, cross-page inconsistency.
-- Behavior-preserving evolution families: DOM refactor, accessibility-semantic evolution, visual/layout evolution, interaction/runtime disruption.
+- Ecological behavior-preserving evolution families: DOM refactor, accessibility-semantic evolution, visual/layout evolution, interaction/runtime disruption, and flow restructuring with unchanged business effect.
+- Modality-mechanism stress tests: deliberately screenshot-advantage or structure-advantage probes. These are analyzed separately from ecological evolution and cannot support prevalence claims.
 - Oracle strata: visible UI, hidden persisted state, relational/cross-state, visual/usability (exploratory unless rater reliability passes the frozen threshold).
 
 The exact manifest, mutation implementations, and factorial/blocking scheme are TBD after feasibility audit and before registration.
@@ -118,6 +123,7 @@ Before registration, record:
 - maximum steps, timeout, retry policy, and context policy;
 - screenshot resolution and browser/OS versions;
 - DOM/accessibility representation available to the hybrid arm;
+- action interface available to the hybrid arm, including whether structured references or coordinates are used;
 - permitted Playwright locator hierarchy and assertion policy;
 - repair operator instructions and stopping/censoring rule.
 
@@ -156,6 +162,8 @@ Any provider/model update during confirmatory runs triggers a documented protoco
 - Stop for safety/provider terms changes or a systemic invalidating harness defect.
 - Every deviation receives an ID, timestamp, reason, affected runs, and before/after protocol hash.
 - Changes made after viewing confirmatory arm outcomes are labeled exploratory and cannot redefine the primary analysis.
+
+Only rows admitted by the frozen evidence contract enter confirmatory tables. The contract records workload/task revision, driver/arm, evaluator and data checksums, replay/reset binding, explicit result status, and provenance; preflight, smoke, pilot, broken-task, and evaluator-error rows remain available for audit but are not silently pooled with confirmatory evidence.
 
 ## L. Open decisions required before registration
 

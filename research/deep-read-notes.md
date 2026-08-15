@@ -59,3 +59,59 @@ This note separates verified full-text facts from implications for our proposed 
 **Consequence.** Predeclare the authority of every oracle in our study. Use hidden ground-truth assertions and injected known faults wherever possible; report disagreement analyses rather than relying on LLM-as-a-judge alone.
 
 **Source.** https://arxiv.org/abs/2607.05031
+
+## Visual vs. DOM-Based Web Locators (Leotta et al., ICWE 2014) — historical methodological collision
+
+**Verified scope.** This study compares visual image-recognition locators with DOM-based locators for Web testing. It explicitly studies robustness and the cost/benefit trade-off for initial test creation and evolution across releases. It is part of a classical literature that distinguishes coordinate-, DOM-, and visual-locator techniques before modern CUA systems.
+
+**Consequence.** We cannot claim the first empirical visual-versus-DOM Web-testing comparison. A visual test driven by fixed image templates is also not equivalent to a screenshot-only CUA: the latter performs model-based perception, planning, action selection, and often oracle reasoning at runtime. The paper must make that distinction explicit.
+
+**Source.** https://doi.org/10.1007/978-3-319-08245-5_19
+
+## Visual Web Test Repair / VISTA (Stocco et al., ESEC/FSE 2018) — visual repair predecessor
+
+**Verified scope.** VISTA augments Selenium test execution with visual monitoring, image matching, and local crawling to repair broken Web tests. The published evaluation covers 2,672 test cases over many releases of four applications and reports repair performance over an explicit breakage taxonomy. The implementation is public under an Apache-2.0 license.
+
+**Consequence.** “Visual resilience” and “visual repair” are existing contributions. Our repair study must operate at whole-workflow level, include modern accessibility-locator Playwright, require semantic preservation, and count assertion weakening or deletion of test intent as failed repair rather than successful convergence.
+
+**Sources.** https://doi.org/10.1145/3236024.3236063 ; https://github.com/saltlab/vista
+
+## MUTTA (Leotta et al., Software Quality Journal 2024) — E2E mutation and oracle precedent
+
+**Verified scope.** MUTTA automates server-side mutation, deployment, E2E suite execution, and result collection for Web applications. Its case study compares classical assertions and differential-testing oracle mechanisms and performs repeated executions. The tool is intended to compare the fault-detection effectiveness of differently implemented E2E suites.
+
+**Consequence.** MUTTA is a strong implementation reference for fault seeding and defect-revelation measurement. We still need to validate whether its supported languages, operators, applications, reset behavior, and license fit the selected SUTs. Mutant equivalence and realism must be audited before any operator enters confirmatory data.
+
+**Source.** https://doi.org/10.1007/s11219-023-09616-6
+
+## ST-WebAgentBench (Levy et al., ICLR 2026) — matched modality stress-test precedent
+
+**Verified scope.** The current public artifact contains 375 enterprise Web-agent tasks and includes 80 modality-challenge tasks: 40 screenshot-advantage and 40 AXTree/DOM-advantage. The tasks deliberately hide or distort information in one channel, use automated evaluators, and support multi-run reliability reporting.
+
+**Consequence.** A matched screenshot-versus-structure probe is not new. Its deliberate hidden-information manipulations are useful as mechanism stress tests but should not be pooled with ecological behavior-preserving UI evolution. We should adapt the taxonomy, not present it as naturally occurring maintenance evidence.
+
+**Sources.** https://arxiv.org/abs/2410.06703 ; https://github.com/segev-shlomov/ST-WebAgentBench
+
+## Do GUI Agents Believe Their Eyes? (Zhang & Yang, 2026) — near-direct modality diagnostic
+
+**Verified scope.** The preprint uses paired single-channel interventions over 310 Web, mobile, and desktop probes, deterministic forced-choice scoring, and five models. It distinguishes pixel-derived state beliefs from structure-derived beliefs and tests conflicts between the two channels.
+
+**Consequence.** The primary three-arm study cannot identify a pure modality effect because its arms also differ in action grounding, runtime adaptation, and artifact type. Add a small nested modality diagnostic that holds model, prompt, action interface, budget, and task fixed while varying observation. Keep that diagnostic separate from the deployment-strategy comparison.
+
+**Source.** https://arxiv.org/abs/2607.04334
+
+## WebArena Verified (El Hattami et al., 2025) — evaluator reliability precedent
+
+**Verified scope.** WebArena Verified audits the original task set, repairs ambiguous or misaligned evaluations, uses typed and normalization-aware comparators, validates backend/network effects, and records task revisions plus evaluator/data checksums. Its artifact supports offline reevaluation from response/network evidence.
+
+**Consequence.** Our evaluator schema should expose explicit success/failure/partial/broken-task/evaluator-error states, record expected and actual normalized values, pin task/evaluator versions, and preserve enough evidence for offline rescoring. An evaluator is itself software that requires tests and audit.
+
+**Sources.** https://openreview.net/forum?id=94tlGxmqkN ; https://github.com/ServiceNow/webarena-verified
+
+## Practical Limits of Autonomous Test Repair (Lee, 2026) — semantic-repair warning
+
+**Verified scope.** This preprint reports 300 consecutive autonomous execution reports and 636 test-case executions for a Playwright/LangGraph/RAG prototype. It documents failed artifact generation, multiple repair iterations, assertion weakening, and test-case deletion as ways an unconstrained system can appear to converge.
+
+**Consequence.** Repair success requires frozen oracle semantics, fresh positive and negative validation cases, and explicit inspection of assertion/test-intent changes. A green execution after an agent edits the test is not sufficient evidence of repair.
+
+**Source.** https://arxiv.org/abs/2605.01471

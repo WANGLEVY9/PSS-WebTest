@@ -248,5 +248,285 @@
     "source": "targeted-snowball-2026-08-15",
     "reason": "Repository mining across 472 open-source applications and multiple Web testing frameworks; motivates maintenance outcomes but is not a CUA intervention comparison.",
     "code_or_data": "https://doi.org/10.1016/j.infsof.2025.107928"
+  },
+  "10.1109/WCRE.2013.6671302": {
+    "title": "Capture-Replay vs. Programmable Web Testing: An Empirical Assessment during Test Case Evolution",
+    "year": 2013,
+    "score": 9,
+    "status": "relevant",
+    "tier": "classical-methodological-predecessor",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Matched empirical comparison of development and maintenance effort across Web testing approaches; predates CUA and does not study oracle correctness or stochastic execution.",
+    "code_or_data": "https://sepl.dibris.unige.it/publications/2013-leotta-WCRE.pdf"
+  },
+  "10.1007/978-3-319-08245-5_19": {
+    "title": "Visual vs. DOM-Based Web Locators: An Empirical Study",
+    "year": 2014,
+    "score": 10,
+    "status": "relevant",
+    "tier": "partial-methodological-conflict",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Direct empirical visual-versus-DOM Web locator comparison with robustness and cost outcomes; not an autonomous CUA or whole-workflow oracle comparison.",
+    "code_or_data": "https://sepl.dibris.unige.it/publications/2014-leotta-ICWE.pdf"
+  },
+  "10.1016/bs.adcom.2015.11.007": {
+    "title": "Approaches and Tools for Automated End-to-End Web Testing",
+    "year": 2016,
+    "score": 9,
+    "status": "relevant",
+    "tier": "foundational-taxonomy",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Separates test-development mode from coordinate, DOM and visual locator modes and reviews hybrid approaches; foundational for defining the treatment space.",
+    "code_or_data": "https://doi.org/10.1016/bs.adcom.2015.11.007"
+  },
+  "10.1002/stvr.1665": {
+    "title": "Pesto: Automated migration of DOM-based Web tests towards the visual approach",
+    "year": 2018,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-visual-testing",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Migrates deterministic Selenium tests to visual image-recognition tests; distinguishes visual scripts from screenshot-only autonomous agents.",
+    "code_or_data": "https://doi.org/10.1002/stvr.1665"
+  },
+  "10.1145/3236024.3236063": {
+    "title": "Visual Web Test Repair",
+    "year": 2018,
+    "score": 10,
+    "status": "relevant",
+    "tier": "adjacent-evolution-repair",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Computer-vision-assisted Selenium test repair over multiple applications and releases; directly constrains visual repair novelty but not CUA whole-workflow comparison.",
+    "code_or_data": "https://github.com/saltlab/vista"
+  },
+  "10.1007/s11219-023-09616-6": {
+    "title": "Mutta: a novel tool for E2E web mutation testing",
+    "year": 2024,
+    "score": 10,
+    "status": "relevant",
+    "tier": "reusable-fault-benchmark",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Open E2E Web mutation pipeline comparing assertion and differential-testing oracles; strong precedent for fault seeding and suite effectiveness measurement.",
+    "code_or_data": "https://sepl.dibris.unige.it/MUTTA.php"
+  },
+  "10.1145/3611643.3616324": {
+    "title": "Semantic Test Repair for Web Applications",
+    "year": 2023,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-evolution-repair",
+    "source": "backward-snowball-2026-08-15",
+    "reason": "Repairs Web tests through semantic element matching; demonstrates maturity of locator-repair research without comparing runtime CUAs.",
+    "code_or_data": "https://doi.org/10.1145/3611643.3616324"
+  },
+  "10.1109/ICST62969.2025.10989008": {
+    "title": "Understanding and Enhancing Attribute Prioritization in Fixing Web UI Tests with LLMs",
+    "year": 2025,
+    "score": 9,
+    "status": "relevant",
+    "tier": "adjacent-llm-repair",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "LLM-enhanced WATER/VISTA-style element matching with explanation validation; relevant to repair semantics but not a CUA-versus-authored-suite study.",
+    "code_or_data": "https://www.shinhwei.com/icst25.pdf"
+  },
+  "10.1145/3818665": {
+    "title": "EAGL: Evolution-Aware Generation of Robust Locators",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-evolution-repair",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Modern robust-locator generation baseline; requires the deterministic arm to use strong locator practice rather than brittle selectors.",
+    "code_or_data": "https://doi.org/10.1145/3818665"
+  },
+  "10.1002/stvr.1893": {
+    "title": "Improving Web Element Localization by Using a Large Language Model",
+    "year": 2024,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-llm-repair",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Uses an LLM to rerank VON-Similo element candidates; informs hybrid repair baselines but does not evaluate autonomous Web testing.",
+    "code_or_data": "https://arxiv.org/abs/2310.02046"
+  },
+  "arXiv:2605.01471": {
+    "title": "Practical Limits of Autonomous Test Repair: A Multi-Agent Case Study with LLM-Driven Discovery and Self-Correction",
+    "year": 2026,
+    "score": 9,
+    "status": "relevant",
+    "tier": "partial-methodological-conflict",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Playwright-based autonomous repair case study documents non-convergence, assertion weakening and test deletion; motivates semantic-preservation checks.",
+    "code_or_data": "https://arxiv.org/abs/2605.01471"
+  },
+  "arXiv:2410.06703": {
+    "title": "ST-WebAgentBench: A Benchmark for Evaluating Safety and Trustworthiness in Web Agents",
+    "year": 2026,
+    "score": 9,
+    "status": "relevant",
+    "tier": "adjacent-modality-benchmark",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Includes matched screenshot-advantage and AXTree/DOM-advantage tasks with repeated-run reliability metrics; not software testing or defect detection.",
+    "code_or_data": "https://github.com/segev-shlomov/ST-WebAgentBench"
+  },
+  "arXiv:2607.04334": {
+    "title": "Do GUI Agents Believe Their Eyes? Diagnosing State-Belief Reliance on Pixels versus Structure",
+    "year": 2026,
+    "score": 10,
+    "status": "relevant",
+    "tier": "near-direct-modality-conflict",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Paired single-channel pixel/structure interventions over 310 GUI probes with deterministic scoring; directly constrains modality novelty but is not Web software testing.",
+    "code_or_data": "https://arxiv.org/abs/2607.04334"
+  },
+  "arXiv:2506.17779": {
+    "title": "Toward Autonomous UI Exploration: The UIExplorer Benchmark",
+    "year": 2025,
+    "score": 9,
+    "status": "relevant",
+    "tier": "adjacent-modality-benchmark",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Direct Structured-versus-Screen UI exploration benchmark in a GitLab sandbox; matched modality evidence outside defect-oriented testing.",
+    "code_or_data": "https://arxiv.org/abs/2506.17779"
+  },
+  "arXiv:2510.04363": {
+    "title": "MacroBench: A Novel Testbed for Web Automation Scripts via Large Language Models",
+    "year": 2025,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-code-first-benchmark",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Selenium program-synthesis benchmark with seven sites, 681 tasks and DOM/database verification; no screenshot CUA or authored test-suite arm.",
+    "code_or_data": "https://arxiv.org/abs/2510.04363"
+  },
+  "10.1109/AIware69974.2025.00012": {
+    "title": "Turning Manual Tasks into Actions: Assessing the Effectiveness of Gemini-Generated Selenium Tests",
+    "year": 2025,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-script-generation",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Measures executability and intended-behavior fidelity for generated Selenium tests; generation-time assistance differs from runtime CUA testing.",
+    "code_or_data": "https://doi.org/10.1109/AIware69974.2025.00012"
+  },
+  "openreview:94tlGxmqkN": {
+    "title": "WebArena Verified: Reliable Evaluation for Web Agents",
+    "year": 2025,
+    "score": 10,
+    "status": "relevant",
+    "tier": "methodological-guardrail",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Audits tasks/evaluators, uses typed comparison and backend/network evidence, revisions and checksums; central precedent for independent scoring.",
+    "code_or_data": "https://github.com/ServiceNow/webarena-verified"
+  },
+  "arXiv:2605.11030": {
+    "title": "An Executable Benchmarking Suite for Tool-Using Agents",
+    "year": 2026,
+    "score": 9,
+    "status": "relevant",
+    "tier": "methodological-guardrail",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Separates workload, action driver and admitted evidence while recording replay, verifier, latency, cost and provenance; directly informs evidence admission.",
+    "code_or_data": "https://arxiv.org/abs/2605.11030"
+  },
+  "arXiv:2606.08049": {
+    "title": "SKILL.nb: Selective Formalization and Gated Execution for Durable Agent Workflows",
+    "year": 2026,
+    "score": 9,
+    "status": "relevant",
+    "tier": "adjacent-hybrid-lifecycle",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Combines executable code and natural-language guidance with drift, reexecution and bounded repair outcomes; strong hybrid deployment precedent outside testing.",
+    "code_or_data": "https://arxiv.org/abs/2606.08049"
+  },
+  "arXiv:2412.05467": {
+    "title": "The BrowserGym Ecosystem for Web Agent Research",
+    "year": 2025,
+    "score": 9,
+    "status": "relevant",
+    "tier": "reusable-harness",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Unified Web-agent observation/action spaces, experiment management and benchmark adapters; useful harness foundation but not a testing benchmark by itself.",
+    "code_or_data": "https://github.com/ServiceNow/BrowserGym"
+  },
+  "arXiv:2401.13649": {
+    "title": "VisualWebArena: Evaluating Multimodal Agents on Realistic Visual Web Tasks",
+    "year": 2024,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-modality-benchmark",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Realistic visually grounded Web tasks and multimodal baselines; navigation/task completion rather than defect-oriented testing.",
+    "code_or_data": "https://arxiv.org/abs/2401.13649"
+  },
+  "10.1016/j.scico.2026.103473": {
+    "title": "A survey on web testing: On the rise of AI and applications in industry",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "landscape-survey",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Systematic survey of 258 Web-testing papers from 2014-2025; supports field coverage, tool and industrial-validity context.",
+    "code_or_data": "https://doi.org/10.1016/j.scico.2026.103473"
+  },
+  "10.1016/j.infsof.2026.108077": {
+    "title": "Test automation with Selenium: A survey",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "practice-context",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Practitioner survey identifies assertability, asynchrony and brittleness as key Selenium challenges and Playwright as the main alternative.",
+    "code_or_data": "https://doi.org/10.1016/j.infsof.2026.108077"
+  },
+  "10.12732/ijam.v38i12s.1391": {
+    "title": "Self-Healing Web Automation: An Empirical Comparison of Traditional Selenium Frameworks and Healenium Stack",
+    "year": 2025,
+    "score": 5,
+    "status": "possibly-relevant",
+    "tier": "quality-limited-practice-neighbor",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Reports traditional versus self-healing Selenium outcomes, but experimental provenance, benchmark detail and external reproducibility need stronger verification before use as evidence.",
+    "code_or_data": "https://doi.org/10.12732/ijam.v38i12s.1391"
+  },
+  "arXiv:2605.26321": {
+    "title": "Anchor: Mitigating Artifact Drift in Agent Benchmark Generation",
+    "year": 2026,
+    "score": 10,
+    "status": "relevant",
+    "tier": "near-direct-methodological-conflict",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "ERP-Bench compares pixel-coordinate CUA and accessibility-resolved Playwright browser execution on matched workflows with common state verification and repeated trials; workload is not software testing.",
+    "code_or_data": "https://arxiv.org/abs/2605.26321"
+  },
+  "arXiv:2607.28367": {
+    "title": "How Benchmarks Mis-Score Computer-Use Agents",
+    "year": 2026,
+    "score": 10,
+    "status": "relevant",
+    "tier": "methodological-guardrail",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Audits CUA benchmark FAIL decisions and broken tasks; requires evaluator validation, explicit diagnostic states and evidence-preserving traces.",
+    "code_or_data": "https://arxiv.org/abs/2607.28367"
+  },
+  "arXiv:2606.24551": {
+    "title": "GUI vs. CLI: Execution Bottlenecks in Screen-Only and Skill-Mediated Computer-Use Agents",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-matched-modality",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Matched task/state/verifier comparison of screen-only GUI and skill-mediated execution; strong experimental-design precedent outside Web software testing.",
+    "code_or_data": "https://arxiv.org/abs/2606.24551"
+  },
+  "openreview:GmCoFYNEIU": {
+    "title": "Skill Induction for Code Agents on Web Automation",
+    "year": 2026,
+    "score": 8,
+    "status": "relevant",
+    "tier": "adjacent-hybrid-web-agent",
+    "source": "targeted-snowball-2026-08-15",
+    "reason": "Compares action-based browser and code-native Playwright agents with isolated verification; not screenshot-only, defect-oriented testing or an authored suite baseline.",
+    "code_or_data": "https://openreview.net/forum?id=GmCoFYNEIU"
   }
 }

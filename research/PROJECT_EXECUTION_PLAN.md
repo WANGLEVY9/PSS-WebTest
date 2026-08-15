@@ -1,18 +1,18 @@
-# Project execution plan: Computer Use versus traditional Web UI testing
+# Project execution plan: Pixels, Page Structure, or Scripts?
 
 ## Material Passport
 
 - Origin skills: `academic-research-suite` (Stage 1 planning), `experiment-agent` (plan mode), `aer-preregistration`
 - Origin date: 2026-08-15
 - Verification status: DESIGN DRAFT — no experiment has been run
-- Version: 0.1
+- Version: 0.2
 - Intended primary venue: IEEE TSE; future ISSTA/ASE CFPs should be monitored
 
 ## 1. Decision summary
 
 ### Current execution status (2026-08-15)
 
-- **Phase 1 — scope/collision freeze:** GO with a narrowed testing-specific claim. The nearest newly identified paradigm precedent is Anchor/ERP-Bench, which compares pixel CUA and accessibility-resolved Playwright on enterprise workflows but does not evaluate software testing, seeded faults, UI evolution, repair, or test-suite oracles. See `phase1-collision-freeze.md`.
+- **Phase 1 — scope/collision freeze:** GO with a narrowed testing-specific claim. Classical studies already compare visual versus DOM locators and programmable versus capture/replay/NLP Web testing; newer agent studies already compare pixels and structured observations. The remaining contribution is the matched whole-workflow testing design with independent oracles, faults, ecological evolution, repair, and repeated operational outcomes. See `phase1-master-synthesis.md` and `phase1-collision-freeze.md`.
 - **Phase 2 — feasibility audit:** candidate path identified but gate **not yet passed**. BookStack and Indico are the provisional vertical-slice SUTs; the current arm64 machine has no Docker/Compose executable, and the WebTestPilot bundle documents linux/amd64 images. See `phase2-feasibility-audit.md` and `sut-candidate-audit.csv`.
 - No feasibility or agent trial is confirmatory evidence. The next action is to establish a reproducible container/runtime path and complete the BookStack + Indico reset/oracle smoke test.
 
@@ -26,21 +26,27 @@ The defensible contribution is a controlled, whole-workflow comparison with matc
 
 ## 2. Research questions and expected contribution
 
-### RQ1 — Correctness
+### RQ1 — End-to-end correctness
 
 How do the three approaches differ in valid test execution and functional-defect verdict accuracy under matched test intents?
 
-### RQ2 — Evolution robustness
+### RQ2 — Oracle boundary
+
+How do the effects vary across visible-state, persisted-state, relational/cross-state, and visual/usability oracle authorities?
+
+### RQ3 — Evolution and repair
 
 How do they degrade, recover, and require repair under controlled, behavior-preserving UI evolution?
 
-### RQ3 — Operational characteristics
+### RQ4 — Operations and stability
 
 How do monetary cost, wall-clock latency, authoring/repair effort, and repeated-run instability differ?
 
-### RQ4 — Boundary conditions
+### RQ5 — Decision boundary
 
 Which task, UI, oracle, and evolution characteristics explain when each approach is preferable?
+
+RQ5 is exploratory unless a held-out validation design and prediction rule are frozen before confirmatory collection.
 
 Expected research artifacts:
 
@@ -59,6 +65,8 @@ Expected research artifacts:
 | C: Accessibility-locator Playwright | Human-authored deterministic suite using role, label, text, test-id only when justified, and explicit assertions. | XPath/CSS as the default strategy; runtime LLM adaptation. |
 
 An optional “agent authors a deterministic Playwright test” arm is scientifically interesting but is **exploratory only** unless the pilot shows sufficient time and budget. Adding it must not reduce replication of the three confirmatory arms.
+
+The primary A/B/C contrasts estimate bundled deployment-strategy effects, not a pure observation-modality effect. If affordable, a nested secondary diagnostic will hold model, prompt, action interface, and budget fixed while varying screenshot-only versus screenshot-plus-structure observation.
 
 ### Fairness rules
 
@@ -108,9 +116,11 @@ Functional faults and behavior-preserving evolution are analyzed separately. A c
 
 To prevent outcome shopping, only three measures are confirmatory primary outcomes:
 
-1. **Functional verdict balanced accuracy:** correct pass/fail verdict against known clean/faulty ground truth, retaining false-positive and false-negative rates.
+1. **Joint end-to-end verdict correctness:** the intended checkpoint is independently reached and the clean/fault verdict is correct; report balanced accuracy, sensitivity, specificity, and verdict coverage.
 2. **Valid test completion rate:** the intended preconditions, actions, and checkpoint were actually reached, scored independently from the arm's self-report.
-3. **Repair effort:** active person-minutes required to restore a failing test approach after behavior-preserving UI evolution, with censoring rules for unsuccessful repair.
+3. **Repair outcome:** repair success with preserved oracle semantics, analyzed jointly with active person-minutes and prespecified censoring for unsuccessful repair.
+
+A repair is successful only if the frozen oracle semantics remain unchanged and the repaired artifact passes fresh positive and negative validation cases. Assertion weakening, deletion of test intent, or evaluator modification is not repair success.
 
 Secondary outcomes are API/model cost, wall-clock latency, authoring effort, token/action counts, run-to-run failure probability, verdict disagreement, and failure-mode distribution. These are important but must not all be promoted to primary outcomes after results are seen.
 

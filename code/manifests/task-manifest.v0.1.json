@@ -1,0 +1,70 @@
+{
+  "manifest_version": "0.1",
+  "study_scope": {
+    "reference_cutoff": "2023-01-01",
+    "status": "pilot-draft",
+    "note": "Post-2023 work is prioritized for design and collision analysis; older work is retained only as methodological background."
+  },
+  "applications": [
+    {
+      "id": "bookstack",
+      "name": "BookStack",
+      "status": "provisional",
+      "version": "25.02.1",
+      "source": {
+        "repository": "https://github.com/BookStackApp/BookStack",
+        "license_status": "verified",
+        "bundle_reference": "WebTestPilot pinned webapp image; downstream image digest still to be recorded"
+      },
+      "reset": {
+        "status": "unverified",
+        "command": null,
+        "evidence": "WebTestPilot seed SQL is documented; local two-run reset smoke test is pending."
+      },
+      "tasks": [
+        {
+          "id": "bookstack-create-page",
+          "intent": "Create a page in a designated shelf, save it, and verify that the title and body persist after navigation away and back.",
+          "oracle": {
+            "authority": "persisted-state",
+            "status": "draft",
+            "assertion": "Independent database/API query confirms the page belongs to the designated shelf and contains the expected title/body hash."
+          },
+          "fault_slots": ["wrong-save-target", "persistence-mismatch"],
+          "evolution_slots": ["dom-wrapper-only", "accessible-name-preserving-layout-change", "delayed-save-response"],
+          "arms": ["visual", "hybrid", "playwright"]
+        }
+      ]
+    },
+    {
+      "id": "indico",
+      "name": "Indico",
+      "status": "provisional",
+      "version": "3.3.6",
+      "source": {
+        "repository": "https://github.com/indico/indico",
+        "license_status": "verified",
+        "bundle_reference": "WebTestPilot pinned webapp image; downstream image digest and service health checks still to be recorded"
+      },
+      "reset": {
+        "status": "unverified",
+        "command": null,
+        "evidence": "WebTestPilot seed SQL is documented; local multi-service reset smoke test is pending."
+      },
+      "tasks": [
+        {
+          "id": "indico-create-event",
+          "intent": "Create an event with a fixed title and date, publish it, and verify the public event page and stored metadata.",
+          "oracle": {
+            "authority": "relational",
+            "status": "draft",
+            "assertion": "Independent database/API query confirms the event title/date/status and the public page exposes the same values."
+          },
+          "fault_slots": ["publish-state-mismatch", "date-field-mismatch"],
+          "evolution_slots": ["form-layout-change", "accessible-description-change", "delayed-background-task"],
+          "arms": ["visual", "hybrid", "playwright"]
+        }
+      ]
+    }
+  ]
+}

@@ -21,3 +21,16 @@ npm run test:traditional
 ```
 
 The smoke test intentionally requires a self-hosted SUT; no external website should be used as an experimental target.
+
+## Phase 2 contracts
+
+The current pilot manifest is `manifests/task-manifest.v0.1.json`. It deliberately marks BookStack and Indico as `provisional`, with unverified reset procedures and draft independent oracles. Validate it before editing or running a task:
+
+```sh
+npm run validate:manifests
+npm run check:sut -- http://127.0.0.1:8081
+```
+
+`schemas/task-manifest.schema.json` defines the task/application contract and `schemas/run-record.schema.json` defines the immutable execution record. The latter distinguishes test failure, timeout, model refusal, evaluator failure, and infrastructure failure; these states must not be collapsed into a single success-rate number.
+
+Phase 2 design decisions prioritize evidence published or released from 2023 onward. The local `third_party/` directory is a read-only checkout area and is ignored by Git; it is not part of the public replication package.

@@ -6,7 +6,9 @@
   "scripts": {
     "test:traditional": "playwright test --project=chromium",
     "test:traditional:ui": "playwright test --ui",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "validate:manifests": "node scripts/validate-manifests.mjs",
+    "check:sut": "node scripts/check-sut.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

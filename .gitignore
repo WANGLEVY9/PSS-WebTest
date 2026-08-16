@@ -28,6 +28,7 @@ artifacts/*
 __pycache__/
 .venv/
 node_modules/
+third_party/
 test-results/
 playwright-report/
 blob-report/

@@ -1,9 +1,11 @@
 # Phase 2 feasibility audit: candidate SUTs, benchmarks, and harnesses
 
 **Project:** PSS-WebTest (Pixels, Page Structure, or Scripts?)
-**Audit date:** 2026-08-15
+**Audit date:** 2026-08-16 (updated after first implementation increment)
 **Scope:** Phase 2 of `PROJECT_EXECUTION_PLAN.md`: candidate self-hosted Web applications, reusable benchmark artifacts, and evaluation harnesses.
 **Evidence rule:** `Confirmed` means directly stated in an official repository, official documentation, or the archived artifact record linked below. `Inferred` is a reasoned engineering implication that still needs a local smoke test. `Unknown` means the public material does not establish the property.
+
+**Time-window policy:** For Phase 2 design and collision decisions, references from 2023 onward are primary. Earlier work is retained only for terminology or foundational taxonomy and is not used as evidence of current CUA capability.
 
 ## Executive decision
 
@@ -85,6 +87,10 @@ The study may proceed to Phase 3 only after:
 - the architecture/emulation decision is recorded in the decision log.
 
 Until these conditions are met, all numbers from any agent trial are feasibility observations, not experimental evidence.
+
+## 2026-08-16 implementation update
+
+The first executable harness increment is now present under `code/`: a post-2022-scoped task manifest, task/run-record schemas, manifest validator, and local SUT readiness probe. The task manifest contains provisional BookStack and Indico vertical-slice intents, but their reset status remains `unverified` and their oracle status remains `draft`. Node dependencies installed successfully and the Playwright CLI is available; Chromium download failed with `ECONNRESET`. Docker/Compose is still unavailable on the arm64 host. Therefore the Phase 2 confirmatory gate remains **not passed**.
 
 ## Sources inspected
 

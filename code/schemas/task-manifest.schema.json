@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PSS-WebTest task manifest",
+  "type": "object",
+  "required": ["manifest_version", "study_scope", "applications"],
+  "properties": {
+    "manifest_version": { "type": "string" },
+    "study_scope": {
+      "type": "object",
+      "required": ["reference_cutoff", "status"],
+      "properties": {
+        "reference_cutoff": { "type": "string", "format": "date" },
+        "status": { "enum": ["pilot-draft", "frozen-confirmatory"] }
+      },
+      "additionalProperties": false
+    },
+    "applications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "status", "version", "source", "tasks"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+          "name": { "type": "string" },
+          "status": { "enum": ["provisional", "admitted", "rejected"] },
+          "version": { "type": "string" },
+          "source": {
+            "type": "object",
+            "required": ["repository", "license_status"],
+            "properties": {
+              "repository": { "type": "string", "format": "uri" },
+              "license_status": { "enum": ["verified", "needs-review", "unknown"] }
+            },
+            "additionalProperties": true
+          },
+          "reset": {
+            "type": "object",
+            "required": ["status"],
+            "properties": {
+              "status": { "enum": ["unverified", "smoke-tested", "admitted"] },
+              "command": { "type": ["string", "null"] },
+              "evidence": { "type": ["string", "null"] }
+            },
+            "additionalProperties": false
+          },
+          "tasks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "intent", "oracle", "fault_slots", "evolution_slots"],
+              "properties": {
+                "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]+$" },
+                "intent": { "type": "string" },
+                "oracle": {
+                  "type": "object",
+                  "required": ["authority", "status", "assertion"],
+                  "properties": {
+                    "authority": { "enum": ["visible-ui", "persisted-state", "relational", "visual-usability"] },
+                    "status": { "enum": ["draft", "verified"] },
+                    "assertion": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                },
+                "fault_slots": { "type": "array", "items": { "type": "string" } },
+                "evolution_slots": { "type": "array", "items": { "type": "string" } },
+                "arms": {
+                  "type": "array",
+                  "items": { "enum": ["visual", "hybrid", "playwright"] },
+                  "minItems": 3,
+                  "uniqueItems": true
+                }
+              },
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}

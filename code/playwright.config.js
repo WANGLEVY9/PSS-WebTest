@@ -1,6 +1,8 @@
 import { defineConfig } from '@playwright/test';
 import 'dotenv/config';
 
+const browserChannel = process.env.PSS_BROWSER_CHANNEL;
+
 export default defineConfig({
   testDir: './tests/traditional',
   fullyParallel: false,
@@ -12,5 +14,11 @@ export default defineConfig({
     screenshot: 'only-on-failure',
     video: 'retain-on-failure'
   },
-  projects: [{ name: 'chromium', use: { browserName: 'chromium' } }]
+  projects: [{
+    name: 'chromium',
+    use: {
+      browserName: 'chromium',
+      ...(browserChannel ? { channel: browserChannel } : {})
+    }
+  }]
 });

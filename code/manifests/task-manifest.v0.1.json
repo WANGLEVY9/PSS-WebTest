@@ -14,12 +14,15 @@
       "source": {
         "repository": "https://github.com/BookStackApp/BookStack",
         "license_status": "verified",
-        "bundle_reference": "WebTestPilot pinned webapp image; downstream image digest still to be recorded"
+        "bundle_reference": "WebTestPilot commit b0659bd9908f11c7957602a9372fc100dda50e40",
+        "base_image": "solidnerd/bookstack@sha256:62bb3332b1a1a5cbc518792aa2d288b8eaa86ff7db13b6021c728e79c5b0ed7c",
+        "built_image": "sha256:1965ab6a50ed2ff3502de265154a2f42baceeb2e311b1467bf864087a676abd1",
+        "database_image": "mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb"
       },
       "reset": {
-        "status": "unverified",
-        "command": null,
-        "evidence": "WebTestPilot seed SQL is documented; local two-run reset smoke test is pending."
+        "status": "smoke-tested",
+        "command": "npm --prefix code run sut:bookstack:reset",
+        "evidence": "Ten non-confirmatory clean reset/workflow/oracle cycles passed on 2026-08-16; local artifact is gitignored."
       },
       "tasks": [
         {
@@ -27,11 +30,16 @@
           "intent": "Create a page in a designated shelf, save it, and verify that the title and body persist after navigation away and back.",
           "oracle": {
             "authority": "persisted-state",
-            "status": "draft",
+            "status": "verified",
             "assertion": "Independent database/API query confirms the page belongs to the designated shelf and contains the expected title/body hash."
           },
           "fault_slots": ["wrong-save-target", "persistence-mismatch"],
           "evolution_slots": ["dom-wrapper-only", "accessible-name-preserving-layout-change", "delayed-save-response"],
+          "phase2_evidence": {
+            "clean_repetitions": "10/10 non-confirmatory reset/workflow/oracle cycles passed",
+            "functional_fault": "persistence-mismatch was detected by the Playwright visible-state assertion and the independent database oracle",
+            "ui_evolution": "bookstack-layout-v1 preserved the workflow and persisted-state oracle in one smoke run"
+          },
           "arms": ["visual", "hybrid", "playwright"]
         }
       ]
@@ -44,12 +52,16 @@
       "source": {
         "repository": "https://github.com/indico/indico",
         "license_status": "verified",
-        "bundle_reference": "WebTestPilot pinned webapp image; downstream image digest and service health checks still to be recorded"
+        "bundle_reference": "WebTestPilot commit b0659bd9908f11c7957602a9372fc100dda50e40",
+        "built_image": "sha256:4cc4a2cfe59e0b0c0e8e9ab1c03e5b4b8d8f46d0c8d1dea08698f7ca8f89559e",
+        "database_image": "postgres@sha256:cf7f8fb958c63e62875e30645dc4819ff0243a923f3c709e752b99dedd40bfcd",
+        "redis_image": "redis@sha256:344e3945a0b431c8ff1eecd58c5573538126bd756f02fc7e218ddf1fc2546366",
+        "proxy_image": "ghcr.io/nginxinc/nginx-unprivileged@sha256:c715a16970095e90787b02edd68b6371e24c18b8cc905ab1cd17cb20f79816fe"
       },
       "reset": {
-        "status": "unverified",
-        "command": null,
-        "evidence": "WebTestPilot seed SQL is documented; local multi-service reset smoke test is pending."
+        "status": "smoke-tested",
+        "command": "npm --prefix code run sut:indico:reset",
+        "evidence": "Three clean-volume start/reset cycles reached the hostname-sensitive HTTP 200 gate and restored exactly 18 seeded events; the latest automated cycle took 33.841 seconds."
       },
       "tasks": [
         {
@@ -62,6 +74,37 @@
           },
           "fault_slots": ["publish-state-mismatch", "date-field-mismatch"],
           "evolution_slots": ["form-layout-change", "accessible-description-change", "delayed-background-task"],
+          "arms": ["visual", "hybrid", "playwright"]
+        }
+      ]
+    },
+    {
+      "id": "juice-shop",
+      "name": "OWASP Juice Shop",
+      "status": "provisional",
+      "version": "20.0.0",
+      "source": {
+        "repository": "https://github.com/juice-shop/juice-shop",
+        "license_status": "verified",
+        "image": "bkimminich/juice-shop@sha256:fd58bdc9745416afce8184ee0666278a436574633ea7880365153a63bfd418b0",
+        "architecture": "arm64"
+      },
+      "reset": {
+        "status": "smoke-tested",
+        "command": "npm --prefix code run sut:juice-shop:reset",
+        "evidence": "Two ephemeral-container start/reset cycles returned HTTP 200 and the same three-item fixed API probe; the cached-image reset took 2.241 seconds."
+      },
+      "tasks": [
+        {
+          "id": "juice-shop-product-search",
+          "intent": "Search the product catalog for a fixed query and verify the returned products and visible result list.",
+          "oracle": {
+            "authority": "relational",
+            "status": "draft",
+            "assertion": "Independent REST and SQLite-state checks agree on the fixed product identifiers and visible search result set."
+          },
+          "fault_slots": ["search-result-omission", "product-detail-mismatch"],
+          "evolution_slots": ["search-layout-change", "accessible-name-preserving-card-change"],
           "arms": ["visual", "hybrid", "playwright"]
         }
       ]

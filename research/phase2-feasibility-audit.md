@@ -1,7 +1,7 @@
 # Phase 2 feasibility audit: candidate SUTs, benchmarks, and harnesses
 
 **Project:** PSS-WebTest (Pixels, Page Structure, or Scripts?)
-**Audit date:** 2026-08-16 (updated after first implementation increment)
+**Audit date:** 2026-08-16 (updated after the current Phase 2 implementation increment)
 **Scope:** Phase 2 of `PROJECT_EXECUTION_PLAN.md`: candidate self-hosted Web applications, reusable benchmark artifacts, and evaluation harnesses.
 **Evidence rule:** `Confirmed` means directly stated in an official repository, official documentation, or the archived artifact record linked below. `Inferred` is a reasoned engineering implication that still needs a local smoke test. `Unknown` means the public material does not establish the property.
 
@@ -19,7 +19,7 @@ No candidate should enter confirmatory data collection until a local smoke test 
 
 ## Local environment observations
 
-The current machine reports `arm64`, Node `v20.18.0`, Python `3.9.6`, and no `docker`, `colima`, or `podman` executable was found on `PATH` at audit time. The repository's `code/package.json` requires Playwright `^1.55.0` and `dotenv`; `code/README.md` correctly refuses to use an external website, but currently has no SUT, reset script, evaluator, or agent adapter. Therefore the feasibility gate is currently **not passed**. Docker/Compose (or a documented alternative) and a supported Python environment are prerequisites, not assumptions.
+At the initial audit, the machine reported `arm64`, Node `v20.18.0`, Python `3.9.6`, and no Docker runtime on `PATH`. The current increment installed Colima 0.10.3, Docker CLI 29.7.2, and Compose 5.4.0, and created an arm64 Apple-Virtualization VM with Rosetta. Local Chrome 151.0.7922.138 also launched successfully through Playwright. Runtime feasibility therefore passes, while browser and image artifacts still need freezing for confirmatory work.
 
 ## Candidate and artifact matrix
 
@@ -77,11 +77,11 @@ For every provisional SUT, create an immutable record containing:
 
 Current outcome: **not yet ready for confirmatory runs**.
 
-The study may proceed to Phase 3 only after:
+The study may proceed to Phase 3 design work, but not confirmatory collection, only after:
 
-- Docker/Compose or an equivalent reproducible runtime is installed and documented;
-- BookStack and Indico each pass the two-run start/reset smoke test;
-- at least one fallback SUT has a verified legal and operational path;
+- Docker/Compose or an equivalent reproducible runtime is installed and documented (**passed locally**);
+- BookStack and Indico each pass the two-run start/reset smoke test (**passed locally**);
+- at least one fallback SUT has a verified legal and operational path (**Juice Shop reset/license path passed locally**);
 - all primary tasks have hidden machine-checkable oracles;
 - the arm adapters can run against the same local URL and reset snapshot;
 - the architecture/emulation decision is recorded in the decision log.
@@ -90,7 +90,9 @@ Until these conditions are met, all numbers from any agent trial are feasibility
 
 ## 2026-08-16 implementation update
 
-The first executable harness increment is now present under `code/`: a post-2022-scoped task manifest, task/run-record schemas, manifest validator, and local SUT readiness probe. The task manifest contains provisional BookStack and Indico vertical-slice intents, but their reset status remains `unverified` and their oracle status remains `draft`. Node dependencies installed successfully and the Playwright CLI is available; Chromium download failed with `ECONNRESET`. Docker/Compose is still unavailable on the arm64 host. Therefore the Phase 2 confirmatory gate remains **not passed**.
+The executable harness now contains a post-2022-scoped manifest with three provisional SUTs, task/run-record schemas, strict three-arm observation contracts, application lifecycles, and the BookStack Playwright/oracle/fault/evolution vertical slice. BookStack passed 10/10 non-confirmatory clean repetitions; Indico passed three clean-volume resets and automatically verified exactly 18 restored events; Juice Shop v20.0.0 passed two ephemeral resets. Exact local image identities and architecture are recorded in the manifest and progress log.
+
+The Phase 2 confirmatory gate remains **not passed** because no real pure-visual or hybrid provider adapter has executed, and Indico/Juice Shop task-level oracles are drafts. These are explicit remaining gates rather than runtime assumptions. See `phase2-progress-2026-08-16.md` for measured feasibility details and compatibility warnings.
 
 ## Sources inspected
 

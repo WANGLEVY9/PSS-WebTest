@@ -31,6 +31,23 @@ npm run validate:manifests
 npm run check:sut -- http://127.0.0.1:8081
 ```
 
+On macOS, `PSS_BROWSER_CHANNEL=chrome` can use an already-installed Google Chrome build for feasibility smoke tests. Confirmatory runs must freeze and record one browser build/channel across all arms.
+
 `schemas/task-manifest.schema.json` defines the task/application contract and `schemas/run-record.schema.json` defines the immutable execution record. The latter distinguishes test failure, timeout, model refusal, evaluator failure, and infrastructure failure; these states must not be collapsed into a single success-rate number.
+
+## Phase 2 local lifecycle commands
+
+The scripts below delete only their named experimental containers/Compose volumes. They do not alter the ignored WebTestPilot checkout.
+
+```sh
+npm run sut:bookstack:reset
+npm run oracle:bookstack
+npm run test:contracts
+
+npm run sut:indico:reset
+npm run sut:juice-shop:reset
+```
+
+BookStack is the only task-level vertical slice currently verified. Indico and Juice Shop have passed local reset feasibility but retain draft task oracles. The pure-visual and hybrid arms have strict observation contracts; they are not considered executable until real provider adapters pass those contracts under a fixed budget.
 
 Phase 2 design decisions prioritize evidence published or released from 2023 onward. The local `third_party/` directory is a read-only checkout area and is ignored by Git; it is not part of the public replication package.

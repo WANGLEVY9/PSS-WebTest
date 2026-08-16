@@ -1,0 +1,9 @@
+services:
+  web:
+    image: pss-indico:3.3.6
+  celery:
+    image: pss-indico:3.3.6
+    build: null
+  celery-beat:
+    image: pss-indico:3.3.6
+    build: null

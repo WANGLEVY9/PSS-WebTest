@@ -24,5 +24,6 @@ The first two execution-phase reports are now available:
 - `research/phase2-feasibility-audit.md`: SUT, benchmark, and harness feasibility; confirmatory gate is not yet passed.
 - `research/sut-candidate-audit.csv`: machine-readable candidate matrix with confirmed, inferred, and unknown evidence states.
 - `research/two-day-phase1-2-kickoff-plan.md`: the detailed 48-hour checklist, deliverables, gates, and handoff criteria.
+- `research/ALL_PHASES_PLAN_ZH.md`: Chinese overview of every research phase, its exit gate, and the current Phase 2 status.
 
 Before staging or pushing public changes, run `scripts/check-public-boundary.sh`. It fails if manuscript, bibliography, or submission files have become tracked.

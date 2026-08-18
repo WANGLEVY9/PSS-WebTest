@@ -91,7 +91,7 @@ Phase 2 只有在以下清单全部满足后退出：
 - [x] visible UI oracle 的 fake-page 与 live traditional-flow 验证；
 - [ ] pure-visual 完整多步 task 在固定预算下达到预设 pilot reliability；
 - [ ] hybrid 真实 provider driver + 至少一个真实 SUT pilot（driver/contract 已通过；真实 pageStructure 外发需额外授权）；
-- [x] Indico/Juice Shop fault/evolution harness live gate（Indico transactional trigger、Juice page-local omission/layout 已通过；Indico 本地账号与 clean workflow 已通过，完整 fault oracle workflow 仍待补齐）；
+- [x] Indico/Juice Shop fault/evolution harness live gate（Indico transactional trigger、登录→创建→fault→独立 fault-aware oracle、Juice page-local omission/layout 均已通过）；
 - [ ] 标准 run-record 批量生成、schema validation 和 ledger admission（schema/collector/visual runner 已接入，尚需批量 ledger）；
 - [ ] matched three-arm cell 的最小 confirmatory admission；
 - [ ] pilot-based power simulation 与 preregistration decision freeze。

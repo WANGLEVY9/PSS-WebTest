@@ -56,6 +56,7 @@
 - 本地 Indico 实验账号 `pss_phase2_indico`（ID 2）已配置在被忽略的 `code/.env`，clean 登录 → 创建事件 workflow 通过，独立 PostgreSQL oracle 现返回 `matches=1, passed=true`。
 - 自检发现 oracle 原先硬编码 `creator_id=1`，会将该账号创建的有效事件误判为失败；已改为按 `PSS_INDICO_EMAIL`（默认实验邮箱）解析 `users.emails` 中的 user ID，并重新通过 oracle 与 27/27 契约测试。
 - Indico fault trigger 当前已移除（live PostgreSQL trigger count=0）。在 fault 已应用时，clean-title Playwright 断言失败属于预期的故障可见性证据，不作为独立 fault oracle；完整 fault workflow 的独立 oracle 记录仍需补齐。
+- 随后新增并运行 `npm run pilot:indico:fault`：隔离旧 fixture 后执行登录 → 创建事件 → trigger 改写标题 → 页面观察 `[FAULT]` → 独立 fault-aware PostgreSQL oracle，结果 `browser_fault_visible=true`、`independent_oracle_detected_fault=true`、`trigger_removed=true`、`passed=true`。该运行器在 finally 中清理 trigger。
 
 ## 5. 当前退出判断
 

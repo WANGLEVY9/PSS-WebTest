@@ -40,6 +40,8 @@ The provider/model identity is stored only in the sanitized provenance field of 
 
 ## BookStack three-arm matched pilot attempt
 
-The unified runner was configured for 3 repetitions, but the process was interrupted before the 9-cell artifact could be finalized. The latest complete artifact is 1 repetition × `playwright`, `visual`, and `hybrid` (3 cells; gitignored). All three reset/clean-state gates passed; Playwright passed 1/1, while visual and hybrid did not reach the persisted-state oracle because the provider/agent run timed out. Therefore this is a feasibility pilot, not an admitted matched pilot.
+The latest complete artifact is 1 repetition × `playwright`, `visual`, and `hybrid` (3 cells; gitignored). After fixing the reset race, all three reset/clean-state gates passed; Playwright passed 1/1, visual failed after two navigation actions with a provider abort, and hybrid timed out after one navigation action. Therefore this is a feasibility pilot, not an admitted matched pilot.
+
+The reset root cause was twofold: MySQL `mysqladmin ping` accepted the entrypoint temporary server, and Colima sometimes left the named DB volume referenced after `compose down -v`. The lifecycle now waits for the explicit `MySQL init process done` marker plus a successful query, and force-removes only the BookStack-specific containers/volumes before startup. Two consecutive resets and a clean Playwright/oracle run passed after the fix.
 
 The planning simulation (`npm run power:simulate`) excludes rows with `reset_ok=false` and applies Jeffreys smoothing. With the remaining tiny samples, estimated power reaches approximately 0.72 for Playwright-vs-visual at 24 repetitions per arm and only 0.47 for Playwright-vs-hybrid; these numbers are provisional and explicitly do not freeze confirmatory repetition counts.

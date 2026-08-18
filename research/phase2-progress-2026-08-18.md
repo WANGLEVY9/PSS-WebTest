@@ -50,7 +50,7 @@
 - Juice Shop live mutation gate 已通过：clean visible-ui oracle `passed=true`；page-local omission fault 移除 `Apple Pomace` 且 oracle `passed=false`；page-local layout-v1 保持 oracle `passed=true`。三者使用隔离 Playwright pages，mutation 不写入 SUT 容器。
 - Indico live fault trigger gate 已通过 apply/transactional observation/rollback/remove/isolation：触发器将精确匹配的 `PSS Phase2 Event` 改写为 `[FAULT]`，事务回滚后无持久化副作用，remove 后 PostgreSQL trigger count 为 0。
 - BookStack 传统 baseline 已使用本地 seed 账号完成 3/3 clean reset → accessibility Playwright → persisted DB oracle reliability pilot；artifact 写入 gitignored `artifacts/phase2/bookstack-reliability-pilot.json`。
-- 新增 BookStack 三臂 matched runner；先前 3×3 运行曾被进程中断，最新可完整写入的 artifact 是 1 repetition × 3 arms：三个 reset/clean-state gate 均通过，Playwright 1/1 通过，visual/hybrid 均因 provider timeout 或 agent failure 未通过。当前主要 blocker 已从 reset 转为 provider/agent reliability；尚未达到 matched-pilot admission gate。
+- 新增 BookStack 三臂 matched runner；最新完整 artifact 是 1 repetition × 3 arms：三个 reset/clean-state gate 均通过，Playwright 1/1 通过，visual 在两次导航动作后 provider abort，hybrid 在一步后 timeout。reset 根因已修复（MySQL temporary-server race + stale volume），当前 blocker 已收窄为 provider/agent reliability；尚未达到 matched-pilot admission gate。
 - 新增 pilot power-planning simulation；仅使用 `reset_ok=true` 行并作 Jeffreys smoothing，输出仍标记 `confirmatory=false`，不冻结最终 repetition 数。
 
 ## 4.1 自检修正（2026-08-18）

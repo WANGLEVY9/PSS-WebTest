@@ -15,6 +15,8 @@
     "pilot:volcengine:juice:hybrid": "node scripts/run-volcengine-juice-hybrid-smoke.mjs",
     "pilot:bookstack:agent": "node scripts/run-bookstack-agent-pilot.mjs",
     "pilot:bookstack:matched": "node scripts/bookstack-matched-pilot.mjs",
+    "records:bookstack-cell": "node scripts/record-bookstack-cell.mjs",
+    "pilot:bookstack:playwright-cell": "node scripts/run-bookstack-playwright-cell.mjs",
     "power:simulate": "node scripts/power-simulation.mjs",
     "pilot:indico:fault": "node scripts/run-indico-fault-workflow.mjs",
     "test:contracts": "node --test tests/contracts/*.test.mjs",

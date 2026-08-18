@@ -26,6 +26,16 @@ function run(command, args, { cwd = applicationDirectory, input, allowFailure = 
   });
 }
 
+function runCapture(command, args, { cwd = applicationDirectory } = {}) {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(command, args, { cwd, stdio: ['ignore', 'pipe', 'ignore'] });
+    let stdout = '';
+    child.stdout.on('data', (chunk) => { stdout += chunk; });
+    child.on('error', reject);
+    child.on('close', (code) => resolvePromise({ code, stdout }));
+  });
+}
+
 async function waitUntilReady() {
   const startedAt = Date.now();
   let lastError = 'not attempted';
@@ -45,6 +55,23 @@ async function waitUntilReady() {
   throw new Error(`BookStack did not become ready within ${timeoutMs} ms: ${lastError}`);
 }
 
+async function waitForDatabase() {
+  const startedAt = Date.now();
+  let lastError = 'not attempted';
+  while (Date.now() - startedAt < timeoutMs) {
+    const logs = await runCapture('docker', ['logs', 'bookstack-db-1']);
+    const probe = await runCapture('docker', ['exec', 'bookstack-db-1', 'mysql', '-N', '-u', 'admin', '-padmin', '-e', 'SELECT 1;']);
+    const initDone = logs.stdout.includes('MySQL init process done. Ready for start up.');
+    if (initDone && probe.code === 0 && probe.stdout.trim() === '1') {
+      console.log(JSON.stringify({ status: 'database-ready', elapsed_ms: Date.now() - startedAt }));
+      return;
+    }
+    lastError = `mysql initDone=${initDone}, probe exit ${probe.code}, output=${probe.stdout.trim() || 'unknown'}`;
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 1000));
+  }
+  throw new Error(`BookStack database did not become ready within ${timeoutMs} ms: ${lastError}`);
+}
+
 async function seedDatabase() {
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const seed = (await readFile(seedPath, 'utf8')).replaceAll('YYYY-MM-DD', yesterday);
@@ -54,8 +81,14 @@ async function seedDatabase() {
 async function startOrReset() {
   const startedAt = Date.now();
   await run(composeBin, ['down', '-v', '--remove-orphans'], { allowFailure: true });
+  // Colima can return from compose down before the DB container releases its
+  // volume. Explicitly remove only this SUT's known containers/volumes so a
+  // later seed cannot collide with stale primary keys.
+  await run('docker', ['rm', '-f', 'bookstack-db-1', 'bookstack-app-1'], { allowFailure: true, quiet: true });
+  await run('docker', ['volume', 'rm', '-f', 'bookstack_db', 'bookstack_app_config'], { allowFailure: true, quiet: true });
   const imageExists = (await run('docker', ['image', 'inspect', 'bookstack-app:latest'], { allowFailure: true, quiet: true })) === 0;
   await run(composeBin, imageExists ? ['up', '-d'] : ['up', '-d', '--build']);
+  await waitForDatabase();
   await waitUntilReady();
   await seedDatabase();
   console.log(JSON.stringify({ status: 'seeded', application: 'bookstack', elapsed_ms: Date.now() - startedAt }));

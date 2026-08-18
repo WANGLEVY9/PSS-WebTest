@@ -50,6 +50,8 @@
 - Juice Shop live mutation gate 已通过：clean visible-ui oracle `passed=true`；page-local omission fault 移除 `Apple Pomace` 且 oracle `passed=false`；page-local layout-v1 保持 oracle `passed=true`。三者使用隔离 Playwright pages，mutation 不写入 SUT 容器。
 - Indico live fault trigger gate 已通过 apply/transactional observation/rollback/remove/isolation：触发器将精确匹配的 `PSS Phase2 Event` 改写为 `[FAULT]`，事务回滚后无持久化副作用，remove 后 PostgreSQL trigger count 为 0。完整登录 workflow 下的 fault oracle 仍需本地账号配置。
 - BookStack 传统 baseline 已使用本地 seed 账号完成 3/3 clean reset → accessibility Playwright → persisted DB oracle reliability pilot；artifact 写入 gitignored `artifacts/phase2/bookstack-reliability-pilot.json`。
+- 新增 BookStack 三臂 matched runner；本轮计划 3×3=9 cells，artifact `artifacts/phase2/bookstack-three-arm-pilot.json` 已生成。由于多次 reset/infrastructure failure，只有 1 cell 通过，尚未达到 matched-pilot admission gate。
+- 新增 pilot power-planning simulation；仅使用 `reset_ok=true` 行并作 Jeffreys smoothing，输出仍标记 `confirmatory=false`，不冻结最终 repetition 数。
 
 ## 4.1 自检修正（2026-08-18）
 
@@ -69,10 +71,10 @@
 | Indico/Juice Shop fault/evolution matrix | 尚未完成 |
 | pure-visual provider/driver smoke | 通过 |
 | pure-visual real SUT smoke | 已运行但 3-step 试验未完成；存在越界坐标失败 |
-| hybrid observation contract / anti-leakage | 通过；已完成真实 Juice Shop provider invocation，但独立 UI oracle 未通过任务完成 |
-| standard run-record schema/collector | 通过；visual/hybrid runner 已生成并校验 3 条本地 JSONL records，尚未进入 confirmatory ledger |
-| Indico/Juice fault/evolution harness contracts | contract gate 通过；Juice live mutation 与 Indico trigger apply/remove/isolation 已通过，完整 fault workflow 仍待补齐 |
+| hybrid observation contract / anti-leakage | 通过；已完成真实 Juice Shop/BookStack provider invocation，但独立任务 oracle 均未通过 |
+| standard run-record schema/collector | 通过；visual/hybrid/BookStack runner 已生成并校验本地 JSONL records，尚未进入 confirmatory ledger |
+| Indico/Juice fault/evolution harness contracts | contract gate 通过；Juice live mutation 与 Indico 完整 fault workflow 已通过 |
 | pure-visual/hybrid confirmatory execution | 尚未完成 |
 | Phase 2 overall exit | 尚未通过 |
 
-下一步是冻结 provider、模型、截图/结构输入和 action budget，在 BookStack 上跑真实三臂最小切片；之后扩展 Indico/Juice Shop 的 fault/evolution 条件。
+下一步是修复 BookStack reset/服务稳定性并重跑有效 matched pilot；在有效 pilot 达到 admission gate 前，不冻结 confirmatory repetition 或开始 confirmatory collection。

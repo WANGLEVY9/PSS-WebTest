@@ -37,3 +37,9 @@ The provider/model identity is stored only in the sanitized provenance field of 
 - Standard run-record schema, append-only JSONL collection, and validation: passed for the three records.
 - Pure-visual full multi-step reliability: not passed.
 - No three-arm matched confirmatory outcome or power claim is made from these records.
+
+## BookStack three-arm matched pilot attempt
+
+The unified runner executed 9 planned cells (3 repetitions × `playwright`, `visual`, `hybrid`) with the same task intent, reset command, oracle, and agent budget. The artifact is `artifacts/phase2/bookstack-three-arm-pilot.json` (gitignored). Only 1 cell passed; several cells were excluded because the reset gate failed, and agent cells with a clean reset did not reach the persisted-state oracle. Therefore this is an infrastructure/feasibility pilot, not an admitted matched pilot.
+
+The planning simulation (`npm run power:simulate`) excludes rows with `reset_ok=false` and applies Jeffreys smoothing. With the remaining tiny samples, estimated power reaches approximately 0.72 for Playwright-vs-visual at 24 repetitions per arm and only 0.47 for Playwright-vs-hybrid; these numbers are provisional and explicitly do not freeze confirmatory repetition counts.

@@ -24,11 +24,12 @@ The smoke test intentionally requires a self-hosted SUT; no external website sho
 
 ## Phase 2 contracts
 
-The current pilot manifest is `manifests/task-manifest.v0.1.json`. It deliberately marks BookStack and Indico as `provisional`, with unverified reset procedures and draft independent oracles. Validate it before editing or running a task:
+The current pilot manifest is `manifests/task-manifest.v0.1.json`. It marks BookStack, Indico, and Juice Shop as `provisional` applications: their reset and task-oracle feasibility gates pass, but confirmatory admission and fault/evolution coverage are not yet complete. Validate it before editing or running a task:
 
 ```sh
 npm run validate:manifests
 npm run check:sut -- http://127.0.0.1:8081
+npm run check:agent
 ```
 
 On macOS, `PSS_BROWSER_CHANNEL=chrome` can use an already-installed Google Chrome build for feasibility smoke tests. Confirmatory runs must freeze and record one browser build/channel across all arms.
@@ -48,6 +49,8 @@ npm run sut:indico:reset
 npm run sut:juice-shop:reset
 ```
 
-BookStack is the only task-level vertical slice currently verified. Indico and Juice Shop have passed local reset feasibility but retain draft task oracles. The pure-visual and hybrid arms have strict observation contracts; they are not considered executable until real provider adapters pass those contracts under a fixed budget.
+BookStack, Indico, and Juice Shop now each have a task-level Playwright slice and an independent feasibility oracle. BookStack additionally has a verified persistence fault and behavior-preserving UI mutation. The pure-visual and hybrid arms have strict observation contracts; they are not considered executable until real provider adapters pass those contracts under a fixed budget.
+
+`npm run check:agent` checks only whether `CUA_PROVIDER`, `CUA_MODEL`, and `CUA_API_KEY` are present; it never prints the key. A blocked readiness result is expected until a real CUA provider is selected. The adapter tests use contract-only drivers and are not experimental Agent results.
 
 Phase 2 design decisions prioritize evidence published or released from 2023 onward. The local `third_party/` directory is a read-only checkout area and is ignored by Git; it is not part of the public replication package.

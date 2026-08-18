@@ -68,6 +68,22 @@ async function waitUntilReady() {
   throw new Error(`Indico did not become ready within ${timeoutMs} ms: ${lastError}`);
 }
 
+async function waitForContainerProcess(containerName, processPattern) {
+  const startedAt = Date.now();
+  let lastError = 'not attempted';
+  while (Date.now() - startedAt < timeoutMs) {
+    try {
+      const output = await capture('docker', ['exec', containerName, 'sh', '-lc', `pgrep -af '${processPattern}' || true`]);
+      if (output.trim()) return;
+      lastError = 'process not visible yet';
+    } catch (error) {
+      lastError = error.message;
+    }
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 2000));
+  }
+  throw new Error(`${containerName} did not expose ${processPattern} within ${timeoutMs} ms: ${lastError}`);
+}
+
 async function seedDatabase() {
   const seed = await readFile(seedPath, 'utf8');
   await run('docker', ['exec', '-i', 'indico-postgres-1', 'psql', '-v', 'ON_ERROR_STOP=1', '-U', 'indico', '-d', 'indico'], { input: seed });
@@ -84,7 +100,14 @@ async function startOrReset() {
   await run(composeBin, [...composeFiles, 'down', '-v', '--remove-orphans'], { allowFailure: true });
   const imageExists = (await run('docker', ['image', 'inspect', 'pss-indico:3.3.6'], { allowFailure: true, quiet: true })) === 0;
   if (!imageExists) await run(composeBin, [...composeFiles, 'build', 'web']);
-  await run(composeBin, [...composeFiles, 'up', '-d', '--no-build']);
+  // The web/celery services share the static-files volume. Starting all of
+  // them in parallel can race Docker's image-to-volume copy on macOS/Colima.
+  // Populate the volume once with web, then start the remaining consumers.
+  await run(composeBin, [...composeFiles, 'up', '-d', '--no-build', 'postgres', 'redis']);
+  await run(composeBin, [...composeFiles, 'up', '-d', '--no-build', '--no-deps', 'web']);
+  await waitForContainerProcess('indico-web-1', 'uwsgi');
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 3000));
+  await run(composeBin, [...composeFiles, 'up', '-d', '--no-build', '--no-deps', 'celery', 'celery-beat', 'nginx']);
   await waitUntilReady();
   await seedDatabase();
   console.log(JSON.stringify({ status: 'seeded', application: 'indico', elapsed_ms: Date.now() - startedAt }));

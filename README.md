@@ -22,6 +22,7 @@ The first two execution-phase reports are now available:
 
 - `research/phase1-collision-freeze.md`: collision audit and frozen scope; decision is GO with a narrowed claim.
 - `research/phase2-feasibility-audit.md`: SUT, benchmark, and harness feasibility; confirmatory gate is not yet passed.
+- `research/phase2-progress-2026-08-18.md`: latest Indico/Juice Shop task slices, oracle verification, credential hardening, and Agent provider blocker.
 - `research/sut-candidate-audit.csv`: machine-readable candidate matrix with confirmed, inferred, and unknown evidence states.
 - `research/two-day-phase1-2-kickoff-plan.md`: the detailed 48-hour checklist, deliverables, gates, and handoff criteria.
 - `research/ALL_PHASES_PLAN_ZH.md`: Chinese overview of every research phase, its exit gate, and the current Phase 2 status.

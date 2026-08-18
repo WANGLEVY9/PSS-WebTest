@@ -21,10 +21,10 @@ Phase 2 uses **2023-01-01 onward as the primary evidence window** for benchmark,
 | Browser runtime | **PASS FOR FEASIBILITY** | Playwright launched local Chrome 151.0.7922.138 | Freeze one browser artifact/channel before preregistration |
 | Docker/Compose SUT runtime | **PASS** | Colima 0.10.3, Docker CLI 29.7.2, Compose 5.4.0; arm64 VM with Rosetta | Preserve exact host/VM/image provenance |
 | BookStack reset | **PASS FOR FEASIBILITY** | 10/10 clean reset/workflow/oracle cycles | Resolve upstream/bundle provenance before admission |
-| Indico reset | **PASS FOR FEASIBILITY** | Three clean-volume cycles; exactly 18 seeded events restored | Build the task and independent event oracle |
-| Juice Shop reset | **PASS FOR FEASIBILITY** | Two ephemeral-container cycles; fixed API probe count 3 | Audit task representativeness and implement an oracle |
-| Independent oracle | **PARTIAL PASS** | BookStack DB oracle verified on clean and injected-fault states | Indico and Juice Shop oracles remain draft |
-| Observation isolation | **CONTRACT PASS** | Six strict contract/leakage tests pass | Real provider trajectories still need admission tests |
+| Indico reset | **PASS FOR FEASIBILITY** | Three clean-volume cycles; exactly 18 seeded events restored | Add fault/evolution conditions and arm adapters |
+| Juice Shop reset | **PASS FOR FEASIBILITY** | Two ephemeral-container cycles; fixed API probe count 3 | Add fault/evolution conditions and arm adapters |
+| Independent oracle | **TASK-LEVEL PASS** | BookStack DB, Indico PostgreSQL, and Juice Shop REST oracles verified | Add oracle tests for injected faults and evolution |
+| Observation isolation | **CONTRACT PASS** | Six strict observation tests plus three adapter tests pass | Real provider trajectories still need admission tests |
 | Three-arm vertical slice | **BLOCKED** | Playwright arm runs; visual/hybrid contracts exist but no real CUA provider is configured | Implement and execute real provider adapters under one budget |
 
 ## Decisions made
@@ -37,7 +37,7 @@ Phase 2 uses **2023-01-01 onward as the primary evidence window** for benchmark,
 
 ## Immediate next gate
 
-The BookStack feasibility slice is complete. The next gate is to implement provider-specific pure-visual and hybrid adapters, run both against the same BookStack intent under a fixed budget, and prove from retained trajectories that the visual arm received no DOM/accessibility payload. In parallel, the Indico and Juice Shop task oracles must move from draft to verified before either application can be admitted.
+The three application task/oracle slices are now complete at feasibility level. The next gate is to implement provider-specific pure-visual and hybrid adapters, run all three arms against the same intent under a fixed budget, and prove from retained trajectories that the visual arm received no DOM/accessibility payload. Fault/evolution coverage remains complete only for BookStack and must be extended before confirmatory admission.
 
 ## Second implementation increment
 
@@ -68,14 +68,14 @@ BookStack now passes the local reset, Playwright, independent-oracle, functional
 - Three clean-volume start/reset cycles brought up Web, Celery, Celery Beat, PostgreSQL, Redis, and Nginx and restored exactly 18 seeded events. The latest cycle reached HTTP 200 in 12,410 ms, automatically asserted the event count, and completed in 33,841 ms.
 - Indico is hostname-sensitive: its checked-in `BASE_URL` is `http://localhost:8080`; probing `127.0.0.1` returns 404 even when healthy. The lifecycle gate now requires the canonical host and a 2xx/3xx response.
 - The bundled startup script invokes removed command `indico populate`, but continues into `indico db prepare`; the repository seed SQL was then imported successfully. This compatibility warning is recorded and must not be hidden.
-- Reset feasibility passes, but the create-event workflow and independent relational oracle are still draft. The six-service footprint makes Indico a higher-cost SUT.
+- Reset feasibility and the create-event workflow pass. The independent PostgreSQL oracle matches exactly one public lecture event on the requested date. A shared `static-files` volume race was found during reset and fixed by serializing Web → Celery/Celery Beat/Nginx startup; the six-service footprint remains a higher-cost SUT.
 
 ## Third fallback result: OWASP Juice Shop
 
 - Selected the post-2023, MIT-licensed OWASP Juice Shop v20.0.0 as a lightweight fallback and used the official multi-architecture image `bkimminich/juice-shop@sha256:fd58bdc9745416afce8184ee0666278a436574633ea7880365153a63bfd418b0` (arm64).
 - Two ephemeral-container start/reset cycles returned HTTP 200 and the same three-product fixed API probe. The first cycle, including download, took 138,571 ms; the cached reset took 2,241 ms.
-- This establishes reset feasibility only. The product-search task, state oracle, fault, and UI evolution remain draft, so Juice Shop is provisional rather than confirmatory-admitted.
+- The product-search Playwright workflow and independent REST oracle both pass. The first-run welcome/cookie overlays and the unnamed search textbox are recorded as UI-specific setup/accessibility limitations. Functional fault, UI evolution, and three-arm provider execution remain pending, so Juice Shop is still provisional.
 
 ## Phase 2 exit assessment
 
-The three-candidate deterministic reset sub-gate is now satisfied locally. Phase 2 as a whole is **not exited**: the visual and hybrid arms have isolation contracts but no real provider execution; only BookStack has a verified task/oracle/fault/evolution vertical slice; and Indico/Juice Shop task-level oracles remain drafts. No value above is a confirmatory study result.
+The three-candidate deterministic reset and task-level oracle sub-gates are now satisfied locally. Phase 2 as a whole is **not exited**: the visual and hybrid arms have isolation contracts but no real provider execution; only BookStack currently has verified fault and behavior-preserving UI-evolution checks; and all current numbers remain feasibility observations, not confirmatory study results.

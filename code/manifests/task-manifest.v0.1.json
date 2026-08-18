@@ -69,11 +69,15 @@
           "intent": "Create an event with a fixed title and date, publish it, and verify the public event page and stored metadata.",
           "oracle": {
             "authority": "relational",
-            "status": "draft",
+            "status": "verified",
             "assertion": "Independent database/API query confirms the event title/date/status and the public page exposes the same values."
           },
           "fault_slots": ["publish-state-mismatch", "date-field-mismatch"],
           "evolution_slots": ["form-layout-change", "accessible-description-change", "delayed-background-task"],
+          "phase2_evidence": {
+            "task_run": "accessibility-first Playwright create-event workflow passed after a clean Indico reset",
+            "oracle": "independent PostgreSQL query matched exactly one public lecture event on the requested date"
+          },
           "arms": ["visual", "hybrid", "playwright"]
         }
       ]
@@ -100,11 +104,15 @@
           "intent": "Search the product catalog for a fixed query and verify the returned products and visible result list.",
           "oracle": {
             "authority": "relational",
-            "status": "draft",
-            "assertion": "Independent REST and SQLite-state checks agree on the fixed product identifiers and visible search result set."
+            "status": "verified",
+            "assertion": "An independent REST API query returns exactly the fixed product identifiers/names expected for the search query; this is evaluated outside the browser trajectory."
           },
           "fault_slots": ["search-result-omission", "product-detail-mismatch"],
           "evolution_slots": ["search-layout-change", "accessible-name-preserving-card-change"],
+          "phase2_evidence": {
+            "task_run": "accessibility-first Playwright search passed after deterministic container startup",
+            "oracle": "independent REST query matched the three fixed product names for q=apple"
+          },
           "arms": ["visual", "hybrid", "playwright"]
         }
       ]

@@ -13,7 +13,7 @@
 ### Current execution status (2026-08-15)
 
 - **Phase 1 — scope/collision freeze:** GO with a narrowed testing-specific claim. Classical studies already compare visual versus DOM locators and programmable versus capture/replay/NLP Web testing; newer agent studies already compare pixels and structured observations. The remaining contribution is the matched whole-workflow testing design with independent oracles, faults, ecological evolution, repair, and repeated operational outcomes. See `phase1-master-synthesis.md` and `phase1-collision-freeze.md`.
-- **Phase 2 — feasibility audit:** candidate path identified but gate **not yet passed**. BookStack and Indico are the provisional vertical-slice SUTs; the current arm64 machine has no Docker/Compose executable, and the WebTestPilot bundle documents linux/amd64 images. See `phase2-feasibility-audit.md` and `sut-candidate-audit.csv`.
+- **Phase 2 — feasibility audit (updated 2026-08-18):** three provisional SUTs now pass local reset and task-level oracle slices. BookStack also passes a functional fault and behavior-preserving layout mutation; Indico has a fixed serial startup sequence after a shared-volume race; Juice Shop is a lightweight fallback. The overall gate remains open because real pure-visual/hybrid provider execution and broader fault/evolution coverage are pending. See `phase2-progress-2026-08-18.md`.
 - No feasibility or agent trial is confirmatory evidence. The next action is to establish a reproducible container/runtime path and complete the BookStack + Indico reset/oracle smoke test.
 
 The project should not ask whether Computer Use is universally “better” than traditional UI automation. It should estimate **conditional advantages and failure boundaries**:
@@ -214,9 +214,9 @@ Raw outputs are append-only. Derived datasets and figures must be reproducible f
 
 ## 12. Immediate next actions
 
-1. Audit 6–8 candidate self-hosted applications and the reusable artifacts from WebTestBench, Chevrot et al., BrowserGym, SeeAct, and WebTestPilot for license, reset determinism, platform compatibility, and task reuse.
-2. Implement one vertical-slice task across all three arms and one independent evaluator assertion.
-3. Add one behavior-preserving layout mutation and one seeded functional fault to that task.
+1. Select and freeze a real CUA provider/model or local endpoint; record the model/tool schema and budget without committing credentials.
+2. Run the pure-visual and hybrid adapters on the BookStack task and retain contract-checked trajectories.
+3. Add matched functional-fault and behavior-preserving evolution conditions to Indico and Juice Shop.
 4. Run a small cost/latency/reliability pilot; do not treat it as confirmatory evidence.
 5. Use the pilot to finalize power, repetitions, budget, and task inclusion rules.
 6. Freeze and timestamp the preregistration before collecting the confirmatory dataset.

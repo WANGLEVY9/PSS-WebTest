@@ -9,6 +9,7 @@
     "report": "playwright show-report",
     "validate:manifests": "node scripts/validate-manifests.mjs",
     "check:sut": "node scripts/check-sut.mjs",
+    "check:agent": "node scripts/check-agent-readiness.mjs",
     "test:contracts": "node --test tests/contracts/*.test.mjs",
     "sut:bookstack:start": "node scripts/bookstack-lifecycle.mjs start",
     "sut:bookstack:reset": "node scripts/bookstack-lifecycle.mjs reset",
@@ -22,10 +23,12 @@
     "sut:indico:reset": "node scripts/indico-lifecycle.mjs reset",
     "sut:indico:ready": "node scripts/indico-lifecycle.mjs ready",
     "sut:indico:stop": "node scripts/indico-lifecycle.mjs stop",
+    "oracle:indico": "node scripts/evaluate-indico-event.mjs",
     "sut:juice-shop:start": "node scripts/juice-shop-lifecycle.mjs start",
     "sut:juice-shop:reset": "node scripts/juice-shop-lifecycle.mjs reset",
     "sut:juice-shop:ready": "node scripts/juice-shop-lifecycle.mjs ready",
-    "sut:juice-shop:stop": "node scripts/juice-shop-lifecycle.mjs stop"
+    "sut:juice-shop:stop": "node scripts/juice-shop-lifecycle.mjs stop",
+    "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

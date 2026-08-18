@@ -40,6 +40,6 @@ The provider/model identity is stored only in the sanitized provenance field of 
 
 ## BookStack three-arm matched pilot attempt
 
-The unified runner executed 9 planned cells (3 repetitions × `playwright`, `visual`, `hybrid`) with the same task intent, reset command, oracle, and agent budget. The artifact is `artifacts/phase2/bookstack-three-arm-pilot.json` (gitignored). Only 1 cell passed; several cells were excluded because the reset gate failed, and agent cells with a clean reset did not reach the persisted-state oracle. Therefore this is an infrastructure/feasibility pilot, not an admitted matched pilot.
+The unified runner was configured for 3 repetitions, but the process was interrupted before the 9-cell artifact could be finalized. The latest complete artifact is 1 repetition × `playwright`, `visual`, and `hybrid` (3 cells; gitignored). All three reset/clean-state gates passed; Playwright passed 1/1, while visual and hybrid did not reach the persisted-state oracle because the provider/agent run timed out. Therefore this is a feasibility pilot, not an admitted matched pilot.
 
 The planning simulation (`npm run power:simulate`) excludes rows with `reset_ok=false` and applies Jeffreys smoothing. With the remaining tiny samples, estimated power reaches approximately 0.72 for Playwright-vs-visual at 24 repetitions per arm and only 0.47 for Playwright-vs-hybrid; these numbers are provisional and explicitly do not freeze confirmatory repetition counts.

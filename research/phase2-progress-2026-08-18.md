@@ -44,20 +44,20 @@
 - 针对先前“REST oracle 通过但可见产品可能来自初始页面”的因果性风险，新增 `visible-ui-search-postcondition`：独立 evaluator 在 agent 轨迹结束后，仅从浏览器可见状态检查搜索路由包含 `apple`、搜索框值、三个预期结果卡片和负控制 `Banana Juice (1000ml)` 不可见；不调用 REST API，也不读取模型 verdict。初始 `/home` 页面即使包含产品标记也会被该 oracle 拒绝。当前完整视觉任务仍需在该 UI oracle 下成功后才可计为 post-condition pass；`submit-only` 仍只作固定前置 feasibility slice。
 - 通过一次真实 Juice Shop 页面上的传统可控流程复核了该 UI oracle：实际 URL `#/search?q=apple`、textbox 值、三个正向卡片和负控制均符合预期，`passed=true`。因此 oracle 的 live DOM 语义已验证；它仍只作为 evaluator 侧证据，不注入 agent observation。
 - key 只从本地进程环境读取，不进入返回对象、日志或仓库。
-- hybrid provider 最小 driver 已实现：发送 screenshot + 声明的 pageStructure，先经 hybrid contract 检查并拒绝嵌套 hidden fields；mock provider/contract evidence 通过，但尚未完成真实 hybrid SUT run。
+- hybrid provider 最小 driver 已实现：发送 screenshot + 声明的 pageStructure，先经 hybrid contract 检查并拒绝嵌套 hidden fields；真实 Juice Shop/BookStack invocation 已执行，但 provider timeout/AbortError 使任务 oracle 未通过。
 - 新增标准 run-record 基础设施：schema-compatible immutable record、SHA-256 trace hash、failure category、provenance、敏感字段拒绝和 JSONL batch collector；目前只完成 contract/CLI evidence，尚未将完整 confirmatory runner 批量接入。
 - 新增 Indico reversible PostgreSQL fault harness、Juice Shop omission/layout mutations 和 Indico layout mutation contracts；apply/remove/clean/isolation 的 live Docker gate 仍待执行。
 - Juice Shop live mutation gate 已通过：clean visible-ui oracle `passed=true`；page-local omission fault 移除 `Apple Pomace` 且 oracle `passed=false`；page-local layout-v1 保持 oracle `passed=true`。三者使用隔离 Playwright pages，mutation 不写入 SUT 容器。
-- Indico live fault trigger gate 已通过 apply/transactional observation/rollback/remove/isolation：触发器将精确匹配的 `PSS Phase2 Event` 改写为 `[FAULT]`，事务回滚后无持久化副作用，remove 后 PostgreSQL trigger count 为 0。完整登录 workflow 下的 fault oracle 仍需本地账号配置。
+- Indico live fault trigger gate 已通过 apply/transactional observation/rollback/remove/isolation：触发器将精确匹配的 `PSS Phase2 Event` 改写为 `[FAULT]`，事务回滚后无持久化副作用，remove 后 PostgreSQL trigger count 为 0。
 - BookStack 传统 baseline 已使用本地 seed 账号完成 3/3 clean reset → accessibility Playwright → persisted DB oracle reliability pilot；artifact 写入 gitignored `artifacts/phase2/bookstack-reliability-pilot.json`。
-- 新增 BookStack 三臂 matched runner；本轮计划 3×3=9 cells，artifact `artifacts/phase2/bookstack-three-arm-pilot.json` 已生成。由于多次 reset/infrastructure failure，只有 1 cell 通过，尚未达到 matched-pilot admission gate。
+- 新增 BookStack 三臂 matched runner；先前 3×3 运行曾被进程中断，最新可完整写入的 artifact 是 1 repetition × 3 arms：三个 reset/clean-state gate 均通过，Playwright 1/1 通过，visual/hybrid 均因 provider timeout 或 agent failure 未通过。当前主要 blocker 已从 reset 转为 provider/agent reliability；尚未达到 matched-pilot admission gate。
 - 新增 pilot power-planning simulation；仅使用 `reset_ok=true` 行并作 Jeffreys smoothing，输出仍标记 `confirmatory=false`，不冻结最终 repetition 数。
 
 ## 4.1 自检修正（2026-08-18）
 
 - 本地 Indico 实验账号 `pss_phase2_indico`（ID 2）已配置在被忽略的 `code/.env`，clean 登录 → 创建事件 workflow 通过，独立 PostgreSQL oracle 现返回 `matches=1, passed=true`。
 - 自检发现 oracle 原先硬编码 `creator_id=1`，会将该账号创建的有效事件误判为失败；已改为按 `PSS_INDICO_EMAIL`（默认实验邮箱）解析 `users.emails` 中的 user ID，并重新通过 oracle 与 27/27 契约测试。
-- Indico fault trigger 当前已移除（live PostgreSQL trigger count=0）。在 fault 已应用时，clean-title Playwright 断言失败属于预期的故障可见性证据，不作为独立 fault oracle；完整 fault workflow 的独立 oracle 记录仍需补齐。
+- Indico fault trigger 当前已移除（live PostgreSQL trigger count=0）。在 fault 已应用时，clean-title Playwright 断言失败属于预期的故障可见性证据，不作为独立 fault oracle。
 - 随后新增并运行 `npm run pilot:indico:fault`：隔离旧 fixture 后执行登录 → 创建事件 → trigger 改写标题 → 页面观察 `[FAULT]` → 独立 fault-aware PostgreSQL oracle，结果 `browser_fault_visible=true`、`independent_oracle_detected_fault=true`、`trigger_removed=true`、`passed=true`。该运行器在 finally 中清理 trigger。
 
 ## 5. 当前退出判断

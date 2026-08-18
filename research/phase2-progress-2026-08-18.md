@@ -69,8 +69,8 @@
 | Indico/Juice Shop fault/evolution matrix | 尚未完成 |
 | pure-visual provider/driver smoke | 通过 |
 | pure-visual real SUT smoke | 已运行但 3-step 试验未完成；存在越界坐标失败 |
-| hybrid observation contract / anti-leakage | 通过；hybrid provider contract suite 已纳入，真实 SUT 尚未接入 |
-| standard run-record schema/collector | 通过 contract/CLI gate；尚未批量接入 confirmatory runner |
+| hybrid observation contract / anti-leakage | 通过；已完成真实 Juice Shop provider invocation，但独立 UI oracle 未通过任务完成 |
+| standard run-record schema/collector | 通过；visual/hybrid runner 已生成并校验 3 条本地 JSONL records，尚未进入 confirmatory ledger |
 | Indico/Juice fault/evolution harness contracts | contract gate 通过；Juice live mutation 与 Indico trigger apply/remove/isolation 已通过，完整 fault workflow 仍待补齐 |
 | pure-visual/hybrid confirmatory execution | 尚未完成 |
 | Phase 2 overall exit | 尚未通过 |

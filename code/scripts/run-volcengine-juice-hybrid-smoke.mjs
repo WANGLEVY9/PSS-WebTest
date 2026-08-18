@@ -2,24 +2,26 @@ import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { chromium } from 'playwright';
 import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
-import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs';
+import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { evaluateJuiceShopUiSearch } from '../src/oracles/juice-shop-ui-search.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
 
 dotenv.config();
-console.error('[cua-smoke] starting');
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '16', 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
 const viewport = { width: 1280, height: 720 };
 const browser = await chromium.launch({ headless: true });
-console.error('[cua-smoke] browser-launched');
 const page = await browser.newPage({ viewport });
 const trace = [];
 
-const driver = createVolcengineCuaDriver({
-  observeScreenshot: async () => (await page.screenshot({ type: 'png' })).toString('base64'),
+const driver = createVolcengineHybridDriver({
+  observeHybrid: async () => ({
+    screenshot: (await page.screenshot({ type: 'png' })).toString('base64'),
+    pageStructure: await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable'),
+    viewport
+  }),
   executeAction: async (action) => {
     if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
       throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
@@ -49,10 +51,8 @@ try {
     await page.keyboard.press('Escape').catch(() => {});
     await page.getByRole('button', { name: 'Open search' }).click({ force: true });
     if (taskMode === 'submit-only') await page.getByRole('textbox').first().fill('apple');
-    console.error('[cua-smoke] prepared-search-state');
   }
-  console.error('[cua-smoke] page-ready');
-  const adapter = createAgentAdapter({ arm: 'visual', driver, maxSteps });
+  const adapter = createAgentAdapter({ arm: 'hybrid', driver, maxSteps });
   result = await adapter.run({
     intent: taskMode === 'submit-only'
       ? 'The product search box is already open and already contains apple. Press the Enter key exactly once, wait for the results, then return done with verdict pass.'
@@ -61,30 +61,28 @@ try {
       : 'In the Juice Shop product catalog, search for apple. Handle any welcome or cookie overlays. Finish only after the search results for apple are visible; then return done with verdict pass.',
     onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
   });
-  console.error('[cua-smoke] agent-finished');
 } catch (error) {
   failure = { name: error.name, message: error.message };
-  console.error(`[cua-smoke] failed: ${error.message}`);
 }
-const visibleProducts = await page.locator('body').innerText().catch(() => '');
+
 const uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
 const runRecord = createRunRecord({
-  run_id: `juice-shop-visual-${Date.now()}`,
+  run_id: `juice-shop-hybrid-${Date.now()}`,
   application_id: 'juice-shop',
   application_version: '20.0.0',
   task_id: 'juice-shop-product-search',
   condition: 'clean-stable',
-  arm: 'visual',
+  arm: 'hybrid',
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (uiOracle?.passed ? 'completed' : 'test-failure')),
   checkpoint_reached: Boolean(uiOracle?.passed),
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: 0 },
-  provenance: { runner_version: 'volcengine-juice-visual-v0.2', observation_contract: 'screenshot-only', model_id: process.env.CUA_MODEL ?? null },
+  provenance: { runner_version: 'volcengine-juice-hybrid-v0.1', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: failure ? 'execution' : (uiOracle?.passed ? null : 'planning'),
   trace
 });
-console.log(JSON.stringify({ application: 'juice-shop', arm: 'visual', result: result ?? null, failure: failure ?? null, trace, visible_product_markers: ['Apple Juice (1000ml)', 'Pineapple Juice (1000ml)'].filter((name) => visibleProducts.includes(name)), ui_oracle: uiOracle, run_record: runRecord }));
-if (runRecord && process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
+console.log(JSON.stringify({ application: 'juice-shop', arm: 'hybrid', task_mode: taskMode, result: result ?? null, failure: failure ?? null, trace, ui_oracle: uiOracle, run_record: runRecord }));
+if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
 if (failure || result?.status !== 'completed' || (uiOracle && !uiOracle.passed)) process.exitCode = 1;

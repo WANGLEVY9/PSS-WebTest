@@ -12,6 +12,7 @@
     "check:agent": "node scripts/check-agent-readiness.mjs",
     "records:collect": "node scripts/collect-run-records.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",
+    "pilot:volcengine:juice:hybrid": "node scripts/run-volcengine-juice-hybrid-smoke.mjs",
     "pilot:indico:fault": "node scripts/run-indico-fault-workflow.mjs",
     "test:contracts": "node --test tests/contracts/*.test.mjs",
     "sut:bookstack:start": "node scripts/bookstack-lifecycle.mjs start",

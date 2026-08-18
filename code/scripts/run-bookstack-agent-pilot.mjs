@@ -21,6 +21,19 @@ const viewport = { width: 1280, height: 720 };
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
 const trace = [];
+const screenshot = async () => {
+  let lastError;
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    try {
+      await page.waitForTimeout(250);
+      return (await page.screenshot({ type: 'png', animations: 'disabled' })).toString('base64');
+    } catch (error) {
+      lastError = error;
+      await page.waitForTimeout(attempt * 500);
+    }
+  }
+  throw lastError;
+};
 
 await page.goto(`${baseURL}/`);
 await page.getByRole('link', { name: 'Log in' }).click();
@@ -33,12 +46,12 @@ const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
     throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   }
-  if (action.type === 'click') return page.mouse.click(action.x, action.y);
-  if (action.type === 'double_click') return page.mouse.dblclick(action.x, action.y);
-  if (action.type === 'type') return page.keyboard.type(action.text);
+  if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(350); }
+  if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(350); }
+  if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(200); }
   if (action.type === 'keypress') {
     const aliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' };
-    return page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key);
+    await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(350);
   }
   if (action.type === 'scroll') return page.mouse.wheel(0, action.delta_y);
   if (action.type === 'wait') return page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
@@ -47,10 +60,10 @@ const executeAction = async (action) => {
 
 const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10) };
 if (arm === 'visual') {
-  driverOptions.observeScreenshot = async () => (await page.screenshot({ type: 'png' })).toString('base64');
+  driverOptions.observeScreenshot = screenshot;
 } else {
   driverOptions.observeHybrid = async () => ({
-    screenshot: (await page.screenshot({ type: 'png' })).toString('base64'),
+    screenshot: await screenshot(),
     pageStructure: await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable'),
     viewport
   });
@@ -78,7 +91,7 @@ const oracle = await new Promise((resolve, reject) => {
     resolve({ code, value: line ? JSON.parse(line) : null });
   });
 });
-const passed = oracle.value?.passed === true;
+const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
 const runRecord = createRunRecord({
   run_id: `bookstack-${arm}-${Date.now()}`,
   application_id: 'bookstack', application_version: '24.10.1', task_id: 'bookstack-create-page', condition: 'clean-stable', arm,

@@ -13,7 +13,19 @@ function asDataUrl(screenshot) {
  * cannot be smuggled into the provider prompt. This is a provider smoke
  * driver; it does not itself establish confirmatory SUT evidence.
  */
-export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, fetchImpl = fetch, timeoutMs = 60000 } = {}) {
+async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRetry) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try { return await fetchImpl(url, { ...init, signal: controller.signal }); }
+    catch (error) { lastError = error; if (attempt >= maxRetries) throw error; onRetry?.(error, attempt + 1); }
+    finally { clearTimeout(timer); }
+  }
+  throw lastError;
+}
+
+export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10) } = {}) {
   const config = requireProviderConfig(env);
   if (config.provider !== 'volcengine') throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
@@ -21,6 +33,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   const baseUrl = (env.CUA_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, '');
   const coordinateMode = env.CUA_COORDINATE_MODE || 'normalized_1000';
   const actionHistory = [];
+  let retryCount = 0;
 
   return {
     async observe() {
@@ -39,12 +52,9 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     },
     async decide({ intent, observation, step }) {
       assertObservationContract('hybrid', observation);
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const structure = JSON.stringify(observation.pageStructure);
-        const response = await fetchImpl(`${baseUrl}/chat/completions`, {
-          method: 'POST', signal: controller.signal,
+      const structure = JSON.stringify(observation.pageStructure);
+      const response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
+          method: 'POST',
           headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
           body: JSON.stringify({
             model: config.model, temperature: 0, max_tokens: 160,
@@ -54,7 +64,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
               { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
             ] }]
           })
-        });
+        }, timeoutMs, maxRetries, () => { retryCount += 1; });
         const payload = await response.json();
         if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
         const decision = parseDecision(payload?.choices?.[0]?.message?.content || '');
@@ -63,8 +73,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         }
         actionHistory.push(decision.type === 'action' ? decision.action : decision);
         return decision;
-      } finally { clearTimeout(timer); }
     },
-    async act(action) { return executeAction(action); }
+    async act(action) { return executeAction(action); },
+    getRetryCount() { return retryCount; }
   };
 }

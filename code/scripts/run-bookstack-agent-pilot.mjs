@@ -26,7 +26,7 @@ const screenshot = async () => {
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       await page.waitForTimeout(250);
-      return (await page.screenshot({ type: 'png', animations: 'disabled' })).toString('base64');
+      return `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: 60, animations: 'disabled' })).toString('base64')}`;
     } catch (error) {
       lastError = error;
       await page.waitForTimeout(attempt * 500);
@@ -99,7 +99,7 @@ const runRecord = createRunRecord({
   checkpoint_reached: passed,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
-  timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: 0 },
+  timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
   provenance: { runner_version: 'bookstack-agent-pilot-v0.1', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: failure ? 'execution' : (passed ? null : 'planning'), trace
 });

@@ -55,6 +55,7 @@ export function createAgentAdapter({ arm, driver, maxSteps = 30 }) {
         status: reachedStepLimit ? 'timeout' : 'completed',
         emitted_verdict: emittedVerdict,
         actions,
+        retries: typeof driver.getRetryCount === 'function' ? driver.getRetryCount() : 0,
         wall_time_ms: Date.now() - startedAt,
         max_steps: maxSteps
       };

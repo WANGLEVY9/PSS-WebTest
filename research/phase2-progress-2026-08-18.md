@@ -24,17 +24,38 @@
 - `.env.example` 只包含变量名和占位符，不包含可用密码；测试通过当前进程环境变量运行后，public-boundary 检查通过。
 - 这意味着后续本地复现需要填入 seed 测试账号，但不需要外部模型 API key 才能运行三套传统 Playwright/oracle slice。
 
-## 4. Agent adapter 与当前 blocker
+## 4. Agent adapter 与 Volcengine provider smoke evidence
 
 - 新增 provider-neutral agent adapter：visual/hybrid arm 在每一步调用 observation contract，拒绝结构化信息泄漏，并记录 action、step、observation contract、wall time 和 verdict 状态。
-- 新增 `npm run check:agent` readiness gate。当前结果为：
+- 新增 `npm run check:agent` readiness gate。该脚本读取进程环境变量，因此本地运行前需 `source code/.env`；它不会打印 key。
 
 ```json
-{"status":"blocked","reason":"Agent provider is not configured; missing CUA_PROVIDER, CUA_MODEL, CUA_API_KEY","api_key_present":false}
+{"status":"configured","provider":"volcengine","model":"doubao-seed-2-0-pro-260215","api_key_present":true}
 ```
 
-- adapter contract tests 与 observation tests 共 9/9 通过；contract-only driver 不计作 Agent 实验结果。
-- 真实三臂 Phase 2 仍被 provider driver 阻塞。要继续执行真实 pure-visual/hybrid runs，需要选择一个可批量、可冻结版本的 CUA provider，并提供本地 `CUA_PROVIDER`、`CUA_MODEL`、`CUA_API_KEY`（或等价的本地 endpoint/token）；密钥不会写入仓库、日志或运行记录。
+- adapter contract tests 与 observation tests 以及 Volcengine driver tests 共 12/12 通过；contract-only driver 不计作 Agent 实验结果。
+- 新增 `src/arms/volcengine-cua-driver.mjs`：通过 OpenAI-compatible `/chat/completions` 接口发送截图，要求模型返回受限 JSON action/done schema；driver 不接收 DOM，符合 pure-visual contract。
+- 真实 provider smoke：文本请求 HTTP 200；图片输入 HTTP 200；修复 key 读取 bug 后，真实结构化决策返回 `{"type":"done","verdict":"pass"}`。该结果只证明 provider/driver 可用，不是任务成功率或论文实验结果。
+- 在本地 Juice Shop 1280×720 视口上运行了最多 3 步的真实 pure-visual 浏览器 smoke：模型返回了 3 个 click，轨迹被完整记录，但未在步数上限内完成搜索；其中一次返回坐标 `y=923` 超出视口，runner 现已加入坐标边界保护并将此类动作视为失败。该失败是 feasibility evidence，不能当作任务通过。
+- 后续 4-step pilot 中模型完成了两次 click 后返回非 JSON，runner 结构化记录 `failure=CUA model did not return valid JSON` 并保留前两步轨迹；这暴露了 provider 输出稳定性问题。driver 现加入 `response_format: {type: "json_object"}` 约束，合约测试和合成图片真实请求仍通过；该改动尚未证明真实任务成功率提升。
+- 在加入 JSON 约束和 Volcengine 的 0–1000 相对坐标转换后，重复 4-step pilot 的四个 click 均落在 1280×720 视口内，但仍未完成搜索（`status=timeout`）。这降低了坐标越界错误，却显示 grounding/页面状态处理仍是主要问题；不能把可见产品 marker 当作 agent 成功，因为它来自初始页面内容。
+- 固定搜索框前置状态 pilot 进一步隔离了导航因素：模型第一步成功输出并执行 `type("apple")`，随后连续点击但未提交搜索，3 步后 timeout。该结果表明输入 grounding 已部分工作，提交动作选择/状态确认仍失败；同时暴露的缺字段 schema 问题已通过更严格的动作格式提示修复。
+- 在窄化的 `submit-only` 条件中，fixture 预填充 `apple` 并打开搜索框，模型一步返回 `keypress(ENTER)`；runner 将模型大写键名规范化为 Playwright `Enter` 后执行成功，agent verdict 为 `pass`。随后独立 Juice Shop REST oracle 返回三个预期产品且 `passed=true`。这只是固定前置状态下的 feasibility slice，不代表完整导航任务成功率。
+- 针对先前“REST oracle 通过但可见产品可能来自初始页面”的因果性风险，新增 `visible-ui-search-postcondition`：独立 evaluator 在 agent 轨迹结束后，仅从浏览器可见状态检查搜索路由包含 `apple`、搜索框值、三个预期结果卡片和负控制 `Banana Juice (1000ml)` 不可见；不调用 REST API，也不读取模型 verdict。初始 `/home` 页面即使包含产品标记也会被该 oracle 拒绝。当前完整视觉任务仍需在该 UI oracle 下成功后才可计为 post-condition pass；`submit-only` 仍只作固定前置 feasibility slice。
+- 通过一次真实 Juice Shop 页面上的传统可控流程复核了该 UI oracle：实际 URL `#/search?q=apple`、textbox 值、三个正向卡片和负控制均符合预期，`passed=true`。因此 oracle 的 live DOM 语义已验证；它仍只作为 evaluator 侧证据，不注入 agent observation。
+- key 只从本地进程环境读取，不进入返回对象、日志或仓库。
+- hybrid provider 最小 driver 已实现：发送 screenshot + 声明的 pageStructure，先经 hybrid contract 检查并拒绝嵌套 hidden fields；mock provider/contract evidence 通过，但尚未完成真实 hybrid SUT run。
+- 新增标准 run-record 基础设施：schema-compatible immutable record、SHA-256 trace hash、failure category、provenance、敏感字段拒绝和 JSONL batch collector；目前只完成 contract/CLI evidence，尚未将完整 confirmatory runner 批量接入。
+- 新增 Indico reversible PostgreSQL fault harness、Juice Shop omission/layout mutations 和 Indico layout mutation contracts；apply/remove/clean/isolation 的 live Docker gate 仍待执行。
+- Juice Shop live mutation gate 已通过：clean visible-ui oracle `passed=true`；page-local omission fault 移除 `Apple Pomace` 且 oracle `passed=false`；page-local layout-v1 保持 oracle `passed=true`。三者使用隔离 Playwright pages，mutation 不写入 SUT 容器。
+- Indico live fault trigger gate 已通过 apply/transactional observation/rollback/remove/isolation：触发器将精确匹配的 `PSS Phase2 Event` 改写为 `[FAULT]`，事务回滚后无持久化副作用，remove 后 PostgreSQL trigger count 为 0。完整登录 workflow 下的 fault oracle 仍需本地账号配置。
+- BookStack 传统 baseline 已使用本地 seed 账号完成 3/3 clean reset → accessibility Playwright → persisted DB oracle reliability pilot；artifact 写入 gitignored `artifacts/phase2/bookstack-reliability-pilot.json`。
+
+## 4.1 自检修正（2026-08-18）
+
+- 本地 Indico 实验账号 `pss_phase2_indico`（ID 2）已配置在被忽略的 `code/.env`，clean 登录 → 创建事件 workflow 通过，独立 PostgreSQL oracle 现返回 `matches=1, passed=true`。
+- 自检发现 oracle 原先硬编码 `creator_id=1`，会将该账号创建的有效事件误判为失败；已改为按 `PSS_INDICO_EMAIL`（默认实验邮箱）解析 `users.emails` 中的 user ID，并重新通过 oracle 与 27/27 契约测试。
+- Indico fault trigger 当前已移除（live PostgreSQL trigger count=0）。在 fault 已应用时，clean-title Playwright 断言失败属于预期的故障可见性证据，不作为独立 fault oracle；完整 fault workflow 的独立 oracle 记录仍需补齐。
 
 ## 5. 当前退出判断
 
@@ -45,7 +66,12 @@
 | 三个独立 task oracle | 通过本地 feasibility gate |
 | BookStack functional fault + behavior-preserving UI mutation | 已通过 smoke gate |
 | Indico/Juice Shop fault/evolution matrix | 尚未完成 |
-| pure-visual/hybrid real provider execution | 阻塞，等待 provider driver/凭据 |
+| pure-visual provider/driver smoke | 通过 |
+| pure-visual real SUT smoke | 已运行但 3-step 试验未完成；存在越界坐标失败 |
+| hybrid observation contract / anti-leakage | 通过；hybrid provider contract suite 已纳入，真实 SUT 尚未接入 |
+| standard run-record schema/collector | 通过 contract/CLI gate；尚未批量接入 confirmatory runner |
+| Indico/Juice fault/evolution harness contracts | contract gate 通过；Juice live mutation 与 Indico trigger apply/remove/isolation 已通过，完整 fault workflow 仍待补齐 |
+| pure-visual/hybrid confirmatory execution | 尚未完成 |
 | Phase 2 overall exit | 尚未通过 |
 
-下一步是先冻结 provider、模型、截图/结构输入和 action budget，再在 BookStack 上跑真实三臂最小切片；之后扩展 Indico/Juice Shop 的 fault/evolution 条件。
+下一步是冻结 provider、模型、截图/结构输入和 action budget，在 BookStack 上跑真实三臂最小切片；之后扩展 Indico/Juice Shop 的 fault/evolution 条件。

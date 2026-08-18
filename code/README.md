@@ -24,6 +24,16 @@ The smoke test intentionally requires a self-hosted SUT; no external website sho
 
 ## Phase 2 contracts
 
+The hybrid arm receives the screenshot and an explicitly declared
+`pageStructure` (an accessibility/DOM-derived representation), plus optional
+viewport metadata.  It must not receive evaluator outputs, application state,
+mutation labels, or database/network data.  The observation-contract checker
+recursively rejects those forbidden fields, including when nested inside the
+structured representation.  The checker admits element roles, names, states,
+and stable harness references only as observation data; it does not treat any
+of them as a gold oracle.  See
+`tests/contracts/hybrid-agent-contract.test.mjs` for the executable boundary.
+
 The current pilot manifest is `manifests/task-manifest.v0.1.json`. It marks BookStack, Indico, and Juice Shop as `provisional` applications: their reset and task-oracle feasibility gates pass, but confirmatory admission and fault/evolution coverage are not yet complete. Validate it before editing or running a task:
 
 ```sh

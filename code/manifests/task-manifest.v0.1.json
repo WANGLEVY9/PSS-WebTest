@@ -105,13 +105,13 @@
           "oracle": {
             "authority": "relational",
             "status": "verified",
-            "assertion": "An independent REST API query returns exactly the fixed product identifiers/names expected for the search query; this is evaluated outside the browser trajectory."
+            "assertion": "An independent evaluator checks both the visible browser post-condition (search route/query, textbox value, expected visible result cards, and absent negative control) and a REST query returning the fixed product identifiers/names; neither reads the agent verdict or action history."
           },
           "fault_slots": ["search-result-omission", "product-detail-mismatch"],
           "evolution_slots": ["search-layout-change", "accessible-name-preserving-card-change"],
           "phase2_evidence": {
             "task_run": "accessibility-first Playwright search passed after deterministic container startup",
-            "oracle": "independent REST query matched the three fixed product names for q=apple"
+            "oracle": "independent REST query matched the three fixed product names for q=apple; visible UI post-condition evaluator is implemented for agent runs"
           },
           "arms": ["visual", "hybrid", "playwright"]
         }

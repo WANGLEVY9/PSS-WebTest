@@ -28,6 +28,8 @@ The matrix therefore provides breadth for planning without silently promoting un
 - `npm run validate:benchmark-matrix`: passed (3 applications, 15 workflows, 4 model strata, 5 traditional baselines).
 - Node syntax checks and `git diff --check`: passed.
 
+The new `npm run records:audit -- <records.jsonl> ...` command was also run against the three existing agent ledgers. It correctly returned `fail` with 48 records and no duplicate run IDs because each ledger is missing the Playwright arm. This is an expected pre-rerun audit finding, not a synthesized success; the next live pilot invocation must regenerate/append the traditional cells before the three-arm ledger can pass.
+
 ## Remaining scientific gates
 
 This increment does not change the current conclusion: BookStack has a clean 3×3 pilot, while Indico and Juice Shop still have only one repetition and visual/hybrid failures. Repetition freezing, power simulation, fault/evolution three-arm expansion, and confirmatory collection remain blocked until the agent admission gate is met.

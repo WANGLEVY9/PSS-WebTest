@@ -5,12 +5,16 @@ import { parseDecision, parseToolDecision, createVolcengineCuaDriver } from '../
 test('parses a bounded click decision', () => {
   assert.deepEqual(parseDecision('{"type":"action","action":{"type":"click","x":12,"y":34}}'), { type: 'action', action: { type: 'click', x: 12, y: 34 } });
   assert.deepEqual(parseDecision('{"type":"action","action":{"type":"click","x":12,"y":34,"element_selector":"#hidden"}}'), { type: 'action', action: { type: 'click', x: 12, y: 34 } });
+  assert.deepEqual(parseDecision('{"type":"action","action":{"type":"click","x":1231,"y":99}}', { coordinateMode: 'pixels' }), { type: 'action', action: { type: 'click', x: 1231, y: 99 } });
+  assert.deepEqual(parseDecision('{"type":"action","action":{"type":"click","x":746,"y":962}}', { coordinateMode: 'auto' }), { type: 'action', action: { type: 'click', x: 746, y: 962 } });
 });
 
 test('rejects malformed or unsupported decisions', () => {
   assert.throws(() => parseDecision('not-json'), /valid JSON/);
   assert.throws(() => parseDecision('{"type":"action","action":{"type":"locator"}}'), /unsupported/);
   assert.throws(() => parseDecision('{"type":"action","action":{"type":"type","text":"line1\\nline2"}}'), /single line/);
+  assert.throws(() => parseDecision('{"type":"action","action":{"type":"click","x":1231,"y":71}}'), /normalized coordinates/);
+  assert.throws(() => parseDecision('{"type":"action","action":{"type":"click","x":12.5,"y":34}}'), /normalized coordinates/);
 });
 
 test('parses a bounded Alibaba function-call decision', () => {
@@ -84,4 +88,28 @@ test('Alibaba driver retries one empty tool-call argument set without changing t
   assert.deepEqual(decision, { type: 'done', verdict: 'pass' });
   assert.equal(calls, 2);
   assert.equal(driver.getRetryCount(), 1);
+});
+
+test('driver rejects a repeated non-progressing click and asks the provider again', async () => {
+  let calls = 0;
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '1' },
+    observeScreenshot: async () => 'abc123',
+    executeAction: async () => {},
+    fetchImpl: async () => {
+      calls += 1;
+      const message = calls === 1
+        ? { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] }
+        : calls === 2
+        ? { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] }
+        : { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"done","verdict":"pass"}' } }] };
+      return { ok: true, status: 200, async json() { return { choices: [{ message }] }; } };
+    }
+  });
+  const observation = await driver.observe();
+  const first = await driver.decide({ intent: 'Inspect the page', observation, step: 0 });
+  assert.deepEqual(first, { type: 'action', action: { type: 'click', x: 13, y: 7, coordinate_mode: 'pixels' } });
+  const second = await driver.decide({ intent: 'Inspect the page', observation, step: 1 });
+  assert.deepEqual(second, { type: 'done', verdict: 'pass' });
+  assert.equal(calls, 3);
 });

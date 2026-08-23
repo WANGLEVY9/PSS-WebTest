@@ -22,7 +22,7 @@ const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => {
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: 'indico-create-event', repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.reset_ok && r.clean_state_verified && r.oracle_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: 'indico-create-event', repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
@@ -52,7 +52,9 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       });
       const result = lastJson(execution.stdout); oracle = result?.oracle?.value ?? null;
     }
-    records.push({ repetition, arm, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, oracle_passed: oracle?.passed === true, oracle_matches: oracle?.matches ?? null });
+    const agentCompleted = execution.code === 0;
+    const oraclePassed = oracle?.passed === true;
+    records.push({ repetition, arm, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_completed: agentCompleted, oracle_passed: oraclePassed, cell_passed: agentCompleted && oraclePassed, oracle_matches: oracle?.matches ?? null });
     writeSummary(); console.log(JSON.stringify(records.at(-1)));
   }
 }

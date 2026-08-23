@@ -68,12 +68,12 @@
 | 三个任务级 Playwright slice | 通过本地 feasibility gate |
 | 三个独立 task oracle | 通过本地 feasibility gate |
 | BookStack functional fault + behavior-preserving UI mutation | 已通过 smoke gate |
-| Indico/Juice Shop fault/evolution matrix | 尚未完成 |
+| Indico/Juice Shop fault/evolution matrix | live harness gates passed; matched agent blocks not admitted |
 | pure-visual provider/driver smoke | 通过 |
 | pure-visual real SUT smoke | 已运行但 3-step 试验未完成；存在越界坐标失败 |
 | hybrid observation contract / anti-leakage | 通过；已完成真实 Juice Shop/BookStack provider invocation，但独立任务 oracle 均未通过 |
 | standard run-record schema/collector | 通过；visual/hybrid/BookStack runner 已生成并校验本地 JSONL records，尚未进入 confirmatory ledger |
-| Indico/Juice fault/evolution harness contracts | contract gate 通过；Juice live mutation 与 Indico 完整 fault workflow 已通过 |
+| Indico/Juice fault/evolution harness contracts | contract gate 与 live mutation/fault workflow 通过；三臂 agent blocks 尚未 admitted |
 | pure-visual/hybrid confirmatory execution | 尚未完成 |
 | Phase 2 overall exit | 尚未通过 |
 
@@ -104,3 +104,12 @@
 - Visual and hybrid agent runners now emit standard run records with trace hashes, observation-contract labels, model provenance, timing and retry counts. Batch collection of the append-only JSONL ledger succeeded for 40 accumulated pilot records; prior failures remain retained and were not deleted or relabeled.
 - The first 3×3 attempt was 6/9 and the second was 7/9. Their failures were retained as feasibility history. The final 9/9 result was obtained only after fixing (i) provider empty tool-call arguments via one pre-specified semantic retry, (ii) equivalent nested tool-argument wrappers, (iii) screenshot compression that obscured the editor, and (iv) the numeric-book-id oracle mismatch. These changes are now part of the frozen pilot harness and are recorded as protocol-level fixes, not excluded outcomes.
 - A pilot power-planning simulation on the final clean artifact yields identical Jeffreys-smoothed completion rates (0.875 for all arms), hence essentially no estimable between-arm variance in this single clean task. This is not evidence of equivalence and is insufficient by itself to freeze a confirmatory repetition count. Fault/evolution conditions and additional SUT/task blocks must contribute the variance inputs before the final power/repetition decision is frozen.
+
+## 9. Indico authenticated matched pilot and provider-grounding diagnosis (2026-08-23)
+
+- The Indico lifecycle now recreates the local experiment account after every `down -v` reset using the official container CLI, then grants administration rights required by the event-creation workflow. It detects the CLI's ANSI-colored table format rather than assuming whitespace-delimited output; the reset gate completed with `event_count=18` and `experiment-user-verified`.
+- The authenticated traditional baseline passed after reset, and the independent PostgreSQL oracle returned `matches=1, passed=true` for the expected lecture event. This closes the account/reset/oracle prerequisite and is not agent evidence.
+- A real 1-repetition × 3-arm Indico matched pilot was executed with a reset and clean-state oracle before every cell. Result: Playwright `1/1` passed; pure visual `0/1`; hybrid `0/1`; total `1/3`. All three reset gates and pre-run clean oracles passed, so the two agent failures are planning/grounding outcomes rather than infrastructure exclusions. The raw pilot and standard ledger are gitignored under `artifacts/phase2/indico-three-arm-*`.
+- Visual traces correctly selected the home `Create event` menu and `Create lecture` entry, then filled title/date, but repeatedly missed the lower form submit control and re-entered title. Hybrid traces repeatedly clicked the title textbox without issuing the required type action. These traces are retained as provider-grounding evidence; no cell is promoted to admission.
+- The runner now waits 1 second after Indico menu/form clicks to avoid stale dropdown observations, and hybrid observations expose associated labels, input-submit button semantics, and a declared `interaction` (`type` or `click`) field. The provider driver also issues bounded repeated-click and repeated-type recovery instructions. These are protocol/harness fixes; the post-fix Indico run still failed, so no reliability claim is made.
+- Indico fault/evolution harness live gates remain passed (transactional trigger apply/rollback/remove/isolation). Because the clean three-arm agent admission is not yet met, the pre-registered order still freezes Indico confirmatory collection and any final power/repetition decision.

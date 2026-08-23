@@ -1,6 +1,6 @@
 # Phase 2 confirmatory-design gate v0.2
 
-更新时间：2026-08-23。本文是实验设计与执行 gate，不是结果论文；当前所有 agent 结果仍属于 feasibility/pilot，不能进入 confirmatory effect estimates。BookStack clean baseline 已完成 3 repetitions × 3 arms 的 9/9 pilot oracle pass，但 fault/evolution blocks、Indico/Juice blocks 和最终 power freeze 仍未完成。
+更新时间：2026-08-23。本文是实验设计与执行 gate，不是结果论文；当前所有 agent 结果仍属于 feasibility/pilot，不能进入 confirmatory effect estimates。BookStack clean baseline 已完成 3 repetitions × 3 arms 的 9/9 pilot oracle pass；Indico authenticated baseline passed but its first matched agent pilot was only 1/3 (Playwright 1/1, visual 0/1, hybrid 0/1), so fault/evolution blocks、Juice blocks 和最终 power freeze 仍未完成。
 
 ## 1. 实验单位与比较对象
 
@@ -17,7 +17,7 @@
 | SUT | task | 当前状态 | 是否可进 confirmatory |
 |---|---|---|---|
 | BookStack | create page/persist | reset、Playwright、DB oracle、fault/evolution smoke 已通过 | 否，需真实 visual + hybrid 三臂及矩阵补齐 |
-| Indico | create event/persist | reset、Playwright、PostgreSQL oracle 已通过 | 否，需 fault/evolution 与 agent adapter |
+| Indico | create event/persist | reset、认证账号、Playwright、PostgreSQL oracle 已通过；首次三臂 pilot 仅 1/3 | 否，需 visual/hybrid admission 与 fault/evolution 条件 |
 | Juice Shop | product search | reset、Playwright、REST + visible UI oracle 已通过 | 否，完整 pure-visual 仍不稳定 |
 
 `submit-only` Juice Shop 任务（fixture 预填 query、预打开 search）只用于定位键盘执行能力，不能与完整导航任务混合，也不能作为完整 CUA 成功率。
@@ -92,7 +92,7 @@ Phase 2 只有在以下清单全部满足后退出：
 - [x] pure-visual 完整多步 task 在固定预算下达到预设 pilot reliability（BookStack clean 3/3）；
 - [x] hybrid 真实 provider driver + 至少一个真实 SUT pilot（BookStack clean 3/3，包含一次预先限定的空参数语义重试）；
 - [x] Indico/Juice Shop fault/evolution harness live gate（Indico transactional trigger、登录→创建→fault→独立 fault-aware oracle、Juice page-local omission/layout 均已通过）；
-- [ ] 标准 run-record 批量生成、schema validation 和 ledger admission（本地批量校验已通过，尚未满足 matched confirmatory ledger admission）；
+- [x] 标准 run-record 批量生成与 schema validation（BookStack/Indico pilot ledger 已生成）；[ ] matched confirmatory ledger admission；
 - [ ] matched three-arm cell 的最小 confirmatory admission；
 - [ ] pilot-based power simulation 与 preregistration decision freeze。
 

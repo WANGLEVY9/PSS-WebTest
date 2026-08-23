@@ -2,6 +2,9 @@ import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const action = process.argv[2];
 const codeRoot = resolve(new URL('..', import.meta.url).pathname);
@@ -95,6 +98,34 @@ async function seedDatabase() {
   console.log(JSON.stringify({ status: 'seed-verified', application: 'indico', event_count: eventCount }));
 }
 
+async function ensureExperimentUser() {
+  const email = process.env.PSS_INDICO_EMAIL ?? 'pss-phase2-indico@admin.com';
+  const username = process.env.PSS_INDICO_USERNAME;
+  const password = process.env.PSS_INDICO_PASSWORD;
+  if (!username || !password) {
+    console.log(JSON.stringify({ status: 'experiment-user-skipped', reason: 'credentials-not-configured' }));
+    return;
+  }
+  const search = await capture('docker', ['exec', 'indico-web-1', '/opt/indico/.venv/bin/indico', 'user', 'search', '--email', email]);
+  const emailPattern = email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  // `indico user search` renders an ASCII table (with optional ANSI color
+  // prefixes), not a whitespace-delimited record.  Match the table cell so
+  // account recreation remains idempotent after every volume reset.
+  const tableRow = new RegExp(`\\|\\s*(\\d+)\\s*\\|[^|]*\\|[^|]*\\|\\s*${emailPattern}\\s*\\|`, 'm');
+  const existingId = search.match(tableRow)?.[1] ?? null;
+  if (existingId) {
+    await run('docker', ['exec', '-i', 'indico-web-1', '/opt/indico/.venv/bin/indico', 'user', 'grant-admin', existingId], { input: 'y\n' });
+  } else {
+    const input = `${email}\nPSS\nPhase2\n\n${username}\n${password}\n${password}\ny\n`;
+    await run('docker', ['exec', '-i', 'indico-web-1', '/opt/indico/.venv/bin/indico', 'user', 'create', '--no-admin'], { input });
+    const created = await capture('docker', ['exec', 'indico-web-1', '/opt/indico/.venv/bin/indico', 'user', 'search', '--email', email]);
+    const createdId = created.match(tableRow)?.[1];
+    if (!createdId) throw new Error('Indico experiment user creation did not return a user id');
+    await run('docker', ['exec', '-i', 'indico-web-1', '/opt/indico/.venv/bin/indico', 'user', 'grant-admin', createdId], { input: 'y\n' });
+  }
+  console.log(JSON.stringify({ status: 'experiment-user-verified', email, admin: true }));
+}
+
 async function startOrReset() {
   const startedAt = Date.now();
   await run(composeBin, [...composeFiles, 'down', '-v', '--remove-orphans'], { allowFailure: true });
@@ -110,6 +141,7 @@ async function startOrReset() {
   await run(composeBin, [...composeFiles, 'up', '-d', '--no-build', '--no-deps', 'celery', 'celery-beat', 'nginx']);
   await waitUntilReady();
   await seedDatabase();
+  await ensureExperimentUser();
   console.log(JSON.stringify({ status: 'seeded', application: 'indico', elapsed_ms: Date.now() - startedAt }));
 }
 

@@ -21,6 +21,8 @@
     "pilot:bookstack:matched": "node scripts/bookstack-matched-pilot.mjs",
     "records:bookstack-cell": "node scripts/record-bookstack-cell.mjs",
     "pilot:bookstack:playwright-cell": "node scripts/run-bookstack-playwright-cell.mjs",
+    "pilot:indico:agent": "node scripts/run-indico-agent-pilot.mjs",
+    "pilot:indico:matched": "node scripts/indico-matched-pilot.mjs",
     "power:simulate": "node scripts/power-simulation.mjs",
     "pilot:indico:fault": "node scripts/run-indico-fault-workflow.mjs",
     "test:contracts": "node --test tests/contracts/*.test.mjs",

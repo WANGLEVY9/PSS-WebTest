@@ -4,7 +4,9 @@
 
 ## 总体研究目标
 
-在 matched Web 测试意图、受控功能缺陷、不同 oracle authority 和行为保持的 UI 演化条件下，比较纯视觉 CUA、视觉加结构信息的混合 Agent、以及 accessibility-locator Playwright 测试套件的端到端正确性、修复结果、成本、延迟与重复稳定性，并形成可复现的适用边界，而不是宣称存在一个对所有场景都最优的方法。
+在 matched Web 测试意图、受控功能缺陷、不同 oracle authority 和行为保持的 UI 演化条件下，系统测量纯视觉 CUA、视觉加结构信息的混合 Agent、以及传统 Web 测试方法的条件化表现。项目目标不是证明某一方法对所有场景都更好，而是构建一个充分丰富、可复现、可扩展的 benchmark 和实验框架，回答不同 SUT、workflow、oracle、UI 演化、CUA model/provider 与传统测试策略组合下，哪一种策略更适合、何时互补、失败代价是什么。
+
+最终研究因素应覆盖：`SUT × workflow × oracle × fault/evolution × strategy × model/provider × repetition`。当前三臂和三个 SUT 是第一阶段 vertical slice；多 workflow、多视觉模型和更多传统方法属于后续 benchmark breadth/replication strata，不得在当前 pilot 阶段提前声称已经完成。
 
 ## Phase 0：项目与开放边界初始化
 
@@ -51,7 +53,7 @@
 
 **退出条件：** 至少三个候选可确定性 reset；至少一个任务三臂均能运行；oracle 与 arm 隔离；资源预算可接受。
 
-**当前状态：进行中，三个候选的 reset 与任务级 oracle 子门槛已通过。** Node/Playwright 工程、manifest/schema、三臂 observation contract 与泄漏测试均已实现；Colima/Docker 和系统 Chrome 已通过可行性验证。BookStack 已完成 10/10 clean reset/workflow/oracle pilot、一次行为保持 UI mutation 和一次可检出的持久化功能缺陷。Indico 已完成三轮六服务 clean-volume reset、自动恢复恰好 18 个 seed event，并完成 create-event + PostgreSQL oracle；Juice Shop v20.0.0 已完成两轮固定镜像 ephemeral reset，并完成 product-search + REST oracle。尚未完成真实 pure-visual/hybrid provider 执行，Indico/Juice Shop 的 fault/evolution 条件仍待补齐，因此 Phase 2 整体尚未退出。
+**当前状态：进行中，基础 vertical slice 已通过，但 Phase 2 尚未退出。** Node/Playwright 工程、manifest/schema、三臂 observation contract、hybrid anti-leakage、独立 UI/DB/PostgreSQL oracle、fault/evolution live harness 和标准 run-record collector 均已实现。BookStack 已完成 3 repetitions × 3 arms 的 clean pilot，9/9 独立 oracle 通过；Indico 和 Juice Shop 已完成真实 1 repetition × 3 arms 的 clean pilot，但各为 Playwright 1/1、visual 0/1、hybrid 0/1。当前主要 blocker 是 CUA 跨任务 grounding/reliability，而不是 reset 或 provider connectivity。Indico/Juice Shop 的三臂 fault/evolution agent blocks、完整多 workflow benchmark、多模型 replication、最终 power/repetition freeze 和 confirmatory collection 仍未完成。逐项审计见 [`project-checklist-status-2026-08-23.md`](project-checklist-status-2026-08-23.md)，benchmark 扩展蓝图见 [`benchmark-expansion-scope-v0.1.md`](benchmark-expansion-scope-v0.1.md)。
 
 ## Phase 3：Benchmark 正式设计
 

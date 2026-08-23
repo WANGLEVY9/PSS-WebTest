@@ -78,6 +78,19 @@ async function seedDatabase() {
   await run('docker', ['exec', '-i', 'bookstack-db-1', 'mysql', '-u', 'admin', '-padmin', 'bookstack'], { input: seed });
 }
 
+async function verifySeed() {
+  const probe = await runCapture('docker', [
+    'exec', 'bookstack-db-1', 'mysql', '-N', '-u', 'admin', '-padmin', 'bookstack', '-e',
+    'SELECT COUNT(*) FROM users; SELECT COUNT(*) FROM books; SELECT COUNT(*) FROM pages;'
+  ]);
+  if (probe.code !== 0) throw new Error(`BookStack seed verification query exited with ${probe.code}`);
+  const [users, books, pages] = probe.stdout.trim().split(/\s+/).map(Number);
+  if (![users, books, pages].every(Number.isInteger) || users < 2 || books < 3 || pages < 6) {
+    throw new Error(`BookStack seed verification failed: users=${users}, books=${books}, pages=${pages}`);
+  }
+  console.log(JSON.stringify({ status: 'seed-verified', counts: { users, books, pages } }));
+}
+
 async function startOrReset() {
   const startedAt = Date.now();
   await run(composeBin, ['down', '-v', '--remove-orphans'], { allowFailure: true });
@@ -91,6 +104,7 @@ async function startOrReset() {
   await waitForDatabase();
   await waitUntilReady();
   await seedDatabase();
+  await verifySeed();
   console.log(JSON.stringify({ status: 'seeded', application: 'bookstack', elapsed_ms: Date.now() - startedAt }));
 }
 

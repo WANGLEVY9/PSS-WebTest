@@ -1,6 +1,6 @@
 import { requireProviderConfig } from './agent-adapter.mjs';
 import { assertObservationContract } from './observation-contracts.mjs';
-import { parseDecision } from './volcengine-cua-driver.mjs';
+import { parseProviderDecision, UI_ACTION_TOOL } from './volcengine-cua-driver.mjs';
 
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
@@ -34,6 +34,12 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     ? 'https://dashscope.aliyuncs.com/compatible-mode/v1'
     : 'https://ark.cn-beijing.volces.com/api/v3';
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
+  const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
+  // Qwen3-VL JSON mode can fail with thinking enabled.  Use Alibaba's
+  // generation-limit field explicitly while preserving the Ark shape.
+  const generationOptions = config.provider === 'aliyun'
+    ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: 1.5 }
+    : { max_tokens: maxOutputTokens };
   const coordinateMode = env.CUA_COORDINATE_MODE || 'normalized_1000';
   const actionHistory = [];
   let retryCount = 0;
@@ -56,21 +62,36 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     async decide({ intent, observation, step }) {
       assertObservationContract('hybrid', observation);
       const structure = JSON.stringify(observation.pageStructure);
+      const formatInstruction = config.provider === 'aliyun'
+        ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
+        : 'Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"pass"}; or {"type":"action","action":{"type":"click","x":330,"y":512}}; or {"type":"action","action":{"type":"double_click","x":330,"y":512}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}.';
+      const lastTwo = actionHistory.slice(-2);
+      const editorFollowupInstruction = lastTwo.length === 2 && lastTwo[0].type === 'type' && lastTwo[1].type === 'click'
+        ? 'The previous action typed the page title and the latest action clicked the content editor. Your next action MUST be a type action with the requested page content; do not click again.'
+        : '';
+      const requestBody = {
+        model: config.model,
+        temperature: 0,
+        ...generationOptions,
+        messages: [{ role: 'user', content: [
+          { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nIf editable_regions contains a Page content editor, its normalized center is the safest place to click. After clicking that editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Pointer x and y MUST be integer numbers from 0 to 1000; never output decimal coordinates. Never output selectors or evaluator fields.` },
+          { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
+        ] }]
+      };
+      if (config.provider === 'aliyun') {
+        requestBody.tools = [UI_ACTION_TOOL];
+        requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
+      } else {
+        requestBody.response_format = { type: 'json_object' };
+      }
       const response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
           method: 'POST',
           headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify({
-            model: config.model, temperature: 0, max_tokens: 160,
-            response_format: { type: 'json_object' },
-            messages: [{ role: 'user', content: [
-              { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nReturn ONLY one JSON object. Valid forms are exactly: {"type":"done","verdict":"pass"}; {"type":"action","action":{"type":"click","x":0,"y":0}}; {"type":"action","action":{"type":"double_click","x":0,"y":0}}; {"type":"action","action":{"type":"type","text":"apple"}}; {"type":"action","action":{"type":"keypress","key":"ENTER"}}; {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Pointer coordinates must be 0-1000 relative coordinates; never output selectors or evaluator fields.` },
-              { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
-            ] }]
-          })
+          body: JSON.stringify(requestBody)
         }, timeoutMs, maxRetries, () => { retryCount += 1; });
         const payload = await response.json();
         if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
-        const decision = parseDecision(payload?.choices?.[0]?.message?.content || '');
+        const decision = parseProviderDecision(payload);
         if (decision.type === 'action' && coordinateMode === 'normalized_1000' && ['click', 'double_click'].includes(decision.action.type)) {
           decision.action = { ...decision.action, x: Math.round(decision.action.x * 1280 / 1000), y: Math.round(decision.action.y * 720 / 1000), coordinate_mode: 'pixels' };
         }

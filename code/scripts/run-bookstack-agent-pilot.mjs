@@ -58,13 +58,34 @@ const executeAction = async (action) => {
   throw new Error(`Unsupported action: ${action.type}`);
 };
 
+const hybridPageStructure = async () => {
+  const aria = await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable');
+  const editableRegions = [];
+  const editorBox = await page.locator('iframe[title="Rich Text Area"]').first().boundingBox().catch(() => null);
+  if (editorBox) {
+    editableRegions.push({
+      role: 'textbox',
+      name: 'Page content editor',
+      bounds_px: editorBox,
+      bounds_normalized_1000: {
+        x: Math.round((editorBox.x + editorBox.width / 2) * 1000 / viewport.width),
+        y: Math.round((editorBox.y + editorBox.height / 2) * 1000 / viewport.height)
+      }
+    });
+  }
+  const editorText = editableRegions.length === 0
+    ? 'Editable regions: none detected.'
+    : `Editable regions: ${JSON.stringify(editableRegions)}`;
+  return `${aria}\n\n${editorText}`;
+};
+
 const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10) };
 if (arm === 'visual') {
   driverOptions.observeScreenshot = screenshot;
 } else {
-  driverOptions.observeHybrid = async () => ({
+    driverOptions.observeHybrid = async () => ({
     screenshot: await screenshot(),
-    pageStructure: await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable'),
+    pageStructure: await hybridPageStructure(),
     viewport
   });
 }
@@ -74,7 +95,7 @@ let failure;
 try {
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   result = await adapter.run({
-    intent: `Starting from the authenticated BookStack home page, create a new page in the first book. Open Books, open the first Book, choose New Page, set the page title to "${title}", enter the page content "${content}", save the page, and finish only after the saved page visibly shows both title and content. Return done with verdict pass only then.`,
+    intent: `Starting from the authenticated BookStack home page, create a new page in the first book. Open Books, open the first Book, choose New Page, set the page title to "${title}". Then click once near the center of the large white page content editor below the formatting toolbar (not the title field or toolbar), and on the very next action type the page content "${content}"; keep the title and content in their separate fields, never append content to the title, and never click the editor repeatedly instead of typing. Save the page, and finish only after the saved page visibly shows both title and content. Return done with verdict pass only then.`,
     onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
   });
 } catch (error) {

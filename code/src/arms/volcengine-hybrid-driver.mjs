@@ -27,10 +27,13 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
 
 export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10) } = {}) {
   const config = requireProviderConfig(env);
-  if (config.provider !== 'volcengine') throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
+  if (!['volcengine', 'aliyun'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
   if (typeof observeHybrid !== 'function' || typeof executeAction !== 'function') throw new TypeError('observeHybrid and executeAction are required');
-  const baseUrl = (env.CUA_BASE_URL || 'https://ark.cn-beijing.volces.com/api/v3').replace(/\/$/, '');
+  const defaultBaseUrl = config.provider === 'aliyun'
+    ? 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+    : 'https://ark.cn-beijing.volces.com/api/v3';
+  const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
   const coordinateMode = env.CUA_COORDINATE_MODE || 'normalized_1000';
   const actionHistory = [];
   let retryCount = 0;

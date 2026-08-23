@@ -25,3 +25,17 @@ test('driver sends screenshot-only input and parses provider response', async ()
   assert.equal(request.url, 'https://example.test/v1/chat/completions');
   assert.match(request.options.body, /data:image\/png;base64,abc123/);
 });
+
+test('driver accepts Alibaba OpenAI-compatible provider configuration', async () => {
+  let request;
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key' },
+    observeScreenshot: async () => 'abc123',
+    executeAction: async () => {},
+    fetchImpl: async (url) => { request = url; return { ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"done","verdict":"pass"}' } }] }; } }; }
+  });
+  const observation = await driver.observe();
+  const decision = await driver.decide({ intent: 'Inspect the page', observation, step: 0 });
+  assert.equal(decision.verdict, 'pass');
+  assert.equal(request, 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions');
+});

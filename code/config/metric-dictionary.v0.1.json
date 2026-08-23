@@ -1,0 +1,29 @@
+{
+  "schema_version": "0.1",
+  "scope": "PSS-WebTest empirical comparison metrics",
+  "principle": "Report valid completion, verdict correctness, cost, stability and repair separately; never collapse infrastructure failures into task failures or exclude them from the denominator without a preregistered rule.",
+  "metrics": [
+    {"id":"valid_completion","family":"effectiveness","type":"binary","definition":"Independent oracle confirms the task checkpoint and required postcondition.","numerator":"runs with checkpoint_pass=true","denominator":"all admitted runs in the cell","role":"primary","censoring":"infrastructure and provider failures remain in denominator and are separately categorized"},
+    {"id":"joint_end_to_end_correctness","family":"effectiveness","type":"binary","definition":"valid_completion AND verdict_correct for the same run.","numerator":"runs satisfying both conditions","denominator":"all admitted runs","role":"primary","censoring":"none"},
+    {"id":"verdict_correct","family":"oracle","type":"binary","definition":"Emitted clean/fault verdict agrees with the blinded independent gold verdict.","numerator":"matching emitted and gold verdicts","denominator":"runs with a scorable gold verdict","role":"primary","censoring":"not-emitted is incorrect for end-to-end analysis and separately reported"},
+    {"id":"false_positive_rate","family":"oracle","type":"proportion","definition":"Clean runs incorrectly reported as fault.","numerator":"clean ground truth with emitted fault","denominator":"clean runs","role":"primary","censoring":"not-emitted is reported separately and included in sensitivity analysis"},
+    {"id":"false_negative_rate","family":"oracle","type":"proportion","definition":"Fault runs incorrectly reported as clean or not detected.","numerator":"fault ground truth with emitted clean/not-emitted","denominator":"fault runs","role":"primary","censoring":"infrastructure failures are separate but not silently removed"},
+    {"id":"repair_success","family":"maintenance","type":"binary","definition":"After a predeclared UI evolution, the test artifact is repaired and passes the same independent oracle on all required replays.","numerator":"evolution cells with successful repair and replays","denominator":"evolution cells entering repair","role":"primary-secondary","censoring":"timeout and unresolved repair are right-censored with reason"},
+    {"id":"repair_time_minutes","family":"maintenance","type":"continuous","definition":"Active person-minutes from repair start to validated replay success or censoring.","unit":"minutes","role":"primary-secondary","censoring":"censored observations retained for survival/two-part analysis"},
+    {"id":"artifact_edit_size","family":"maintenance","type":"integer","definition":"Number of changed lines or normalized edit units in the test artifact, with file count reported separately.","unit":"lines/edit-units","role":"secondary","censoring":"none"},
+    {"id":"repetition_stability","family":"reliability","type":"proportion","definition":"Pass rate across repeated runs of the same task-condition-arm-model cell.","numerator":"cell runs with joint_end_to_end_correctness=true","denominator":"all repetitions","role":"primary-secondary","censoring":"all failed repetitions retained"},
+    {"id":"wall_time_ms","family":"efficiency","type":"continuous","definition":"Elapsed time from runner start to terminal result, including provider waits and browser actions.","unit":"milliseconds","role":"secondary","censoring":"timeouts reported at timeout boundary plus censoring flag"},
+    {"id":"action_count","family":"efficiency","type":"integer","definition":"Number of executed browser actions; rejected provider decisions are reported separately as retries/errors.","unit":"actions","role":"secondary","censoring":"partial runs retain observed count"},
+    {"id":"retry_rate","family":"efficiency","type":"proportion","definition":"Provider or runner retry attempts divided by decision/action opportunities.","numerator":"retry attempts","denominator":"decision opportunities","role":"secondary","censoring":"infrastructure retry policy frozen before confirmatory runs"},
+    {"id":"token_cost_usd","family":"efficiency","type":"continuous","definition":"Provider token usage and billed API cost, reported separately when provider exposes both.","unit":"tokens and USD","role":"secondary","censoring":"null when provider does not expose reliable usage; never imputed as zero"},
+    {"id":"failure_category_rate","family":"diagnostic","type":"multinomial","definition":"Distribution of perception, grounding, planning, execution, oracle, environment and task-defect outcomes.","role":"secondary","censoring":"mutually exclusive primary category plus optional subcategory"},
+    {"id":"oracle_latency_ms","family":"oracle","type":"continuous","definition":"Time spent by the independent evaluator after agent termination.","unit":"milliseconds","role":"secondary","censoring":"evaluator failures are separate"}
+  ],
+  "aggregation_rules": [
+    "Primary effectiveness metrics are reported per task-condition-arm-model cell before any macro aggregation.",
+    "Macro averages weight tasks equally; micro averages are supplementary and expose denominator sensitivity.",
+    "Application and task are modeled as random effects where the number of admitted tasks permits.",
+    "Pairwise arm contrasts use matched task-condition blocks and report effect size with confidence intervals, not only p-values.",
+    "Arm-by-condition and arm-by-model interactions are prespecified moderators; no post-hoc winner selection is allowed."
+  ]
+}

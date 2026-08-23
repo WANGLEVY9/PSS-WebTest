@@ -1,0 +1,111 @@
+{
+  "schema_version": "0.1",
+  "reference_cutoff": "2023-01-01",
+  "purpose": "Evidence-separated inventory of post-2023 web-agent and web-testing benchmarks that inform PSS-WebTest task design, harness design, or oracle design.",
+  "references": [
+    {
+      "id": "webarena",
+      "year": 2023,
+      "type": "task-and-environment",
+      "paper_or_report": "WebArena: A Realistic Web Environment for Building Autonomous Agents",
+      "paper_url": "https://arxiv.org/abs/2307.13854",
+      "repository_url": "https://github.com/web-arena-x/webarena",
+      "reported_scale": "812 tasks across four self-hosted web applications (official ecosystem listings)",
+      "reusable_design": ["realistic multi-step workflows", "self-hosted resettable applications", "functional postcondition evaluators", "long-horizon task profiles"],
+      "not_directly_reusable": ["not a three-arm CUA-versus-locator software-testing study", "does not supply our fault/evolution repair matrix"],
+      "pss_role": "task-complexity and evaluator reference",
+      "status": "reference-only"
+    },
+    {
+      "id": "browsergym-agentlab",
+      "year": 2024,
+      "type": "harness-ecosystem",
+      "paper_or_report": "The BrowserGym Ecosystem for Web Agent Research",
+      "paper_url": "https://arxiv.org/abs/2412.05467",
+      "repository_url": "https://github.com/ServiceNow/BrowserGym",
+      "reported_scale": "ecosystem integrates WebArena, VisualWebArena, WorkArena, WebArena-Verified and other benchmark packages",
+      "reusable_design": ["common browser task interface", "observation/action modality separation", "benchmark adapters", "reproducibility metadata"],
+      "not_directly_reusable": ["generic web-agent environment rather than a testing oracle study", "additional setup and benchmark-specific licenses must be audited"],
+      "pss_role": "harness and provenance reference",
+      "status": "reference-only"
+    },
+    {
+      "id": "visualwebarena",
+      "year": 2024,
+      "type": "multimodal-task-benchmark",
+      "paper_or_report": "VisualWebArena: Evaluating Multimodal Agents on Realistic Visual Web Tasks",
+      "paper_url": "https://arxiv.org/abs/2401.13649",
+      "repository_url": "https://github.com/web-arena-x/visualwebarena",
+      "reported_scale": "910 visually grounded tasks in the official BrowserGym ecosystem listing",
+      "reusable_design": ["visual grounding task families", "image-text task descriptions", "visual postconditions"],
+      "not_directly_reusable": ["visual task success is not equivalent to software test validity", "no matched locator baseline in our intended protocol"],
+      "pss_role": "pure-visual task taxonomy reference",
+      "status": "reference-only"
+    },
+    {
+      "id": "workarena-plus-plus",
+      "year": 2024,
+      "type": "compositional-enterprise-task-benchmark",
+      "paper_or_report": "WorkArena++: Towards Compositional Planning and Reasoning-based Common Knowledge Work Tasks",
+      "paper_url": "https://proceedings.neurips.cc/paper_files/paper/2024/file/0b82662b6c32e887bb252a74d8cb2d5e-Paper-Datasets_and_Benchmarks_Track.pdf",
+      "repository_url": "https://github.com/ServiceNow/WorkArena",
+      "reported_scale": "official repository describes WorkArena levels and a gated ServiceNow instance distribution",
+      "reusable_design": ["task compositionality levels", "knowledge-retrieval versus direct-instruction variants", "difficulty stratification"],
+      "not_directly_reusable": ["requires ServiceNow instance access", "enterprise-task correctness is not our persisted-state test oracle"],
+      "pss_role": "workflow difficulty and compositionality reference",
+      "status": "reference-only"
+    },
+    {
+      "id": "online-mind2web",
+      "year": 2025,
+      "type": "live-web-task-benchmark",
+      "paper_or_report": "Online-Mind2Web",
+      "paper_url": "https://github.com/OSU-NLP-Group/Online-Mind2Web",
+      "repository_url": "https://github.com/OSU-NLP-Group/Online-Mind2Web",
+      "reported_scale": "300 tasks across 136 websites according to the official repository",
+      "reusable_design": ["live-web task diversity", "task maintenance and invalid-task replacement", "human/agent evaluation separation"],
+      "not_directly_reusable": ["live sites are not deterministic local SUTs", "website drift and CAPTCHA make our reset/oracle gate harder to satisfy"],
+      "pss_role": "task diversity and maintenance reference",
+      "status": "reference-only"
+    },
+    {
+      "id": "webbench-browser",
+      "year": 2025,
+      "type": "live-browser-agent-benchmark",
+      "paper_or_report": "WebBench: AI Web Browsing Agent Benchmark",
+      "paper_url": "https://webbench.ai/",
+      "repository_url": "https://github.com/Halluminate/WebBench",
+      "reported_scale": "official site reports 5,750 tasks across 452 websites",
+      "reusable_design": ["navigation and form-filling task categories", "verified versus unverified runs", "cost/latency-oriented reporting"],
+      "not_directly_reusable": ["live-site evaluation is not a resettable fault-injection environment", "task oracle and website availability require separate audit"],
+      "pss_role": "task-category and operational-metric reference",
+      "status": "reference-only-needs-source-audit"
+    },
+    {
+      "id": "webtestbench",
+      "year": 2026,
+      "type": "web-testing-benchmark",
+      "paper_or_report": "WebTestBench: Evaluating Computer-Use Agents towards End-to-End Automated Web Testing",
+      "paper_url": "https://arxiv.org/abs/2603.25226",
+      "repository_url": "https://github.com/friedrichor/WebTestBench",
+      "reported_scale": "paper/repository must be audited for exact task, fault and oracle counts before reuse",
+      "reusable_design": ["directly relevant end-to-end web-testing task framing", "testing-specific outcome design", "benchmark artifact organization"],
+      "not_directly_reusable": ["potentially overlaps our central claim", "must not be described as independent precedent without a full method comparison"],
+      "pss_role": "collision and extension reference",
+      "status": "high-priority-method-audit"
+    },
+    {
+      "id": "webtestpilot",
+      "year": 2026,
+      "type": "agentic-web-testing-framework",
+      "paper_or_report": "WebTestPilot: Agentic End-to-End Web Testing against Natural Language Specification by Inferring Oracles with Symbolized GUI Elements",
+      "paper_url": "https://arxiv.org/abs/2602.11724",
+      "repository_url": "https://github.com/WANGLEVY9/WebTestPilot",
+      "reported_scale": "bug-injected web-app benchmark; exact task and fault counts require repository audit",
+      "reusable_design": ["natural-language testing intent", "bug-injected web-app framing", "oracle inference discussion"],
+      "not_directly_reusable": ["our repository uses it as an SUT bundle/reference, not as an experimental baseline", "symbolized GUI elements and our screenshot-only arm are different observation contracts"],
+      "pss_role": "direct-neighbor collision boundary and SUT source",
+      "status": "high-priority-method-audit"
+    }
+  ]
+}

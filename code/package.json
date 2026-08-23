@@ -17,6 +17,7 @@
     "records:collect": "node scripts/collect-run-records.mjs",
     "records:audit": "node scripts/audit-run-ledger.mjs",
     "validate:benchmark-matrix": "node scripts/validate-benchmark-matrix.mjs",
+    "validate:study-assets": "node scripts/validate-study-assets.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",
     "pilot:volcengine:juice:hybrid": "node scripts/run-volcengine-juice-hybrid-smoke.mjs",
     "pilot:bookstack:agent": "node scripts/run-bookstack-agent-pilot.mjs",

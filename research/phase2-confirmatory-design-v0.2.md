@@ -18,7 +18,7 @@
 |---|---|---|---|
 | BookStack | create page/persist | reset、Playwright、DB oracle、fault/evolution smoke 已通过 | 否，需真实 visual + hybrid 三臂及矩阵补齐 |
 | Indico | create event/persist | reset、认证账号、Playwright、PostgreSQL oracle 已通过；首次三臂 pilot 仅 1/3 | 否，需 visual/hybrid admission 与 fault/evolution 条件 |
-| Juice Shop | product search | reset、Playwright、REST + visible UI oracle 已通过 | 否，完整 pure-visual 仍不稳定 |
+| Juice Shop | product search | reset、clean UI gate、Playwright 1/1 通过；视觉/混合首次 matched pilot 各 0/1 | 否，agent admission 未通过 |
 
 `submit-only` Juice Shop 任务（fixture 预填 query、预打开 search）只用于定位键盘执行能力，不能与完整导航任务混合，也不能作为完整 CUA 成功率。
 

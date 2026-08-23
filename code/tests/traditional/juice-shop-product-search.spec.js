@@ -8,9 +8,10 @@ test.skip(!enabled, 'Set RUN_JUICE_SHOP_VERTICAL_SLICE=1 after the Juice Shop re
 test('search the product catalog with accessibility-first locators', async ({ page }) => {
   await page.goto('/');
   const dismiss = page.getByText('Dismiss', { exact: true });
-  if (await dismiss.isVisible().catch(() => false)) await dismiss.click({ force: true });
+  await dismiss.waitFor({ state: 'visible', timeout: 5000 }).then(() => dismiss.click({ force: true })).catch(() => {});
   const cookies = page.getByText('Me want it!', { exact: true });
-  if (await cookies.isVisible().catch(() => false)) await cookies.click({ force: true });
+  await cookies.waitFor({ state: 'visible', timeout: 5000 }).then(() => cookies.click({ force: true })).catch(() => {});
+  await page.waitForTimeout(300);
   await page.getByRole('button', { name: 'Open search' }).click();
   // Juice Shop v20 exposes the search input as an unnamed textbox; role is
   // retained here and the absence of an accessible name is recorded as a UI

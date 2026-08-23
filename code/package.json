@@ -10,6 +10,7 @@
     "validate:manifests": "node scripts/validate-manifests.mjs",
     "check:sut": "node scripts/check-sut.mjs",
     "check:agent": "node scripts/check-agent-readiness.mjs",
+    "provider:bookstack:connectivity": "node scripts/provider-bookstack-connectivity.mjs",
     "records:collect": "node scripts/collect-run-records.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",
     "pilot:volcengine:juice:hybrid": "node scripts/run-volcengine-juice-hybrid-smoke.mjs",

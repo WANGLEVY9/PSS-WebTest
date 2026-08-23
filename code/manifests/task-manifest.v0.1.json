@@ -41,6 +41,23 @@
             "ui_evolution": "bookstack-layout-v1 preserved the workflow and persisted-state oracle in one smoke run"
           },
           "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "bookstack-open-book",
+          "intent": "Starting from the authenticated home page, open Books, open the book named Book, and finish only when that book's page is visibly open.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "draft",
+            "assertion": "A post-run evaluator confirms the browser is on the exact /books/<slug> overview route (not a chapter/page descendant) and an exact Book heading is visible; it does not use the agent verdict or action history."
+          },
+          "fault_slots": ["wrong-target", "stale-navigation"],
+          "evolution_slots": ["navigation-layout-change", "access-name-change"],
+          "phase2_evidence": {
+            "clean_matched_pilot": "1 repetition x 3 arms passed on 2026-08-24",
+            "status": "non-confirmatory; repetition and power remain unfrozen",
+            "artifact": "artifacts/phase2/bookstack-navigation-pilot.json"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
         }
       ]
     },

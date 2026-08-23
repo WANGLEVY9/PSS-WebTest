@@ -6,6 +6,7 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs';
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
 
 dotenv.config();
 const arm = process.env.BOOKSTACK_ARM;
@@ -14,6 +15,9 @@ const username = process.env.PSS_BOOKSTACK_USERNAME;
 const password = process.env.PSS_BOOKSTACK_PASSWORD;
 if (!username || !password) throw new Error('BookStack credentials must be configured in the local environment');
 const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
+const taskId = process.env.PSS_BOOKSTACK_TASK_ID ?? 'bookstack-create-page';
+if (!['bookstack-create-page', 'bookstack-open-book'].includes(taskId)) throw new Error(`Unsupported PSS_BOOKSTACK_TASK_ID: ${taskId}`);
+const targetBook = process.env.PSS_BOOKSTACK_TARGET_BOOK ?? 'Book';
 const title = process.env.PSS_BOOKSTACK_PAGE_TITLE ?? 'PSS Phase2 Page';
 const content = process.env.PSS_BOOKSTACK_PAGE_CONTENT ?? 'PSS Phase2 Content';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '14', 10);
@@ -98,15 +102,18 @@ let result;
 let failure;
 try {
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
+  const intent = taskId === 'bookstack-open-book'
+    ? `Starting from the authenticated BookStack home page, open Books, then open the book named exactly "${targetBook}". The correct success location is the book overview at the exact route /books/book, not any chapter, page, draft, or editor descendant. Do not click chapter/page links. As soon as the exact Book heading is visible on the book overview, immediately return done with verdict pass. Do not create or edit any page.`
+    : `Starting from the authenticated BookStack home page, create a new page in the book named "Book" (the link whose visible name is exactly Book). Open Books, open that Book, choose New Page, set the page title to "${title}". Then click once near the center of the large white page content editor below the formatting toolbar (not the title field or toolbar), and on the very next action type the page content "${content}"; keep the title and content in their separate fields, never append content to the title, and never click the editor repeatedly instead of typing. Save the page, and finish only after the saved page visibly shows both title and content. Return done with verdict pass only then.`;
   result = await adapter.run({
-    intent: `Starting from the authenticated BookStack home page, create a new page in the book named "Book" (the link whose visible name is exactly Book). Open Books, open that Book, choose New Page, set the page title to "${title}". Then click once near the center of the large white page content editor below the formatting toolbar (not the title field or toolbar), and on the very next action type the page content "${content}"; keep the title and content in their separate fields, never append content to the title, and never click the editor repeatedly instead of typing. Save the page, and finish only after the saved page visibly shows both title and content. Return done with verdict pass only then.`,
+    intent,
     onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
   });
 } catch (error) {
   failure = { name: error.name, message: error.message };
 }
 
-const evaluateOracle = () => new Promise((resolve, reject) => {
+const evaluateCreateOracle = () => new Promise((resolve, reject) => {
   const child = spawn('node', ['scripts/evaluate-bookstack-page.mjs'], { cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '';
   child.stdout.on('data', (chunk) => { out += chunk; });
@@ -116,6 +123,10 @@ const evaluateOracle = () => new Promise((resolve, reject) => {
     resolve({ code, value: line ? JSON.parse(line) : null });
   });
 });
+
+const evaluateOracle = async () => taskId === 'bookstack-open-book'
+  ? { code: 0, value: await evaluateBookStackOpenBookPage(page, targetBook) }
+  : evaluateCreateOracle();
 
 // The save request is asynchronous at the application/database boundary. Poll
 // only the independent post-run oracle; no oracle result is exposed to the
@@ -129,7 +140,7 @@ while (oracle.value?.passed !== true && Date.now() < oracleDeadline) {
 const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
 const runRecord = createRunRecord({
   run_id: `bookstack-${arm}-${Date.now()}`,
-  application_id: 'bookstack', application_version: '24.10.1', task_id: 'bookstack-create-page', condition: 'clean-stable', arm,
+  application_id: 'bookstack', application_version: '24.10.1', task_id: taskId, condition: 'clean-stable', arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
   checkpoint_reached: passed,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),

@@ -59,6 +59,24 @@ npm run sut:indico:reset
 npm run sut:juice-shop:reset
 ```
 
+The first lower-complexity BookStack task is `bookstack-open-book`. It is a
+non-confirmatory navigation pilot designed to isolate grounding from the rich
+text editor workflow. It writes a matched summary and standard run records
+under the ignored `../artifacts/phase2/` directory:
+
+```sh
+PSS_MATCHED_REPETITIONS=1 CUA_MAX_STEPS=8 CUA_TIMEOUT_MS=30000 \
+  npm run pilot:bookstack:navigation
+npm run metrics:summarize -- \
+  --input ../artifacts/phase2/bookstack-navigation-records.jsonl \
+  --output ../artifacts/phase2/bookstack-navigation-metrics.json
+```
+
+The navigation oracle accepts only the exact `/books/<slug>` overview route;
+chapter, page, draft, and editor descendants are rejected. One passing pilot
+repetition does not freeze repetition counts or authorize confirmatory data
+collection.
+
 BookStack, Indico, and Juice Shop now each have a task-level Playwright slice and an independent feasibility oracle. BookStack additionally has a verified persistence fault and behavior-preserving UI mutation. The pure-visual and hybrid arms have strict observation contracts; they are not considered executable until real provider adapters pass those contracts under a fixed budget.
 
 `npm run check:agent` checks only whether `CUA_PROVIDER`, `CUA_MODEL`, and `CUA_API_KEY` are present; it never prints the key. A blocked readiness result is expected until a real CUA provider is selected. The adapter tests use contract-only drivers and are not experimental Agent results.

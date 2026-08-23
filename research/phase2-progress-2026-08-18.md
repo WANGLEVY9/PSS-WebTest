@@ -78,3 +78,10 @@
 | Phase 2 overall exit | 尚未通过 |
 
 下一步是修复 BookStack reset/服务稳定性并重跑有效 matched pilot；在有效 pilot 达到 admission gate 前，不冻结 confirmatory repetition 或开始 confirmatory collection。
+
+## 6. Provider reconfiguration and connectivity update (2026-08-23)
+
+- The provider configuration was changed locally, without committing credentials, from the previous Ark model to Alibaba Model Studio: `provider=aliyun`, `model=qwen3-vl-flash`, Beijing OpenAI-compatible endpoint. `code/.env` remains gitignored with mode `0600`.
+- A real Alibaba API request with a program-generated 32×32 image returned HTTP 200 and a valid response; a JSON-decision request also returned a parseable `done/pass` decision. A 1×1 synthetic image was rejected by the documented minimum image dimension, which is expected and not a provider failure.
+- After starting BookStack and passing its HTTP ready gate, the new `npm run provider:bookstack:connectivity` smoke runner sent a real unauthenticated BookStack `/login` screenshot to both arms. Pure visual returned a parseable click action in 1,221 ms with zero retries; hybrid returned a parseable click action from screenshot plus accessibility snapshot in 867 ms with zero retries. No action was executed and no oracle was evaluated.
+- This is a provider/input connectivity gate, not evidence of multi-step task reliability. BookStack credentials are still required for an authenticated agent run. The matched-pilot admission gate, repetition freeze, power simulation, and confirmatory collection remain frozen.

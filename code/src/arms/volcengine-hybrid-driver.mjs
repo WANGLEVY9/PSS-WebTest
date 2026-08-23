@@ -41,6 +41,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: 1.5 }
     : { max_tokens: maxOutputTokens };
   const coordinateMode = env.CUA_COORDINATE_MODE || 'normalized_1000';
+  const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (config.provider === 'aliyun' ? '1' : '0'), 10);
   const actionHistory = [];
   let retryCount = 0;
 
@@ -69,29 +70,44 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       const editorFollowupInstruction = lastTwo.length === 2 && lastTwo[0].type === 'type' && lastTwo[1].type === 'click'
         ? 'The previous action typed the page title and the latest action clicked the content editor. Your next action MUST be a type action with the requested page content; do not click again.'
         : '';
-      const requestBody = {
-        model: config.model,
-        temperature: 0,
-        ...generationOptions,
-        messages: [{ role: 'user', content: [
-          { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nIf editable_regions contains a Page content editor, its normalized center is the safest place to click. After clicking that editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Pointer x and y MUST be integer numbers from 0 to 1000; never output decimal coordinates. Never output selectors or evaluator fields.` },
-          { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
-        ] }]
-      };
-      if (config.provider === 'aliyun') {
-        requestBody.tools = [UI_ACTION_TOOL];
-        requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
-      } else {
-        requestBody.response_format = { type: 'json_object' };
+      let decision;
+      let lastDecisionError;
+      for (let decisionAttempt = 0; decisionAttempt <= maxDecisionRetries; decisionAttempt += 1) {
+        const retryInstruction = decisionAttempt > 0
+          ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
+          : '';
+        const requestBody = {
+          model: config.model,
+          temperature: 0,
+          ...generationOptions,
+          messages: [{ role: 'user', content: [
+            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives normalized center coordinates for visible links, buttons, textboxes, and the rich-text editor. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Pointer x and y MUST be integer numbers from 0 to 1000; never output decimal coordinates. Never output selectors or evaluator fields.` },
+            { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
+          ] }]
+        };
+        if (config.provider === 'aliyun') {
+          requestBody.tools = [UI_ACTION_TOOL];
+          requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
+        } else {
+          requestBody.response_format = { type: 'json_object' };
+        }
+        try {
+          const response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
+            body: JSON.stringify(requestBody)
+          }, timeoutMs, maxRetries, () => { retryCount += 1; });
+          const payload = await response.json();
+          if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
+          decision = parseProviderDecision(payload);
+          break;
+        } catch (error) {
+          lastDecisionError = error;
+          if (decisionAttempt >= maxDecisionRetries) throw error;
+          retryCount += 1;
+        }
       }
-      const response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
-          method: 'POST',
-          headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify(requestBody)
-        }, timeoutMs, maxRetries, () => { retryCount += 1; });
-        const payload = await response.json();
-        if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
-        const decision = parseProviderDecision(payload);
+      if (!decision) throw lastDecisionError || new Error('CUA provider did not return a decision');
         if (decision.type === 'action' && coordinateMode === 'normalized_1000' && ['click', 'double_click'].includes(decision.action.type)) {
           decision.action = { ...decision.action, x: Math.round(decision.action.x * 1280 / 1000), y: Math.round(decision.action.y * 720 / 1000), coordinate_mode: 'pixels' };
         }

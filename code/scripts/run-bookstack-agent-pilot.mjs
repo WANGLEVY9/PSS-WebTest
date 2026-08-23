@@ -17,6 +17,8 @@ const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const title = process.env.PSS_BOOKSTACK_PAGE_TITLE ?? 'PSS Phase2 Page';
 const content = process.env.PSS_BOOKSTACK_PAGE_CONTENT ?? 'PSS Phase2 Content';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '14', 10);
+const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? '85', 10);
+const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const viewport = { width: 1280, height: 720 };
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
@@ -26,7 +28,7 @@ const screenshot = async () => {
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       await page.waitForTimeout(250);
-      return `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: 60, animations: 'disabled' })).toString('base64')}`;
+      return `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' })).toString('base64')}`;
     } catch (error) {
       lastError = error;
       await page.waitForTimeout(attempt * 500);
@@ -58,26 +60,28 @@ const executeAction = async (action) => {
   throw new Error(`Unsupported action: ${action.type}`);
 };
 
-const hybridPageStructure = async () => {
-  const aria = await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable');
-  const editableRegions = [];
-  const editorBox = await page.locator('iframe[title="Rich Text Area"]').first().boundingBox().catch(() => null);
-  if (editorBox) {
-    editableRegions.push({
-      role: 'textbox',
-      name: 'Page content editor',
-      bounds_px: editorBox,
-      bounds_normalized_1000: {
-        x: Math.round((editorBox.x + editorBox.width / 2) * 1000 / viewport.width),
-        y: Math.round((editorBox.y + editorBox.height / 2) * 1000 / viewport.height)
+const hybridPageStructure = async () => page.locator('a,button,input:not([type="hidden"]),textarea,iframe[title="Rich Text Area"]').evaluateAll((elements) => {
+  const roleFor = (element) => {
+    if (element.tagName === 'A') return 'link';
+    if (element.tagName === 'BUTTON') return 'button';
+    if (element.tagName === 'IFRAME') return 'textbox';
+    return element.getAttribute('role') || (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' ? 'textbox' : element.tagName.toLowerCase());
+  };
+  return elements.map((element) => {
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
+    const name = element.getAttribute('aria-label') || element.getAttribute('title') || element.getAttribute('placeholder') || element.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || (element.tagName === 'IFRAME' ? 'Page content editor' : '');
+    return {
+      role: roleFor(element),
+      name,
+      center_normalized_1000: {
+        x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth),
+        y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight)
       }
-    });
-  }
-  const editorText = editableRegions.length === 0
-    ? 'Editable regions: none detected.'
-    : `Editable regions: ${JSON.stringify(editableRegions)}`;
-  return `${aria}\n\n${editorText}`;
-};
+    };
+  }).filter(Boolean).slice(0, 80);
+});
 
 const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10) };
 if (arm === 'visual') {
@@ -85,7 +89,7 @@ if (arm === 'visual') {
 } else {
     driverOptions.observeHybrid = async () => ({
     screenshot: await screenshot(),
-    pageStructure: await hybridPageStructure(),
+    pageStructure: { controls: await hybridPageStructure() },
     viewport
   });
 }
@@ -95,14 +99,14 @@ let failure;
 try {
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   result = await adapter.run({
-    intent: `Starting from the authenticated BookStack home page, create a new page in the first book. Open Books, open the first Book, choose New Page, set the page title to "${title}". Then click once near the center of the large white page content editor below the formatting toolbar (not the title field or toolbar), and on the very next action type the page content "${content}"; keep the title and content in their separate fields, never append content to the title, and never click the editor repeatedly instead of typing. Save the page, and finish only after the saved page visibly shows both title and content. Return done with verdict pass only then.`,
+    intent: `Starting from the authenticated BookStack home page, create a new page in the book named "Book" (the link whose visible name is exactly Book). Open Books, open that Book, choose New Page, set the page title to "${title}". Then click once near the center of the large white page content editor below the formatting toolbar (not the title field or toolbar), and on the very next action type the page content "${content}"; keep the title and content in their separate fields, never append content to the title, and never click the editor repeatedly instead of typing. Save the page, and finish only after the saved page visibly shows both title and content. Return done with verdict pass only then.`,
     onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
   });
 } catch (error) {
   failure = { name: error.name, message: error.message };
 }
 
-const oracle = await new Promise((resolve, reject) => {
+const evaluateOracle = () => new Promise((resolve, reject) => {
   const child = spawn('node', ['scripts/evaluate-bookstack-page.mjs'], { cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '';
   child.stdout.on('data', (chunk) => { out += chunk; });
@@ -112,6 +116,16 @@ const oracle = await new Promise((resolve, reject) => {
     resolve({ code, value: line ? JSON.parse(line) : null });
   });
 });
+
+// The save request is asynchronous at the application/database boundary. Poll
+// only the independent post-run oracle; no oracle result is exposed to the
+// agent or used to choose its actions.
+let oracle = await evaluateOracle();
+const oracleDeadline = Date.now() + oraclePollMs;
+while (oracle.value?.passed !== true && Date.now() < oracleDeadline) {
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  oracle = await evaluateOracle();
+}
 const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
 const runRecord = createRunRecord({
   run_id: `bookstack-${arm}-${Date.now()}`,

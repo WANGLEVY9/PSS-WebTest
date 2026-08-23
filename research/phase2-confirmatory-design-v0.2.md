@@ -1,6 +1,6 @@
 # Phase 2 confirmatory-design gate v0.2
 
-更新时间：2026-08-18。本文是实验设计与执行 gate，不是结果论文；当前所有 agent 结果仍属于 feasibility/pilot，不能进入 confirmatory effect estimates。
+更新时间：2026-08-23。本文是实验设计与执行 gate，不是结果论文；当前所有 agent 结果仍属于 feasibility/pilot，不能进入 confirmatory effect estimates。BookStack clean baseline 已完成 3 repetitions × 3 arms 的 9/9 pilot oracle pass，但 fault/evolution blocks、Indico/Juice blocks 和最终 power freeze 仍未完成。
 
 ## 1. 实验单位与比较对象
 
@@ -89,8 +89,8 @@ Phase 2 只有在以下清单全部满足后退出：
 - [x] visual observation contract 与 hybrid anti-leakage contract；
 - [x] Volcengine provider 文本/图片/结构化响应 smoke；
 - [x] visible UI oracle 的 fake-page 与 live traditional-flow 验证；
-- [ ] pure-visual 完整多步 task 在固定预算下达到预设 pilot reliability；
-- [ ] hybrid 真实 provider driver + 至少一个真实 SUT pilot（真实 provider invocation 已完成，但 BookStack/Juice 独立任务 oracle 未通过）；
+- [x] pure-visual 完整多步 task 在固定预算下达到预设 pilot reliability（BookStack clean 3/3）；
+- [x] hybrid 真实 provider driver + 至少一个真实 SUT pilot（BookStack clean 3/3，包含一次预先限定的空参数语义重试）；
 - [x] Indico/Juice Shop fault/evolution harness live gate（Indico transactional trigger、登录→创建→fault→独立 fault-aware oracle、Juice page-local omission/layout 均已通过）；
 - [ ] 标准 run-record 批量生成、schema validation 和 ledger admission（本地批量校验已通过，尚未满足 matched confirmatory ledger admission）；
 - [ ] matched three-arm cell 的最小 confirmatory admission；

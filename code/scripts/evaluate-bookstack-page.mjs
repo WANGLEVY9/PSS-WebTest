@@ -3,6 +3,7 @@ import process from 'node:process';
 
 const expectedTitle = process.env.PSS_BOOKSTACK_PAGE_TITLE ?? 'PSS Phase2 Page';
 const expectedContent = process.env.PSS_BOOKSTACK_PAGE_CONTENT ?? 'PSS Phase2 Content';
+const expectedBookSlug = process.env.PSS_BOOKSTACK_BOOK_SLUG ?? 'book';
 
 for (const [name, value] of [['title', expectedTitle], ['content', expectedContent]]) {
   if (!/^[A-Za-z0-9 ._-]+$/.test(value)) {
@@ -10,7 +11,7 @@ for (const [name, value] of [['title', expectedTitle], ['content', expectedConte
   }
 }
 
-const query = `SELECT COUNT(*) FROM pages WHERE name='${expectedTitle}' AND html LIKE '%${expectedContent}%' AND book_id=3 AND draft=0;`;
+const query = `SELECT COUNT(*) FROM pages p JOIN books b ON b.id=p.book_id WHERE p.name='${expectedTitle}' AND p.html LIKE '%${expectedContent}%' AND b.slug='${expectedBookSlug}' AND p.draft=0;`;
 const child = spawn('docker', ['exec', '-i', 'bookstack-db-1', 'mysql', '-N', '-B', '-u', 'admin', '-padmin', 'bookstack', '-e', query], {
   stdio: ['ignore', 'pipe', 'inherit']
 });
@@ -28,6 +29,7 @@ const result = {
   application: 'bookstack',
   oracle: 'persisted-state',
   title: expectedTitle,
+  book_slug: expectedBookSlug,
   matches,
   passed: matches === 1,
   evaluated_at: new Date().toISOString()

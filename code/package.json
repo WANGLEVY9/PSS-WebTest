@@ -15,6 +15,7 @@
     "provider:aliyun:sequence-diagnostic": "node scripts/diagnose-aliyun-sequence.mjs",
     "provider:aliyun:tool-diagnostic": "node scripts/diagnose-aliyun-tool-call.mjs",
     "records:collect": "node scripts/collect-run-records.mjs",
+    "validate:benchmark-matrix": "node scripts/validate-benchmark-matrix.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",
     "pilot:volcengine:juice:hybrid": "node scripts/run-volcengine-juice-hybrid-smoke.mjs",
     "pilot:bookstack:agent": "node scripts/run-bookstack-agent-pilot.mjs",

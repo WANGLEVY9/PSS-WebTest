@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import dotenv from 'dotenv';
+import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
 
 dotenv.config();
 
@@ -38,10 +39,12 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       writeSummary(); console.log(JSON.stringify(records.at(-1))); continue;
     }
     if (arm === 'playwright') {
+      const startedAt = Date.now();
       execution = await run('npx', ['playwright', 'test', 'tests/traditional/juice-shop-product-search.spec.js', '--project=chromium'], {
         RUN_JUICE_SHOP_VERTICAL_SLICE: '1', SUT_BASE_URL: baseURL
       });
       const oracleRun = await run('node', ['scripts/evaluate-juice-shop-search.mjs']); oracle = lastJson(oracleRun.stdout);
+      appendRunRecord(createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: 'juice-shop-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 5 }] }), recordsPath);
     } else {
       execution = await run('node', [arm === 'visual' ? 'scripts/run-volcengine-juice-visual-smoke.mjs' : 'scripts/run-volcengine-juice-hybrid-smoke.mjs'], {
         CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs, CUA_PREPARE_SEARCH: '0', CUA_TASK_MODE: 'full-search',

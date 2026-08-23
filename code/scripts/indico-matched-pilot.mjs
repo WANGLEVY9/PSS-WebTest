@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import dotenv from 'dotenv';
+import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
 
 dotenv.config();
 
@@ -36,11 +37,13 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       writeSummary(); console.log(JSON.stringify(records.at(-1))); continue;
     }
     if (arm === 'playwright') {
+      const startedAt = Date.now();
       execution = await run('npx', ['playwright', 'test', 'tests/traditional/indico-create-event.spec.js', '--project=chromium'], {
         RUN_INDICO_VERTICAL_SLICE: '1', INDICO_BASE_URL: 'http://localhost:8080', SUT_BASE_URL: 'http://localhost:8080',
         PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD
       });
       const oracleRun = await run('node', ['scripts/evaluate-indico-event.mjs']); oracle = lastJson(oracleRun.stdout);
+      appendRunRecord(createTraditionalRunRecord({ application_id: 'indico', application_version: process.env.INDICO_VERSION ?? '3.3.6', task_id: 'indico-create-event', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 10, runner_version: 'indico-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 10 }] }), recordsPath);
     } else {
       execution = await run('node', ['scripts/run-indico-agent-pilot.mjs'], {
         INDICO_ARM: arm, CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs,

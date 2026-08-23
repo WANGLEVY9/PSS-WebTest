@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.1",
+  "objective": "Estimate conditional success boundaries, failure modes, maintenance cost, and complementarity of pure-visual CUA, hybrid visual+page-structure agents, and scripted accessibility-locator testing.",
+  "reference_cutoff": "2023-01-01",
+  "admission_rule": "Only workflows with a reset gate, independent oracle, and all three arms executable in a clean pilot may enter confirmatory collection.",
+  "applications": [
+    {
+      "id": "bookstack",
+      "status": "admitted-pilot-only",
+      "workflows": [
+        {"id":"bookstack-create-page","status":"admitted-pilot-only","complexity":"multi-step","oracle_authority":"persisted-state","oracle_status":"independent-verified","fault_slots":["wrong-save-target","persistence-mismatch"],"evolution_slots":["dom-wrapper-only","access-name-preserving-layout-change","delayed-save"]},
+        {"id":"bookstack-open-book-navigate","status":"candidate","complexity":"navigation","oracle_authority":"visible-ui","oracle_status":"draft","fault_slots":["wrong-book-target"],"evolution_slots":["dom-wrapper-only","navigation-layout-change"]},
+        {"id":"bookstack-edit-existing-page","status":"candidate","complexity":"multi-step","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["save-suppressed","stale-page-write"],"evolution_slots":["editor-toolbar-layout-change","delayed-save"]},
+        {"id":"bookstack-search-and-open-page","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui","oracle_status":"draft","fault_slots":["search-result-mismatch"],"evolution_slots":["search-layout-change","access-name-preserving-layout-change"]},
+        {"id":"bookstack-create-chapter","status":"candidate","complexity":"multi-step","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["wrong-parent-book","persistence-mismatch"],"evolution_slots":["dom-wrapper-only","delayed-save"]}
+      ]
+    },
+    {
+      "id": "indico",
+      "status": "pilot-only",
+      "workflows": [
+        {"id":"indico-create-event","status":"pilot-only","complexity":"multi-step","oracle_authority":"relational","oracle_status":"independent-verified","fault_slots":["publish-state-mismatch","date-field-mismatch"],"evolution_slots":["form-layout","access-description","delayed-background"]},
+        {"id":"indico-create-event-with-description","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["description-omission","publish-state-mismatch"],"evolution_slots":["form-layout","access-description"]},
+        {"id":"indico-search-and-open-event","status":"candidate","complexity":"search-navigation","oracle_authority":"relational","oracle_status":"draft","fault_slots":["wrong-event-target"],"evolution_slots":["search-layout","access-name-preserving-layout-change"]},
+        {"id":"indico-edit-event-date","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["date-field-mismatch","stale-update"],"evolution_slots":["form-layout","delayed-background"]},
+        {"id":"indico-create-event-with-privacy","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["privacy-state-mismatch"],"evolution_slots":["form-layout","access-description"]}
+      ]
+    },
+    {
+      "id": "juice-shop",
+      "status": "pilot-only",
+      "workflows": [
+        {"id":"juice-shop-product-search","status":"pilot-only","complexity":"search-navigation","oracle_authority":"visible-ui+relational","oracle_status":"independent-verified","fault_slots":["search-omission","product-mismatch"],"evolution_slots":["search-layout","accessibility-card","delayed-results"]},
+        {"id":"juice-shop-register-user","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["validation-omission","wrong-field"],"evolution_slots":["form-layout","access-description"]},
+        {"id":"juice-shop-login","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["credential-field-mismatch","auth-state-mismatch"],"evolution_slots":["form-layout","access-name-preserving-layout-change"]},
+        {"id":"juice-shop-add-product-to-basket","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["wrong-product","basket-omission"],"evolution_slots":["product-card-layout","delayed-results"]},
+        {"id":"juice-shop-checkout-address","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["address-field-mismatch","order-omission"],"evolution_slots":["checkout-layout","access-description"]}
+      ]
+    }
+  ],
+  "arms": [
+    {"id":"visual","observation_contract":"screenshot-only","status":"implemented-provider","confirmatory_status":"blocked-by-pilot"},
+    {"id":"hybrid","observation_contract":"screenshot-plus-structure","status":"implemented-provider","confirmatory_status":"blocked-by-pilot"},
+    {"id":"playwright","observation_contract":"scripted-locator","status":"implemented-baseline","confirmatory_status":"blocked-by-pilot"}
+  ],
+  "models": [
+    {"id":"qwen3-vl-flash","provider":"aliyun-compatible","image_input":true,"status":"pilot-connectivity-validated","confirmatory_status":"not-started"},
+    {"id":"doubao-seed-2-0-pro-260215","provider":"volcengine-ark","image_input":true,"status":"historical-connectivity-only","confirmatory_status":"not-started"},
+    {"id":"second-vlm-to-be-selected","provider":"TBD","image_input":true,"status":"planned-replication-stratum","confirmatory_status":"not-started"},
+    {"id":"third-vlm-to-be-selected","provider":"TBD","image_input":true,"status":"planned-replication-stratum","confirmatory_status":"not-started"}
+  ],
+  "traditional_baselines": [
+    {"id":"playwright-accessibility-locator","status":"implemented-baseline","role":"primary-comparator"},
+    {"id":"playwright-legacy-css-xpath","status":"planned-exploratory","role":"locator-robustness-ablation"},
+    {"id":"selenium-webdriver-locator","status":"planned-exploratory","role":"tooling-replication"},
+    {"id":"state-model-or-model-based-testing","status":"planned-exploratory","role":"coverage-strategy-comparator"},
+    {"id":"script-generation-assisted-testing","status":"planned-exploratory","role":"secondary-comparator"}
+  ],
+  "conditions": [
+    {"id":"clean-stable","status":"implemented-pilot"},
+    {"id":"fault-injected","status":"harness-ready-live-gate-passed"},
+    {"id":"ui-evolved","status":"harness-ready-live-gate-passed"},
+    {"id":"fault-plus-ui-evolved","status":"planned-after-single-condition-admission"}
+  ]
+}

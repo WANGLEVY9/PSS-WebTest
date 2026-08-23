@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import process from 'node:process';
+import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
 
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '3', 10);
 const maxSteps = process.env.CUA_MAX_STEPS ?? '3';
@@ -37,11 +38,13 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       continue;
     }
     if (arm === 'playwright') {
+      const startedAt = Date.now();
       execution = await run('npx', ['playwright', 'test', 'tests/traditional/bookstack-create-page.spec.js', '--project=chromium'], {
         SUT_BASE_URL: 'http://127.0.0.1:8081', RUN_BOOKSTACK_VERTICAL_SLICE: '1',
         PSS_BOOKSTACK_USERNAME: process.env.PSS_BOOKSTACK_USERNAME, PSS_BOOKSTACK_PASSWORD: process.env.PSS_BOOKSTACK_PASSWORD
       });
       const oracleRun = await run('node', ['scripts/evaluate-bookstack-page.mjs']); oracle = lastJson(oracleRun.stdout);
+      appendRunRecord(createTraditionalRunRecord({ application_id: 'bookstack', application_version: process.env.BOOKSTACK_VERSION ?? '24.10.1', task_id: 'bookstack-create-page', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 11, runner_version: 'bookstack-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 11 }] }), recordsPath);
     } else {
       execution = await run('node', ['scripts/run-bookstack-agent-pilot.mjs'], {
         BOOKSTACK_ARM: arm, CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs,

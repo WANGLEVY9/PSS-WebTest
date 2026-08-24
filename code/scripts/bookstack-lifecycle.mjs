@@ -9,13 +9,14 @@ const repositoryRoot = resolve(codeRoot, '..');
 const webTestPilotRoot = resolve(process.env.WEBTESTPILOT_ROOT ?? resolve(repositoryRoot, 'third_party/WebTestPilot'));
 const applicationDirectory = resolve(webTestPilotRoot, 'webapps/bookstack');
 const seedPath = resolve(applicationDirectory, 'seed.sql');
-const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
+const baseURL = process.env.BOOKSTACK_BASE_URL ?? `http://127.0.0.1:${process.env.PSS_BOOKSTACK_APP_PORT ?? process.env.APP_PORT ?? '8081'}`;
+const appPort = process.env.PSS_BOOKSTACK_APP_PORT ?? process.env.APP_PORT ?? (new URL(baseURL).port || '8081');
 const timeoutMs = Number(process.env.SUT_READY_TIMEOUT_MS ?? 180000);
 const composeBin = process.env.COMPOSE_BIN ?? 'docker-compose';
 
-function run(command, args, { cwd = applicationDirectory, input, allowFailure = false, quiet = false } = {}) {
+function run(command, args, { cwd = applicationDirectory, input, allowFailure = false, quiet = false, env = {} } = {}) {
   return new Promise((resolvePromise, reject) => {
-    const child = spawn(command, args, { cwd, stdio: ['pipe', quiet ? 'ignore' : 'inherit', quiet ? 'ignore' : 'inherit'] });
+    const child = spawn(command, args, { cwd, env: { ...process.env, ...env }, stdio: ['pipe', quiet ? 'ignore' : 'inherit', quiet ? 'ignore' : 'inherit'] });
     if (input !== undefined) child.stdin.end(input);
     else child.stdin.end();
     child.on('error', reject);
@@ -93,14 +94,15 @@ async function verifySeed() {
 
 async function startOrReset() {
   const startedAt = Date.now();
-  await run(composeBin, ['down', '-v', '--remove-orphans'], { allowFailure: true });
+  const composeEnv = { APP_PORT: String(appPort) };
+  await run(composeBin, ['down', '-v', '--remove-orphans'], { allowFailure: true, env: composeEnv });
   // Colima can return from compose down before the DB container releases its
   // volume. Explicitly remove only this SUT's known containers/volumes so a
   // later seed cannot collide with stale primary keys.
   await run('docker', ['rm', '-f', 'bookstack-db-1', 'bookstack-app-1'], { allowFailure: true, quiet: true });
   await run('docker', ['volume', 'rm', '-f', 'bookstack_db', 'bookstack_app_config'], { allowFailure: true, quiet: true });
   const imageExists = (await run('docker', ['image', 'inspect', 'bookstack-app:latest'], { allowFailure: true, quiet: true })) === 0;
-  await run(composeBin, imageExists ? ['up', '-d'] : ['up', '-d', '--build']);
+  await run(composeBin, imageExists ? ['up', '-d'] : ['up', '-d', '--build'], { env: composeEnv });
   await waitForDatabase();
   await waitUntilReady();
   await seedDatabase();
@@ -115,5 +117,5 @@ if (!['start', 'reset', 'ready', 'stop', 'status'].includes(action)) {
 
 if (action === 'start' || action === 'reset') await startOrReset();
 if (action === 'ready') await waitUntilReady();
-if (action === 'stop') await run(composeBin, ['down', '-v', '--remove-orphans']);
+if (action === 'stop') await run(composeBin, ['down', '-v', '--remove-orphans'], { env: { APP_PORT: String(appPort) } });
 if (action === 'status') await run(composeBin, ['ps']);

@@ -6,6 +6,7 @@ import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '3', 10);
 const maxSteps = process.env.CUA_MAX_STEPS ?? '3';
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '8000';
+const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const mutation = process.env.PSS_UI_MUTATION ?? null;
 const maxResetAttempts = Number.parseInt(process.env.PSS_RESET_MAX_ATTEMPTS ?? '2', 10);
@@ -58,7 +59,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     if (arm === 'playwright') {
       const startedAt = Date.now();
       execution = await run('npx', ['playwright', 'test', 'tests/traditional/bookstack-create-page.spec.js', '--project=chromium'], {
-        SUT_BASE_URL: 'http://127.0.0.1:8081', RUN_BOOKSTACK_VERTICAL_SLICE: '1',
+        SUT_BASE_URL: baseURL, RUN_BOOKSTACK_VERTICAL_SLICE: '1',
         PSS_BOOKSTACK_USERNAME: process.env.PSS_BOOKSTACK_USERNAME, PSS_BOOKSTACK_PASSWORD: process.env.PSS_BOOKSTACK_PASSWORD
       });
       const oracleRun = await run('node', ['scripts/evaluate-bookstack-page.mjs']); oracle = lastJson(oracleRun.stdout);

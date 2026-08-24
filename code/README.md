@@ -59,6 +59,19 @@ npm run sut:indico:reset
 npm run sut:juice-shop:reset
 ```
 
+The default BookStack port is `8081`. If another local service owns that port,
+use the same alternate port for Compose and every runner, for example:
+
+```sh
+PSS_BOOKSTACK_APP_PORT=18081 BOOKSTACK_BASE_URL=http://127.0.0.1:18081 \
+  npm run sut:bookstack:reset
+PSS_BOOKSTACK_APP_PORT=18081 BOOKSTACK_BASE_URL=http://127.0.0.1:18081 \
+  npm run pilot:bookstack:navigation
+```
+
+The lifecycle now passes the selected port explicitly to Compose, so the
+readiness URL and the host mapping cannot silently diverge.
+
 The first lower-complexity BookStack task is `bookstack-open-book`. It is a
 non-confirmatory navigation pilot designed to isolate grounding from the rich
 text editor workflow. It writes a matched summary and standard run records

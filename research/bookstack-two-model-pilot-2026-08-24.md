@@ -48,3 +48,28 @@ No repetition number is frozen, no power simulation is treated as final, and no
 Indico/Juice Shop confirmatory run is started. The next gate is repeated
 create-page pilot collection for both model profiles, followed by fault and UI
 evolution conditions with the same model-stratum separation.
+
+## Three-repetition extension
+
+The next model-stratified clean create-page pilot used three repetitions per
+model and the same reset/oracle gates:
+
+| Model | Playwright | Pure visual | Hybrid | Matched successful repetitions | Reset failures |
+|---|---:|---:|---:|---:|---:|
+| Qwen3-VL-Flash | 3/3 | 0/3 | 3/3 | 0/3 | 0 |
+| Doubao Seed 2.0 Pro | 3/3 | 3/3 | 2/3 | 2/3 | 0 |
+
+Qwen's visual failures were all execution failures from repeated
+non-progressing clicks at nearly the same editor-region coordinate. Doubao's
+single hybrid failure was a provider timeout/abort. One Doubao reset needed the
+predeclared retry and then passed; it is recorded as infrastructure variance,
+not discarded.
+
+The resulting model-stratified pilot artifact rates are planning inputs only.
+The current Jeffreys-smoothed rates are Qwen `(Playwright=.875,
+Visual=.125, Hybrid=.875)` and Doubao `(Playwright=.875, Visual=.875,
+Hybrid=.625)`. These values are not confirmatory estimates and do not justify
+freezing repetition counts. They do, however, provide a concrete failure-mode
+contrast for the study: the same rich-text task can be visual-grounding limited
+for one provider/model and latency-limited for another, while the hybrid arm
+changes the error boundary rather than uniformly dominating.

@@ -118,4 +118,21 @@ BookStack, Indico, and Juice Shop now each have a task-level Playwright slice an
 
 `npm run check:agent` checks only whether `CUA_PROVIDER`, `CUA_MODEL`, and `CUA_API_KEY` are present; it never prints the key. A blocked readiness result is expected until a real CUA provider is selected. The adapter tests use contract-only drivers and are not experimental Agent results.
 
+Two local model profiles are currently available for CUA pilot runs. The
+default `code/.env` profile is Qwen3-VL-Flash through the Alibaba-compatible
+endpoint. The ignored `code/.env.doubao` profile is the restored Doubao Seed
+2.0 Pro Ark profile. Run each model in a separate shell environment; pilot
+artifact and ledger names include provider and model, so their outcomes cannot
+be accidentally pooled:
+
+```sh
+set -a; source .env; set +a
+PSS_MATCHED_REPETITIONS=1 npm run pilot:bookstack:matched
+
+set -a; source .env.doubao; set +a
+PSS_MATCHED_REPETITIONS=1 npm run pilot:bookstack:matched
+```
+
+Never commit either local profile or copy an API key into a report.
+
 Phase 2 design decisions prioritize evidence published or released from 2023 onward. The local `third_party/` directory is a read-only checkout area and is ignored by Git; it is not part of the public replication package.

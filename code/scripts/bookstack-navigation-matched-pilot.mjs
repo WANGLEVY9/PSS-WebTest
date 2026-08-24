@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 
@@ -9,9 +10,13 @@ const timeoutMs = Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10);
 const maxResetAttempts = Number.parseInt(process.env.PSS_RESET_MAX_ATTEMPTS ?? '2', 10);
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const mutation = process.env.PSS_UI_MUTATION ?? null;
+const provider = process.env.CUA_PROVIDER ?? null;
+const model = process.env.CUA_MODEL ?? null;
 const conditionSlug = condition.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || 'condition';
-const artifactName = condition === 'clean-stable' ? 'bookstack-navigation-pilot.json' : `bookstack-navigation-${conditionSlug}-pilot.json`;
-const recordsName = condition === 'clean-stable' ? 'bookstack-navigation-records.jsonl' : `bookstack-navigation-${conditionSlug}-records.jsonl`;
+const modelSlug = model ? `${provider ?? 'provider'}-${model}`.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : 'unconfigured';
+const runSlug = `${conditionSlug}-${modelSlug}`;
+const artifactName = `bookstack-navigation-${runSlug}-pilot.json`;
+const recordsName = `bookstack-navigation-${runSlug}-records.jsonl`;
 const artifact = `${repositoryRoot}/artifacts/phase2/${artifactName}`;
 const recordsPath = `${repositoryRoot}/artifacts/phase2/${recordsName}`;
 const taskId = 'bookstack-open-book';
@@ -47,7 +52,7 @@ async function resetWithRetry() {
 const records = [];
 const write = () => {
   fs.mkdirSync(`${repositoryRoot}/artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: taskId, condition, mutation, repetitions, arms, records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: taskId, condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms, records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
@@ -57,7 +62,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     let execution;
     let result;
     if (!cleanStateVerified) {
-      records.push({ repetition, arm, reset_ok: false, clean_state_verified: false, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: null, oracle_passed: false, cell_passed: false, failure_category: 'environment' });
+      records.push({ repetition, arm, provider, model, reset_ok: false, clean_state_verified: false, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: null, oracle_passed: false, cell_passed: false, failure_category: 'environment' });
       write();
       continue;
     }
@@ -76,7 +81,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const oraclePassed = result?.oracle?.value?.passed === true || result?.oracle?.passed === true;
     const completed = execution.code === 0 && (result?.result?.status === 'completed' || result?.run_record?.status === 'completed');
     records.push({
-      repetition, arm, reset_ok: true, clean_state_verified: true, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: execution.code,
+      repetition, arm, provider, model, reset_ok: true, clean_state_verified: true, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: execution.code,
       agent_status: result?.result?.status ?? result?.run_record?.status ?? null,
       emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? null,
       agent_completed: completed, oracle_passed: oraclePassed,
@@ -89,7 +94,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
   }
 }
 
-const summary = { application: 'bookstack', task_id: taskId, condition, mutation, repetitions, arms, records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
+const summary = { application: 'bookstack', task_id: taskId, condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms, records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
 write();
 console.log(JSON.stringify({ artifact, task_id: taskId, passed_cells: summary.passed_cells, total_cells: summary.total_cells }));
 if (summary.passed_cells !== summary.total_cells) process.exitCode = 1;

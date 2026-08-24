@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import process from 'node:process';
@@ -9,11 +10,15 @@ const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '8000';
 const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const mutation = process.env.PSS_UI_MUTATION ?? null;
+const provider = process.env.CUA_PROVIDER ?? null;
+const model = process.env.CUA_MODEL ?? null;
 const maxResetAttempts = Number.parseInt(process.env.PSS_RESET_MAX_ATTEMPTS ?? '2', 10);
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const conditionSlug = condition.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || 'condition';
-const artifactName = condition === 'clean-stable' ? 'bookstack-three-arm-pilot.json' : `bookstack-three-arm-${conditionSlug}-pilot.json`;
-const recordsName = condition === 'clean-stable' ? 'bookstack-three-arm-records.jsonl' : `bookstack-three-arm-${conditionSlug}-records.jsonl`;
+const modelSlug = model ? `${provider ?? 'provider'}-${model}`.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : 'unconfigured';
+const runSlug = `${conditionSlug}-${modelSlug}`;
+const artifactName = `bookstack-three-arm-${runSlug}-pilot.json`;
+const recordsName = `bookstack-three-arm-${runSlug}-records.jsonl`;
 const artifact = `${root}/../artifacts/phase2/${artifactName}`;
 const recordsPath = `${root}/../artifacts/phase2/${recordsName}`;
 
@@ -39,7 +44,7 @@ async function resetWithRetry() {
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
   for (const arm of ['playwright', 'visual', 'hybrid']) {
@@ -51,7 +56,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     let oracle;
     let result = null;
     if (!cleanStateVerified) {
-      records.push({ repetition, arm, reset_ok: reset.ok, clean_state_verified: false, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: null, oracle_passed: false, oracle_matches: preOracle?.matches ?? null, failure_category: 'environment' });
+      records.push({ repetition, arm, provider, model, reset_ok: reset.ok, clean_state_verified: false, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: null, oracle_passed: false, oracle_matches: preOracle?.matches ?? null, failure_category: 'environment' });
       writeSummary();
       console.log(JSON.stringify(records.at(-1)));
       continue;
@@ -75,7 +80,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const agentCompleted = execution.code === 0;
     const oraclePassed = oracle?.passed === true;
     records.push({
-      repetition, arm, reset_ok: reset.ok, clean_state_verified: true, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1,
+      repetition, arm, provider, model, reset_ok: reset.ok, clean_state_verified: true, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1,
       execution_exit_code: execution.code,
       agent_status: result?.result?.status ?? result?.run_record?.status ?? null,
       agent_completed: agentCompleted, oracle_passed: oraclePassed,
@@ -88,6 +93,6 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     console.log(JSON.stringify(records.at(-1)));
   }
 }
-const summary = { application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
+const summary = { application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
 writeSummary();
 console.log(JSON.stringify({ artifact, passed_cells: summary.passed_cells, total_cells: summary.total_cells }));

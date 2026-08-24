@@ -13,7 +13,10 @@ const pilot = fs.existsSync(inputPath) ? JSON.parse(fs.readFileSync(inputPath, '
 const arms = ['playwright', 'visual', 'hybrid'];
 const stats = Object.fromEntries(arms.map((arm) => {
   const rows = pilot.records.filter((r) => r.arm === arm && r.reset_ok !== false && r.clean_state_verified !== false);
-  const successes = rows.filter((r) => r.oracle_passed).length;
+  // End-to-end success must include agent termination/completion and the
+  // independent oracle.  An oracle can pass transiently after a timeout; that
+  // is diagnostic evidence, not a successful cell.
+  const successes = rows.filter((r) => r.cell_passed ?? (r.agent_completed === true && r.oracle_passed === true)).length;
   // Jeffreys correction avoids treating 0/3 or 3/3 as a certainty.
   return [arm, { n: rows.length, successes, smoothed_rate: (successes + 0.5) / (rows.length + 1) }];
 }));

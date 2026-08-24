@@ -60,3 +60,27 @@ This is a pilot result only (`confirmatory=false`), not evidence for a frozen
 repetition count. Earlier attempts also demonstrated why the exact-route oracle
 matters: deeper chapter/page routes were rejected even when the page text
 contained `Book`.
+
+The subsequent three-repetition clean pilot produced 9/9 successful matched
+cells, with all reset attempts passing on that rerun. An earlier rerun had one
+transient database startup gate failure, which motivated the predeclared reset
+retry policy. Every reset attempt is recorded explicitly; this is an
+infrastructure reliability measure, not a way to remove failures from the
+analysis denominator. The clean summary is retained at
+`artifacts/phase2/bookstack-navigation-pilot.json` and its descriptive Wilson
+report at `artifacts/phase2/bookstack-navigation-variance.json`.
+
+## Evolution condition
+
+The next matched condition is `ui-evolution:bookstack-layout-v1`. The existing
+mutation changes CSS layout properties only and is installed through the same
+browser-context initialization in all three arms. The task intent, target book,
+exact-route oracle, model, and action budget remain unchanged. This is a pilot
+of evolution sensitivity, not yet a repair study; the repair-after-locator-break
+template remains separate.
+
+The first layout-evolution repetition also passed 3/3 arms. Its summary and
+variance report are stored separately under the
+`bookstack-navigation-ui-evolution-bookstack-layout-v1-*` artifact names. One
+evolution repetition is insufficient to estimate maintenance or robustness;
+additional evolution repetitions and a repair protocol are still required.

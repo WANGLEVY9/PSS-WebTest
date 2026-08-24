@@ -3,19 +3,23 @@ import { chromium } from 'playwright';
 import { createRunRecord } from '../src/run-records.mjs';
 import { appendRunRecord } from '../src/traditional-run-record.mjs';
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
+import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
 
 dotenv.config();
 const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const username = process.env.PSS_BOOKSTACK_USERNAME;
 const password = process.env.PSS_BOOKSTACK_PASSWORD;
 const targetBook = process.env.PSS_BOOKSTACK_TARGET_BOOK ?? 'Book';
+const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 if (!username || !password) throw new Error('BookStack credentials must be configured in the local environment');
 
 const startedAt = Date.now();
 let actions = 0;
 let failure = null;
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+if (process.env.PSS_UI_MUTATION === 'bookstack-layout-v1') await installBookStackLayoutMutation(context);
+const page = await context.newPage();
 const click = async (locator) => { actions += 1; return locator.click(); };
 try {
   await page.goto(`${baseURL}/`);
@@ -33,7 +37,7 @@ const passed = !failure && oracle.passed === true;
 const runRecord = createRunRecord({
   run_id: `bookstack-open-book-playwright-${Date.now()}`,
   application_id: 'bookstack', application_version: process.env.BOOKSTACK_VERSION ?? '24.10.1',
-  task_id: 'bookstack-open-book', condition: 'clean-stable', arm: 'playwright',
+  task_id: 'bookstack-open-book', condition, arm: 'playwright',
   status: failure ? 'test-failure' : (passed ? 'completed' : 'evaluator-error'),
   checkpoint_reached: passed, emitted_verdict: passed ? 'clean' : 'not-emitted', ground_truth_verdict: 'clean',
   timing: { wall_time_ms: Date.now() - startedAt, actions, retries: 0 },

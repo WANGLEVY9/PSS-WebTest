@@ -17,6 +17,7 @@
     "records:collect": "node scripts/collect-run-records.mjs",
     "records:audit": "node scripts/audit-run-ledger.mjs",
     "metrics:summarize": "node scripts/summarize-run-records.mjs",
+    "pilot:variance": "node scripts/pilot-variance-report.mjs",
     "validate:benchmark-matrix": "node scripts/validate-benchmark-matrix.mjs",
     "validate:study-assets": "node scripts/validate-study-assets.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",

@@ -38,7 +38,9 @@
           "phase2_evidence": {
             "clean_repetitions": "10/10 non-confirmatory reset/workflow/oracle cycles passed",
             "functional_fault": "persistence-mismatch was detected by the Playwright visible-state assertion and the independent database oracle",
-            "ui_evolution": "bookstack-layout-v1 preserved the workflow and persisted-state oracle in one smoke run"
+            "ui_evolution": "bookstack-layout-v1 preserved the workflow and persisted-state oracle in one smoke run",
+            "three_arm_pilot": "latest 1 repetition: Playwright and hybrid passed; pure visual failed on provider tool-call JSON after oracle state was reached; an earlier rerun passed 3/3",
+            "status": "non-confirmatory; provider/planning variance unresolved"
           },
           "arms": ["visual", "hybrid", "playwright"]
         },
@@ -53,7 +55,8 @@
           "fault_slots": ["wrong-target", "stale-navigation"],
           "evolution_slots": ["navigation-layout-change", "access-name-change"],
           "phase2_evidence": {
-            "clean_matched_pilot": "1 repetition x 3 arms passed on 2026-08-24",
+            "clean_matched_pilot": "3 repetitions x 3 arms passed on 2026-08-24",
+            "evolution_pilot": "1 repetition x 3 arms passed under bookstack-layout-v1",
             "status": "non-confirmatory; repetition and power remain unfrozen",
             "artifact": "artifacts/phase2/bookstack-navigation-pilot.json"
           },

@@ -7,6 +7,7 @@ import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
+import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
 
 dotenv.config();
 const arm = process.env.BOOKSTACK_ARM;
@@ -18,6 +19,7 @@ const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const taskId = process.env.PSS_BOOKSTACK_TASK_ID ?? 'bookstack-create-page';
 if (!['bookstack-create-page', 'bookstack-open-book'].includes(taskId)) throw new Error(`Unsupported PSS_BOOKSTACK_TASK_ID: ${taskId}`);
 const targetBook = process.env.PSS_BOOKSTACK_TARGET_BOOK ?? 'Book';
+const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const title = process.env.PSS_BOOKSTACK_PAGE_TITLE ?? 'PSS Phase2 Page';
 const content = process.env.PSS_BOOKSTACK_PAGE_CONTENT ?? 'PSS Phase2 Content';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '14', 10);
@@ -25,7 +27,9 @@ const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? 
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const viewport = { width: 1280, height: 720 };
 const browser = await chromium.launch({ headless: true });
-const page = await browser.newPage({ viewport });
+const context = await browser.newContext({ viewport });
+if (process.env.PSS_UI_MUTATION === 'bookstack-layout-v1') await installBookStackLayoutMutation(context);
+const page = await context.newPage();
 const trace = [];
 const screenshot = async () => {
   let lastError;
@@ -140,7 +144,7 @@ while (oracle.value?.passed !== true && Date.now() < oracleDeadline) {
 const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
 const runRecord = createRunRecord({
   run_id: `bookstack-${arm}-${Date.now()}`,
-  application_id: 'bookstack', application_version: '24.10.1', task_id: taskId, condition: 'clean-stable', arm,
+  application_id: 'bookstack', application_version: '24.10.1', task_id: taskId, condition, arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
   checkpoint_reached: passed,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),

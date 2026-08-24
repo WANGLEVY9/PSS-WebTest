@@ -70,12 +70,36 @@ PSS_MATCHED_REPETITIONS=1 CUA_MAX_STEPS=8 CUA_TIMEOUT_MS=30000 \
 npm run metrics:summarize -- \
   --input ../artifacts/phase2/bookstack-navigation-records.jsonl \
   --output ../artifacts/phase2/bookstack-navigation-metrics.json
+npm run pilot:variance -- \
+  --input ../artifacts/phase2/bookstack-navigation-pilot.json \
+  --output ../artifacts/phase2/bookstack-navigation-variance.json
 ```
 
 The navigation oracle accepts only the exact `/books/<slug>` overview route;
 chapter, page, draft, and editor descendants are rejected. One passing pilot
 repetition does not freeze repetition counts or authorize confirmatory data
 collection.
+
+The navigation pilot permits one predeclared reset retry (`PSS_RESET_MAX_ATTEMPTS=2`)
+to handle transient container/database startup races. Every retry is retained
+in the pilot artifact as `reset_attempts` and `reset_retry_used`; it is never
+silently removed from the infrastructure audit.
+
+To run the behavior-preserving UI-evolution pilot, use the same matched task
+and change only the condition/mutation labels:
+
+```sh
+PSS_PILOT_CONDITION=ui-evolution:bookstack-layout-v1 \
+PSS_UI_MUTATION=bookstack-layout-v1 \
+PSS_MATCHED_REPETITIONS=1 \
+  npm run pilot:bookstack:navigation
+```
+
+The mutation is installed before navigation in every arm. It changes layout
+CSS only; the independent route-and-heading oracle remains unchanged.
+
+The more complex `bookstack-create-page` pilot uses the same condition-aware
+artifact naming and reset retry policy through `npm run pilot:bookstack:matched`.
 
 BookStack, Indico, and Juice Shop now each have a task-level Playwright slice and an independent feasibility oracle. BookStack additionally has a verified persistence fault and behavior-preserving UI mutation. The pure-visual and hybrid arms have strict observation contracts; they are not considered executable until real provider adapters pass those contracts under a fixed budget.
 

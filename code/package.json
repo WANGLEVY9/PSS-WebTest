@@ -20,6 +20,7 @@
     "pilot:variance": "node scripts/pilot-variance-report.mjs",
     "validate:benchmark-matrix": "node scripts/validate-benchmark-matrix.mjs",
     "validate:study-assets": "node scripts/validate-study-assets.mjs",
+    "bench:audit": "node scripts/audit-third-party-benchmark.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",
     "pilot:volcengine:juice:hybrid": "node scripts/run-volcengine-juice-hybrid-smoke.mjs",
     "pilot:bookstack:agent": "node scripts/run-bookstack-agent-pilot.mjs",

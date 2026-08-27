@@ -5,6 +5,8 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { evaluateJuiceShopUiSearch } from '../src/oracles/juice-shop-ui-search.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
+import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 
 dotenv.config();
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
@@ -66,6 +68,8 @@ try {
 }
 
 const uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true });
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
   run_id: `juice-shop-hybrid-${Date.now()}`,
   application_id: 'juice-shop',
@@ -74,15 +78,15 @@ const runRecord = createRunRecord({
   condition: 'clean-stable',
   arm: 'hybrid',
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (uiOracle?.passed ? 'completed' : 'test-failure')),
-  checkpoint_reached: Boolean(uiOracle?.passed),
+  checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: 'volcengine-juice-hybrid-v0.1', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
-  failure_category: failure ? 'execution' : (uiOracle?.passed ? null : 'planning'),
+  provenance: { runner_version: 'volcengine-juice-hybrid-v0.2', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
+  failure_category: cellPassed ? null : failureCategory,
   trace
 });
-console.log(JSON.stringify({ application: 'juice-shop', arm: 'hybrid', task_mode: taskMode, result: result ?? null, failure: failure ?? null, trace, ui_oracle: uiOracle, run_record: runRecord }));
+console.log(JSON.stringify({ application: 'juice-shop', arm: 'hybrid', task_mode: taskMode, result: result ?? null, failure: failure ?? null, trace, ui_oracle: uiOracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: cellPassed, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
-if (failure || result?.status !== 'completed' || (uiOracle && !uiOracle.passed)) process.exitCode = 1;
+if (!cellPassed) process.exitCode = 1;

@@ -5,6 +5,8 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs';
 import { evaluateJuiceShopUiSearch } from '../src/oracles/juice-shop-ui-search.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
+import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 
 dotenv.config();
 console.error('[cua-smoke] starting');
@@ -68,6 +70,8 @@ try {
 }
 const visibleProducts = await page.locator('body').innerText().catch(() => '');
 const uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true });
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
   run_id: `juice-shop-visual-${Date.now()}`,
   application_id: 'juice-shop',
@@ -76,15 +80,15 @@ const runRecord = createRunRecord({
   condition: 'clean-stable',
   arm: 'visual',
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (uiOracle?.passed ? 'completed' : 'test-failure')),
-  checkpoint_reached: Boolean(uiOracle?.passed),
+  checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: 'volcengine-juice-visual-v0.2', observation_contract: 'screenshot-only', model_id: process.env.CUA_MODEL ?? null },
-  failure_category: failure ? 'execution' : (uiOracle?.passed ? null : 'planning'),
+  provenance: { runner_version: 'volcengine-juice-visual-v0.3', observation_contract: 'screenshot-only', model_id: process.env.CUA_MODEL ?? null },
+  failure_category: cellPassed ? null : failureCategory,
   trace
 });
-console.log(JSON.stringify({ application: 'juice-shop', arm: 'visual', result: result ?? null, failure: failure ?? null, trace, visible_product_markers: ['Apple Juice (1000ml)', 'Pineapple Juice (1000ml)'].filter((name) => visibleProducts.includes(name)), ui_oracle: uiOracle, run_record: runRecord }));
+console.log(JSON.stringify({ application: 'juice-shop', arm: 'visual', result: result ?? null, failure: failure ?? null, trace, visible_product_markers: ['Apple Juice (1000ml)', 'Pineapple Juice (1000ml)'].filter((name) => visibleProducts.includes(name)), ui_oracle: uiOracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: cellPassed, run_record: runRecord }));
 if (runRecord && process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
-if (failure || result?.status !== 'completed' || (uiOracle && !uiOracle.passed)) process.exitCode = 1;
+if (!cellPassed) process.exitCode = 1;

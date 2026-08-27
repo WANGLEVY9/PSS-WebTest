@@ -6,6 +6,8 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs';
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
+import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 
 dotenv.config();
 const arm = process.env.INDICO_ARM;
@@ -85,19 +87,20 @@ while (oracle.value?.passed !== true && Date.now() < deadline) {
   await new Promise((resolve) => setTimeout(resolve, 250));
   oracle = await evaluateOracle();
 }
-const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true });
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
   run_id: `indico-${arm}-${Date.now()}`,
   application_id: 'indico', application_version: '3.3.6', task_id: 'indico-create-event', condition: 'clean-stable', arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
-  checkpoint_reached: passed,
+  checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: 'indico-agent-pilot-v0.1', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
-  failure_category: failure ? 'execution' : (passed ? null : 'planning'), trace
+  provenance: { runner_version: 'indico-agent-pilot-v0.2', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
+  failure_category: passed ? null : failureCategory, trace
 });
-console.log(JSON.stringify({ application: 'indico', arm, result: result ?? null, failure: failure ?? null, oracle, trace, run_record: runRecord }));
+console.log(JSON.stringify({ application: 'indico', arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, trace, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
 if (!passed) process.exitCode = 1;

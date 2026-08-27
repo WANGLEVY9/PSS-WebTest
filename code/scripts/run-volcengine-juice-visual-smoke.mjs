@@ -14,6 +14,7 @@ const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '16', 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
+const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const viewport = { width: 1280, height: 720 };
 const browser = await chromium.launch({ headless: true });
 console.error('[cua-smoke] browser-launched');
@@ -69,8 +70,13 @@ try {
   failure = { name: error.name, message: error.message };
   console.error(`[cua-smoke] failed: ${error.message}`);
 }
+const oracleDeadline = Date.now() + oraclePollMs;
+let uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
+while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
+  await page.waitForTimeout(250);
+  uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
+}
 const visibleProducts = await page.locator('body').innerText().catch(() => '');
-const uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({

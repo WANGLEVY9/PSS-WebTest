@@ -21,6 +21,10 @@ independent application oracle passes.
    strata cannot overwrite or silently mix prior ledgers. Action traces in the
    pilot summary are path/type/coordinate summaries; private run records retain
    only a trace hash.
+5. Both provider drivers accept an optional `CUA_AGENT_WALL_TIMEOUT_MS`, and
+   live runners record elapsed wall time even when a provider fails before the
+   adapter returns a result. Juice Shop's independent UI oracle polls for a
+   fixed five-second asynchronous-render window.
 
 Contract, manifest, benchmark-matrix, and study-asset checks passed after the
 changes: `48/48` contract tests, plus all three validation commands.
@@ -73,6 +77,12 @@ did not pass (`73791ms`, one retry), so the cell is not admitted. Hybrid made
 no action before a provider timeout (`provider-timeout`). The result is `1/3`.
 The UI oracle remains independent of the agent verdict and action history.
 
+A separate watchdog/oracle-poll rerun was kept isolated. Playwright passed in
+`1699ms`; Visual and Hybrid both encountered a real provider timeout before an
+oracle-visible state (two and zero actions, respectively). This confirms that
+the earlier Visual `pass`/oracle-false cell is not a reason to relax the oracle;
+it requires another successful provider run or an explicit failure-mode stratum.
+
 ## Current gate and next work
 
 The lifecycle and provider connectivity gates pass. BookStack is admitted for
@@ -82,9 +92,8 @@ arms have not met clean matched admission. Therefore final repetition/power
 freezing, fault/evolution agent blocks, and confirmatory collection remain
 closed.
 
-The next implementation gate is a bounded provider watchdog and better
-termination/latency instrumentation, followed by rerunning the shortest
-Juice/Indico workflows with the same frozen protocol. Only after at least one
-clean task-condition block per required model stratum has stable three-arm
-admission should fault/evolution agent runs and the final pilot variance/power
-freeze be considered.
+The watchdog and latency instrumentation are now implemented. The next gate
+is to rerun the shortest Juice/Indico workflows with this bounded protocol.
+Only after at least one clean task-condition block per required model stratum
+has stable three-arm admission should fault/evolution agent runs and the final
+pilot variance/power freeze be considered.

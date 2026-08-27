@@ -45,6 +45,7 @@ const driver = createVolcengineHybridDriver({
 
 let result;
 let failure;
+const agentStartedAt = Date.now();
 try {
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
   if (prepareSearch) {
@@ -88,7 +89,7 @@ const runRecord = createRunRecord({
   checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
-  timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
+  timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
   provenance: { runner_version: 'volcengine-juice-hybrid-v0.2', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: cellPassed ? null : failureCategory,
   trace

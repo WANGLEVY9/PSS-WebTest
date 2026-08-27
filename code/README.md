@@ -127,11 +127,19 @@ be accidentally pooled:
 
 ```sh
 set -a; source .env; set +a
-PSS_MATCHED_REPETITIONS=1 npm run pilot:bookstack:matched
+PSS_PILOT_RUN_TAG=qwen-stabilization-v1 PSS_MATCHED_REPETITIONS=1 \
+  npm run pilot:bookstack:matched
 
-set -a; source .env.doubao; set +a
-PSS_MATCHED_REPETITIONS=1 npm run pilot:bookstack:matched
+set -a; source .env; source .env.doubao; set +a
+PSS_PILOT_RUN_TAG=doubao-stabilization-v1 PSS_MATCHED_REPETITIONS=1 \
+  npm run pilot:bookstack:matched
 ```
+
+`PSS_PILOT_RUN_TAG` creates an isolated summary and JSONL ledger instead of
+appending a changed protocol to an older pilot.  Agent records separately
+report the independently reached task state, correct agent termination, and
+strict cell admission.  An oracle-confirmed postcondition after a timeout is
+retained as `oracle_only_success=true` but is not counted as a passed cell.
 
 Never commit either local profile or copy an API key into a report.
 

@@ -12,11 +12,13 @@ const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const mutation = process.env.PSS_UI_MUTATION ?? null;
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
+const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const maxResetAttempts = Number.parseInt(process.env.PSS_RESET_MAX_ATTEMPTS ?? '2', 10);
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const conditionSlug = condition.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || 'condition';
 const modelSlug = model ? `${provider ?? 'provider'}-${model}`.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : 'unconfigured';
-const runSlug = `${conditionSlug}-${modelSlug}`;
+const runTagSlug = pilotRunTag ? pilotRunTag.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : null;
+const runSlug = [conditionSlug, modelSlug, runTagSlug].filter(Boolean).join('-');
 const artifactName = `bookstack-three-arm-${runSlug}-pilot.json`;
 const recordsName = `bookstack-three-arm-${runSlug}-records.jsonl`;
 const artifact = `${root}/../artifacts/phase2/${artifactName}`;
@@ -53,7 +55,7 @@ const sanitizeTrace = (trace = []) => trace.map((entry) => {
 });
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
   for (const arm of ['playwright', 'visual', 'hybrid']) {
@@ -111,6 +113,6 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     console.log(JSON.stringify(records.at(-1)));
   }
 }
-const summary = { application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
+const summary = { application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
 writeSummary();
 console.log(JSON.stringify({ artifact, passed_cells: summary.passed_cells, total_cells: summary.total_cells }));

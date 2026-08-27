@@ -73,6 +73,25 @@ async function waitForDatabase() {
   throw new Error(`BookStack database did not become ready within ${timeoutMs} ms: ${lastError}`);
 }
 
+async function waitForApplicationSchema() {
+  const startedAt = Date.now();
+  let lastError = 'not attempted';
+  while (Date.now() - startedAt < timeoutMs) {
+    const probe = await runCapture('docker', [
+      'exec', 'bookstack-db-1', 'mysql', '-N', '-u', 'admin', '-padmin', 'bookstack', '-e',
+      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='bookstack' AND table_name IN ('users','books','pages');"
+    ]);
+    const tableCount = Number(probe.stdout.trim());
+    if (probe.code === 0 && tableCount === 3) {
+      console.log(JSON.stringify({ status: 'schema-ready', required_tables: 3, elapsed_ms: Date.now() - startedAt }));
+      return;
+    }
+    lastError = `probe exit ${probe.code}, required table count=${Number.isFinite(tableCount) ? tableCount : 'unknown'}`;
+    await new Promise((resolvePromise) => setTimeout(resolvePromise, 1000));
+  }
+  throw new Error(`BookStack application schema did not become ready within ${timeoutMs} ms: ${lastError}`);
+}
+
 async function seedDatabase() {
   const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
   const seed = (await readFile(seedPath, 'utf8')).replaceAll('YYYY-MM-DD', yesterday);
@@ -104,6 +123,10 @@ async function startOrReset() {
   const imageExists = (await run('docker', ['image', 'inspect', 'bookstack-app:latest'], { allowFailure: true, quiet: true })) === 0;
   await run(composeBin, imageExists ? ['up', '-d'] : ['up', '-d', '--build'], { env: composeEnv });
   await waitForDatabase();
+  // The DB can accept queries several seconds before the BookStack container
+  // finishes its Laravel migrations.  Seeding before the application schema
+  // exists caused intermittent reset exclusions in matched pilots.
+  await waitForApplicationSchema();
   await waitUntilReady();
   await seedDatabase();
   await verifySeed();

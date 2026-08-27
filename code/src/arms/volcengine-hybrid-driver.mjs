@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
 import { assertObservationContract } from './observation-contracts.mjs';
 import { parseProviderDecision, UI_ACTION_TOOL } from './volcengine-cua-driver.mjs';
@@ -5,6 +6,10 @@ import { parseProviderDecision, UI_ACTION_TOOL } from './volcengine-cua-driver.m
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
   return screenshot.startsWith('data:image/') ? screenshot : `data:image/png;base64,${screenshot}`;
+}
+
+function screenshotDigest(screenshot) {
+  return crypto.createHash('sha256').update(asDataUrl(screenshot)).digest('hex');
 }
 
 /**
@@ -42,6 +47,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (config.provider === 'aliyun' ? '1' : '0'), 10);
   const actionHistory = [];
+  let lastAcceptedPointer = null;
   let retryCount = 0;
 
   return {
@@ -61,6 +67,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     },
     async decide({ intent, observation, step }) {
       assertObservationContract('hybrid', observation);
+      const currentObservationDigest = screenshotDigest(observation.screenshot);
       const structure = JSON.stringify(observation.pageStructure);
       const coordinateInstruction = coordinateMode === 'pixels'
         ? 'pixel coordinates: integer x from 0 to 1280 and integer y from 0 to 720'
@@ -114,8 +121,11 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           const payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
           decision = parseProviderDecision(payload, { coordinateMode });
-          const previous = [...actionHistory].reverse().find((entry) => entry?.type === 'click' || entry?.type === 'rejected_click');
-          if (decision.type === 'action' && decision.action.type === 'click' && previous && decision.action.x === previous.x && decision.action.y === previous.y) {
+          const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
+            && decision.action.x === lastAcceptedPointer.x && decision.action.y === lastAcceptedPointer.y;
+          // Do not infer non-progress from coordinates alone.  The same point
+          // can represent a different control after a visible page transition.
+          if (repeatsPointer && currentObservationDigest === lastAcceptedPointer.observationDigest) {
             throw new Error(`repeated non-progressing click at x=${decision.action.x} y=${decision.action.y}`);
           }
           break;
@@ -128,6 +138,9 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       }
       if (!decision) throw lastDecisionError || new Error('CUA provider did not return a decision');
         actionHistory.push(decision.type === 'action' ? { ...decision.action } : decision);
+        if (decision.type === 'action' && decision.action.type === 'click') {
+          lastAcceptedPointer = { x: decision.action.x, y: decision.action.y, observationDigest: currentObservationDigest };
+        }
         if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type)) {
           const normalized = coordinateMode === 'normalized_1000' || (coordinateMode === 'auto' && (decision.action.x > 1000 || decision.action.y > 720));
           if (normalized) decision.action = { ...decision.action, x: Math.round(decision.action.x * 1280 / 1000), y: Math.round(decision.action.y * 720 / 1000), coordinate_mode: 'pixels' };

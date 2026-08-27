@@ -6,6 +6,7 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs';
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
 import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
 
@@ -142,6 +143,8 @@ while (oracle.value?.passed !== true && Date.now() < oracleDeadline) {
   oracle = await evaluateOracle();
 }
 const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
+const oracleOnlySuccess = oracle.value?.passed === true && (failure || result?.status !== 'completed' || result?.emitted_verdict !== 'pass');
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: oracle.value?.passed === true });
 const runRecord = createRunRecord({
   run_id: `bookstack-${arm}-${Date.now()}`,
   application_id: 'bookstack', application_version: '24.10.1', task_id: taskId, condition, arm,
@@ -150,10 +153,10 @@ const runRecord = createRunRecord({
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: 'bookstack-agent-pilot-v0.1', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
-  failure_category: failure ? 'execution' : (passed ? null : 'planning'), trace
+  provenance: { runner_version: 'bookstack-agent-pilot-v0.2', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
+  failure_category: passed ? null : failureCategory, trace
 });
-console.log(JSON.stringify({ application: 'bookstack', arm, result: result ?? null, failure: failure ?? null, oracle, trace, run_record: runRecord }));
+console.log(JSON.stringify({ application: 'bookstack', arm, result: result ?? null, failure: failure ?? null, oracle, oracle_only_success: Boolean(oracleOnlySuccess), failure_category: passed ? null : failureCategory, trace, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
 if (failure || !passed) process.exitCode = 1;

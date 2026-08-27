@@ -49,3 +49,19 @@ test('hybrid Alibaba driver uses function-call output without leaking evaluator 
   assert.equal(body.tool_choice.function.name, 'ui_action');
   assert.doesNotMatch(body.messages[0].content[0].text, /goldOracle|applicationState|mutationLabel/);
 });
+
+test('hybrid driver permits a repeated coordinate after a screenshot transition', async () => {
+  let screenshot = 'before';
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '0' },
+    observeHybrid: async () => ({ screenshot, pageStructure: { controls: [] } }),
+    executeAction: async () => {},
+    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":20,"y":30}' } }] } }] }; } })
+  });
+  const firstObservation = await driver.observe();
+  await driver.decide({ intent: 'Navigate', observation: firstObservation, step: 0 });
+  screenshot = 'after';
+  const secondObservation = await driver.observe();
+  const second = await driver.decide({ intent: 'Navigate', observation: secondObservation, step: 1 });
+  assert.equal(second.type, 'action');
+});

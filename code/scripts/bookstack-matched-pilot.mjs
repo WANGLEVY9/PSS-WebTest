@@ -84,6 +84,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       execution_exit_code: execution.code,
       agent_status: result?.result?.status ?? result?.run_record?.status ?? null,
       agent_completed: agentCompleted, oracle_passed: oraclePassed,
+      oracle_only_success: result?.oracle_only_success === true,
       cell_passed: agentCompleted && oraclePassed, oracle_matches: oracle?.matches ?? null,
       run_id: result?.run_record?.run_id ?? null,
       failure_category: result?.run_record?.failure_category ?? null,

@@ -113,3 +113,24 @@ test('driver rejects a repeated non-progressing click and asks the provider agai
   assert.deepEqual(second, { type: 'done', verdict: 'pass' });
   assert.equal(calls, 3);
 });
+
+test('driver permits the same coordinate after the screenshot visibly changes', async () => {
+  let calls = 0;
+  let screenshot = 'before-navigation';
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '0' },
+    observeScreenshot: async () => screenshot,
+    executeAction: async () => {},
+    fetchImpl: async () => {
+      calls += 1;
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] } }] }; } };
+    }
+  });
+  const firstObservation = await driver.observe();
+  await driver.decide({ intent: 'Navigate', observation: firstObservation, step: 0 });
+  screenshot = 'after-navigation';
+  const secondObservation = await driver.observe();
+  const second = await driver.decide({ intent: 'Navigate', observation: secondObservation, step: 1 });
+  assert.equal(second.type, 'action');
+  assert.equal(calls, 2);
+});

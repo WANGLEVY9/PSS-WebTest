@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
 
 const ACTION_TYPES = new Set(['click', 'double_click', 'type', 'keypress', 'scroll', 'wait']);
@@ -29,6 +30,10 @@ const UI_ACTION_TOOL = {
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
   return screenshot.startsWith('data:image/') ? screenshot : `data:image/png;base64,${screenshot}`;
+}
+
+function screenshotDigest(screenshot) {
+  return crypto.createHash('sha256').update(asDataUrl(screenshot)).digest('hex');
 }
 
 function coordinateBounds(coordinateMode) {
@@ -129,6 +134,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (config.provider === 'aliyun' ? '1' : '0'), 10);
   const actionHistory = [];
+  let lastAcceptedPointer = null;
   let retryCount = 0;
 
   return {
@@ -137,6 +143,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
       return { screenshot: asDataUrl(screenshot) };
     },
     async decide({ intent, observation, step }) {
+      const currentObservationDigest = screenshotDigest(observation.screenshot);
       const coordinateInstruction = coordinateBounds(coordinateMode).instruction;
       const formatInstruction = config.provider === 'aliyun'
         ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
@@ -185,8 +192,14 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           const payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
           decision = parseProviderDecision(payload, { coordinateMode });
-          const previous = [...actionHistory].reverse().find((entry) => entry?.type === 'click' || entry?.type === 'rejected_click');
-          if (decision.type === 'action' && decision.action.type === 'click' && previous && decision.action.x === previous.x && decision.action.y === previous.y) {
+          const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
+            && decision.action.x === lastAcceptedPointer.x && decision.action.y === lastAcceptedPointer.y;
+          // A repeated coordinate is evidence of non-progress only when the
+          // screenshot supplied for the new decision is byte-identical to the
+          // screenshot before the prior accepted click.  Coordinate equality
+          // alone is insufficient because a navigation or save transition can
+          // place a different control at the same screen position.
+          if (repeatsPointer && currentObservationDigest === lastAcceptedPointer.observationDigest) {
             throw new Error(`repeated non-progressing click at x=${decision.action.x} y=${decision.action.y}`);
           }
           break;
@@ -203,6 +216,9 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         // history entry is recorded, so repeated-click detection compares like
         // with like.
         actionHistory.push(decision.type === 'action' ? { ...decision.action } : decision);
+        if (decision.type === 'action' && decision.action.type === 'click') {
+          lastAcceptedPointer = { x: decision.action.x, y: decision.action.y, observationDigest: currentObservationDigest };
+        }
         if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type)) {
           decision.action = toViewportPixels(decision.action, coordinateMode);
         }

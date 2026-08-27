@@ -42,6 +42,15 @@ async function resetWithRetry() {
   return { ok: false, attempts };
 }
 const records = [];
+const sanitizeTrace = (trace = []) => trace.map((entry) => {
+  const action = entry?.action ?? {};
+  const sanitizedAction = { type: action.type ?? 'unknown' };
+  for (const field of ['x', 'y', 'key', 'delta_y', 'ms']) if (action[field] !== undefined) sanitizedAction[field] = action[field];
+  if (typeof action.text === 'string') sanitizedAction.text_length = action.text.length;
+  let path = null;
+  try { path = new URL(entry.url).pathname; } catch {}
+  return { step: entry?.step ?? null, action: sanitizedAction, path };
+});
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
@@ -55,6 +64,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     let execution;
     let oracle;
     let result = null;
+    let cellRunRecord = null;
     if (!cleanStateVerified) {
       records.push({ repetition, arm, provider, model, reset_ok: reset.ok, clean_state_verified: false, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1, execution_exit_code: null, oracle_passed: false, oracle_matches: preOracle?.matches ?? null, failure_category: 'environment' });
       writeSummary();
@@ -68,7 +78,8 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         PSS_BOOKSTACK_USERNAME: process.env.PSS_BOOKSTACK_USERNAME, PSS_BOOKSTACK_PASSWORD: process.env.PSS_BOOKSTACK_PASSWORD
       });
       const oracleRun = await run('node', ['scripts/evaluate-bookstack-page.mjs']); oracle = lastJson(oracleRun.stdout);
-      appendRunRecord(createTraditionalRunRecord({ application_id: 'bookstack', application_version: process.env.BOOKSTACK_VERSION ?? '24.10.1', task_id: 'bookstack-create-page', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 11, runner_version: 'bookstack-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 11 }] }), recordsPath);
+      cellRunRecord = createTraditionalRunRecord({ application_id: 'bookstack', application_version: process.env.BOOKSTACK_VERSION ?? '24.10.1', task_id: 'bookstack-create-page', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 11, runner_version: 'bookstack-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 11 }] });
+      appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', ['scripts/run-bookstack-agent-pilot.mjs'], {
         BOOKSTACK_ARM: arm, CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs,
@@ -76,18 +87,24 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         PSS_RUN_RECORD_OUT: recordsPath
       });
       result = lastJson(execution.stdout); oracle = result?.oracle?.value ?? null;
+      cellRunRecord = result?.run_record ?? null;
     }
-    const agentCompleted = execution.code === 0;
+    const agentCompleted = arm === 'playwright'
+      ? execution.code === 0
+      : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;
     records.push({
       repetition, arm, provider, model, reset_ok: reset.ok, clean_state_verified: true, reset_attempts: reset.attempts, reset_retry_used: reset.attempts.length > 1,
       execution_exit_code: execution.code,
       agent_status: result?.result?.status ?? result?.run_record?.status ?? null,
-      agent_completed: agentCompleted, oracle_passed: oraclePassed,
+      emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null),
+      agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed,
       oracle_only_success: result?.oracle_only_success === true,
       cell_passed: agentCompleted && oraclePassed, oracle_matches: oracle?.matches ?? null,
-      run_id: result?.run_record?.run_id ?? null,
-      failure_category: result?.run_record?.failure_category ?? null,
+      run_id: cellRunRecord?.run_id ?? null,
+      timing: cellRunRecord?.timing ?? null,
+      diagnostic_trace: sanitizeTrace(result?.trace),
+      failure_category: cellRunRecord?.failure_category ?? null,
       failure_message: result?.failure?.message ? String(result.failure.message).slice(0, 300) : null
     });
     writeSummary();

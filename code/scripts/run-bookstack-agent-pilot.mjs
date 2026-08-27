@@ -7,6 +7,7 @@ import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
+import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
 import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
 
@@ -142,21 +143,22 @@ while (oracle.value?.passed !== true && Date.now() < oracleDeadline) {
   await new Promise((resolve) => setTimeout(resolve, 250));
   oracle = await evaluateOracle();
 }
-const passed = !failure && result?.status === 'completed' && oracle.value?.passed === true;
-const oracleOnlySuccess = oracle.value?.passed === true && (failure || result?.status !== 'completed' || result?.emitted_verdict !== 'pass');
-const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: oracle.value?.passed === true });
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true });
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
   run_id: `bookstack-${arm}-${Date.now()}`,
   application_id: 'bookstack', application_version: '24.10.1', task_id: taskId, condition, arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
-  checkpoint_reached: passed,
+  // This field represents the independently evaluated SUT postcondition, not
+  // the conjunction of postcondition and agent termination correctness.
+  checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? 0, actions: trace.length, retries: result?.retries ?? 0 },
   provenance: { runner_version: 'bookstack-agent-pilot-v0.2', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: passed ? null : failureCategory, trace
 });
-console.log(JSON.stringify({ application: 'bookstack', arm, result: result ?? null, failure: failure ?? null, oracle, oracle_only_success: Boolean(oracleOnlySuccess), failure_category: passed ? null : failureCategory, trace, run_record: runRecord }));
+console.log(JSON.stringify({ application: 'bookstack', arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, failure_category: passed ? null : failureCategory, trace, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
 if (failure || !passed) process.exitCode = 1;

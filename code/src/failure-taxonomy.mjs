@@ -6,7 +6,7 @@ export function classifyAgentFailure({ failure = null, result = null, oraclePass
   if (failure) {
     const message = String(failure.message ?? failure).toLowerCase();
     const name = String(failure.name ?? '').toLowerCase();
-    if (name.includes('abort') || /\b(aborted|timeout|timed out)\b/.test(message)) return 'provider-timeout';
+    if (name.includes('abort') || /\b(aborted|timeout|timed out|wall-time budget)\b/.test(message)) return 'provider-timeout';
     if (/repeated non-progressing click/.test(message)) return 'grounding-loop';
     if (/api request failed/.test(message)) return 'provider-api';
     if (/valid json|tool call|unsupported decision|unsupported action|empty or invalid/.test(message)) return 'provider-format';

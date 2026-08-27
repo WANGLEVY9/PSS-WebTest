@@ -134,3 +134,18 @@ test('driver permits the same coordinate after the screenshot visibly changes', 
   assert.equal(second.type, 'action');
   assert.equal(calls, 2);
 });
+
+test('driver enforces an optional agent wall-time budget before another provider call', async () => {
+  let calls = 0;
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'volcengine', CUA_MODEL: 'test-model', CUA_API_KEY: 'test-key' },
+    wallTimeoutMs: 1,
+    observeScreenshot: async () => 'abc123',
+    executeAction: async () => {},
+    fetchImpl: async () => { calls += 1; return { ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"done","verdict":"pass"}' } }] }; } }; }
+  });
+  const observation = await driver.observe();
+  await new Promise((resolve) => setTimeout(resolve, 5));
+  await assert.rejects(() => driver.decide({ intent: 'Inspect', observation, step: 0 }), /wall-time budget/);
+  assert.equal(calls, 0);
+});

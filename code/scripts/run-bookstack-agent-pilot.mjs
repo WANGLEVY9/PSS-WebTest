@@ -93,7 +93,7 @@ const hybridPageStructure = async () => page.locator('a,button,input:not([type="
   }).filter(Boolean).slice(0, 80);
 });
 
-const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10), coordinateMode: arm === 'visual' ? (process.env.CUA_VISUAL_COORDINATE_MODE ?? process.env.CUA_COORDINATE_MODE ?? 'normalized_1000') : (process.env.CUA_COORDINATE_MODE ?? 'normalized_1000') };
+const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), coordinateMode: arm === 'visual' ? (process.env.CUA_VISUAL_COORDINATE_MODE ?? process.env.CUA_COORDINATE_MODE ?? 'normalized_1000') : (process.env.CUA_COORDINATE_MODE ?? 'normalized_1000') };
 if (arm === 'visual') {
   driverOptions.observeScreenshot = screenshot;
 } else {

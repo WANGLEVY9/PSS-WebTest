@@ -68,7 +68,7 @@ try {
   await page.getByRole('textbox', { name: 'Password' }).fill(password);
   await page.getByRole('button', { name: 'Login with Indico' }).click();
   await page.getByRole('button', { name: 'Create event' }).waitFor();
-  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10) };
+  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10) };
   if (arm === 'visual') driverOptions.observeScreenshot = screenshot;
   else driverOptions.observeHybrid = async () => ({ screenshot: await screenshot(), pageStructure: { controls: await hybridStructure() }, viewport });
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);

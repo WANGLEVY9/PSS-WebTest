@@ -7,6 +7,7 @@ import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '3', 10);
 const maxSteps = process.env.CUA_MAX_STEPS ?? '3';
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '8000';
+const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
 const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const mutation = process.env.PSS_UI_MUTATION ?? null;
@@ -55,7 +56,7 @@ const sanitizeTrace = (trace = []) => trace.map((entry) => {
 });
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
   for (const arm of ['playwright', 'visual', 'hybrid']) {
@@ -113,6 +114,6 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     console.log(JSON.stringify(records.at(-1)));
   }
 }
-const summary = { application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
+const summary = { application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false };
 writeSummary();
 console.log(JSON.stringify({ artifact, passed_cells: summary.passed_cells, total_cells: summary.total_cells }));

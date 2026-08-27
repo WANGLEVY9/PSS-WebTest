@@ -8,6 +8,7 @@ dotenv.config();
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
 const maxSteps = process.env.CUA_MAX_STEPS ?? '14';
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '20000';
+const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
@@ -27,7 +28,7 @@ const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => {
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: 'indico-create-event', condition: 'clean-stable', provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: 'indico-create-event', condition: 'clean-stable', provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {

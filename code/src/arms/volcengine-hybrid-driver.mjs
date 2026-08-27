@@ -30,7 +30,7 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
   throw lastError;
 }
 
-export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000' } = {}) {
+export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10) } = {}) {
   const config = requireProviderConfig(env);
   if (!['volcengine', 'aliyun'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
@@ -49,6 +49,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   const actionHistory = [];
   let lastAcceptedPointer = null;
   let retryCount = 0;
+  const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
 
   return {
     async observe() {
@@ -67,6 +68,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     },
     async decide({ intent, observation, step }) {
       assertObservationContract('hybrid', observation);
+      if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
       const structure = JSON.stringify(observation.pageStructure);
       const coordinateInstruction = coordinateMode === 'pixels'

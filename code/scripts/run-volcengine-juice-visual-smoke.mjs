@@ -22,6 +22,7 @@ const trace = [];
 
 const driver = createVolcengineCuaDriver({
   observeScreenshot: async () => (await page.screenshot({ type: 'png' })).toString('base64'),
+  wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
   executeAction: async (action) => {
     if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
       throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);

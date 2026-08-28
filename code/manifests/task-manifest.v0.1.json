@@ -39,8 +39,12 @@
             "clean_repetitions": "10/10 non-confirmatory reset/workflow/oracle cycles passed",
             "functional_fault": "persistence-mismatch was detected by the Playwright visible-state assertion and the independent database oracle",
             "ui_evolution": "bookstack-layout-v1 preserved the workflow and persisted-state oracle in one smoke run",
-            "three_arm_pilot": "latest 1 repetition: Playwright and hybrid passed; pure visual failed on provider tool-call JSON after oracle state was reached; an earlier rerun passed 3/3",
-            "status": "non-confirmatory; provider/planning variance unresolved"
+            "three_arm_pilot": "model-stratified, non-confirmatory outcome-v02 pilot",
+            "clean_repetitions_by_stratum": {
+              "aliyun/qwen3-vl-flash": {"playwright": "3/3", "visual_strict": "0/3", "visual_task_oracle": "3/3", "hybrid": "3/3"},
+              "volcengine/doubao-seed-2-0-pro-260215": {"playwright": "3/3", "visual_strict": "3/3", "hybrid": "3/3"}
+            },
+            "status": "non-confirmatory; provider/model strata are not pooled and final power is unfrozen"
           },
           "arms": ["visual", "hybrid", "playwright"]
         },
@@ -96,7 +100,9 @@
           "evolution_slots": ["form-layout-change", "accessible-description-change", "delayed-background-task"],
           "phase2_evidence": {
             "task_run": "accessibility-first Playwright create-event workflow passed after a clean Indico reset",
-            "oracle": "independent PostgreSQL query matched exactly one public lecture event on the requested date"
+            "oracle": "independent PostgreSQL query matched exactly one public lecture event on the requested date",
+            "clean_three_arm_pilot": "Volcengine/Doubao 1 repetition: Playwright 1/1; visual 0/1; hybrid 0/1; reset and auth gates passed, CUA arms ended at step budget",
+            "status": "feasibility-only; CUA admission not met"
           },
           "arms": ["visual", "hybrid", "playwright"]
         }
@@ -131,7 +137,9 @@
           "evolution_slots": ["search-layout-change", "accessible-name-preserving-card-change"],
           "phase2_evidence": {
             "task_run": "accessibility-first Playwright search passed after deterministic container startup",
-            "oracle": "independent REST query matched the three fixed product names for q=apple; visible UI post-condition evaluator is implemented for agent runs"
+            "oracle": "independent REST query matched the three fixed product names for q=apple; visible UI post-condition evaluator is implemented for agent runs",
+            "clean_three_arm_pilot": "Volcengine/Doubao 1 repetition: Playwright 1/1; visual 0/1; hybrid 0/1; visual emitted pass without independent UI-oracle success and hybrid timed out",
+            "status": "feasibility-only; CUA admission not met"
           },
           "arms": ["visual", "hybrid", "playwright"]
         }

@@ -21,3 +21,12 @@ test('metric summary computes cell-level completion and efficiency metrics', () 
   assert.equal(summary[0].failure_categories.provider, 1);
   assert.equal(summary[0].false_positive_rate, null);
 });
+
+test('metric summary excludes unknown and not-scored truth from verdict accuracy', () => {
+  const summary = summarizeRecords([
+    base({ run_id: 'scored', emitted_verdict: 'clean', ground_truth_verdict: 'clean' }),
+    base({ run_id: 'unscored', emitted_verdict: 'clean', ground_truth_verdict: 'not-scored' }),
+    base({ run_id: 'unknown', emitted_verdict: 'unknown', ground_truth_verdict: 'unknown' })
+  ]);
+  assert.equal(summary[0].verdict_correct_rate, 1);
+});

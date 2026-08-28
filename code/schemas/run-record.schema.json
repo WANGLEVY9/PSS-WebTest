@@ -46,7 +46,11 @@
       "additionalProperties": false
     },
     "failure_category": {
-      "enum": ["perception", "grounding", "planning", "execution", "oracle", "environment", "task-defect", null]
+      "enum": [
+        "perception", "grounding", "planning", "execution", "oracle", "environment", "task-defect",
+        "provider", "provider-timeout", "provider-api", "provider-format", "grounding-loop",
+        "agent-step-budget", "termination-verdict", "agent-verdict", null
+      ]
     }
   },
   "additionalProperties": false

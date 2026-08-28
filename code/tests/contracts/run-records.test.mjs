@@ -17,5 +17,5 @@ test('rejects credentials and provider secrets', () => {
 test('rejects malformed status and timing', () => {
   assert.throws(() => createRunRecord({ ...base(), status: 'success' }), /unsupported status/);
   assert.throws(() => createRunRecord({ ...base(), timing: { wall_time_ms: -1, actions: 0, retries: 0 } }), /invalid timing/);
+  assert.throws(() => createRunRecord({ ...base(), failure_category: 'unclassified' }), /unsupported failure_category/);
 });
-

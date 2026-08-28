@@ -7,6 +7,11 @@ const ARMS = new Set(['visual', 'hybrid', 'playwright']);
 const VERDICTS = new Set(['clean', 'fault', 'unknown', 'not-emitted']);
 const TRUTH = new Set(['clean', 'fault', 'unknown', 'not-scored']);
 const CONTRACTS = new Set(['screenshot-only', 'screenshot-plus-structure', 'scripted-locator']);
+const FAILURE_CATEGORIES = new Set([
+  'perception', 'grounding', 'planning', 'execution', 'oracle', 'environment', 'task-defect',
+  'provider', 'provider-timeout', 'provider-api', 'provider-format', 'grounding-loop',
+  'agent-step-budget', 'termination-verdict', 'agent-verdict'
+]);
 
 function assertSafe(value, path = '$') {
   if (value && typeof value === 'object') {
@@ -46,6 +51,9 @@ export function validateRunRecord(record) {
   for (const field of ['runner_version', 'trace_hash', 'observation_contract']) if (!(field in p)) throw new Error(`provenance missing required field: ${field}`);
   if (!CONTRACTS.has(p.observation_contract)) throw new Error(`unsupported observation_contract: ${p.observation_contract}`);
   if (!/^[a-f0-9]{64}$/.test(p.trace_hash)) throw new Error('trace_hash must be a SHA-256 hex digest');
+  if (record.failure_category !== null && record.failure_category !== undefined && !FAILURE_CATEGORIES.has(record.failure_category)) {
+    throw new Error(`unsupported failure_category: ${record.failure_category}`);
+  }
   assertSafe(record);
   return record;
 }

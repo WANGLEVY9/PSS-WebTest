@@ -21,7 +21,12 @@ export function summarizeRecords(records) {
   const mean = (values) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
   return [...groups.values()].map(({ key, records: group }) => {
     const valid = group.filter((record) => record.status === 'completed' && record.checkpoint_reached);
-    const verdictScorable = group.filter((record) => record.emitted_verdict !== 'not-emitted' && record.ground_truth_verdict !== null);
+    // Only clean/fault truth labels are scorable. `unknown` and `not-scored`
+    // represent intentionally unavailable truth, not a correct/incorrect verdict.
+    const verdictScorable = group.filter((record) =>
+      (record.emitted_verdict === 'clean' || record.emitted_verdict === 'fault') &&
+      (record.ground_truth_verdict === 'clean' || record.ground_truth_verdict === 'fault')
+    );
     const verdictCorrect = verdictScorable.filter((record) => record.emitted_verdict === record.ground_truth_verdict);
     const failures = {};
     for (const record of group) {

@@ -44,8 +44,8 @@
     {"id":"playwright","observation_contract":"scripted-locator","status":"implemented-baseline","confirmatory_status":"blocked-by-pilot"}
   ],
   "models": [
-    {"id":"qwen3-vl-flash","provider":"aliyun-compatible","image_input":true,"status":"pilot-connectivity-validated","confirmatory_status":"not-started"},
-    {"id":"doubao-seed-2-0-pro-260215","provider":"volcengine-ark","image_input":true,"status":"historical-connectivity-only","confirmatory_status":"not-started"},
+    {"id":"qwen3-vl-flash","provider":"aliyun-compatible","image_input":true,"status":"pilot-live-bookstack; cross-sut admission blocked","confirmatory_status":"not-started"},
+    {"id":"doubao-seed-2-0-pro-260215","provider":"volcengine-ark","image_input":true,"status":"pilot-live-bookstack; cross-sut admission blocked","confirmatory_status":"not-started"},
     {"id":"second-vlm-to-be-selected","provider":"TBD","image_input":true,"status":"planned-replication-stratum","confirmatory_status":"not-started"},
     {"id":"third-vlm-to-be-selected","provider":"TBD","image_input":true,"status":"planned-replication-stratum","confirmatory_status":"not-started"}
   ],

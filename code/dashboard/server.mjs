@@ -11,6 +11,7 @@ const publicRoot = path.join(dashboardRoot, 'public');
 const codeRoot = path.resolve(dashboardRoot, '..');
 const repositoryRoot = path.resolve(codeRoot, '..');
 const artifactsRoot = path.join(repositoryRoot, 'artifacts', 'phase2');
+const replayRoot = path.join(artifactsRoot, 'replays');
 const matrixPath = path.join(codeRoot, 'config', 'benchmark-matrix.v0.1.json');
 const host = process.env.PSS_DASHBOARD_HOST ?? '127.0.0.1';
 const port = Number.parseInt(process.env.PSS_DASHBOARD_PORT ?? '4173', 10);
@@ -32,6 +33,81 @@ function readJson(file) {
   catch { return null; }
 }
 
+function safeRunId(value) {
+  return typeof value === 'string' && /^[A-Za-z0-9._-]+$/.test(value) ? value : null;
+}
+
+function sanitizeAction(action = {}) {
+  const type = String(action.type ?? 'unknown');
+  const safe = { type };
+  if (['click', 'double_click'].includes(type)) {
+    if (Number.isFinite(action.x)) safe.x = Math.round(action.x);
+    if (Number.isFinite(action.y)) safe.y = Math.round(action.y);
+  }
+  if (type === 'type') {
+    safe.text_redacted = true;
+    safe.text_length = typeof action.text === 'string'
+      ? action.text.length
+      : Number.isInteger(action.text_length) ? action.text_length : null;
+  }
+  if (type === 'keypress' && typeof action.key === 'string') safe.key = action.key.slice(0, 32);
+  if (type === 'wait' && Number.isFinite(action.ms)) safe.ms = Math.round(action.ms);
+  if (type === 'scroll' && Number.isFinite(action.delta_y)) safe.delta_y = Math.round(action.delta_y);
+  return safe;
+}
+
+function sanitizeTrace(trace) {
+  if (!Array.isArray(trace)) return [];
+  return trace.slice(0, 80).map((entry, index) => ({
+    index,
+    step: Number.isInteger(entry?.step) ? entry.step : null,
+    action: sanitizeAction(entry?.action),
+    url: typeof entry?.url === 'string' ? entry.url.slice(0, 500) : null
+  }));
+}
+
+function readReplay(runId) {
+  const id = safeRunId(runId);
+  if (!id) return null;
+  const replay = readJson(path.join(replayRoot, `${id}.json`));
+  if (!replay || replay.schema_version !== 'replay-v1' || replay.run_id !== id || !Array.isArray(replay.frames)) return null;
+  return replay;
+}
+
+function replaySummary(runId) {
+  const replay = readReplay(runId);
+  return replay ? { available: true, frame_count: replay.frames.length, schema_version: replay.schema_version } : { available: false, frame_count: 0, schema_version: null };
+}
+
+function compactRecord(record, source, modified) {
+  return {
+    source,
+    modified,
+    run_id: record.run_id,
+    application_id: record.application_id,
+    task_id: record.task_id,
+    condition: record.condition,
+    arm: record.arm,
+    status: record.status,
+    checkpoint_reached: record.checkpoint_reached === true,
+    emitted_verdict: record.emitted_verdict,
+    ground_truth_verdict: record.ground_truth_verdict,
+    failure_category: record.failure_category ?? null,
+    wall_time_ms: record.timing?.wall_time_ms ?? null,
+    actions: record.timing?.actions ?? null,
+    retries: record.timing?.retries ?? null,
+    schema_version: record.schema_version ?? null,
+    protocol_version: record.protocol_version ?? null,
+    configuration_id: record.configuration_id ?? null,
+    observation_contract: record.provenance?.observation_contract ?? null,
+    provider_id: record.provenance?.provider_id ?? null,
+    model_id: record.provenance?.model_id ?? null,
+    recorded_at_ms: modified,
+    replay: replaySummary(record.run_id),
+    trajectory: sanitizeTrace(record.trace)
+  };
+}
+
 function recentJsonlRecords() {
   if (!fs.existsSync(artifactsRoot)) return [];
   const files = fs.readdirSync(artifactsRoot)
@@ -43,30 +119,7 @@ function recentJsonlRecords() {
     for (const line of fs.readFileSync(file.fullPath, 'utf8').split(/\r?\n/).filter(Boolean)) {
       try {
         const record = JSON.parse(line);
-        rows.push({
-          source: file.name,
-          modified: file.modified,
-          run_id: record.run_id,
-          application_id: record.application_id,
-          task_id: record.task_id,
-          condition: record.condition,
-          arm: record.arm,
-          status: record.status,
-          checkpoint_reached: record.checkpoint_reached === true,
-          emitted_verdict: record.emitted_verdict,
-          ground_truth_verdict: record.ground_truth_verdict,
-          failure_category: record.failure_category ?? null,
-          wall_time_ms: record.timing?.wall_time_ms ?? null,
-          actions: record.timing?.actions ?? null,
-          retries: record.timing?.retries ?? null,
-          schema_version: record.schema_version ?? null,
-          protocol_version: record.protocol_version ?? null,
-          configuration_id: record.configuration_id ?? null,
-          observation_contract: record.provenance?.observation_contract ?? null,
-          provider_id: record.provenance?.provider_id ?? null,
-          model_id: record.provenance?.model_id ?? null,
-          recorded_at_ms: file.modified
-        });
+        rows.push(compactRecord(record, file.name, file.modified));
       } catch {
         // An incomplete final line can exist while a live runner appends; omit
         // it from this refresh rather than presenting corrupt data as evidence.
@@ -145,6 +198,49 @@ async function overview() {
   };
 }
 
+function runDetail(runId) {
+  const id = safeRunId(runId);
+  if (!id) return null;
+  const record = recentJsonlRecords().find((item) => item.run_id === id);
+  if (!record) return null;
+  const replay = readReplay(id);
+  const frames = replay?.frames
+    .filter((frame) => typeof frame?.filename === 'string' && /^[A-Za-z0-9._-]+\.jpe?g$/i.test(frame.filename))
+    .map((frame) => ({
+      id: String(frame.id ?? frame.filename),
+      phase: String(frame.phase ?? 'frame'),
+      step: Number.isInteger(frame.step) ? frame.step : null,
+      url: typeof frame.url === 'string' ? frame.url.slice(0, 500) : null,
+      action: frame.action ? sanitizeAction(frame.action) : null,
+      image_url: `/artifacts/replays/${encodeURIComponent(id)}/${encodeURIComponent(frame.filename)}`
+    })) ?? [];
+  return {
+    record,
+    replay: {
+      available: Boolean(replay),
+      schema_version: replay?.schema_version ?? null,
+      outcome: replay?.outcome ?? null,
+      frames,
+      note: replay ? 'Frames are local ignored artifacts; actions redact typed values.' : 'This run has no retained local replay frames. Historical records remain inspectable only at their stored ledger granularity.'
+    }
+  };
+}
+
+function serveReplayFrame(request, response, pathname) {
+  const parts = pathname.split('/').filter(Boolean);
+  if (parts.length !== 4 || parts[0] !== 'artifacts' || parts[1] !== 'replays') return json(response, { error: 'not found' }, 404);
+  const [, , runId, filename] = parts.map((part) => decodeURIComponent(part));
+  const replay = readReplay(runId);
+  if (!replay || !/^[A-Za-z0-9._-]+\.jpe?g$/i.test(filename) || !replay.frames.some((frame) => frame.filename === filename)) {
+    return json(response, { error: 'not found' }, 404);
+  }
+  const image = path.resolve(replayRoot, runId, filename);
+  const runDirectory = path.resolve(replayRoot, runId);
+  if (!image.startsWith(`${runDirectory}${path.sep}`) || !fs.existsSync(image)) return json(response, { error: 'not found' }, 404);
+  response.writeHead(200, { 'content-type': 'image/jpeg', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' });
+  fs.createReadStream(image).pipe(response);
+}
+
 function serveStatic(request, response) {
   const requested = request.url === '/' ? '/index.html' : new URL(request.url, `http://${host}`).pathname;
   const resolved = path.resolve(publicRoot, `.${requested}`);
@@ -162,8 +258,14 @@ async function publish() {
 }
 
 const server = http.createServer(async (request, response) => {
-  if (request.url === '/api/overview') return json(response, await overview());
-  if (request.url === '/api/events') {
+  const requestUrl = new URL(request.url, `http://${host}`);
+  if (requestUrl.pathname === '/api/overview') return json(response, await overview());
+  if (requestUrl.pathname.startsWith('/api/runs/')) {
+    const detail = runDetail(decodeURIComponent(requestUrl.pathname.slice('/api/runs/'.length)));
+    return detail ? json(response, detail) : json(response, { error: 'run not found' }, 404);
+  }
+  if (requestUrl.pathname.startsWith('/artifacts/replays/')) return serveReplayFrame(request, response, requestUrl.pathname);
+  if (requestUrl.pathname === '/api/events') {
     response.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
     sseClients.add(response);
     response.write(`event: overview\ndata: ${JSON.stringify(await overview())}\n\n`);

@@ -200,8 +200,12 @@ Never commit either local profile or copy an API key into a report.
 The dashboard is a **read-only local observability surface** for Phase 2. It
 scans ignored `artifacts/phase2/*.jsonl` ledgers, reads the public benchmark
 matrix, and performs short HTTP health probes of the three local SUTs. It never
-serves `.env`, raw screenshots, prompts, credentials, action traces, or model
-responses. A row is labelled `STRICT PASS` only when the stored record has a
+serves `.env`, prompts, credentials, provider responses, hidden oracle state,
+or literal typed values. Newly instrumented agent runs may additionally retain
+local-only screenshot frames under ignored `artifacts/phase2/replays/`; the
+dashboard serves only the frames named by that run's replay manifest and only
+from its loopback address. Historical ledgers are never retroactively supplied
+with reconstructed screenshots. A row is labelled `STRICT PASS` only when the stored record has a
 completed execution, an independently reached checkpoint, and a matching
 emitted/ground-truth verdict; pilot records are never promoted to confirmatory
 findings by the UI.
@@ -214,7 +218,9 @@ npm run dashboard:serve
 
 The page receives an SSE refresh every 2.5 seconds, so newly appended ledger
 records become visible during a run without writing or mutating experiment
-data. Use `PSS_DASHBOARD_PORT=4174` if port 4173 is occupied. The dashboard is
+data. Selecting a run opens its redacted trajectory and any retained local
+frames; set `PSS_CAPTURE_REPLAY_FRAMES=0` to disable frame capture or
+`PSS_REPLAY_MAX_FRAMES=<n>` to bound it. Use `PSS_DASHBOARD_PORT=4174` if port 4173 is occupied. The dashboard is
 bound to `127.0.0.1` by default; do not expose it on a public network without a
 separate access-control review.
 

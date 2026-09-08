@@ -53,8 +53,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
 
   return {
-    async observe() {
-      const observation = await observeHybrid();
+    async observe(context = {}) {
+      const observation = await observeHybrid(context);
       assertObservationContract('hybrid', observation);
       // Return only fields admitted by the contract; do not retain accidental
       // evaluator/application properties supplied by an upstream collector.

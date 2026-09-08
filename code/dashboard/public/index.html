@@ -6,6 +6,7 @@
     <meta name="theme-color" content="#09111d" />
     <title>PSS-WebTest Observatory</title>
     <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/replay.css" />
   </head>
   <body>
     <main class="shell">
@@ -29,13 +30,34 @@
         <article class="metric"><span>Live SUTs</span><strong id="sut-count">—</strong><small>local health probes</small></article>
       </section>
 
+      <section class="section-heading replay-heading"><div><p class="eyebrow">TRACE REPLAY</p><h2>One run, rendered as evidence.</h2></div><span class="microcopy">Frames are captured only for new local runs. Historical ledgers are not retroactively illustrated.</span></section>
+      <section class="replay-workbench" aria-label="Selected run replay">
+        <aside class="run-queue-panel">
+          <div class="panel-kicker"><span>RUN QUEUE</span><span id="queue-count">—</span></div>
+          <div id="run-queue" class="run-queue" role="listbox" aria-label="Recent run records"></div>
+        </aside>
+        <article class="frame-panel">
+          <div class="panel-kicker"><span id="frame-label">FRAME VIEW</span><span id="frame-index">—</span></div>
+          <div id="frame-stage" class="frame-stage">
+            <img id="replay-image" alt="Selected experiment replay frame" hidden />
+            <div id="frame-empty" class="frame-empty"><strong>No frame archive yet.</strong><span>New agent runs will retain local replay frames after fixture login. Existing records remain evidence-ledger entries, not reconstructed screenshots.</span></div>
+          </div>
+          <div class="frame-controls"><button id="frame-prev" type="button" aria-label="Previous replay frame">← PREV</button><div id="frame-caption">Select a run to inspect its local evidence.</div><button id="frame-next" type="button" aria-label="Next replay frame">NEXT →</button></div>
+        </article>
+        <aside class="trajectory-panel">
+          <div class="panel-kicker"><span>TRAJECTORY</span><span id="run-outcome" class="outcome">—</span></div>
+          <div id="run-dossier" class="run-dossier">Loading selected run…</div>
+          <ol id="trajectory-list" class="trajectory-list"></ol>
+        </aside>
+      </section>
+
       <section class="section-heading"><div><p class="eyebrow">SYSTEMS UNDER TEST</p><h2>Runtime perimeter</h2></div><span class="microcopy">HTTP health is observational; it is not a reset or admission gate.</span></section>
       <section id="sut-grid" class="sut-grid" aria-live="polite"></section>
 
       <section class="section-heading task-heading"><div><p class="eyebrow">BENCHMARK COVERAGE</p><h2>Task strata</h2></div><div class="filters" role="group" aria-label="Filter tasks"><button data-filter="all" class="active">All</button><button data-filter="observed">Observed</button><button data-filter="candidate">Candidate</button></div></section>
       <section id="task-grid" class="task-grid" aria-live="polite"></section>
 
-      <section class="section-heading ledger-heading"><div><p class="eyebrow">RECENT EXECUTION</p><h2>Run ledger</h2></div><span class="microcopy">No credentials, screenshots, prompts, or raw traces are served.</span></section>
+      <section class="section-heading ledger-heading"><div><p class="eyebrow">RECENT EXECUTION</p><h2>Run ledger</h2></div><span class="microcopy">Typed values, credentials, prompts, provider replies, and hidden oracle state are never served.</span></section>
       <section class="ledger-wrap"><table><thead><tr><th>Task / condition</th><th>Arm</th><th>Outcome</th><th>Timing</th><th>Evidence note</th></tr></thead><tbody id="ledger-body"></tbody></table></section>
 
       <footer><span>PSS-WebTest · local observability surface</span><span>pilot records remain pilot records</span></footer>

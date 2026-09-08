@@ -11,6 +11,7 @@ import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { evaluateIndicoSearch } from '../src/oracles/indico-visible-search.mjs';
+import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 
 dotenv.config();
 const arm = process.env.INDICO_ARM;
@@ -31,6 +32,8 @@ const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 1
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
 const trace = [];
+const runId = `indico-${arm}-${Date.now()}`;
+const replayRecorder = createLocalReplayRecorder({ runId, applicationId: 'indico', taskId, arm });
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
@@ -43,7 +46,11 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_id: taskId, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 
-const screenshot = async () => `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' })).toString('base64')}`;
+const screenshot = async ({ step } = {}) => {
+  const image = await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' });
+  await replayRecorder.capture({ page, buffer: image, phase: 'observation', step });
+  return `data:image/jpeg;base64,${image.toString('base64')}`;
+};
 const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   // Indico renders the event-type form after a server-backed navigation.  A
@@ -83,6 +90,7 @@ const evaluateOracle = async () => taskId === 'indico-search-events'
 
 let result;
 let failure;
+let replayEligible = false;
 const agentStartedAt = Date.now();
 try {
   await page.goto(`${baseURL}/login/`);
@@ -91,9 +99,12 @@ try {
   await page.getByRole('button', { name: 'Login with Indico' }).click();
   if (taskId === 'indico-search-events') await page.getByPlaceholder('Enter your search term').waitFor();
   else await page.getByRole('button', { name: 'Create event' }).waitFor();
+  // Never archive a login frame.  Replay capture starts only after shared
+  // fixture authentication has completed and the arm's task begins.
+  replayEligible = true;
   const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10) };
   if (arm === 'visual') driverOptions.observeScreenshot = screenshot;
-  else driverOptions.observeHybrid = async () => ({ screenshot: await screenshot(), pageStructure: { controls: await hybridStructure() }, viewport });
+  else driverOptions.observeHybrid = async (context) => ({ screenshot: await screenshot(context), pageStructure: { controls: await hybridStructure() }, viewport });
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   const intent = taskId === 'indico-search-events'
@@ -101,7 +112,10 @@ try {
     : `Starting from the authenticated Indico home page, create one public Lecture event. Follow this visible sequence exactly: (1) click the Create event link on the home page, (2) in the event-type chooser click the link named exactly Lecture, (3) wait for the page heading Create new lecture, (4) click the Title textbox, then the very next action MUST be a type action containing exactly "${title}", (5) click the date textbox with placeholder DD/MM/YYYY, then the very next action MUST be a type action containing exactly "${date}", (6) click the Create event button on the form. In the declared controls, textboxes use interaction=type and links/buttons use interaction=click. Keep title and date in separate fields; never type twice into the same field. Finish only after the resulting event page visibly shows the exact title and formatted date 15 January 2030. Return done with verdict pass only then.`;
   result = await adapter.run({
     intent,
-    onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
+    onStep: async ({ step, action }) => {
+      trace.push({ step, action, url: page.url() });
+      await replayRecorder.capture({ page, phase: 'post-action', step, action });
+    }
   });
 } catch (error) {
   failure = { name: error.name, message: error.message };
@@ -115,9 +129,10 @@ while (oracle.value?.passed !== true && Date.now() < deadline) {
 }
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
+if (replayEligible) await replayRecorder.capture({ page, phase: 'final' });
 const runRecord = createRunRecord({
   ...(phase2Fields ?? {}),
-  run_id: `indico-${arm}-${Date.now()}`,
+  run_id: runId,
   application_id: 'indico', application_version: '3.3.6', task_id: taskId, condition: 'clean-stable', arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
   checkpoint_reached: taskStateReached,
@@ -127,7 +142,8 @@ const runRecord = createRunRecord({
   provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'indico-agent-pilot-v0.4', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: passed ? null : failureCategory, trace
 });
-console.log(JSON.stringify({ application: 'indico', task_id: taskId, arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, trace, run_record: runRecord }));
+const replay = replayRecorder.finalize({ status: runRecord.status, checkpointReached: taskStateReached, emittedVerdict: runRecord.emitted_verdict, groundTruthVerdict: runRecord.ground_truth_verdict, failureCategory, error: failure, oraclePassed: oracle.value?.passed === true });
+console.log(JSON.stringify({ application: 'indico', task_id: taskId, arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, trace, replay: replay ? { frame_count: replay.frames.length, schema_version: replay.schema_version } : null, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
 if (!passed) process.exitCode = 1;

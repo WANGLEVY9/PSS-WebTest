@@ -140,8 +140,8 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
   const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
 
   return {
-    async observe() {
-      const screenshot = await observeScreenshot();
+    async observe(context = {}) {
+      const screenshot = await observeScreenshot(context);
       return { screenshot: asDataUrl(screenshot) };
     },
     async decide({ intent, observation, step }) {

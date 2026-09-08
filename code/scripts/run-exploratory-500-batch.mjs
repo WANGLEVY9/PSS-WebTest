@@ -5,15 +5,15 @@ import { spawn } from 'node:child_process';
 import { evaluateBatchAuthorisation, classifyControllerBoundary } from '../src/exploratory-batch-guards.mjs';
 
 const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const currentProfile = `${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`;
 const manifestPath = process.env.PSS_BATCH_MANIFEST
   ? path.resolve(process.env.PSS_BATCH_MANIFEST)
-  : path.join(codeRoot, '..', 'artifacts/phase2', 'phase2-exploratory-500-blocks-v1-manifest.json');
+  : path.join(codeRoot, '..', 'artifacts/phase2', `phase2-exploratory-500-blocks-v1-${currentProfile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
 if (!fs.existsSync(manifestPath)) throw new Error(`Prepared batch manifest not found: ${manifestPath}. Run npm run batch:prepare-500 first.`);
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const start = Number.parseInt(process.env.PSS_BATCH_START_BLOCK ?? '1', 10);
 const requestedLimit = Number.parseInt(process.env.PSS_BATCH_BLOCK_LIMIT ?? String(manifest.blocks?.length ?? 0), 10);
 const selectedBlocks = (manifest.blocks ?? []).filter((block) => block.block_ordinal >= start).slice(0, requestedLimit);
-const currentProfile = `${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`;
 const authorisation = evaluateBatchAuthorisation({
   manifest, currentProfile, executeFlag: process.env.PSS_BATCH_EXECUTE,
   maxProviderRequests: Number.parseInt(process.env.PSS_BATCH_MAX_PROVIDER_REQUESTS ?? '', 10),

@@ -120,6 +120,19 @@
             "status": "feasibility-only; CUA admission not met"
           },
           "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "indico-search-events",
+          "intent": "Starting from the authenticated Indico home page, enter the fixed query test in the visible search field, submit it, and finish only when the Search page shows event results whose titles all contain test, case-insensitively.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "draft",
+            "assertion": "A post-run evaluator hidden from the testing arm requires the exact /search/?q=test route, exact Search heading, at least one event result, and case-insensitive query containment for every visible event-title link. It does not use agent verdict, trace, or hidden application state. The flow is adapted from WebTestPilot benchmark/indico/test_cases/search_events.yaml at pinned commit b0659bd9908f11c7957602a9372fc100dda50e40."
+          },
+          "fault_slots": ["search-result-mismatch", "query-routing-mismatch"],
+          "evolution_slots": ["search-layout", "access-name-preserving-layout-change"],
+          "phase2_evidence": { "status": "candidate benchmark-derived task; clean reset and all-arm admission are required before any confirmatory use" },
+          "arms": ["visual", "hybrid", "playwright"]
         }
       ]
     },

@@ -109,6 +109,25 @@ async function seedDatabase() {
   return verification;
 }
 
+// A non-mutating counterpart to seedDatabase.  Collection scripts call this
+// after a reset to retain a machine-checkable witness of the fixture state
+// without reapplying seed.sql or exposing database contents to any testing arm.
+async function verifySeedDatabase() {
+  const eventCount = Number(await capture('docker', [
+    'exec', 'indico-postgres-1', 'psql', '-U', 'indico', '-d', 'indico',
+    '-Atc', 'SELECT count(*) FROM events.events;'
+  ]));
+  if (eventCount !== 18) throw new Error(`Expected 18 seeded Indico events, found ${eventCount}`);
+  const snapshot = await capture('docker', [
+    'exec', 'indico-postgres-1', 'psql', '-U', 'indico', '-d', 'indico', '-Atc',
+    "SELECT id || '|' || coalesce(title, '') || '|' || coalesce(start_dt::text, '') || '|' || visibility FROM events.events ORDER BY id;"
+  ]);
+  const resetDigest = crypto.createHash('sha256').update(`indico-seeded-events-v1\n${snapshot}\n`).digest('hex');
+  const verification = { status: 'seed-verified', application: 'indico', event_count: eventCount, reset_contract: 'indico-seeded-events-v1', reset_digest: resetDigest };
+  console.log(JSON.stringify(verification));
+  return verification;
+}
+
 async function ensureExperimentUser() {
   const email = process.env.PSS_INDICO_EMAIL ?? 'pss-phase2-indico@admin.com';
   const username = process.env.PSS_INDICO_USERNAME;
@@ -156,12 +175,13 @@ async function startOrReset() {
   console.log(JSON.stringify({ status: 'seeded', application: 'indico', elapsed_ms: Date.now() - startedAt, reset_contract: verification.reset_contract, reset_digest: verification.reset_digest }));
 }
 
-if (!['start', 'reset', 'ready', 'stop', 'status'].includes(action)) {
-  console.error('Usage: node scripts/indico-lifecycle.mjs <start|reset|ready|stop|status>');
+if (!['start', 'reset', 'ready', 'stop', 'status', 'verify'].includes(action)) {
+  console.error('Usage: node scripts/indico-lifecycle.mjs <start|reset|ready|stop|status|verify>');
   process.exit(2);
 }
 
 if (action === 'start' || action === 'reset') await startOrReset();
 if (action === 'ready') await waitUntilReady();
+if (action === 'verify') await verifySeedDatabase();
 if (action === 'stop') await run(composeBin, [...composeFiles, 'down', '-v', '--remove-orphans']);
 if (action === 'status') await run(composeBin, [...composeFiles, 'ps']);

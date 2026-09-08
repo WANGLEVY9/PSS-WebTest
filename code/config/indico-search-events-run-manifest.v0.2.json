@@ -1,0 +1,20 @@
+{
+  "schema_version": "0.2",
+  "protocol_version": "2.0-draft",
+  "status": "pilot-only",
+  "application_id": "indico",
+  "task_id": "indico-search-events",
+  "condition": "clean-stable",
+  "intent_version": "webtestpilot-indico-search-events-v1-adapted",
+  "benchmark_source": {
+    "repository": "https://github.com/code-philia/WebTestPilot",
+    "commit": "b0659bd9908f11c7957602a9372fc100dda50e40",
+    "path": "benchmark/indico/test_cases/search_events.yaml",
+    "adaptation": "Retains query test and search navigation; strengthens evaluation with a post-run, hidden-from-arm route, heading, and result-title oracle."
+  },
+  "reference_configurations": ["visual-pss-native-aliyun-qwen3-vl-flash-v2", "hybrid-pss-native-aliyun-qwen3-vl-flash-v2", "scripted-playwright-accessibility-human-v2"],
+  "budget": { "agent_max_steps": 8, "agent_timeout_ms": 20000, "scripted_action_budget": 4 },
+  "reset_contract": "indico-seeded-events-digest-v1",
+  "oracle_contract": "visible-ui-indico-search-v1",
+  "note": "Feasibility/admission pilot only; this is not a confirmatory manifest."
+}

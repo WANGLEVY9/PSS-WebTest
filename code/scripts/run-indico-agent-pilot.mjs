@@ -10,6 +10,7 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
+import { evaluateIndicoSearch } from '../src/oracles/indico-visible-search.mjs';
 
 dotenv.config();
 const arm = process.env.INDICO_ARM;
@@ -20,6 +21,9 @@ if (!username || !password) throw new Error('Indico credentials must be configur
 const baseURL = process.env.INDICO_BASE_URL ?? 'http://localhost:8080';
 const title = process.env.PSS_INDICO_EVENT_TITLE ?? 'PSS Phase2 Event';
 const date = process.env.PSS_INDICO_EVENT_DATE ?? '15/01/2030';
+const taskId = process.env.PSS_INDICO_TASK_ID ?? 'indico-create-event';
+if (!['indico-create-event', 'indico-search-events'].includes(taskId)) throw new Error('PSS_INDICO_TASK_ID must be indico-create-event or indico-search-events');
+const query = process.env.PSS_INDICO_SEARCH_QUERY ?? 'test';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '14', 10);
 const viewport = { width: 1280, height: 720 };
 const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? '85', 10);
@@ -32,11 +36,11 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/indico-create-event-run-manifest.v0.2.json`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'indico-search-events' ? 'indico-search-events' : 'indico-create-event'}-run-manifest.v0.2.json`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'indico', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'indico-agent-pilot-v0.3', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_id: taskId, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 
 const screenshot = async () => `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' })).toString('base64')}`;
@@ -65,13 +69,17 @@ const hybridStructure = async () => page.locator('a,button,input:not([type="hidd
   return { role, name, interaction: role === 'textbox' ? 'type' : 'click', center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
 }).filter(Boolean).slice(0, 80));
 
-const evaluateOracle = () => new Promise((resolve, reject) => {
+const evaluateCreateEventOracle = () => new Promise((resolve, reject) => {
   const child = spawn('node', ['scripts/evaluate-indico-event.mjs'], { cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'ignore'] });
   let output = '';
   child.stdout.on('data', (chunk) => { output += chunk; });
   child.on('error', reject);
   child.on('close', (code) => { const line = output.trim().split('\n').reverse().find((candidate) => candidate.startsWith('{')); resolve({ code, value: line ? JSON.parse(line) : null }); });
 });
+
+const evaluateOracle = async () => taskId === 'indico-search-events'
+  ? { code: 0, value: await evaluateIndicoSearch(page, query) }
+  : evaluateCreateEventOracle();
 
 let result;
 let failure;
@@ -81,14 +89,18 @@ try {
   await page.getByRole('textbox', { name: 'Username or email' }).fill(username);
   await page.getByRole('textbox', { name: 'Password' }).fill(password);
   await page.getByRole('button', { name: 'Login with Indico' }).click();
-  await page.getByRole('button', { name: 'Create event' }).waitFor();
+  if (taskId === 'indico-search-events') await page.getByPlaceholder('Enter your search term').waitFor();
+  else await page.getByRole('button', { name: 'Create event' }).waitFor();
   const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10) };
   if (arm === 'visual') driverOptions.observeScreenshot = screenshot;
   else driverOptions.observeHybrid = async () => ({ screenshot: await screenshot(), pageStructure: { controls: await hybridStructure() }, viewport });
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
+  const intent = taskId === 'indico-search-events'
+    ? `Starting from the authenticated Indico home page, use only visible browser controls to search for the exact query "${query}". Click the visible global search textbox, type exactly "${query}", press Enter, and wait for the Search heading and results to render. Finish with done verdict pass only when the visible Search page shows one or more event-result titles and every visible event-result title contains the query "${query}" case-insensitively. Do not use DOM selectors, hidden state, or any oracle signal.`
+    : `Starting from the authenticated Indico home page, create one public Lecture event. Follow this visible sequence exactly: (1) click the Create event link on the home page, (2) in the event-type chooser click the link named exactly Lecture, (3) wait for the page heading Create new lecture, (4) click the Title textbox, then the very next action MUST be a type action containing exactly "${title}", (5) click the date textbox with placeholder DD/MM/YYYY, then the very next action MUST be a type action containing exactly "${date}", (6) click the Create event button on the form. In the declared controls, textboxes use interaction=type and links/buttons use interaction=click. Keep title and date in separate fields; never type twice into the same field. Finish only after the resulting event page visibly shows the exact title and formatted date 15 January 2030. Return done with verdict pass only then.`;
   result = await adapter.run({
-    intent: `Starting from the authenticated Indico home page, create one public Lecture event. Follow this visible sequence exactly: (1) click the Create event link on the home page, (2) in the event-type chooser click the link named exactly Lecture, (3) wait for the page heading Create new lecture, (4) click the Title textbox, then the very next action MUST be a type action containing exactly "${title}", (5) click the date textbox with placeholder DD/MM/YYYY, then the very next action MUST be a type action containing exactly "${date}", (6) click the Create event button on the form. In the declared controls, textboxes use interaction=type and links/buttons use interaction=click. Keep title and date in separate fields; never type twice into the same field. Finish only after the resulting event page visibly shows the exact title and formatted date 15 January 2030. Return done with verdict pass only then.`,
+    intent,
     onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
   });
 } catch (error) {
@@ -106,16 +118,16 @@ const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: ta
 const runRecord = createRunRecord({
   ...(phase2Fields ?? {}),
   run_id: `indico-${arm}-${Date.now()}`,
-  application_id: 'indico', application_version: '3.3.6', task_id: 'indico-create-event', condition: 'clean-stable', arm,
+  application_id: 'indico', application_version: '3.3.6', task_id: taskId, condition: 'clean-stable', arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
   checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'indico-agent-pilot-v0.3', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
+  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'indico-agent-pilot-v0.4', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: passed ? null : failureCategory, trace
 });
-console.log(JSON.stringify({ application: 'indico', arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, trace, run_record: runRecord }));
+console.log(JSON.stringify({ application: 'indico', task_id: taskId, arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, trace, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();
 if (!passed) process.exitCode = 1;

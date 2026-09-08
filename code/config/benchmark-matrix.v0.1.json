@@ -21,7 +21,7 @@
       "workflows": [
         {"id":"indico-create-event","status":"pilot-only","complexity":"multi-step","oracle_authority":"relational","oracle_status":"independent-verified","fault_slots":["publish-state-mismatch","date-field-mismatch"],"evolution_slots":["form-layout","access-description","delayed-background"]},
         {"id":"indico-create-event-with-description","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["description-omission","publish-state-mismatch"],"evolution_slots":["form-layout","access-description"]},
-        {"id":"indico-search-and-open-event","status":"candidate","complexity":"search-navigation","oracle_authority":"relational","oracle_status":"draft","fault_slots":["wrong-event-target"],"evolution_slots":["search-layout","access-name-preserving-layout-change"]},
+        {"id":"indico-search-events","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui","oracle_status":"draft","benchmark_source":"WebTestPilot/indico/search_events.yaml@b0659bd9908f11c7957602a9372fc100dda50e40","fault_slots":["search-result-mismatch","query-routing-mismatch"],"evolution_slots":["search-layout","access-name-preserving-layout-change"]},
         {"id":"indico-edit-event-date","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["date-field-mismatch","stale-update"],"evolution_slots":["form-layout","delayed-background"]},
         {"id":"indico-create-event-with-privacy","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["privacy-state-mismatch"],"evolution_slots":["form-layout","access-description"]}
       ]

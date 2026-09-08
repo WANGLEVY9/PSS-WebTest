@@ -41,6 +41,10 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     : 'https://ark.cn-beijing.volces.com/api/v3';
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
   const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
+  const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
+  if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
+    throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
+  }
   // Qwen3-VL JSON mode can fail with thinking enabled.  Use Alibaba's
   // generation-limit field explicitly while preserving the Ark shape.
   const generationOptions = config.provider === 'aliyun'
@@ -77,7 +81,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         : coordinateMode === 'auto'
         ? 'pixel coordinates x=0..1280,y=0..720; if y>720 or x>1000, use normalized x/y=0..1000 so the harness can convert it'
         : 'normalized coordinates: integer x and y from 0 to 1000';
-      const formatInstruction = config.provider === 'aliyun'
+      const formatInstruction = config.provider === 'aliyun' && aliyunActionMode === 'tool'
         ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
         : `Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"${doneVerdicts[0]}"}; or {"type":"action","action":{"type":"click","x":330,"y":512}}; or {"type":"action","action":{"type":"double_click","x":330,"y":512}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Allowed done verdicts: ${doneVerdicts.join(', ')}.`;
       const lastTwo = actionHistory.slice(-2);
@@ -109,7 +113,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
             { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
           ] }]
         };
-        if (config.provider === 'aliyun') {
+        if (config.provider === 'aliyun' && aliyunActionMode === 'tool') {
           requestBody.tools = [UI_ACTION_TOOL];
           requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
         } else {

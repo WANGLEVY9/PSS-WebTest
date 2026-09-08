@@ -9,6 +9,17 @@ test('parses a bounded click decision', () => {
   assert.deepEqual(parseDecision('{"type":"action","action":{"type":"click","x":746,"y":962}}', { coordinateMode: 'auto' }), { type: 'action', action: { type: 'click', x: 746, y: 962 } });
 });
 
+test('parses an unambiguous visual coordinate tuple without accepting arbitrary coordinate objects', () => {
+  assert.deepEqual(
+    parseDecision('{"type":"action","action":{"type":"click","x":[753,43],"y":null}}', { coordinateMode: 'normalized_1000' }),
+    { type: 'action', action: { type: 'click', x: 753, y: 43 } }
+  );
+  assert.throws(
+    () => parseDecision('{"type":"action","action":{"type":"click","x":{"x":753,"y":43},"y":null}}', { coordinateMode: 'normalized_1000' }),
+    /pointer action coordinates/
+  );
+});
+
 test('rejects malformed or unsupported decisions', () => {
   assert.throws(() => parseDecision('not-json'), /valid JSON/);
   assert.throws(() => parseDecision('{"type":"action","action":{"type":"locator"}}'), /unsupported/);
@@ -67,6 +78,24 @@ test('driver accepts Alibaba OpenAI-compatible provider configuration', async ()
   assert.equal(body.response_format, undefined);
   assert.equal(body.tool_choice.function.name, 'ui_action');
   assert.equal(body.tools[0].function.name, 'ui_action');
+});
+
+test('Alibaba JSON action mode uses a strict textual JSON response instead of function parameters', async () => {
+  let request;
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_ALIYUN_ACTION_MODE: 'json' },
+    observeScreenshot: async () => 'abc123', executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"action","action":{"type":"click","x":20,"y":30}}' } }] }; } };
+    }
+  });
+  const decision = await driver.decide({ intent: 'Inspect the page', observation: await driver.observe(), step: 0 });
+  assert.deepEqual(decision.action, { type: 'click', x: 26, y: 22, coordinate_mode: 'pixels' });
+  const body = JSON.parse(request.options.body);
+  assert.deepEqual(body.response_format, { type: 'json_object' });
+  assert.equal(body.tools, undefined);
+  assert.match(body.messages[0].content[0].text, /JSON object/);
 });
 
 test('Alibaba driver retries one empty tool-call argument set without changing the observation', async () => {

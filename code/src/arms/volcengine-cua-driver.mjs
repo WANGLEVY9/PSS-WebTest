@@ -55,9 +55,21 @@ function parseDecision(text, { coordinateMode = 'normalized_1000' } = {}) {
   if (parsed?.type === 'done') return { type: 'done', verdict: String(parsed.verdict || 'unknown') };
   if (parsed?.type !== 'action' || !ACTION_TYPES.has(parsed.action?.type)) throw new Error('CUA model returned an unsupported decision');
   const rawAction = parsed.action;
-  const action = { type: rawAction.type };
+  // qwen3.7-flash sometimes serializes a visual click point as
+  // {"x":[x,y],"y":null} even when asked for separate coordinate fields.
+  // This is an unambiguous, bounded equivalent of x/y only when the tuple has
+  // exactly two integer members and there is no competing y value. All other
+  // non-scalar coordinate representations remain invalid below.
+  const tuplePoint = Array.isArray(rawAction.x)
+    && rawAction.x.length === 2
+    && rawAction.x.every(Number.isInteger)
+    && (rawAction.y === null || rawAction.y === undefined);
+  const normalizedRawAction = tuplePoint
+    ? { ...rawAction, x: rawAction.x[0], y: rawAction.x[1] }
+    : rawAction;
+  const action = { type: normalizedRawAction.type };
   for (const field of ['x', 'y', 'text', 'key', 'delta_y', 'ms']) {
-    if (rawAction[field] !== undefined) action[field] = rawAction[field];
+    if (normalizedRawAction[field] !== undefined) action[field] = normalizedRawAction[field];
   }
   if (['click', 'double_click'].includes(action.type)) {
     const bounds = coordinateBounds(coordinateMode);
@@ -127,6 +139,10 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     : 'https://ark.cn-beijing.volces.com/api/v3';
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
   const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
+  const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
+  if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
+    throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
+  }
   // Qwen3-VL's JSON mode is not reliable when thinking is enabled.  Alibaba's
   // OpenAI-compatible endpoint also prefers max_completion_tokens; keep the
   // Volcengine request shape unchanged for backward compatibility.
@@ -148,7 +164,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
       if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
       const coordinateInstruction = coordinateBounds(coordinateMode).instruction;
-      const formatInstruction = config.provider === 'aliyun'
+      const formatInstruction = config.provider === 'aliyun' && aliyunActionMode === 'tool'
         ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
         : `Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"${doneVerdicts[0]}"}; or {"type":"action","action":{"type":"click","x":330,"y":512}}; or {"type":"action","action":{"type":"double_click","x":330,"y":512}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Allowed done verdicts: ${doneVerdicts.join(', ')}.`;
       const lastTwo = actionHistory.slice(-2);
@@ -180,7 +196,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
             { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
           ] }]
         };
-        if (config.provider === 'aliyun') {
+        if (config.provider === 'aliyun' && aliyunActionMode === 'tool') {
           requestBody.tools = [UI_ACTION_TOOL];
           requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
         } else {

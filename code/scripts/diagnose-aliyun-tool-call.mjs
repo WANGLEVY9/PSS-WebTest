@@ -5,6 +5,8 @@ const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const username = process.env.PSS_BOOKSTACK_USERNAME;
 const password = process.env.PSS_BOOKSTACK_PASSWORD;
 const viewport = { width: 1280, height: 720 };
+const actionMode = process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
+if (!['tool', 'json'].includes(actionMode)) throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
 if (!username || !password) throw new Error('BookStack credentials must be configured in code/.env');
 
 const browser = await chromium.launch({ headless: true });
@@ -25,7 +27,7 @@ try {
       temperature: 0,
       max_completion_tokens: 512,
       enable_thinking: false,
-      tools: [{ type: 'function', function: {
+      ...(actionMode === 'tool' ? { tools: [{ type: 'function', function: {
         name: 'ui_action',
         description: 'Return the next browser action only.',
         parameters: {
@@ -43,19 +45,21 @@ try {
           required: ['action_type'],
           additionalProperties: false
         }
-      } }],
-      tool_choice: { type: 'function', function: { name: 'ui_action' } },
+      } }], tool_choice: { type: 'function', function: { name: 'ui_action' } } } : { response_format: { type: 'json_object' } }),
       messages: [{ role: 'user', content: [
-        { type: 'text', text: 'You are a UI testing agent. The current page is a BookStack new-page editor. Enter the exact page content "PSS Phase2 Content". Use the ui_action function exactly once. Do not include newline characters in text.' },
+        { type: 'text', text: actionMode === 'tool'
+          ? 'You are a UI testing agent. The current page is a BookStack new-page editor. Enter the exact page content "PSS Phase2 Content". Use the ui_action function exactly once. Do not include newline characters in text.'
+          : 'You are a UI testing agent. The current page is a BookStack new-page editor. Return exactly one JSON object for the next action, using {"type":"action","action":{"type":"click","x":330,"y":512}} or {"type":"done","verdict":"pass"}. Do not include markdown or newline characters in any text field.' },
         { type: 'image_url', image_url: { url: screenshot } }
       ] }]
     })
   });
   const payload = await response.json();
   const message = payload?.choices?.[0]?.message;
-  console.log(JSON.stringify({ status: response.status, finish_reason: payload?.choices?.[0]?.finish_reason ?? null, message: {
+  console.log(JSON.stringify({ action_mode: actionMode, status: response.status, finish_reason: payload?.choices?.[0]?.finish_reason ?? null, message: {
     content_type: typeof message?.content,
     content_length: typeof message?.content === 'string' ? message.content.length : null,
+    content: typeof message?.content === 'string' ? message.content.slice(0, 500) : null,
     tool_calls: message?.tool_calls ?? null
   }, error: payload?.error ?? null }));
 } finally {

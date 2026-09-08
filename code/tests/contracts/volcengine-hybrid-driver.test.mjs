@@ -50,6 +50,25 @@ test('hybrid Alibaba driver uses function-call output without leaking evaluator 
   assert.doesNotMatch(body.messages[0].content[0].text, /goldOracle|applicationState|mutationLabel/);
 });
 
+test('hybrid Alibaba JSON action mode preserves the structure boundary and avoids function parameters', async () => {
+  let request;
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_ALIYUN_ACTION_MODE: 'json' },
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"done","verdict":"pass"}' } }] }; } };
+    }
+  });
+  const decision = await driver.decide({ intent: 'Save the page', observation: await driver.observe(), step: 0 });
+  assert.equal(decision.verdict, 'pass');
+  const body = JSON.parse(request.options.body);
+  assert.deepEqual(body.response_format, { type: 'json_object' });
+  assert.equal(body.tools, undefined);
+  assert.doesNotMatch(body.messages[0].content[0].text, /goldOracle|applicationState|mutationLabel/);
+});
+
 test('hybrid driver permits a repeated coordinate after a screenshot transition', async () => {
   let screenshot = 'before';
   const driver = createVolcengineHybridDriver({

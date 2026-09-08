@@ -7,6 +7,7 @@
     "test:traditional": "playwright test --project=chromium",
     "test:traditional:ui": "playwright test --ui",
     "report": "playwright show-report",
+    "dashboard:serve": "node dashboard/server.mjs",
     "validate:manifests": "node scripts/validate-manifests.mjs",
     "check:sut": "node scripts/check-sut.mjs",
     "check:agent": "node scripts/check-agent-readiness.mjs",

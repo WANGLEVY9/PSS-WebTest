@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#09111d" />
+    <title>PSS-WebTest Observatory</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <a class="mark" href="#top" aria-label="PSS-WebTest Observatory home"><span class="mark-dot"></span><span>PSS / OBSERVATORY</span></a>
+        <div class="topbar-right"><span id="connection" class="connection">CONNECTING</span><time id="updated" aria-live="polite">—</time></div>
+      </header>
+
+      <section id="top" class="hero">
+        <p class="eyebrow">PHASE 02 · LIVE LOCAL INSTRUMENTATION</p>
+        <div class="hero-row">
+          <div><h1>Evidence, not<br><em>impressions.</em></h1><p class="lede">A read-only observatory for the matched comparison of screenshot-only CUA, hybrid agents, and accessibility-locator Playwright.</p></div>
+          <aside class="boundary"><span>01 / Evidence boundary</span><p id="boundary-copy">Loading protocol boundary…</p></aside>
+        </div>
+      </section>
+
+      <section class="metric-grid" aria-label="Experiment ledger summary">
+        <article class="metric"><span>Ledger records</span><strong id="record-count">—</strong><small>append-only run records</small></article>
+        <article class="metric"><span>Strict passes</span><strong id="strict-passes">—</strong><small>protocol + independent oracle</small></article>
+        <article class="metric"><span>Checkpoint only</span><strong id="checkpoint-only">—</strong><small>state reached, protocol incomplete</small></article>
+        <article class="metric"><span>Live SUTs</span><strong id="sut-count">—</strong><small>local health probes</small></article>
+      </section>
+
+      <section class="section-heading"><div><p class="eyebrow">SYSTEMS UNDER TEST</p><h2>Runtime perimeter</h2></div><span class="microcopy">HTTP health is observational; it is not a reset or admission gate.</span></section>
+      <section id="sut-grid" class="sut-grid" aria-live="polite"></section>
+
+      <section class="section-heading task-heading"><div><p class="eyebrow">BENCHMARK COVERAGE</p><h2>Task strata</h2></div><div class="filters" role="group" aria-label="Filter tasks"><button data-filter="all" class="active">All</button><button data-filter="observed">Observed</button><button data-filter="candidate">Candidate</button></div></section>
+      <section id="task-grid" class="task-grid" aria-live="polite"></section>
+
+      <section class="section-heading ledger-heading"><div><p class="eyebrow">RECENT EXECUTION</p><h2>Run ledger</h2></div><span class="microcopy">No credentials, screenshots, prompts, or raw traces are served.</span></section>
+      <section class="ledger-wrap"><table><thead><tr><th>Task / condition</th><th>Arm</th><th>Outcome</th><th>Timing</th><th>Evidence note</th></tr></thead><tbody id="ledger-body"></tbody></table></section>
+
+      <footer><span>PSS-WebTest · local observability surface</span><span>pilot records remain pilot records</span></footer>
+    </main>
+    <template id="empty-template"><div class="empty">No live records yet. Start a reset-isolated pilot to populate this surface.</div></template>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

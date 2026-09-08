@@ -195,4 +195,27 @@ retained as `oracle_only_success=true` but is not counted as a passed cell.
 
 Never commit either local profile or copy an API key into a report.
 
+## Live local experiment dashboard
+
+The dashboard is a **read-only local observability surface** for Phase 2. It
+scans ignored `artifacts/phase2/*.jsonl` ledgers, reads the public benchmark
+matrix, and performs short HTTP health probes of the three local SUTs. It never
+serves `.env`, raw screenshots, prompts, credentials, action traces, or model
+responses. A row is labelled `STRICT PASS` only when the stored record has a
+completed execution, an independently reached checkpoint, and a matching
+emitted/ground-truth verdict; pilot records are never promoted to confirmatory
+findings by the UI.
+
+```sh
+cd code
+npm run dashboard:serve
+# open http://127.0.0.1:4173
+```
+
+The page receives an SSE refresh every 2.5 seconds, so newly appended ledger
+records become visible during a run without writing or mutating experiment
+data. Use `PSS_DASHBOARD_PORT=4174` if port 4173 is occupied. The dashboard is
+bound to `127.0.0.1` by default; do not expose it on a public network without a
+separate access-control review.
+
 Phase 2 design decisions prioritize evidence published or released from 2023 onward. The local `third_party/` directory is a read-only checkout area and is ignored by Git; it is not part of the public replication package.

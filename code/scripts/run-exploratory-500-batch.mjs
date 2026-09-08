@@ -15,6 +15,8 @@ const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const start = Number.parseInt(process.env.PSS_BATCH_START_BLOCK ?? '1', 10);
 const requestedLimit = Number.parseInt(process.env.PSS_BATCH_BLOCK_LIMIT ?? String(manifest.blocks?.length ?? 0), 10);
 const selectedBlocks = (manifest.blocks ?? []).filter((block) => block.block_ordinal >= start).slice(0, requestedLimit);
+const runTagPrefix = process.env.PSS_BATCH_RUN_TAG_PREFIX ?? 'exploratory-500';
+if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(runTagPrefix)) throw new Error('PSS_BATCH_RUN_TAG_PREFIX must be a safe non-empty artifact-label prefix.');
 const authorisation = evaluateBatchAuthorisation({
   manifest, currentProfile, executeFlag: process.env.PSS_BATCH_EXECUTE,
   maxProviderRequests: Number.parseInt(process.env.PSS_BATCH_MAX_PROVIDER_REQUESTS ?? '', 10),
@@ -53,20 +55,23 @@ for (const block of selectedBlocks) {
     throw new Error(`Stopped before ${block.block_id}: PSS_BATCH_MAX_WALL_MINUTES exhausted.`);
   }
   const baseEnv = {
-    PSS_MATCHED_REPETITIONS: '1', PSS_PILOT_RUN_TAG: `exploratory-500-${String(block.block_ordinal).padStart(4, '0')}`,
+    PSS_MATCHED_REPETITIONS: '1', PSS_PILOT_RUN_TAG: `${runTagPrefix}-${String(block.block_ordinal).padStart(4, '0')}`,
     PSS_RANDOMIZATION_SEED: `${manifest.campaign_id}|${block.block_id}`, PSS_PILOT_CONDITION: block.condition,
     PSS_BATCH_BLOCK_ID: block.block_id
   };
   if (block.task_id.startsWith('bookstack-')) baseEnv.PSS_BOOKSTACK_TASK_ID = block.task_id;
   const result = await runController(block.controller, baseEnv);
-  const artifactEvidence = readBlockPilotSummary({ artifactRoot, runTag: baseEnv.PSS_PILOT_RUN_TAG, requiredArms: block.required_arms });
+  const artifactEvidence = readBlockPilotSummary({
+    artifactRoot, runTag: baseEnv.PSS_PILOT_RUN_TAG, requiredArms: block.required_arms,
+    expectedProvider: process.env.CUA_PROVIDER, expectedModel: process.env.CUA_MODEL, expectedTaskId: block.task_id
+  });
   const boundary = classifyControllerBoundary({ ...result, records: artifactEvidence?.records ?? [] });
   consecutiveProviderFailures = boundary.providerFailure ? consecutiveProviderFailures + 1 : 0;
   consecutiveResetFailures = boundary.resetFailure ? consecutiveResetFailures + 1 : 0;
   appendProgress({
     timestamp: new Date().toISOString(), campaign_id: manifest.campaign_id, block_id: block.block_id,
     template_id: block.template_id, application: block.application, task_id: block.task_id, condition: block.condition,
-    provider_model_stratum: currentProfile, required_arms: block.required_arms, arm_order: block.arm_order,
+    provider_model_stratum: currentProfile, run_tag: baseEnv.PSS_PILOT_RUN_TAG, required_arms: block.required_arms, arm_order: block.arm_order,
     controller_exit_code: result.code,
     summary_artifact: artifactEvidence?.summaryPath ?? null,
     observed_arms: artifactEvidence?.observedArms ?? null,

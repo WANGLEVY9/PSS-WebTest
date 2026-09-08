@@ -114,7 +114,7 @@
     {
       "configuration_id": "visual-pss-native-aliyun-qwen3-7-flash-v1",
       "family": "visual",
-      "status": "candidate",
+      "status": "implemented",
       "framework": { "id": "pss-native", "version": "0.2" },
       "observation_contract": "screenshot-only",
       "runtime": {
@@ -129,7 +129,7 @@
     {
       "configuration_id": "hybrid-pss-native-aliyun-qwen3-7-flash-v1",
       "family": "hybrid",
-      "status": "candidate",
+      "status": "implemented",
       "framework": { "id": "pss-native", "version": "0.2" },
       "observation_contract": "screenshot-plus-structure",
       "runtime": {

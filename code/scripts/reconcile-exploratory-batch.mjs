@@ -8,10 +8,15 @@ const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
 const manifestPath = process.env.PSS_BATCH_MANIFEST ? path.resolve(process.env.PSS_BATCH_MANIFEST) : path.join(codeRoot, '..', 'artifacts/phase2', `phase2-exploratory-500-blocks-v1-${`${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const artifactRoot = path.join(codeRoot, '..', 'artifacts/phase2');
+const runTagPrefix = process.env.PSS_BATCH_RUN_TAG_PREFIX ?? 'exploratory-500';
+if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(runTagPrefix)) throw new Error('PSS_BATCH_RUN_TAG_PREFIX must be a safe non-empty artifact-label prefix.');
 const observed = [];
 for (const block of manifest.blocks ?? []) {
-  const tag = `exploratory-500-${String(block.block_ordinal).padStart(4, '0')}`;
-  const evidence = readBlockPilotSummary({ artifactRoot, runTag: tag, requiredArms: block.required_arms });
+  const tag = `${runTagPrefix}-${String(block.block_ordinal).padStart(4, '0')}`;
+  const evidence = readBlockPilotSummary({
+    artifactRoot, runTag: tag, requiredArms: block.required_arms,
+    expectedProvider: process.env.CUA_PROVIDER, expectedModel: process.env.CUA_MODEL, expectedTaskId: block.task_id
+  });
   if (!evidence) continue;
   const boundary = classifyControllerBoundary({ code: null, stdout: '', stderr: '', records: evidence.records });
   observed.push({ block_id: block.block_id, template_id: block.template_id, application: block.application, task_id: block.task_id, condition: block.condition, summary_artifact: evidence.summaryPath, observed_arms: evidence.observedArms, full_three_arm_record_observed: evidence.fullThreeArmRecord, strict_passed_cells: evidence.strictPassedCells, total_cells: evidence.totalCells, provider_failure_boundary: boundary.providerFailure, reset_failure_boundary: boundary.resetFailure });

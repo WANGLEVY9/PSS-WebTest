@@ -117,8 +117,11 @@ async function overview() {
       evidence: evidence ? {
         ...evidence,
         arms: [...evidence.arms].sort(),
-        complete_three_arm_cell: ['visual', 'hybrid', 'playwright'].every((arm) => evidence.arms.has(arm))
-      } : { n: 0, strict_passes: 0, checkpoint_only: 0, arms: [], failures: {}, latest_ms: null, complete_three_arm_cell: false }
+        // Coverage is deliberately weaker than a matched/admitted cell: the
+        // dashboard must not infer a shared randomized repetition or any
+        // confirmatory status merely because all three arm labels occur.
+        all_arms_observed: ['visual', 'hybrid', 'playwright'].every((arm) => evidence.arms.has(arm))
+      } : { n: 0, strict_passes: 0, checkpoint_only: 0, arms: [], failures: {}, latest_ms: null, all_arms_observed: false }
     };
   }));
   const suts = await Promise.all(SUTS.map(checkSut));

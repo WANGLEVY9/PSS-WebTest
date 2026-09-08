@@ -65,6 +65,21 @@
             "artifact": "artifacts/phase2/bookstack-navigation-pilot.json"
           },
           "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "bookstack-search-and-open-book2",
+          "intent": "Starting from the authenticated home page, open the visible Search control, reach the Search Results page, open Books, then open the book named Book2 and finish only when its book-overview page is visibly open.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "draft",
+            "assertion": "A post-run evaluator, hidden from the testing arm, requires the exact /books/<slug> overview route and an exact Book2 heading. The agent verdict, its action history, and any hidden application state are not oracle inputs. The task flow is adapted from WebTestPilot benchmark/bookstack/test_cases/search.yaml at pinned commit b0659bd9908f11c7957602a9372fc100dda50e40."
+          },
+          "fault_slots": ["search-result-mismatch", "wrong-book-target"],
+          "evolution_slots": ["search-layout-change", "access-name-preserving-layout-change"],
+          "phase2_evidence": {
+            "status": "candidate benchmark-derived task; no results are confirmatory until reset, independent oracle, and all-arm clean admission are passed"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
         }
       ]
     },

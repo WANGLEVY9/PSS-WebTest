@@ -32,6 +32,7 @@ export function summarizeRecords(records) {
     for (const record of group) {
       if (record.failure_category) failures[record.failure_category] = (failures[record.failure_category] ?? 0) + 1;
     }
+    const truthLabels = new Set(group.map((record) => record.ground_truth_verdict).filter((verdict) => verdict === 'clean' || verdict === 'fault'));
     return {
       cell: key,
       n: group.length,
@@ -45,20 +46,22 @@ export function summarizeRecords(records) {
       failure_categories: failures,
       false_positive_rate: null,
       false_negative_rate: null,
-      note: 'FPR/FNR require matched clean and fault records; null is intentional for clean-only input.'
+      note: truthLabels.size === 2
+        ? 'FPR/FNR require a paired classifier calculation across clean and fault runs; this per-condition summary leaves them null intentionally.'
+        : `FPR/FNR require matched clean and fault records for the same workflow; null is intentional for ${truthLabels.has('fault') ? 'fault-only' : 'clean-only'} input.`
     };
   });
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
   const args = process.argv.slice(2);
-  const get = (name) => { const index = args.indexOf(name); return index >= 0 ? args[index + 1] : null; };
-  const inputPath = get('--input');
-  const outputPath = get('--output');
-  if (!inputPath || !outputPath) throw new Error('usage: node scripts/summarize-run-records.mjs --input records.jsonl --output summary.json');
-  const records = fs.readFileSync(inputPath, 'utf8').split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line));
-  const summary = { schema_version: '0.1', metric_dictionary: 'metric-dictionary.v0.1', records: records.length, groups: summarizeRecords(records), generated_at: new Date().toISOString() };
+  const inputs = args.flatMap((value, index) => value === '--input' && args[index + 1] ? [args[index + 1]] : []);
+  const outputIndex = args.indexOf('--output');
+  const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+  if (!inputs.length || !outputPath) throw new Error('usage: node scripts/summarize-run-records.mjs --input records-a.jsonl [--input records-b.jsonl ...] --output summary.json');
+  const records = inputs.flatMap((inputPath) => fs.readFileSync(inputPath, 'utf8').split(/\r?\n/).filter(Boolean).map((line) => JSON.parse(line)));
+  const summary = { schema_version: '0.1', metric_dictionary: 'metric-dictionary.v0.1', input_files: inputs, records: records.length, groups: summarizeRecords(records), generated_at: new Date().toISOString() };
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify(summary, null, 2)}\n`, { mode: 0o600 });
-  console.log(JSON.stringify({ status: 'ok', records: records.length, groups: summary.groups.length, output: outputPath }));
+  console.log(JSON.stringify({ status: 'ok', input_files: inputs.length, records: records.length, groups: summary.groups.length, output: outputPath }));
 }

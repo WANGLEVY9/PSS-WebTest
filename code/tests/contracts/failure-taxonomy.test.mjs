@@ -14,4 +14,6 @@ test('separates step budget, termination verdict, and oracle failure', () => {
   assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'not-emitted' }, oraclePassed: true }), 'termination-verdict');
   assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'pass' }, oraclePassed: false }), 'oracle');
   assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'pass' }, oraclePassed: true }), null);
+  assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'clean' }, oraclePassed: true, expectedVerdict: 'fault' }), 'termination-verdict');
+  assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'fault' }, oraclePassed: true, expectedVerdict: 'fault' }), null);
 });

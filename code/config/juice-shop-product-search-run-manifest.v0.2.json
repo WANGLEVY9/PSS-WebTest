@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.2",
+  "protocol_version": "2.0-draft",
+  "status": "pilot-only",
+  "application_id": "juice-shop",
+  "task_id": "juice-shop-product-search",
+  "condition": "clean-stable",
+  "intent_version": "juice-shop-full-apple-search-v1",
+  "reference_configurations": [
+    "visual-pss-native-aliyun-qwen3-vl-flash-v2",
+    "hybrid-pss-native-aliyun-qwen3-vl-flash-v2",
+    "scripted-playwright-accessibility-human-v2"
+  ],
+  "budget": {
+    "agent_max_steps": 16,
+    "agent_timeout_ms": 20000,
+    "scripted_action_budget": 5
+  },
+  "reset_contract": "juice-shop-apple-search-v1",
+  "oracle_contract": "juice-shop-product-search-visible-rest-v1",
+  "note": "This manifest supports a Phase 2 clean feasibility pilot only. It is not a preregistered confirmatory manifest."
+}

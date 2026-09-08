@@ -1,11 +1,18 @@
 import { spawn } from 'node:child_process';
 import process from 'node:process';
+import crypto from 'node:crypto';
 
 const action = process.argv[2];
 const containerName = 'pss-juice-shop';
 const image = process.env.JUICE_SHOP_IMAGE ?? 'bkimminich/juice-shop:v20.0.0';
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const timeoutMs = Number(process.env.SUT_READY_TIMEOUT_MS ?? 180000);
+
+function resetDigestFromProducts(products) {
+  const stableProducts = products.map(({ id, name, price, deluxePrice, image }) => ({ id, name, price, deluxePrice, image }))
+    .sort((left, right) => Number(left.id) - Number(right.id));
+  return crypto.createHash('sha256').update(JSON.stringify({ contract: 'juice-shop-apple-search-v1', products: stableProducts })).digest('hex');
+}
 
 function run(command, args, { allowFailure = false, quiet = false } = {}) {
   return new Promise((resolvePromise, reject) => {
@@ -29,15 +36,18 @@ async function waitUntilReady() {
       if (response.status === 200) {
         const payload = await response.json();
         if (Array.isArray(payload?.data)) {
+          const resetDigest = resetDigestFromProducts(payload.data);
           console.log(JSON.stringify({
             status: 'ready',
             application: 'juice-shop',
             url: baseURL,
             http_status: response.status,
             probe_count: payload.data.length,
-            elapsed_ms: Date.now() - startedAt
+            elapsed_ms: Date.now() - startedAt,
+            reset_contract: 'juice-shop-apple-search-v1',
+            reset_digest: resetDigest
           }));
-          return;
+          return { resetDigest };
         }
       }
       lastError = `HTTP ${response.status}`;
@@ -61,12 +71,14 @@ async function startOrReset() {
     'run', '--detach', '--rm', '--name', containerName,
     '--publish', '127.0.0.1:3000:3000', image
   ]);
-  await waitUntilReady();
+  const readiness = await waitUntilReady();
   console.log(JSON.stringify({
     status: 'reset-complete',
     application: 'juice-shop',
     image,
-    elapsed_ms: Date.now() - startedAt
+    elapsed_ms: Date.now() - startedAt,
+    reset_contract: 'juice-shop-apple-search-v1',
+    reset_digest: readiness.resetDigest
   }));
 }
 

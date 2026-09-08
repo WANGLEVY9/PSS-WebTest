@@ -1,0 +1,133 @@
+{
+  "schema_version": "0.2",
+  "protocol_version": "2.0-draft",
+  "purpose": "Registry of frozen Web UI testing configurations. A configuration, not an arm label, is the minimum executable and reportable unit.",
+  "configurations": [
+    {
+      "configuration_id": "legacy-visual-pss-native-aliyun-qwen3-vl-flash",
+      "family": "visual",
+      "status": "legacy-pilot",
+      "framework": { "id": "pss-native", "version": "0.1" },
+      "observation_contract": "screenshot-only",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3-vl-flash",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "legacy-not-captured"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "pilot-only", "evidence": [] }
+    },
+    {
+      "configuration_id": "legacy-visual-pss-native-volcengine-doubao-seed-2-0-pro-260215",
+      "family": "visual",
+      "status": "legacy-pilot",
+      "framework": { "id": "pss-native", "version": "0.1" },
+      "observation_contract": "screenshot-only",
+      "runtime": {
+        "provider_id": "volcengine-ark",
+        "model_id": "doubao-seed-2-0-pro-260215",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "legacy-not-captured"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "pilot-only", "evidence": [] }
+    },
+    {
+      "configuration_id": "legacy-hybrid-pss-native-aliyun-qwen3-vl-flash",
+      "family": "hybrid",
+      "status": "legacy-pilot",
+      "framework": { "id": "pss-native", "version": "0.1" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3-vl-flash",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "legacy-not-captured"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "pilot-only", "evidence": [] }
+    },
+    {
+      "configuration_id": "legacy-hybrid-pss-native-volcengine-doubao-seed-2-0-pro-260215",
+      "family": "hybrid",
+      "status": "legacy-pilot",
+      "framework": { "id": "pss-native", "version": "0.1" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "volcengine-ark",
+        "model_id": "doubao-seed-2-0-pro-260215",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "legacy-not-captured"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "pilot-only", "evidence": [] }
+    },
+    {
+      "configuration_id": "legacy-scripted-playwright-accessibility-human",
+      "family": "scripted",
+      "status": "legacy-pilot",
+      "framework": { "id": "playwright", "version": "1.55" },
+      "observation_contract": "scripted-locator",
+      "runtime": {
+        "provider_id": null,
+        "model_id": null,
+        "action_schema_version": null,
+        "prompt_digest": null
+      },
+      "test_implementation": {
+        "code_framework": "playwright-accessibility-locator",
+        "authoring_source": "human"
+      },
+      "admission": { "status": "pilot-only", "evidence": [] }
+    },
+    {
+      "configuration_id": "visual-pss-native-aliyun-qwen3-vl-flash-v2",
+      "family": "visual",
+      "status": "implemented",
+      "framework": { "id": "pss-native", "version": "0.2" },
+      "observation_contract": "screenshot-only",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3-vl-flash",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "d3823a719568bafc15dd18a998d4421ca5d9d84ec8ae819477d8da2e63a4db7a"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "hybrid-pss-native-aliyun-qwen3-vl-flash-v2",
+      "family": "hybrid",
+      "status": "implemented",
+      "framework": { "id": "pss-native", "version": "0.2" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3-vl-flash",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "84d5d829eab66a016319e868fcec6bf8512d422a8ebc8b2d065e7c11b50b38f2"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "scripted-playwright-accessibility-human-v2",
+      "family": "scripted",
+      "status": "implemented",
+      "framework": { "id": "playwright", "version": "1.55" },
+      "observation_contract": "scripted-locator",
+      "runtime": {
+        "provider_id": null,
+        "model_id": null,
+        "action_schema_version": null,
+        "prompt_digest": null
+      },
+      "test_implementation": {
+        "code_framework": "playwright-accessibility-locator",
+        "authoring_source": "human"
+      },
+      "admission": { "status": "not-started", "evidence": [] }
+    }
+  ]
+}

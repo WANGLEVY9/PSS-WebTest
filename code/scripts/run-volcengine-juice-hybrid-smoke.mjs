@@ -5,6 +5,8 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { evaluateJuiceShopUiSearch } from '../src/oracles/juice-shop-ui-search.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
+import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 
@@ -15,6 +17,17 @@ const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const viewport = { width: 1280, height: 720 };
+const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
+const phase2Protocol = protocolVersion === '2.0-draft';
+const phase2Fields = phase2Protocol ? createPhase2Provenance({
+  registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/juice-shop-product-search-run-manifest.v0.2.json`,
+  taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
+  applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
+  randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
+  environment: { runner: 'juice-shop-hybrid-agent-v0.3', base_url: baseURL, arm: 'hybrid', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_mode: taskMode, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+}) : null;
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
 const trace = [];
@@ -79,6 +92,7 @@ while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
+  ...(phase2Fields ?? {}),
   run_id: `juice-shop-hybrid-${Date.now()}`,
   application_id: 'juice-shop',
   application_version: '20.0.0',
@@ -90,7 +104,7 @@ const runRecord = createRunRecord({
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: 'volcengine-juice-hybrid-v0.2', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
+  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'juice-shop-hybrid-agent-v0.3', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: cellPassed ? null : failureCategory,
   trace
 });

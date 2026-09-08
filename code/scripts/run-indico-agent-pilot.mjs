@@ -6,6 +6,8 @@ import { createAgentAdapter } from '../src/arms/agent-adapter.mjs';
 import { createVolcengineCuaDriver } from '../src/arms/volcengine-cua-driver.mjs';
 import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driver.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
+import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
+import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 
@@ -25,6 +27,17 @@ const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 1
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
 const trace = [];
+const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
+const phase2Protocol = protocolVersion === '2.0-draft';
+const phase2Fields = phase2Protocol ? createPhase2Provenance({
+  registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/indico-create-event-run-manifest.v0.2.json`,
+  taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
+  applicationId: 'indico', resetDigest: process.env.PSS_RESET_DIGEST,
+  randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
+  environment: { runner: 'indico-agent-pilot-v0.3', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), scheduling: 'parallel-feasibility-or-sequential-pilot' }
+}) : null;
 
 const screenshot = async () => `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' })).toString('base64')}`;
 const executeAction = async (action) => {
@@ -91,6 +104,7 @@ while (oracle.value?.passed !== true && Date.now() < deadline) {
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
+  ...(phase2Fields ?? {}),
   run_id: `indico-${arm}-${Date.now()}`,
   application_id: 'indico', application_version: '3.3.6', task_id: 'indico-create-event', condition: 'clean-stable', arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
@@ -98,7 +112,7 @@ const runRecord = createRunRecord({
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: 'indico-agent-pilot-v0.2', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
+  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'indico-agent-pilot-v0.3', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: passed ? null : failureCategory, trace
 });
 console.log(JSON.stringify({ application: 'indico', arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, trace, run_record: runRecord }));

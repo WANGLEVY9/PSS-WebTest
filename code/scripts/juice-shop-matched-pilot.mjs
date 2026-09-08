@@ -1,7 +1,10 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import dotenv from 'dotenv';
 import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
+import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
+import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 
 dotenv.config();
 
@@ -15,6 +18,11 @@ const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '');
+const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
+const phase2Protocol = protocolVersion === '2.0-draft';
+const registry = phase2Protocol ? loadConfigurationRegistry() : null;
+const taskManifestPath = `${root}/manifests/task-manifest.v0.1.json`;
+const runManifestPath = `${root}/config/juice-shop-product-search-run-manifest.v0.2.json`;
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
 const artifact = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-pilot.json`;
 const recordsPath = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-records.jsonl`;
@@ -27,6 +35,16 @@ const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   child.on('error', reject); child.on('close', (code) => resolve({ code, stdout, stderr }));
 });
 const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => { try { return JSON.parse(line); } catch { return null; } }).find(Boolean) ?? null;
+const configurations = {
+  visual: 'visual-pss-native-aliyun-qwen3-vl-flash-v2',
+  hybrid: 'hybrid-pss-native-aliyun-qwen3-vl-flash-v2',
+  playwright: 'scripted-playwright-accessibility-human-v2'
+};
+const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((left, right) =>
+  crypto.createHash('sha256').update(`juice-shop-product-search|${pilotRunTag ?? 'untagged'}|${repetition}|${left}`).digest('hex')
+    .localeCompare(crypto.createHash('sha256').update(`juice-shop-product-search|${pilotRunTag ?? 'untagged'}|${repetition}|${right}`).digest('hex'))
+);
+const randomizationBlock = (repetition, arms) => `juice-shop-product-search-clean-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
@@ -34,11 +52,20 @@ const writeSummary = () => {
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
-  for (const arm of ['playwright', 'visual', 'hybrid']) {
+  const orderedArms = scheduledArms(repetition);
+  const block = randomizationBlock(repetition, orderedArms);
+  for (const arm of orderedArms) {
     const reset = await run('node', ['scripts/juice-shop-lifecycle.mjs', 'reset']);
+    const resetSummary = lastJson(reset.stdout);
+    const resetDigest = resetSummary?.reset_digest ?? null;
     const clean = reset.code === 0 ? await run('node', ['scripts/verify-juice-shop-clean.mjs']) : { code: 1, stdout: '' };
     const cleanResult = lastJson(clean.stdout);
-    const cleanStateVerified = reset.code === 0 && clean.code === 0 && cleanResult?.clean_state_verified === true;
+    const cleanStateVerified = reset.code === 0 && (!phase2Protocol || typeof resetDigest === 'string') && clean.code === 0 && cleanResult?.clean_state_verified === true;
+    const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
+      registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'juice-shop',
+      resetDigest, randomizationBlock: block,
+      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), scheduling: 'parallel-feasibility-or-sequential-pilot' }
+    }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {
       records.push({ repetition, arm, reset_ok: reset.code === 0, clean_state_verified: false, execution_exit_code: null, oracle_passed: false });
@@ -50,18 +77,21 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         RUN_JUICE_SHOP_VERTICAL_SLICE: '1', SUT_BASE_URL: baseURL
       });
       const oracleRun = await run('node', ['scripts/evaluate-juice-shop-search.mjs']); oracle = lastJson(oracleRun.stdout);
-      cellRunRecord = createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: 'juice-shop-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 5 }] });
+      cellRunRecord = createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: 'juice-shop-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 5 }] });
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', [arm === 'visual' ? 'scripts/run-volcengine-juice-visual-smoke.mjs' : 'scripts/run-volcengine-juice-hybrid-smoke.mjs'], {
         CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs, CUA_PREPARE_SEARCH: '0', CUA_TASK_MODE: 'full-search',
-        JUICE_SHOP_BASE_URL: baseURL, PSS_RUN_RECORD_OUT: recordsPath
+        JUICE_SHOP_BASE_URL: baseURL, PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations[arm],
+        PSS_RESET_DIGEST: resetDigest ?? '', PSS_RANDOMIZATION_BLOCK: block,
+        PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath,
+        PSS_RUN_RECORD_OUT: recordsPath
       });
       result = lastJson(execution.stdout); oracle = result?.ui_oracle ?? null; cellRunRecord = result?.run_record ?? null;
     }
     const agentCompleted = arm === 'playwright' ? execution.code === 0 : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;
-    records.push({ repetition, arm, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oraclePassed ? 1 : 0, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
+    records.push({ repetition, arm, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oraclePassed ? 1 : 0, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
     writeSummary(); console.log(JSON.stringify(records.at(-1)));
   }
 }

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { createRunRecord, validateRunRecord } from '../src/run-records.mjs';
+import { createRunRecord, validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
+import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 
 const args = process.argv.slice(2);
 const get = (name) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : null; };
@@ -9,10 +10,12 @@ const inputPath = get('--input');
 const outputPath = get('--output');
 if (!inputPath || !outputPath) { console.error('usage: node scripts/collect-run-records.mjs --input raw.jsonl --output records.jsonl'); process.exit(2); }
 const lines = fs.readFileSync(inputPath, 'utf8').split(/\r?\n/).filter(Boolean);
+const registry = loadConfigurationRegistry();
 const records = lines.map((line, index) => {
   try {
     const input = JSON.parse(line);
-    return input.schema_version && !('trace' in input) ? validateRunRecord(input) : createRunRecord(input);
+    const record = input.schema_version && !('trace' in input) ? input : createRunRecord(input);
+    return validateRunRecordAgainstRegistry(record, registry);
   } catch (error) { throw new Error(`invalid run ${index + 1}: ${error.message}`); }
 });
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });

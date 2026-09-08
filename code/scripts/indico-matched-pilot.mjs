@@ -1,7 +1,10 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import dotenv from 'dotenv';
 import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
+import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
+import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 
 dotenv.config();
 
@@ -13,6 +16,12 @@ const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
+const phase2Protocol = protocolVersion === '2.0-draft';
+const codeRoot = root;
+const registry = phase2Protocol ? loadConfigurationRegistry() : null;
+const taskManifestPath = `${codeRoot}/manifests/task-manifest.v0.1.json`;
+const runManifestPath = `${codeRoot}/config/indico-create-event-run-manifest.v0.2.json`;
 const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '');
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
 const artifact = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-pilot.json`;
@@ -25,6 +34,16 @@ const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   child.on('error', reject); child.on('close', (code) => resolve({ code, stdout, stderr }));
 });
 const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => { try { return JSON.parse(line); } catch { return null; } }).find(Boolean) ?? null;
+const configurations = {
+  visual: 'visual-pss-native-aliyun-qwen3-vl-flash-v2',
+  hybrid: 'hybrid-pss-native-aliyun-qwen3-vl-flash-v2',
+  playwright: 'scripted-playwright-accessibility-human-v2'
+};
+const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((left, right) =>
+  crypto.createHash('sha256').update(`indico-create-event|${pilotRunTag ?? 'untagged'}|${repetition}|${left}`).digest('hex')
+    .localeCompare(crypto.createHash('sha256').update(`indico-create-event|${pilotRunTag ?? 'untagged'}|${repetition}|${right}`).digest('hex'))
+);
+const randomizationBlock = (repetition, arms) => `indico-create-event-clean-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
@@ -32,11 +51,20 @@ const writeSummary = () => {
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
-  for (const arm of ['playwright', 'visual', 'hybrid']) {
+  const orderedArms = scheduledArms(repetition);
+  const block = randomizationBlock(repetition, orderedArms);
+  for (const arm of orderedArms) {
     const reset = await run('node', ['scripts/indico-lifecycle.mjs', 'reset']);
+    const resetSummary = lastJson(reset.stdout);
+    const resetDigest = resetSummary?.reset_digest ?? null;
     const preOracleRun = reset.code === 0 ? await run('node', ['scripts/evaluate-indico-event.mjs']) : { code: 1, stdout: '' };
     const preOracle = lastJson(preOracleRun.stdout);
-    const cleanStateVerified = reset.code === 0 && preOracleRun.code === 1 && preOracle?.matches === 0 && preOracle?.passed === false;
+    const cleanStateVerified = reset.code === 0 && (!phase2Protocol || typeof resetDigest === 'string') && preOracleRun.code === 1 && preOracle?.matches === 0 && preOracle?.passed === false;
+    const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
+      registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'indico',
+      resetDigest, randomizationBlock: block,
+      environment: { runner: arm === 'playwright' ? 'indico-playwright-cell-v0.3' : 'indico-agent-pilot-v0.3', base_url: 'http://localhost:8080', browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), scheduling: 'parallel-feasibility-or-sequential-pilot' }
+    }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {
       records.push({ repetition, arm, reset_ok: reset.code === 0, clean_state_verified: false, execution_exit_code: null, oracle_passed: false, oracle_matches: preOracle?.matches ?? null });
@@ -49,19 +77,21 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD
       });
       const oracleRun = await run('node', ['scripts/evaluate-indico-event.mjs']); oracle = lastJson(oracleRun.stdout);
-      cellRunRecord = createTraditionalRunRecord({ application_id: 'indico', application_version: process.env.INDICO_VERSION ?? '3.3.6', task_id: 'indico-create-event', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 10, runner_version: 'indico-playwright-cell-v0.2', trace: [{ kind: 'scripted-sequence', action_count: 10 }] });
+      cellRunRecord = createTraditionalRunRecord({ application_id: 'indico', application_version: process.env.INDICO_VERSION ?? '3.3.6', task_id: 'indico-create-event', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 10, runner_version: 'indico-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 10 }] });
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', ['scripts/run-indico-agent-pilot.mjs'], {
         INDICO_ARM: arm, CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs,
         PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD,
+        PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations[arm], PSS_RESET_DIGEST: resetDigest ?? '',
+        PSS_RANDOMIZATION_BLOCK: block, PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath,
         PSS_RUN_RECORD_OUT: recordsPath
       });
       result = lastJson(execution.stdout); oracle = result?.oracle?.value ?? null; cellRunRecord = result?.run_record ?? null;
     }
     const agentCompleted = arm === 'playwright' ? execution.code === 0 : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;
-    records.push({ repetition, arm, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oracle?.matches ?? null, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
+    records.push({ repetition, arm, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oracle?.matches ?? null, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
     writeSummary(); console.log(JSON.stringify(records.at(-1)));
   }
 }

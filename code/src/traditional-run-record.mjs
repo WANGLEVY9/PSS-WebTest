@@ -17,11 +17,16 @@ export function createTraditionalRunRecord({
   actions,
   run_id = `${application_id}-playwright-${Date.now()}`,
   condition = 'clean-stable',
+  expected_verdict = 'clean',
   runner_version = 'playwright-traditional-cell-v0.1',
+  phase2Fields = null,
   trace = []
 }) {
+  if (!['clean', 'fault'].includes(expected_verdict)) throw new Error('expected_verdict must be clean or fault');
   const passed = execution_exit_code === 0 && oracle?.passed === true;
+  const phase2 = phase2Fields ?? {};
   return createRunRecord({
+    ...phase2,
     run_id,
     application_id,
     application_version,
@@ -29,11 +34,11 @@ export function createTraditionalRunRecord({
     condition,
     arm: 'playwright',
     status: passed ? 'completed' : (execution_exit_code === 0 ? 'evaluator-error' : 'test-failure'),
-    checkpoint_reached: passed,
-    emitted_verdict: passed ? 'clean' : 'not-emitted',
-    ground_truth_verdict: 'clean',
+    checkpoint_reached: oracle?.passed === true,
+    emitted_verdict: passed ? expected_verdict : 'not-emitted',
+    ground_truth_verdict: expected_verdict,
     timing: { wall_time_ms: Math.max(0, Math.round(wall_time_ms)), actions: Math.max(0, Math.trunc(actions)), retries: 0 },
-    provenance: { runner_version, observation_contract: 'scripted-locator', model_id: null },
+    provenance: { ...(phase2.provenance ?? {}), runner_version, observation_contract: 'scripted-locator', model_id: null },
     failure_category: passed ? null : (execution_exit_code === 0 ? 'oracle' : 'execution'),
     trace
   });

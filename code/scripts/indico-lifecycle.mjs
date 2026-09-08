@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
+import crypto from 'node:crypto';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -95,7 +96,17 @@ async function seedDatabase() {
     '-Atc', 'SELECT count(*) FROM events.events;'
   ]));
   if (eventCount !== 18) throw new Error(`Expected 18 seeded Indico events, found ${eventCount}`);
-  console.log(JSON.stringify({ status: 'seed-verified', application: 'indico', event_count: eventCount }));
+  // Include stable, semantically relevant seed fields rather than PostgreSQL
+  // physical row order or credentials. This digest is a reset witness, not an
+  // application oracle and never enters an agent observation.
+  const snapshot = await capture('docker', [
+    'exec', 'indico-postgres-1', 'psql', '-U', 'indico', '-d', 'indico', '-Atc',
+    "SELECT id || '|' || coalesce(title, '') || '|' || coalesce(start_dt::text, '') || '|' || visibility FROM events.events ORDER BY id;"
+  ]);
+  const resetDigest = crypto.createHash('sha256').update(`indico-seeded-events-v1\n${snapshot}\n`).digest('hex');
+  const verification = { status: 'seed-verified', application: 'indico', event_count: eventCount, reset_contract: 'indico-seeded-events-v1', reset_digest: resetDigest };
+  console.log(JSON.stringify(verification));
+  return verification;
 }
 
 async function ensureExperimentUser() {
@@ -140,9 +151,9 @@ async function startOrReset() {
   await new Promise((resolvePromise) => setTimeout(resolvePromise, 3000));
   await run(composeBin, [...composeFiles, 'up', '-d', '--no-build', '--no-deps', 'celery', 'celery-beat', 'nginx']);
   await waitUntilReady();
-  await seedDatabase();
+  const verification = await seedDatabase();
   await ensureExperimentUser();
-  console.log(JSON.stringify({ status: 'seeded', application: 'indico', elapsed_ms: Date.now() - startedAt }));
+  console.log(JSON.stringify({ status: 'seeded', application: 'indico', elapsed_ms: Date.now() - startedAt, reset_contract: verification.reset_contract, reset_digest: verification.reset_digest }));
 }
 
 if (!['start', 'reset', 'ready', 'stop', 'status'].includes(action)) {

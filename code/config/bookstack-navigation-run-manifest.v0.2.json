@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.2",
+  "protocol_version": "2.0-draft",
+  "status": "pilot-only",
+  "application_id": "bookstack",
+  "task_id": "bookstack-open-book",
+  "condition": "clean-stable",
+  "intent_version": "bookstack-navigation-intent-v1",
+  "reference_configurations": [
+    "visual-pss-native-aliyun-qwen3-vl-flash-v2",
+    "hybrid-pss-native-aliyun-qwen3-vl-flash-v2",
+    "scripted-playwright-accessibility-human-v2"
+  ],
+  "budget": {
+    "agent_max_steps": 8,
+    "agent_timeout_ms": 15000,
+    "scripted_action_budget": 4
+  },
+  "reset_contract": "bookstack-seeded-state-digest-v1",
+  "oracle_contract": "bookstack-open-book-visible-v1",
+  "note": "This manifest supports Phase 2 admission pilot only. It is not a preregistered confirmatory manifest."
+}

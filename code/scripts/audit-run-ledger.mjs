@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
-import { validateRunRecord } from '../src/run-records.mjs';
+import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
+import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 
 const inputs = process.argv.slice(2);
 if (inputs.length === 0) {
@@ -11,11 +12,14 @@ if (inputs.length === 0) {
 
 const records = [];
 const errors = [];
+let registry;
+try { registry = loadConfigurationRegistry(); }
+catch (error) { errors.push(`configuration registry: ${error.message}`); }
 for (const input of inputs) {
   const file = path.resolve(input);
   if (!fs.existsSync(file)) { errors.push(`${input}: file does not exist`); continue; }
   for (const [index, line] of fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).entries()) {
-    try { records.push({ file: input, record: validateRunRecord(JSON.parse(line)) }); }
+    try { records.push({ file: input, record: validateRunRecordAgainstRegistry(JSON.parse(line), registry) }); }
     catch (error) { errors.push(`${input}:${index + 1}: ${error.message}`); }
   }
 }

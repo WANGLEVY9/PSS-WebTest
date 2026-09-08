@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.2",
+  "protocol_version": "2.0-draft",
+  "status": "pilot-only",
+  "application_id": "bookstack",
+  "task_id": "bookstack-create-page",
+  "conditions": ["clean-stable", "functional-fault:persistence-mismatch", "ui-evolution:bookstack-layout-v1"],
+  "intent_version": "bookstack-create-page-test-verdict-v1",
+  "reference_configurations": [
+    "visual-pss-native-aliyun-qwen3-vl-flash-v2",
+    "hybrid-pss-native-aliyun-qwen3-vl-flash-v2",
+    "scripted-playwright-accessibility-human-v2"
+  ],
+  "budget": {
+    "agent_max_steps": 14,
+    "agent_timeout_ms": 15000,
+    "scripted_action_budget": 11
+  },
+  "reset_contract": "bookstack-seeded-state-digest-v1",
+  "oracle_contract": "bookstack-persistence-clean-fault-v1",
+  "fault_contract": "bookstack-persistence-mismatch-v1",
+  "note": "This manifest supports Phase 2 admission pilot only. The agent sees only the visible UI; the persisted-state oracle and fault mechanism are withheld."
+}

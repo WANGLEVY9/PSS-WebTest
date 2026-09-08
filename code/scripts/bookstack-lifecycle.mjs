@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
+import { BOOKSTACK_RESET_CONTRACT, digestBookStackSeedSnapshot } from '../src/bookstack-reset-state.mjs';
 
 const action = process.argv[2];
 const codeRoot = resolve(new URL('..', import.meta.url).pathname);
@@ -79,14 +80,18 @@ async function waitForApplicationSchema() {
   while (Date.now() - startedAt < timeoutMs) {
     const probe = await runCapture('docker', [
       'exec', 'bookstack-db-1', 'mysql', '-N', '-u', 'admin', '-padmin', 'bookstack', '-e',
-      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='bookstack' AND table_name IN ('users','books','pages');"
+      "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='bookstack' AND table_name IN ('users','books','pages','settings','migrations'); SELECT COUNT(*) FROM migrations;"
     ]);
-    const tableCount = Number(probe.stdout.trim());
-    if (probe.code === 0 && tableCount === 3) {
-      console.log(JSON.stringify({ status: 'schema-ready', required_tables: 3, elapsed_ms: Date.now() - startedAt }));
+    const [tableCount, migrationCount] = probe.stdout.trim().split(/\s+/).map(Number);
+    // The first three entity tables are created near the start of Laravel's
+    // migration stream.  Treating them as ready allowed the SQL seed to race
+    // the remaining migrations.  This version-pinned image has 90 migrations;
+    // require both the late settings table and the complete migration ledger.
+    if (probe.code === 0 && tableCount === 5 && migrationCount >= 90) {
+      console.log(JSON.stringify({ status: 'schema-ready', required_tables: 5, migration_count: migrationCount, elapsed_ms: Date.now() - startedAt }));
       return;
     }
-    lastError = `probe exit ${probe.code}, required table count=${Number.isFinite(tableCount) ? tableCount : 'unknown'}`;
+    lastError = `probe exit ${probe.code}, required table count=${Number.isFinite(tableCount) ? tableCount : 'unknown'}, migrations=${Number.isFinite(migrationCount) ? migrationCount : 'unknown'}`;
     await new Promise((resolvePromise) => setTimeout(resolvePromise, 1000));
   }
   throw new Error(`BookStack application schema did not become ready within ${timeoutMs} ms: ${lastError}`);
@@ -108,7 +113,15 @@ async function verifySeed() {
   if (![users, books, pages].every(Number.isInteger) || users < 2 || books < 3 || pages < 6) {
     throw new Error(`BookStack seed verification failed: users=${users}, books=${books}, pages=${pages}`);
   }
-  console.log(JSON.stringify({ status: 'seed-verified', counts: { users, books, pages } }));
+  const snapshot = await runCapture('docker', [
+    'exec', 'bookstack-db-1', 'mysql', '-N', '-u', 'admin', '-padmin', 'bookstack', '-e',
+    "SELECT CONCAT_WS('|', 'users', id, email, name) FROM users UNION ALL SELECT CONCAT_WS('|', 'books', id, name, slug) FROM books UNION ALL SELECT CONCAT_WS('|', 'pages', id, name, slug, book_id, COALESCE(chapter_id, '')) FROM pages ORDER BY 1;"
+  ]);
+  if (snapshot.code !== 0) throw new Error(`BookStack reset snapshot query exited with ${snapshot.code}`);
+  const resetDigest = digestBookStackSeedSnapshot(snapshot.stdout);
+  const verification = { status: 'seed-verified', counts: { users, books, pages }, reset_contract: BOOKSTACK_RESET_CONTRACT, reset_digest: resetDigest };
+  console.log(JSON.stringify(verification));
+  return verification;
 }
 
 async function startOrReset() {
@@ -129,8 +142,8 @@ async function startOrReset() {
   await waitForApplicationSchema();
   await waitUntilReady();
   await seedDatabase();
-  await verifySeed();
-  console.log(JSON.stringify({ status: 'seeded', application: 'bookstack', elapsed_ms: Date.now() - startedAt }));
+  const verification = await verifySeed();
+  console.log(JSON.stringify({ status: 'seeded', application: 'bookstack', elapsed_ms: Date.now() - startedAt, reset_contract: verification.reset_contract, reset_digest: verification.reset_digest }));
 }
 
 if (!['start', 'reset', 'ready', 'stop', 'status'].includes(action)) {

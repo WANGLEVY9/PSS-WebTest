@@ -15,7 +15,7 @@ function wilson(successes, n, z = 1.959963984540054) {
 
 export function createPilotVarianceReport(pilot) {
   const records = Array.isArray(pilot.records) ? pilot.records : [];
-  const repetitions = [...new Set(records.map((record) => record.repetition))].sort((a, b) => a - b);
+  const repetitions = [...new Set(records.map((record) => record.repetition))].sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
   const arms = Object.fromEntries(ARMS.map((arm) => {
     const rows = records.filter((record) => record.arm === arm);
     const successes = rows.filter((record) => record.cell_passed === true).length;
@@ -50,15 +50,39 @@ export function createPilotVarianceReport(pilot) {
   };
 }
 
+export function combinePilotArtifacts(pilots) {
+  if (!Array.isArray(pilots) || !pilots.length) throw new Error('at least one pilot artifact is required');
+  const [first] = pilots;
+  for (const pilot of pilots.slice(1)) {
+    for (const field of ['application', 'task_id', 'condition', 'mutation', 'protocol_version']) {
+      if ((pilot[field] ?? null) !== (first[field] ?? null)) throw new Error(`cannot combine pilot artifacts with different ${field}`);
+    }
+  }
+  return {
+    application: first.application,
+    task_id: first.task_id,
+    condition: first.condition,
+    mutation: first.mutation,
+    protocol_version: first.protocol_version ?? null,
+    source_run_tags: pilots.map((pilot, index) => pilot.run_tag ?? `input-${index + 1}`),
+    records: pilots.flatMap((pilot, index) => {
+      const sourceTag = pilot.run_tag ?? `input-${index + 1}`;
+      return (pilot.records ?? []).map((record) => ({ ...record, repetition: `${sourceTag}:r${record.repetition}` }));
+    })
+  };
+}
+
 if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
   const args = process.argv.slice(2);
-  const get = (name) => { const index = args.indexOf(name); return index >= 0 ? args[index + 1] : null; };
-  const inputPath = get('--input');
-  const outputPath = get('--output');
-  if (!inputPath || !outputPath) throw new Error('usage: node scripts/pilot-variance-report.mjs --input pilot.json --output variance.json');
-  const pilot = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
+  const inputs = args.flatMap((value, index) => value === '--input' && args[index + 1] ? [args[index + 1]] : []);
+  const outputIndex = args.indexOf('--output');
+  const outputPath = outputIndex >= 0 ? args[outputIndex + 1] : null;
+  if (!inputs.length || !outputPath) throw new Error('usage: node scripts/pilot-variance-report.mjs --input pilot-a.json [--input pilot-b.json ...] --output variance.json');
+  const pilot = combinePilotArtifacts(inputs.map((inputPath) => JSON.parse(fs.readFileSync(inputPath, 'utf8'))));
   const report = createPilotVarianceReport(pilot);
+  report.input_files = inputs;
+  report.source_run_tags = pilot.source_run_tags;
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
-  console.log(JSON.stringify({ status: 'ok', input: inputPath, output: outputPath, condition: report.condition }));
+  console.log(JSON.stringify({ status: 'ok', input_files: inputs.length, output: outputPath, condition: report.condition }));
 }

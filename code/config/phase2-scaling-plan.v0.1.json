@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1",
+  "status": "pre-collection",
+  "purpose": "Scale the feasibility-only BookStack evidence into a stratified empirical-study collection without pooling incomparable pilot artifacts.",
+  "current_evidence": {
+    "eligible_v0_2_records": 36,
+    "applications": 1,
+    "workflows": 2,
+    "conditions": ["clean-stable", "functional-fault:persistence-mismatch", "ui-evolution:bookstack-layout-v1"],
+    "reference_configurations": 3,
+    "repetitions_per_arm_condition": 3,
+    "interpretation": "BookStack-only feasibility/admission subgates; records remain separated by workflow, condition, configuration, and run tag"
+  },
+  "near_term_panels": [
+    {
+      "id": "P1-existing-sut-reference",
+      "purpose": "Reference-family coverage on the three already provisioned SUTs.",
+      "applications": ["bookstack", "indico", "juice-shop"],
+      "workflows_per_application": 5,
+      "conditions": ["clean-stable", "functional-fault", "ui-evolved"],
+      "configuration_count": 3,
+      "repetitions": 5,
+      "expected_runs": 675,
+      "gates": ["workflow reset", "independent oracle", "fault positive and clean negative control", "evolution invariant", "three-arm adapter admission"],
+      "collection_status": "blocked-by-workflow-gates"
+    },
+    {
+      "id": "P2-sentinel-generalisation",
+      "purpose": "Separate model/framework/tooling effects from the reference-family comparison.",
+      "applications": ["bookstack", "indico", "juice-shop"],
+      "sentinel_workflows": 9,
+      "conditions": ["clean-stable", "functional-fault", "ui-evolved"],
+      "additional_configuration_count": 4,
+      "repetitions": 5,
+      "expected_runs": 540,
+      "required_coverage": ["second provider/model for visual and hybrid", "second agent-loop framework", "second scripted-code framework"],
+      "collection_status": "blocked-by-adapter-and-provider-gates"
+    },
+    {
+      "id": "P3-reliability-drift-sentinel",
+      "purpose": "Estimate within-cell instability and provider drift separately from cross-task effects.",
+      "sentinel_cells": 18,
+      "configuration_count": 3,
+      "repetitions_per_window": 10,
+      "time_windows": 2,
+      "expected_runs": 1080,
+      "collection_status": "blocked-until-P1"
+    }
+  ],
+  "confirmatory_target": {
+    "core_applications": 12,
+    "workflows_per_application": 10,
+    "reference_conditions": ["clean-stable", "functional-fault", "ui-evolved"],
+    "reference_configuration_count": 3,
+    "repetitions": 5,
+    "reference_panel_runs": 5400,
+    "fault_plus_evolution_cells": 48,
+    "fault_plus_evolution_runs": 720,
+    "generalisation_panel_minimum_runs": 8400,
+    "external_replication_minimum_runs": 2160,
+    "target_total_run_range": [19000, 22000],
+    "collection_status": "not-authorized-before-preregistration"
+  },
+  "non_substitution_rules": [
+    "Do not replace missing SUTs or workflows with more repetitions of bookstack-open-book.",
+    "Do not pool different provider/model, framework, run-tag, protocol, task, or condition strata.",
+    "Do not count adapter conformance, connectivity checks, diagnostics, or oracle-only success as confirmatory runs.",
+    "Unknown token or billed cost remains null and is not imputed as zero."
+  ]
+}

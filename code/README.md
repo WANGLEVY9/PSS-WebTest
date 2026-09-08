@@ -46,6 +46,44 @@ On macOS, `PSS_BROWSER_CHANNEL=chrome` can use an already-installed Google Chrom
 
 `schemas/task-manifest.schema.json` defines the task/application contract and `schemas/run-record.schema.json` defines the immutable execution record. The latter distinguishes test failure, timeout, model refusal, evaluator failure, and infrastructure failure; these states must not be collapsed into a single success-rate number.
 
+## Configuration registry and v0.2 records
+
+`config/configuration-registry.v0.2.json` separates a strategy family from its
+concrete execution configuration: framework/version, provider and model,
+observation/action contract, prompt fingerprint, or scripted-test framework
+and authoring source. The five existing historical configurations are labelled
+`legacy-pilot`; they remain readable as v0.1 records but cannot be relabelled
+as confirmatory evidence. The three v0.2 configurations are only
+`implemented`, not admitted for formal collection.
+
+Validate the registry and all ledger records before any pilot or formal run:
+
+```sh
+npm run validate:configuration-registry
+npm run records:audit -- ../artifacts/phase2/records.jsonl
+```
+
+A v0.2 run must contain a registered `configuration_id`, matching strategy and
+observation contract, protocol version, randomization block, and SHA-256
+digests for the run manifest, SUT image, reset state, environment, trace and
+agent prompt. `records:collect` and `records:audit` reject a v0.2 record that
+does not resolve to this registry or conflicts with its framework/provider
+metadata. Unknown token or billing cost remains `null`, never zero.
+
+Before a configuration can enter a clean admission pilot, run the
+provider-free adapter-conformance contract suite. It checks that each strategy
+family admits only its declared observation, blocks hidden evaluator fields
+before a decision or script execution, and records only aggregate action/retry
+data at this gate:
+
+```sh
+npm run test:adapter-conformance
+```
+
+This is an infrastructure gate, not evidence that a real model can complete a
+workflow. Provider connectivity, reset integrity, independent-oracle success,
+and matched repetitions remain separate Phase 2 requirements.
+
 ## Phase 2 local lifecycle commands
 
 The scripts below delete only their named experimental containers/Compose volumes. They do not alter the ignored WebTestPilot checkout.
@@ -97,6 +135,20 @@ The navigation pilot permits one predeclared reset retry (`PSS_RESET_MAX_ATTEMPT
 to handle transient container/database startup races. Every retry is retained
 in the pilot artifact as `reset_attempts` and `reset_retry_used`; it is never
 silently removed from the infrastructure audit.
+
+`pilot:bookstack:navigation` now defaults to the Phase 2 `2.0-draft` runner.
+For each arm it resets only the named local BookStack SUT, hashes a small
+read-only test-fixture snapshot, and records that reset digest together with a
+deterministic arm-order block. The script emits registry-resolved v0.2 records;
+`records:audit` deliberately fails until all three arms for a cell are present.
+The visual and hybrid arms send screenshots to the configured model provider,
+so obtain explicit approval for that authenticated *test-fixture* scope before
+running a full matched block.
+
+Use `PSS_PILOT_RUN_TAG` to prevent a rerun under a changed execution context
+from appending to an earlier JSONL ledger. The tag is recorded in its summary
+artifact and becomes part of the artifact filename; it is an isolation label,
+not an experimental condition.
 
 To run the behavior-preserving UI-evolution pilot, use the same matched task
 and change only the condition/mutation labels:

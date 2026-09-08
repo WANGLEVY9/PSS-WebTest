@@ -2,7 +2,9 @@
  * Stable pilot failure taxonomy.  Categories describe the first observable
  * failure boundary; they do not infer an unobserved model-internal cause.
  */
-export function classifyAgentFailure({ failure = null, result = null, oraclePassed = false } = {}) {
+import { normalizeAgentVerdict } from './outcome-admission.mjs';
+
+export function classifyAgentFailure({ failure = null, result = null, oraclePassed = false, expectedVerdict = 'clean' } = {}) {
   if (failure) {
     const message = String(failure.message ?? failure).toLowerCase();
     const name = String(failure.name ?? '').toLowerCase();
@@ -13,7 +15,7 @@ export function classifyAgentFailure({ failure = null, result = null, oraclePass
     return 'execution';
   }
   if (result?.status === 'timeout') return 'agent-step-budget';
-  if (result?.status === 'completed' && result?.emitted_verdict !== 'pass') {
+  if (result?.status === 'completed' && normalizeAgentVerdict(result?.emitted_verdict) !== expectedVerdict) {
     return oraclePassed ? 'termination-verdict' : 'agent-verdict';
   }
   if (!oraclePassed) return 'oracle';

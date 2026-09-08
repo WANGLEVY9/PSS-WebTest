@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createPilotVarianceReport } from '../../scripts/pilot-variance-report.mjs';
+import { combinePilotArtifacts, createPilotVarianceReport } from '../../scripts/pilot-variance-report.mjs';
 
 test('pilot variance report preserves arm failures and matched repetition coverage', () => {
   const report = createPilotVarianceReport({
@@ -19,4 +19,16 @@ test('pilot variance report preserves arm failures and matched repetition covera
   assert.equal(report.arms.hybrid.reset_retry_rate, 0.5);
   assert.deepEqual(report.matched_successful_repetitions, []);
   assert.equal(report.planning_only, true);
+});
+
+test('pilot variance report keeps separately tagged pilot blocks distinct when combined', () => {
+  const base = { application: 'bookstack', task_id: 'bookstack-open-book', condition: 'clean-stable', mutation: null, protocol_version: '2.0-draft' };
+  const combined = combinePilotArtifacts([
+    { ...base, run_tag: 'block-a', records: ['playwright', 'visual', 'hybrid'].map((arm) => ({ repetition: 1, arm, cell_passed: true, reset_ok: true })) },
+    { ...base, run_tag: 'block-b', records: ['playwright', 'visual', 'hybrid'].map((arm) => ({ repetition: 1, arm, cell_passed: true, reset_ok: true })) }
+  ]);
+  const report = createPilotVarianceReport(combined);
+  assert.deepEqual(report.repetitions, ['block-a:r1', 'block-b:r1']);
+  assert.equal(report.matched_success_rate, 1);
+  assert.equal(report.arms.visual.n, 2);
 });

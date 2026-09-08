@@ -1,0 +1,71 @@
+{
+  "schema_version": "0.1",
+  "id": "phase2-exploratory-500-blocks-v1",
+  "status": "preflight-required",
+  "collection_class": "exploratory-reliability-and-failure-taxonomy",
+  "unit_of_collection": "one matched block containing exactly visual, hybrid, and playwright executions",
+  "target_matched_blocks": 500,
+  "target_execution_units": 1500,
+  "arms": ["visual", "hybrid", "playwright"],
+  "provider_stratification": "One provider/model profile per campaign invocation. Never pool providers or models.",
+  "protocol_boundary": [
+    "Every execution must retain its own reset digest, independent oracle, randomization block, run record, and failure category.",
+    "An oracle-only success, connectivity check, diagnostic, or incomplete three-arm block is not a passed matched cell.",
+    "This campaign is exploratory and cannot freeze repetition counts or support confirmatory superiority claims."
+  ],
+  "resource_guardrails": {
+    "max_agent_decisions_per_block": 32,
+    "max_consecutive_provider_failures": 3,
+    "max_consecutive_reset_failures": 2,
+    "requires_explicit_provider_request_cap": true,
+    "requires_explicit_wall_time_cap": true,
+    "requires_local_sut_health_gate": true
+  },
+  "currently_wired_block_templates": [
+    {
+      "id": "bookstack-create-page-clean",
+      "application": "bookstack",
+      "task_id": "bookstack-create-page",
+      "condition": "clean-stable",
+      "controller": "scripts/bookstack-create-page-matched-pilot-v02.mjs",
+      "admission": "pilot-only"
+    },
+    {
+      "id": "bookstack-open-book-clean",
+      "application": "bookstack",
+      "task_id": "bookstack-open-book",
+      "condition": "clean-stable",
+      "controller": "scripts/bookstack-navigation-matched-pilot.mjs",
+      "admission": "candidate"
+    },
+    {
+      "id": "bookstack-search-open-book2-clean",
+      "application": "bookstack",
+      "task_id": "bookstack-search-and-open-book2",
+      "condition": "clean-stable",
+      "controller": "scripts/bookstack-navigation-matched-pilot.mjs",
+      "admission": "candidate"
+    },
+    {
+      "id": "indico-create-event-clean",
+      "application": "indico",
+      "task_id": "indico-create-event",
+      "condition": "clean-stable",
+      "controller": "scripts/indico-matched-pilot.mjs",
+      "admission": "pilot-only"
+    },
+    {
+      "id": "juice-shop-product-search-clean",
+      "application": "juice-shop",
+      "task_id": "juice-shop-product-search",
+      "condition": "clean-stable",
+      "controller": "scripts/juice-shop-matched-pilot.mjs",
+      "admission": "pilot-only"
+    }
+  ],
+  "coverage_gaps_before_conditional_claims": [
+    "The remaining benchmark-matrix workflows need real three-arm controllers and independent oracles.",
+    "Indico and Juice Shop need live fault and UI-evolution controllers, not only labels in a manifest.",
+    "Each provider/model needs its own clean matched admission pilot before scale-up."
+  ]
+}

@@ -11,11 +11,12 @@ export function evaluateBatchAuthorisation({ manifest, currentProfile, executeFl
   return { errors, requiredRequests };
 }
 
-export function classifyControllerBoundary({ code, stdout, stderr }) {
+export function classifyControllerBoundary({ code, stdout, stderr, records = [] }) {
   const combined = `${stdout ?? ''}\n${stderr ?? ''}`.toLowerCase();
+  const recordFailures = records.map((record) => String(record.failure_category ?? '').toLowerCase());
   return {
-    providerFailure: code !== 0 && (/failure_category[^\n]{0,100}provider/.test(combined) || /provider[ _-]?(abort|error|timeout|rate)/.test(combined) || /429|rate limit/.test(combined)),
-    resetFailure: /"reset_ok":false/.test(combined) || /failure_category[^\n]{0,100}environment/.test(combined),
+    providerFailure: recordFailures.some((category) => category.startsWith('provider')) || (code !== 0 && (/failure_category[^\n]{0,100}provider/.test(combined) || /provider[ _-]?(abort|error|timeout|rate)/.test(combined) || /429|rate limit/.test(combined))),
+    resetFailure: records.some((record) => record.reset_ok === false || record.failure_category === 'environment') || /"reset_ok":false/.test(combined) || /failure_category[^\n]{0,100}environment/.test(combined),
     fullThreeArmRecord: ['"arm":"visual"', '"arm":"hybrid"', '"arm":"playwright"'].every((needle) => combined.includes(needle))
   };
 }

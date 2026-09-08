@@ -28,6 +28,7 @@
     "validate:exploratory-batch": "node scripts/validate-exploratory-batch-plan.mjs",
     "batch:prepare-500": "node scripts/prepare-exploratory-500-batch.mjs",
     "batch:run-500": "node scripts/run-exploratory-500-batch.mjs",
+    "batch:reconcile": "node scripts/reconcile-exploratory-batch.mjs",
     "validate:study-assets": "node scripts/validate-study-assets.mjs",
     "bench:audit": "node scripts/audit-third-party-benchmark.mjs",
     "pilot:volcengine:juice": "node scripts/run-volcengine-juice-visual-smoke.mjs",

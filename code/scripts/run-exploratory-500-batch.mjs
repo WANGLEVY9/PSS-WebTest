@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { evaluateBatchAuthorisation, classifyControllerBoundary } from '../src/exploratory-batch-guards.mjs';
+import { readBlockPilotSummary } from '../src/exploratory-batch-artifacts.mjs';
 
 const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
 const currentProfile = `${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`;
@@ -26,6 +27,7 @@ if (process.env.PSS_BATCH_ALLOW_CANDIDATE_TASKS !== '1') throw new Error('This m
 const progressPath = process.env.PSS_BATCH_PROGRESS_OUT
   ? path.resolve(process.env.PSS_BATCH_PROGRESS_OUT)
   : path.join(codeRoot, '..', 'artifacts/phase2', `${manifest.campaign_id}-${currentProfile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-progress.jsonl`);
+const artifactRoot = path.join(codeRoot, '..', 'artifacts/phase2');
 fs.mkdirSync(path.dirname(progressPath), { recursive: true });
 const startedAt = Date.now();
 const guardrails = manifest.guardrails;
@@ -57,17 +59,22 @@ for (const block of selectedBlocks) {
   };
   if (block.task_id.startsWith('bookstack-')) baseEnv.PSS_BOOKSTACK_TASK_ID = block.task_id;
   const result = await runController(block.controller, baseEnv);
-  const boundary = classifyControllerBoundary(result);
+  const artifactEvidence = readBlockPilotSummary({ artifactRoot, runTag: baseEnv.PSS_PILOT_RUN_TAG, requiredArms: block.required_arms });
+  const boundary = classifyControllerBoundary({ ...result, records: artifactEvidence?.records ?? [] });
   consecutiveProviderFailures = boundary.providerFailure ? consecutiveProviderFailures + 1 : 0;
   consecutiveResetFailures = boundary.resetFailure ? consecutiveResetFailures + 1 : 0;
   appendProgress({
     timestamp: new Date().toISOString(), campaign_id: manifest.campaign_id, block_id: block.block_id,
     template_id: block.template_id, application: block.application, task_id: block.task_id, condition: block.condition,
     provider_model_stratum: currentProfile, required_arms: block.required_arms, arm_order: block.arm_order,
-    controller_exit_code: result.code, full_three_arm_record_observed: boundary.fullThreeArmRecord,
+    controller_exit_code: result.code,
+    summary_artifact: artifactEvidence?.summaryPath ?? null,
+    observed_arms: artifactEvidence?.observedArms ?? null,
+    strict_passed_cells: artifactEvidence?.strictPassedCells ?? null,
+    full_three_arm_record_observed: artifactEvidence?.fullThreeArmRecord ?? boundary.fullThreeArmRecord,
     provider_failure_boundary: boundary.providerFailure, reset_failure_boundary: boundary.resetFailure,
     consecutive_provider_failures: consecutiveProviderFailures, consecutive_reset_failures: consecutiveResetFailures,
-    status: boundary.fullThreeArmRecord ? 'executed-three-arm-block' : 'incomplete-controller-output'
+    status: (artifactEvidence?.fullThreeArmRecord ?? boundary.fullThreeArmRecord) ? 'executed-three-arm-block' : 'incomplete-controller-output'
   });
   if (consecutiveProviderFailures >= guardrails.max_consecutive_provider_failures) throw new Error(`Circuit breaker: ${consecutiveProviderFailures} consecutive provider-failure boundaries.`);
   if (consecutiveResetFailures >= guardrails.max_consecutive_reset_failures) throw new Error(`Circuit breaker: ${consecutiveResetFailures} consecutive reset-failure boundaries.`);

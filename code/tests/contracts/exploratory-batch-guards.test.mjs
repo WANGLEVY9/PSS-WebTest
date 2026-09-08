@@ -13,10 +13,10 @@ test('batch execution requires a matching profile, explicit request cap, wall ca
 });
 
 test('batch controller classifier distinguishes provider/reset boundaries and full three-arm output', () => {
-  const provider = classifyControllerBoundary({ code: 1, stdout: '{"arm":"visual","failure_category":"provider"}\n{"arm":"hybrid"}\n{"arm":"playwright"}', stderr: '' });
+  const provider = classifyControllerBoundary({ code: 1, stdout: '{"arm":"visual","failure_category":"provider"}\n{"arm":"hybrid"}\n{"arm":"playwright"}', stderr: '', records: [{ arm: 'visual', failure_category: 'provider-format' }, { arm: 'hybrid' }, { arm: 'playwright' }] });
   assert.equal(provider.providerFailure, true);
   assert.equal(provider.fullThreeArmRecord, true);
-  const reset = classifyControllerBoundary({ code: 1, stdout: '{"reset_ok":false}', stderr: '' });
+  const reset = classifyControllerBoundary({ code: 1, stdout: '{"reset_ok":false}', stderr: '', records: [{ arm: 'visual', reset_ok: false }] });
   assert.equal(reset.resetFailure, true);
   assert.equal(reset.fullThreeArmRecord, false);
 });

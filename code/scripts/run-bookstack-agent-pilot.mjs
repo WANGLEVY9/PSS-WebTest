@@ -47,7 +47,8 @@ const phase2Fields = phase2Protocol
       runner: 'bookstack-agent-pilot-v0.2', base_url: baseURL, arm,
       viewport: `${viewport.width}x${viewport.height}`, max_steps: maxSteps,
       timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10),
-      coordinate_mode: process.env.CUA_COORDINATE_MODE ?? 'normalized_1000'
+      coordinate_mode: process.env.CUA_COORDINATE_MODE ?? 'normalized_1000',
+      action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null
     }
   })
   : null;

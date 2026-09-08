@@ -45,7 +45,7 @@
   ],
   "models": [
     {"id":"qwen3-vl-flash","provider":"aliyun-compatible","image_input":true,"status":"pilot-live-bookstack; cross-sut admission blocked","confirmatory_status":"not-started"},
-    {"id":"qwen3.7-flash","provider":"aliyun-compatible","image_input":true,"status":"configured-pending-live-admission","confirmatory_status":"not-started"},
+    {"id":"qwen3.7-flash","provider":"aliyun-compatible","image_input":true,"status":"configured; visual-hybrid-live-connectivity-passed; admission-pending","confirmatory_status":"not-started"},
     {"id":"doubao-seed-2-0-pro-260215","provider":"volcengine-ark","image_input":true,"status":"pilot-live-bookstack; cross-sut admission blocked","confirmatory_status":"not-started"},
     {"id":"second-vlm-to-be-selected","provider":"TBD","image_input":true,"status":"planned-replication-stratum","confirmatory_status":"not-started"},
     {"id":"third-vlm-to-be-selected","provider":"TBD","image_input":true,"status":"planned-replication-stratum","confirmatory_status":"not-started"}

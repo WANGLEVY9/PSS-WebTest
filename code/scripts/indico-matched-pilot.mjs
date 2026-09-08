@@ -63,7 +63,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
       registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'indico',
       resetDigest, randomizationBlock: block,
-      environment: { runner: arm === 'playwright' ? 'indico-playwright-cell-v0.3' : 'indico-agent-pilot-v0.3', base_url: 'http://localhost:8080', browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), scheduling: 'parallel-feasibility-or-sequential-pilot' }
+      environment: { runner: arm === 'playwright' ? 'indico-playwright-cell-v0.3' : 'indico-agent-pilot-v0.3', base_url: 'http://localhost:8080', browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), action_output_mode: arm === 'playwright' || process.env.CUA_PROVIDER !== 'aliyun' ? null : (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool'), scheduling: 'parallel-feasibility-or-sequential-pilot' }
     }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {

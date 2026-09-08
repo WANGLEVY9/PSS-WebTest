@@ -43,7 +43,7 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'indico', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_id: taskId, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_id: taskId, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 
 const screenshot = async ({ step } = {}) => {

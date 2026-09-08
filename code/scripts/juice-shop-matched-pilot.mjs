@@ -36,8 +36,8 @@ const run = (command, args, env = {}) => new Promise((resolve, reject) => {
 });
 const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => { try { return JSON.parse(line); } catch { return null; } }).find(Boolean) ?? null;
 const configurations = {
-  visual: 'visual-pss-native-aliyun-qwen3-vl-flash-v2',
-  hybrid: 'hybrid-pss-native-aliyun-qwen3-vl-flash-v2',
+  visual: 'visual-pss-native-aliyun-qwen3-7-flash-v1',
+  hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1',
   playwright: 'scripted-playwright-accessibility-human-v2'
 };
 const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((left, right) =>

@@ -14,8 +14,8 @@ test('fault preflight fixes every cell, configuration, and external-call count b
   assert.equal(new Set(plan.cells.map((cell) => cell.randomizationBlock)).size, 3);
   assert.deepEqual(new Set(plan.cells.map((cell) => cell.configurationId)), new Set([
     'scripted-playwright-accessibility-human-v2',
-    'visual-pss-native-aliyun-qwen3-vl-flash-v2',
-    'hybrid-pss-native-aliyun-qwen3-vl-flash-v2'
+    'visual-pss-native-aliyun-qwen3-7-flash-v1',
+    'hybrid-pss-native-aliyun-qwen3-7-flash-v1'
   ]));
 });
 

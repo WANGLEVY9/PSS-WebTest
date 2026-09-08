@@ -13,8 +13,8 @@
     "adaptation": "The benchmark flow is retained; this study additionally requires exact Book2 overview-route validation by an independent post-run evaluator and clarifies that benchmark labels are UI targets, not text-entry inputs."
   },
   "reference_configurations": [
-    "visual-pss-native-aliyun-qwen3-vl-flash-v2",
-    "hybrid-pss-native-aliyun-qwen3-vl-flash-v2",
+    "visual-pss-native-aliyun-qwen3-7-flash-v1",
+    "hybrid-pss-native-aliyun-qwen3-7-flash-v1",
     "scripted-playwright-accessibility-human-v2"
   ],
   "budget": {

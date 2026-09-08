@@ -9,8 +9,8 @@ export const BOOKSTACK_CREATE_PAGE_CONDITIONS = Object.freeze({
 
 const CONFIGURATION_BY_ARM = Object.freeze({
   playwright: 'scripted-playwright-accessibility-human-v2',
-  visual: 'visual-pss-native-aliyun-qwen3-vl-flash-v2',
-  hybrid: 'hybrid-pss-native-aliyun-qwen3-vl-flash-v2'
+  visual: 'visual-pss-native-aliyun-qwen3-7-flash-v1',
+  hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1'
 });
 
 function slug(value, fallback) {

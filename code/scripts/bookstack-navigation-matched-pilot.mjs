@@ -96,7 +96,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       execution = await run('node', ['scripts/run-bookstack-agent-pilot.mjs'], {
         BOOKSTACK_ARM: arm, PSS_BOOKSTACK_TASK_ID: taskId, PSS_BOOKSTACK_TARGET_BOOK: targetBook, PSS_RUN_MANIFEST_PATH: runManifestPath, CUA_MAX_STEPS: String(maxSteps), CUA_TIMEOUT_MS: String(timeoutMs),
         CUA_MAX_DECISION_RETRIES: process.env.CUA_MAX_DECISION_RETRIES ?? '3',
-        PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: arm === 'visual' ? 'visual-pss-native-aliyun-qwen3-vl-flash-v2' : 'hybrid-pss-native-aliyun-qwen3-vl-flash-v2', PSS_RESET_DIGEST: reset.resetDigest, PSS_RANDOMIZATION_BLOCK: block,
+        PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: arm === 'visual' ? 'visual-pss-native-aliyun-qwen3-7-flash-v1' : 'hybrid-pss-native-aliyun-qwen3-7-flash-v1', PSS_RESET_DIGEST: reset.resetDigest, PSS_RANDOMIZATION_BLOCK: block,
         PSS_PILOT_CONDITION: condition, PSS_UI_MUTATION: mutation ?? '',
         PSS_RUN_RECORD_OUT: recordsPath
       });

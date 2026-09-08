@@ -112,6 +112,36 @@
       "admission": { "status": "not-started", "evidence": [] }
     },
     {
+      "configuration_id": "visual-pss-native-aliyun-qwen3-7-flash-v1",
+      "family": "visual",
+      "status": "candidate",
+      "framework": { "id": "pss-native", "version": "0.2" },
+      "observation_contract": "screenshot-only",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3.7-flash",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "d3823a719568bafc15dd18a998d4421ca5d9d84ec8ae819477d8da2e63a4db7a"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "hybrid-pss-native-aliyun-qwen3-7-flash-v1",
+      "family": "hybrid",
+      "status": "candidate",
+      "framework": { "id": "pss-native", "version": "0.2" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3.7-flash",
+        "action_schema_version": "coordinate-action-v0.1",
+        "prompt_digest": "84d5d829eab66a016319e868fcec6bf8512d422a8ebc8b2d065e7c11b50b38f2"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
       "configuration_id": "scripted-playwright-accessibility-human-v2",
       "family": "scripted",
       "status": "implemented",

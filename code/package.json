@@ -31,6 +31,7 @@
     "validate:benchmark-matrix": "node scripts/validate-benchmark-matrix.mjs",
     "validate:configuration-registry": "node scripts/validate-configuration-registry.mjs",
     "validate:phase2-scaling-plan": "node scripts/validate-phase2-scaling-plan.mjs",
+    "validate:large-scale-expansion": "node scripts/validate-large-scale-expansion.mjs",
     "validate:exploratory-batch": "node scripts/validate-exploratory-batch-plan.mjs",
     "batch:prepare-500": "node scripts/prepare-exploratory-500-batch.mjs",
     "batch:run-500": "node scripts/run-exploratory-500-batch.mjs",

@@ -1,0 +1,70 @@
+{
+  "schema_version": "0.1",
+  "id": "phase2-30-app-8-workflow-conditional-expansion-v1",
+  "status": "planning-not-authorized",
+  "collection_class": "conditional-boundary-expansion",
+  "purpose": "Define the requested large-scale target without treating blueprint tasks, adapter smoke checks, or unadmitted applications as experimental outcomes.",
+  "unit_of_analysis": "application × workflow × condition × strategy × repetition",
+  "target": {
+    "application_count": 30,
+    "workflows_per_application": 8,
+    "conditions": [
+      "clean-stable",
+      "functional-fault",
+      "ui-evolved"
+    ],
+    "strategies": [
+      "visual",
+      "hybrid",
+      "playwright"
+    ],
+    "repetitions_per_cell": 14
+  },
+  "derived_totals": {
+    "matched_cells": 2160,
+    "execution_units": 30240,
+    "per_strategy_execution_units": 10080,
+    "per_condition_execution_units": 10080,
+    "per_application_execution_units": 1008
+  },
+  "workflow_blueprints": [
+    "navigation-open-target",
+    "search-filter-negative-control",
+    "multi-step-form-persist",
+    "cross-page-create-and-revisit",
+    "role-permission-workflow",
+    "delayed-save-retry",
+    "visual-layout-targeting",
+    "repair-after-locator-break"
+  ],
+  "admission_rule": [
+    "An application must be version-pinned, self-hosted, resettable, and license-audited.",
+    "Every bound workflow must have an independent clean, fault, and evolution oracle; agent self-reports are never ground truth.",
+    "Every bound workflow must pass a clean negative-control and fault-positive-control gate.",
+    "All three strategies must produce complete standard run-records in a matched pilot before any repetition is counted.",
+    "A behavior-preserving UI evolution must pass its invariant check before entering the evolution condition.",
+    "Provider, model, framework, task, condition, and repetition strata remain separate in the ledger."
+  ],
+  "execution_policy": {
+    "authorization_environment_variable": "PSS_LARGE_SCALE_EXECUTE",
+    "required_value": "1",
+    "status_required": "ready-for-confirmatory",
+    "refuse_on_missing_application_slots": true,
+    "refuse_on_unadmitted_workflows": true,
+    "refuse_on_missing_three_arm_pilot": true,
+    "refuse_on_missing_power_freeze": true,
+    "refuse_on_missing_run_record_schema": true
+  },
+  "current_inventory_source": {
+    "benchmark_matrix": "config/benchmark-matrix.v0.1.json",
+    "task_manifest": "manifests/task-manifest.v0.1.json",
+    "task_blueprints": "config/task-template-library.v0.1.json",
+    "interpretation": "The validator recomputes current coverage from these files; the target is not evidence that the current inventory is admitted."
+  },
+  "non_substitution_rules": [
+    "Do not fill the 30-application target with repeated runs of BookStack.",
+    "Do not count a candidate workflow, provider connectivity check, framework adapter smoke, or oracle-only run as an admitted cell.",
+    "Do not pool pure visual and hybrid provider/model strata, or collapse infrastructure failures into task failures.",
+    "Do not start 14-repetition confirmatory collection before pilot variance and power inputs are frozen."
+  ]
+}

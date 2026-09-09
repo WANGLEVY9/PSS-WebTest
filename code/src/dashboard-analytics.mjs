@@ -65,6 +65,7 @@ export function buildDashboardAnalysis({ records = [], matrix = { applications: 
   const byArm = groupBy(normalized, (record) => record.arm ?? 'unknown');
   const byConditionArm = groupBy(normalized, (record) => `${record.condition ?? 'unknown'}::${record.arm ?? 'unknown'}`);
   const byApplicationArm = groupBy(normalized, (record) => `${record.application_id ?? 'unknown'}::${record.arm ?? 'unknown'}`);
+  const byProviderModelArm = groupBy(normalized, (record) => `${record.provider_id ?? 'scripted'}::${record.model_id ?? 'deterministic'}::${record.arm ?? 'unknown'}`);
   const byFailure = groupBy(normalized.filter((record) => record.failure_category), (record) => record.failure_category);
   const blocks = groupBy(normalized, matchedBlockKey);
   const completeBlocks = [...blocks.values()].filter((group) => ARMS.every((arm) => group.some((record) => record.arm === arm))).length;
@@ -137,6 +138,12 @@ export function buildDashboardAnalysis({ records = [], matrix = { applications: 
     } : null,
     strategy_comparison: ARMS.map((arm) => ({ arm, ...summarizeGroup(byArm.get(arm) ?? []) })),
     condition_comparison: [...(target?.conditions ?? [])].flatMap((condition) => ARMS.map((arm) => ({ condition, arm, ...summarizeGroup(byConditionArm.get(`${condition}::${arm}`) ?? []) }))),
+    provider_model_comparison: [...byProviderModelArm.entries()]
+      .map(([key, group]) => {
+        const [provider_id, model_id, arm] = key.split('::');
+        return { provider_id, model_id, arm, ...summarizeGroup(group) };
+      })
+      .sort((a, b) => `${a.provider_id}/${a.model_id}/${a.arm}`.localeCompare(`${b.provider_id}/${b.model_id}/${b.arm}`)),
     application_comparison: applicationRows,
     failure_taxonomy: failureTaxonomy,
     observed_strata: {

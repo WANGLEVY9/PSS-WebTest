@@ -27,3 +27,14 @@ test('dashboard analytics keeps unknown/not-scored records in the denominator wi
   assert.equal(analysis.summary.strict_pass_rate, 0);
   assert.equal(analysis.condition_comparison.find((item) => item.arm === 'visual').n, 1);
 });
+
+test('dashboard analytics keeps provider/model strata separate from the arm aggregate', () => {
+  const analysis = buildDashboardAnalysis({ records: [
+    record({ provider_id: 'aliyun-compatible', model_id: 'qwen3.7-flash' }),
+    record({ run_id: 'r-2', provider_id: 'aliyun-compatible', model_id: 'qwen3-vl-flash', arm: 'visual' }),
+    record({ run_id: 'r-3', provider_id: null, model_id: null, arm: 'playwright' })
+  ], matrix, expansionPlan: plan });
+  assert.equal(analysis.provider_model_comparison.length, 3);
+  assert.ok(analysis.provider_model_comparison.some((item) => item.provider_id === 'scripted' && item.model_id === 'deterministic' && item.arm === 'playwright'));
+  assert.equal(analysis.strategy_comparison.find((item) => item.arm === 'visual').n, 2);
+});

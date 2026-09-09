@@ -191,12 +191,16 @@ PSS_AGENTLAB_PYTHON=/private/tmp/pss-frameworks/agentlab/bin/python \
 redacted artifact is `research/framework-install-smoke-2026-09-09.json`.
 `framework:task:smoke` additionally runs one exploratory authenticated
 BookStack navigation with Browser Use and writes
-`research/framework-task-smoke-2026-09-09.json`. It is deliberately not a
-matched run-record producer: Stagehand's current Qwen endpoint is rejected at
-execute time by its model registry, while AgentLab/BrowserGym still needs a
-PSS task adapter. Both are fail-closed rather than pooled as failures or
-successes. Browser Use's successful navigation is feasibility evidence only;
-it does not enter the three-arm pilot ledger.
+`research/framework-task-smoke-2026-09-09.json`. Stagehand's built-in
+AI-SDK `agent.execute` path is incompatible with the current Qwen message
+schema, so `framework:stagehand:qwen:v02` uses a custom `LLMClient`,
+Stagehand's hybrid `act` grounding, and a bounded visible locator fallback.
+It writes complete replay frames and a v0.2 run record; the fallback is
+explicitly marked in the replay and is not silently treated as model-only
+success. AgentLab/BrowserGym now has a PSS task setup/observation/oracle
+adapter (`framework:agentlab:adapter`); a model-backed AgentLab policy remains
+separate. These external-framework artifacts are feasibility evidence only;
+they do not enter the primary matched three-arm pilot ledger until admission.
 
 Two local model profiles are currently available for CUA pilot runs. The
 default `code/.env` profile is Qwen3-VL-Flash through the Alibaba-compatible

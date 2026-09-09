@@ -54,9 +54,9 @@ const result = {
   sut_url: sutUrl,
   evidence_scope: 'package/import/local-browser smoke only; no model-backed task success claim',
   variants: {
-    stagehand: { ...stagehand, task_adapter: 'pending' },
-    browser_use: { ...browserUse, task_adapter: 'pending' },
-    agentlab_browsergym: { ...agentlab, browsergym_imported: browsergym.imported, task_adapter: 'pending' }
+    stagehand: { ...stagehand, task_adapter: 'stagehand-qwen-custom-v0.1' },
+    browser_use: { ...browserUse, task_adapter: 'browser-use-bookstack-v0.2' },
+    agentlab_browsergym: { ...agentlab, browsergym_imported: browsergym.imported, task_adapter: 'pss-bookstack-open-book' }
   },
   native_semantic_hybrid: { status: 'implemented', evidence: 'see research/framework-variant-smoke-2026-09-09.json' },
   fail_closed: true

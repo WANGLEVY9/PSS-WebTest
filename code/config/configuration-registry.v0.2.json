@@ -177,14 +177,14 @@
     {
       "configuration_id": "hybrid-stagehand-grounded-candidate",
       "family": "hybrid",
-      "status": "candidate",
-      "framework": { "id": "stagehand-grounded", "version": "external-adapter-pending" },
+      "status": "implemented",
+      "framework": { "id": "stagehand-grounded", "version": "3.0.8" },
       "observation_contract": "screenshot-plus-structure",
       "runtime": {
         "provider_id": "aliyun-compatible",
         "model_id": "qwen3.7-flash",
-        "action_schema_version": "stagehand-grounded-action-pending",
-        "prompt_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+        "action_schema_version": "stagehand-act-v3",
+        "prompt_digest": "b919e3154e2715a11b23a602ff9276da36282324a0cb294e73e7574b089824b6"
       },
       "test_implementation": { "code_framework": null, "authoring_source": null },
       "admission": { "status": "not-started", "evidence": [] }
@@ -192,14 +192,14 @@
     {
       "configuration_id": "hybrid-browser-use-grounded-candidate",
       "family": "hybrid",
-      "status": "candidate",
-      "framework": { "id": "browser-use-grounded", "version": "external-adapter-pending" },
+      "status": "implemented",
+      "framework": { "id": "browser-use-grounded", "version": "0.13.10" },
       "observation_contract": "screenshot-plus-structure",
       "runtime": {
         "provider_id": "aliyun-compatible",
         "model_id": "qwen3.7-flash",
-        "action_schema_version": "browser-use-grounded-action-pending",
-        "prompt_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+        "action_schema_version": "browser-use-action-v0.13.10",
+        "prompt_digest": "07cf89a0f04911705981803730d1e3a087a0346f7756885d77542799061b3e7d"
       },
       "test_implementation": { "code_framework": null, "authoring_source": null },
       "admission": { "status": "not-started", "evidence": [] }

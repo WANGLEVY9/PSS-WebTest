@@ -18,6 +18,10 @@ test('parses an unambiguous visual coordinate tuple without accepting arbitrary 
     () => parseDecision('{"type":"action","action":{"type":"click","x":{"x":753,"y":43},"y":null}}', { coordinateMode: 'normalized_1000' }),
     /pointer action coordinates/
   );
+  assert.deepEqual(
+    parseDecision('{"type":"action","action":{"type":"click","x":"80","y":"251"}}', { coordinateMode: 'normalized_1000' }),
+    { type: 'action', action: { type: 'click', x: 80, y: 251 } }
+  );
 });
 
 test('rejects malformed or unsupported decisions', () => {

@@ -64,9 +64,17 @@ function parseDecision(text, { coordinateMode = 'normalized_1000' } = {}) {
     && rawAction.x.length === 2
     && rawAction.x.every(Number.isInteger)
     && (rawAction.y === null || rawAction.y === undefined);
+  const integerToken = (value) => {
+    if (Number.isInteger(value)) return value;
+    if (typeof value === 'string' && /^\d+$/.test(value)) {
+      const parsed = Number(value);
+      return Number.isSafeInteger(parsed) ? parsed : value;
+    }
+    return value;
+  };
   const normalizedRawAction = tuplePoint
-    ? { ...rawAction, x: rawAction.x[0], y: rawAction.x[1] }
-    : rawAction;
+    ? { ...rawAction, x: integerToken(rawAction.x[0]), y: integerToken(rawAction.x[1]) }
+    : { ...rawAction, x: integerToken(rawAction.x), y: integerToken(rawAction.y) };
   const action = { type: normalizedRawAction.type };
   for (const field of ['x', 'y', 'text', 'key', 'delta_y', 'ms']) {
     if (normalizedRawAction[field] !== undefined) action[field] = normalizedRawAction[field];

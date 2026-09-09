@@ -12,6 +12,8 @@
     "check:sut": "node scripts/check-sut.mjs",
     "check:agent": "node scripts/check-agent-readiness.mjs",
     "check:frameworks": "node scripts/check-framework-readiness.mjs",
+    "framework:smoke": "node scripts/framework-package-smoke.mjs",
+    "framework:task:smoke": "node scripts/framework-task-smoke.mjs",
     "provider:bookstack:connectivity": "node scripts/provider-bookstack-connectivity.mjs",
     "provider:aliyun:json-diagnostic": "node scripts/diagnose-aliyun-json.mjs",
     "provider:aliyun:sequence-diagnostic": "node scripts/diagnose-aliyun-sequence.mjs",
@@ -72,6 +74,7 @@
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"
   },
   "devDependencies": {
+    "@browserbasehq/stagehand": "^3.0.8",
     "@playwright/test": "^1.55.0",
     "dotenv": "^16.6.1"
   }

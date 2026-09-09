@@ -1,0 +1,35 @@
+{
+  "schema_version": "framework-install-smoke.v1",
+  "generated_at": "2026-09-09T07:11:10.430Z",
+  "sut": "BookStack",
+  "sut_url": "http://127.0.0.1:8081",
+  "evidence_scope": "package/import/local-browser smoke only; no model-backed task success claim",
+  "variants": {
+    "stagehand": {
+      "imported": true,
+      "local_browser": true,
+      "observed_path": "/login",
+      "task_adapter": "pending"
+    },
+    "browser_use": {
+      "configured": true,
+      "imported": true,
+      "executable": "/private/tmp/pss-frameworks/browser-use/bin/python",
+      "detail": "import_ok",
+      "task_adapter": "pending"
+    },
+    "agentlab_browsergym": {
+      "configured": true,
+      "imported": true,
+      "executable": "/private/tmp/pss-frameworks/agentlab/bin/python",
+      "detail": "import_ok",
+      "browsergym_imported": true,
+      "task_adapter": "pending"
+    }
+  },
+  "native_semantic_hybrid": {
+    "status": "implemented",
+    "evidence": "see research/framework-variant-smoke-2026-09-09.json"
+  },
+  "fail_closed": true
+}

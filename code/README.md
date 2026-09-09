@@ -170,6 +170,34 @@ BookStack, Indico, and Juice Shop now each have a task-level Playwright slice an
 
 `npm run check:agent` checks only whether `CUA_PROVIDER`, `CUA_MODEL`, and `CUA_API_KEY` are present; it never prints the key. A blocked readiness result is expected until a real CUA provider is selected. The adapter tests use contract-only drivers and are not experimental Agent results.
 
+### Optional external framework variants
+
+The repository registers three optional comparison variants without changing
+the primary three-arm semantics: Stagehand for Playwright-native visual/hybrid
+tools, Browser Use for a hybrid browser agent, and AgentLab/BrowserGym for a
+benchmark adapter. Stagehand is a dev dependency; the Python environments are
+isolated under `/private/tmp/pss-frameworks/` and are not uploaded.
+
+```sh
+PSS_BROWSER_USE_PYTHON=/private/tmp/pss-frameworks/browser-use/bin/python \
+PSS_AGENTLAB_PYTHON=/private/tmp/pss-frameworks/agentlab/bin/python \
+  npm run check:frameworks
+PSS_BROWSER_USE_PYTHON=/private/tmp/pss-frameworks/browser-use/bin/python \
+PSS_AGENTLAB_PYTHON=/private/tmp/pss-frameworks/agentlab/bin/python \
+  npm run framework:smoke
+```
+
+`framework:smoke` checks imports and launches a local Stagehand browser. The
+redacted artifact is `research/framework-install-smoke-2026-09-09.json`.
+`framework:task:smoke` additionally runs one exploratory authenticated
+BookStack navigation with Browser Use and writes
+`research/framework-task-smoke-2026-09-09.json`. It is deliberately not a
+matched run-record producer: Stagehand's current Qwen endpoint is rejected at
+execute time by its model registry, while AgentLab/BrowserGym still needs a
+PSS task adapter. Both are fail-closed rather than pooled as failures or
+successes. Browser Use's successful navigation is feasibility evidence only;
+it does not enter the three-arm pilot ledger.
+
 Two local model profiles are currently available for CUA pilot runs. The
 default `code/.env` profile is Qwen3-VL-Flash through the Alibaba-compatible
 endpoint. The ignored `code/.env.doubao` profile is the restored Doubao Seed

@@ -29,5 +29,5 @@
     "browser-use",
     "agentlab-browsergym"
   ],
-  "framework_candidate_status": "not installed; readiness is fail-closed until adapters and dependencies are verified"
+  "framework_candidate_status": "dependencies installed and import/local-browser smoke verified; task adapters remain fail-closed except the exploratory Browser Use navigation smoke"
 }

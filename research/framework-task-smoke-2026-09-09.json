@@ -1,0 +1,35 @@
+{
+  "schema_version": "framework-task-smoke.v1",
+  "generated_at": "2026-09-09T07:10:02.925Z",
+  "sut": "BookStack",
+  "task": "bookstack-open-book",
+  "evidence_scope": "exploratory framework smoke only; not a matched three-arm run and not confirmatory evidence",
+  "variants": {
+    "stagehand": {
+      "framework": "stagehand",
+      "status": "blocked",
+      "strict_pass": false,
+      "task_adapter": "pending",
+      "reason": "configured model is rejected by Stagehand at execute-time (outside its supported model registry)"
+    },
+    "browser_use": {
+      "framework": "browser-use",
+      "framework_version": "0.13.10",
+      "provider_model": "configured-model",
+      "task": "bookstack-open-book",
+      "scope": "exploratory local authenticated navigation smoke; not matched evidence",
+      "status": "completed",
+      "strict_pass": true,
+      "steps": 4,
+      "elapsed_ms": 26665,
+      "failure_category": null
+    },
+    "agentlab_browsergym": {
+      "status": "blocked",
+      "strict_pass": false,
+      "task_adapter": "pending",
+      "reason": "BrowserGym task adapter not implemented for this PSS task"
+    }
+  },
+  "fail_closed": true
+}

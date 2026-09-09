@@ -9,6 +9,7 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
+import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 
 dotenv.config();
 console.error('[cua-smoke] starting');
@@ -33,9 +34,25 @@ const browser = await chromium.launch({ headless: true });
 console.error('[cua-smoke] browser-launched');
 const page = await browser.newPage({ viewport });
 const trace = [];
+const runId = `juice-shop-visual-${Date.now()}`;
+const replay = createLocalReplayRecorder({ runId, applicationId: 'juice-shop', taskId: 'juice-shop-product-search', arm: 'visual' });
+let pendingProviderEventIds = [];
+const replayState = async () => ({
+  milestone: page.url().includes('/search') ? 'search-results' : 'catalog',
+  url_path: new URL(page.url()).pathname,
+  save_clicked: false,
+  saved_page_visible: false,
+  authenticated: true,
+  request_state: 'not-submitted',
+  title_visible: false,
+  title_filled: false,
+  editor_visible: false,
+  editor_focused: false
+});
 
 const driver = createVolcengineCuaDriver({
-  observeScreenshot: async () => (await page.screenshot({ type: 'png' })).toString('base64'),
+  observeScreenshot: async ({ step } = {}) => { const image = await page.screenshot({ type: 'png' }); await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); return image.toString('base64'); },
+  onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
   executeAction: async (action) => {
     if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
@@ -77,7 +94,7 @@ try {
       : prepareSearch
       ? 'The product search box is already open. Type apple into it and press Enter. Finish only after the search results for apple are visible; then return done with verdict pass.'
       : 'In the Juice Shop product catalog, search for apple. Handle any welcome or cookie overlays. Finish only after the search results for apple are visible; then return done with verdict pass.',
-    onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
+    onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); await replay.capture({ page, phase: 'after-action', step, action, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); }
   });
   console.error('[cua-smoke] agent-finished');
 } catch (error) {
@@ -95,7 +112,7 @@ const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = d
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
   ...(phase2Fields ?? {}),
-  run_id: `juice-shop-visual-${Date.now()}`,
+  run_id: runId,
   application_id: 'juice-shop',
   application_version: '20.0.0',
   task_id: 'juice-shop-product-search',
@@ -110,6 +127,7 @@ const runRecord = createRunRecord({
   failure_category: cellPassed ? null : failureCategory,
   trace
 });
+replay.finalize({ status: runRecord.status, checkpointReached: taskStateReached, emittedVerdict: runRecord.emitted_verdict, groundTruthVerdict: runRecord.ground_truth_verdict, failureCategory: runRecord.failure_category, error: failure, oraclePassed: uiOracle?.passed === true });
 console.log(JSON.stringify({ application: 'juice-shop', arm: 'visual', result: result ?? null, failure: failure ?? null, trace, visible_product_markers: ['Apple Juice (1000ml)', 'Pineapple Juice (1000ml)'].filter((name) => visibleProducts.includes(name)), ui_oracle: uiOracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: cellPassed, run_record: runRecord }));
 if (runRecord && process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });
 await browser.close();

@@ -34,6 +34,7 @@ const page = await browser.newPage({ viewport });
 const trace = [];
 const runId = `indico-${arm}-${Date.now()}`;
 const replayRecorder = createLocalReplayRecorder({ runId, applicationId: 'indico', taskId, arm });
+let pendingProviderEventIds = [];
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
@@ -48,9 +49,16 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
 
 const screenshot = async ({ step } = {}) => {
   const image = await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' });
-  await replayRecorder.capture({ page, buffer: image, phase: 'observation', step });
+  await replayRecorder.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
   return `data:image/jpeg;base64,${image.toString('base64')}`;
 };
+async function replayState() {
+  const pathname = new URL(page.url()).pathname;
+  const titleField = page.getByRole('textbox', { name: /Title/i }).first();
+  const titleVisible = await titleField.isVisible().catch(() => false);
+  const titleValue = titleVisible ? await titleField.inputValue().catch(() => '') : '';
+  return { milestone: /\/event\/\d+/.test(pathname) ? 'event-page' : /create/.test(pathname) ? 'event-editor' : /search/.test(pathname) ? 'search-results' : pathname === '/login/' ? 'login' : 'authenticated-home', url_path: pathname, title_visible: titleVisible, title_filled: titleValue.length > 0, title_length: titleValue.length, editor_visible: false, editor_focused: false, save_visible: await page.getByRole('button', { name: /Create event/i }).isVisible().catch(() => false), save_disabled: false, save_clicked: false, saved_page_visible: /\/event\/\d+/.test(pathname), authenticated: pathname !== '/login/', request_state: 'not-submitted' };
+}
 const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   // Indico renders the event-type form after a server-backed navigation.  A
@@ -102,7 +110,7 @@ try {
   // Never archive a login frame.  Replay capture starts only after shared
   // fixture authentication has completed and the arm's task begins.
   replayEligible = true;
-  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10) };
+  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), onProviderResponse: (summary) => { const id = replayRecorder.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); } };
   if (arm === 'visual') driverOptions.observeScreenshot = screenshot;
   else driverOptions.observeHybrid = async (context) => ({ screenshot: await screenshot(context), pageStructure: { controls: await hybridStructure() }, viewport });
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);
@@ -114,7 +122,7 @@ try {
     intent,
     onStep: async ({ step, action }) => {
       trace.push({ step, action, url: page.url() });
-      await replayRecorder.capture({ page, phase: 'post-action', step, action });
+      await replayRecorder.capture({ page, phase: 'after-action', step, action, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
     }
   });
 } catch (error) {

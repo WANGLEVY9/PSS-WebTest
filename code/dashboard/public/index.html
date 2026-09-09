@@ -47,6 +47,14 @@
       <section class="analysis-panel coverage-panel"><div class="analysis-table-wrap"><table class="analysis-table coverage-table"><thead><tr><th>Application</th><th>Status</th><th>Workflows</th><th>Visual</th><th>Hybrid</th><th>Playwright</th></tr></thead><tbody id="coverage-body"></tbody></table></div></section>
 
       <section class="section-heading replay-heading"><div><p class="eyebrow">TRACE REPLAY</p><h2>One run, rendered as evidence.</h2></div><span class="microcopy">Frames are captured only for new local runs. Historical ledgers are not retroactively illustrated.</span></section>
+      <section class="replay-toolbar" aria-label="Replay filters">
+        <div class="replay-filter-intro"><span class="panel-kicker">INSPECT A MATCHED CELL</span><strong id="replay-context">Choose a task to compare its three arms.</strong></div>
+        <label><span>Application</span><select id="replay-application"><option value="all">All applications</option></select></label>
+        <label><span>Workflow</span><select id="replay-task"><option value="all">All workflows</option></select></label>
+        <label><span>Condition</span><select id="replay-condition"><option value="all">All conditions</option></select></label>
+        <button id="replay-clear" class="filter-clear" type="button">CLEAR FILTERS</button>
+      </section>
+      <section id="arm-comparison" class="arm-comparison" aria-label="Selected task three-arm comparison"></section>
       <section class="replay-workbench" aria-label="Selected run replay">
         <aside class="run-queue-panel">
           <div class="panel-kicker"><span>RUN QUEUE</span><span id="queue-count">—</span></div>
@@ -58,6 +66,7 @@
             <img id="replay-image" alt="Selected experiment replay frame" hidden />
             <div id="frame-empty" class="frame-empty"><strong>No frame archive yet.</strong><span>New agent runs will retain local replay frames after fixture login. Existing records remain evidence-ledger entries, not reconstructed screenshots.</span></div>
           </div>
+          <div id="frame-strip" class="frame-strip" aria-label="Replay frame thumbnails"></div>
           <div class="frame-controls"><button id="frame-prev" type="button" aria-label="Previous replay frame">← PREV</button><div id="frame-caption">Select a run to inspect its local evidence.</div><button id="frame-next" type="button" aria-label="Next replay frame">NEXT →</button></div>
         </article>
         <aside class="trajectory-panel">

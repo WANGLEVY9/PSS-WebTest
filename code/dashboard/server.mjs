@@ -145,6 +145,8 @@ function compactRecord(record, source, modified) {
     observation_contract: record.provenance?.observation_contract ?? null,
     provider_id: record.provenance?.provider_id ?? null,
     model_id: record.provenance?.model_id ?? null,
+    optimization_profile: record.provenance?.optimization_profile ?? null,
+    hybrid_action_mode: record.provenance?.hybrid_action_mode ?? null,
     recorded_at_ms: modified,
     replay: replaySummary(record.run_id),
     trajectory: sanitizeTrace(record.trace)

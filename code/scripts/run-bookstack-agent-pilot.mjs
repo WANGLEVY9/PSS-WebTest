@@ -12,6 +12,7 @@ import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome, normalizeAgentVerdict } from '../src/outcome-admission.mjs';
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
 import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
+import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 
 dotenv.config();
 const arm = process.env.BOOKSTACK_ARM;
@@ -57,12 +58,56 @@ const context = await browser.newContext({ viewport });
 if (process.env.PSS_UI_MUTATION === 'bookstack-layout-v1') await installBookStackLayoutMutation(context);
 const page = await context.newPage();
 const trace = [];
-const screenshot = async () => {
+const runId = process.env.PSS_RUN_ID ?? `bookstack-${arm}-${Date.now()}`;
+const replay = createLocalReplayRecorder({ runId, applicationId: 'bookstack', taskId, arm });
+let saveClicked = false;
+let pendingProviderEventIds = [];
+
+async function replayState() {
+  try {
+    const pathname = new URL(page.url()).pathname;
+    const titleField = page.getByRole('textbox', { name: 'Page Title', exact: true });
+    const titleVisible = await titleField.isVisible().catch(() => false);
+    const titleValue = titleVisible ? await titleField.inputValue().catch(() => '') : '';
+    const editor = page.locator('iframe[title="Rich Text Area"]');
+    const editorVisible = await editor.isVisible().catch(() => false);
+    const editorFocused = editorVisible ? await editor.evaluate((element) => document.activeElement === element).catch(() => false) : false;
+    const save = page.getByRole('button', { name: /Save Page/i }).first();
+    const saveVisible = await save.isVisible().catch(() => false);
+    const saveDisabled = saveVisible ? await save.isDisabled().catch(() => false) : false;
+    const savedPageVisible = /\/books\/[^/]+\/page\//.test(pathname) && !/\/draft\//.test(pathname);
+    const milestone = pathname === '/' ? 'authenticated-home'
+      : pathname === '/books' ? 'books-list'
+        : pathname === '/books/book' || pathname === '/books/book2' ? 'book-overview'
+          : /\/draft\//.test(pathname) ? 'new-page-editor'
+            : savedPageVisible ? 'saved-page'
+              : 'other';
+    return {
+      milestone, url_path: pathname,
+      title_visible: titleVisible, title_filled: titleValue.length > 0, title_length: titleValue.length,
+      editor_visible: editorVisible, editor_focused: editorFocused,
+      save_visible: saveVisible, save_disabled: saveDisabled,
+      save_clicked: saveClicked, saved_page_visible: savedPageVisible,
+      authenticated: await page.getByRole('link', { name: 'Books', exact: true }).isVisible().catch(() => false),
+      request_state: saveClicked ? (savedPageVisible ? 'save-completed-page-visible' : 'save-clicked-awaiting-page') : 'not-submitted'
+    };
+  } catch {
+    return { milestone: 'state-read-error', url_path: new URL(page.url()).pathname, save_clicked: saveClicked };
+  }
+}
+
+const screenshot = async (context = {}) => {
   let lastError;
   for (let attempt = 1; attempt <= 3; attempt += 1) {
     try {
       await page.waitForTimeout(250);
-      return `data:image/jpeg;base64,${(await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' })).toString('base64')}`;
+      const buffer = await page.screenshot({ type: 'jpeg', quality: screenshotQuality, animations: 'disabled' });
+      const frame = await replay.capture({
+        page, buffer, phase: 'before-action', step: Number.isInteger(context.step) ? context.step : null,
+        state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0)
+      });
+      void frame;
+      return `data:image/jpeg;base64,${buffer.toString('base64')}`;
     } catch (error) {
       lastError = error;
       await page.waitForTimeout(attempt * 500);
@@ -82,7 +127,12 @@ const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
     throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   }
-  if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(350); }
+  if (action.type === 'click') {
+    const save = page.getByRole('button', { name: /Save Page/i }).first();
+    const box = await save.boundingBox().catch(() => null);
+    if (box && action.x >= box.x && action.x <= box.x + box.width && action.y >= box.y && action.y <= box.y + box.height) saveClicked = true;
+    await page.mouse.click(action.x, action.y); return page.waitForTimeout(350);
+  }
   if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(350); }
   if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(200); }
   if (action.type === 'keypress') {
@@ -125,12 +175,13 @@ const driverOptions = {
   // A navigation workflow has only the historical pass label. A test
   // workflow must be able to explicitly report either visible outcome.
   doneVerdicts: ['bookstack-open-book', 'bookstack-search-and-open-book2'].includes(taskId) ? ['pass'] : ['clean', 'fault']
+  ,onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); }
 };
 if (arm === 'visual') {
   driverOptions.observeScreenshot = screenshot;
 } else {
-    driverOptions.observeHybrid = async () => ({
-    screenshot: await screenshot(),
+    driverOptions.observeHybrid = async ({ step } = {}) => ({
+    screenshot: await screenshot({ step }),
     pageStructure: { controls: await hybridPageStructure() },
     viewport
   });
@@ -148,7 +199,10 @@ try {
     : `Starting from the authenticated BookStack home page, create a new page in the book named "Book" (the link whose visible name is exactly Book). Open Books, open that Book, choose New Page, set the page title to "${title}". Then click once near the center of the large white page content editor below the formatting toolbar (not the title field or toolbar), and on the very next action type the page content "${content}"; keep the title and content in their separate fields, never append content to the title, and never click the editor repeatedly instead of typing. Save the page and inspect the visible saved page. If it visibly shows both the exact title and content, return done with verdict clean. If the title is visible but the saved content differs from "${content}", return done with verdict fault. If neither conclusion is visible, continue or return unknown. Do not inspect databases, triggers, source code, or hidden evaluator information.`;
   result = await adapter.run({
     intent,
-    onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); }
+    onStep: async ({ step, action }) => {
+      trace.push({ step, action, url: page.url() });
+      await replay.capture({ page, phase: 'after-action', step, action, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
+    }
   });
 } catch (error) {
   failure = { name: error.name, message: error.message };
@@ -183,7 +237,7 @@ const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: ta
 const { provenance: phase2Provenance = {}, ...phase2RecordFields } = phase2Fields ?? {};
 const runRecord = createRunRecord({
   ...phase2RecordFields,
-  run_id: `bookstack-${arm}-${Date.now()}`,
+  run_id: runId,
   application_id: 'bookstack', application_version: '24.10.1', task_id: taskId, condition, arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
   // This field represents the independently evaluated SUT postcondition, not
@@ -194,6 +248,15 @@ const runRecord = createRunRecord({
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
   provenance: { ...phase2Provenance, runner_version: 'bookstack-agent-pilot-v0.2', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null },
   failure_category: passed ? null : failureCategory, trace
+});
+const replayManifest = replay.finalize({
+  status: runRecord.status,
+  checkpointReached: taskStateReached,
+  emittedVerdict: runRecord.emitted_verdict,
+  groundTruthVerdict: expectedVerdict,
+  failureCategory: passed ? null : failureCategory,
+  error: failure,
+  oraclePassed: oracle.value?.passed === true
 });
 console.log(JSON.stringify({ application: 'bookstack', arm, result: result ?? null, failure: failure ?? null, oracle, task_state_reached: taskStateReached, protocol_completed: protocolCompleted, oracle_only_success: oracleOnlySuccess, cell_passed: passed, failure_category: passed ? null : failureCategory, trace, run_record: runRecord }));
 if (process.env.PSS_RUN_RECORD_OUT) fs.appendFileSync(process.env.PSS_RUN_RECORD_OUT, `${JSON.stringify(runRecord)}\n`, { mode: 0o600 });

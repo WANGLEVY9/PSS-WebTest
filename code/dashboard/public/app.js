@@ -16,6 +16,15 @@ function actionLabel(action = {}) {
     : action.type === 'scroll' ? `${action.delta_y}px` : '';
   return `${action.type ?? 'event'}${detail ? ` · ${detail}` : ''}`;
 }
+function stateLabel(state = {}) {
+  if (!state) return '';
+  const facts = [];
+  if (state.milestone) facts.push(state.milestone);
+  if (state.title_filled) facts.push('title filled');
+  if (state.editor_focused) facts.push('editor focused');
+  if (state.save_clicked) facts.push(state.saved_page_visible ? 'save completed' : 'save submitted');
+  return facts.join(' · ');
+}
 
 function renderSuts(suts) {
   $('#sut-count').textContent = `${suts.filter((sut) => sut.reachable).length}/${suts.length}`;
@@ -35,15 +44,15 @@ function renderLedger(records) {
 }
 function renderDossier(detail) {
   const record = detail.record; const [label, className] = outcome(record); $('#run-outcome').textContent = label; $('#run-outcome').className = `outcome ${className}`;
-  $('#run-dossier').innerHTML = `<dl><div><dt>RUN ID</dt><dd>${escapeHtml(record.run_id)}</dd></div><div><dt>ARM / CONTRACT</dt><dd>${escapeHtml(record.arm)} · ${escapeHtml(record.observation_contract ?? 'legacy')}</dd></div><div><dt>STATE / VERDICT</dt><dd>${record.checkpoint_reached ? 'checkpoint reached' : 'checkpoint not reached'} · ${escapeHtml(record.emitted_verdict ?? '—')}</dd></div><div><dt>FAILURE BOUNDARY</dt><dd>${escapeHtml(record.failure_category ?? 'none')}</dd></div><div><dt>LOCAL ARCHIVE</dt><dd>${detail.replay.available ? `${detail.replay.frames.length} frames · typed input redacted` : 'not retained'}</dd></div></dl>`;
+  $('#run-dossier').innerHTML = `<dl><div><dt>RUN ID</dt><dd>${escapeHtml(record.run_id)}</dd></div><div><dt>ARM / CONTRACT</dt><dd>${escapeHtml(record.arm)} · ${escapeHtml(record.observation_contract ?? 'legacy')}</dd></div><div><dt>STATE / VERDICT</dt><dd>${record.checkpoint_reached ? 'checkpoint reached' : 'checkpoint not reached'} · ${escapeHtml(record.emitted_verdict ?? '—')}</dd></div><div><dt>FAILURE BOUNDARY</dt><dd>${escapeHtml(record.failure_category ?? 'none')}</dd></div><div><dt>LOCAL ARCHIVE</dt><dd>${detail.replay.available ? `${detail.replay.frames.length} frames · ${detail.replay.provider_events.length} provider summaries · screenshot digests retained` : 'not retained'}</dd></div></dl>`;
   const events = detail.replay.frames.length ? detail.replay.frames : record.trajectory;
-  $('#trajectory-list').innerHTML = events.length ? events.map((event, index) => { const item = `<span class="trace-index">${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(event.phase ?? `step ${event.step ?? index}`)}</strong><small>${escapeHtml(event.action ? actionLabel(event.action) : 'observation captured')}</small>${event.url ? `<small class="trace-url">${escapeHtml(event.url)}</small>` : ''}</span>`; return event.image_url ? `<li><button type="button" class="trace-step ${index === state.frameIndex ? 'active' : ''}" data-frame-index="${index}">${item}</button></li>` : `<li><div class="trace-step">${item}</div></li>`; }).join('') : '<li class="trajectory-empty">No action-level trajectory was retained for this historical record.</li>';
+  $('#trajectory-list').innerHTML = events.length ? events.map((event, index) => { const item = `<span class="trace-index">${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(event.phase ?? `step ${event.step ?? index}`)}</strong><small>${escapeHtml(event.action ? actionLabel(event.action) : 'observation captured')}${stateLabel(event.state) ? ` · ${escapeHtml(stateLabel(event.state))}` : ''}</small>${event.url ? `<small class="trace-url">${escapeHtml(event.url)}</small>` : ''}${event.screenshot_digest ? `<small class="trace-url">sha256 ${escapeHtml(event.screenshot_digest.slice(0, 16))}…${event.provider_event_ids?.length ? ` · ${event.provider_event_ids.length} provider event` : ''}</small>` : ''}</span>`; return event.image_url ? `<li><button type="button" class="trace-step ${index === state.frameIndex ? 'active' : ''}" data-frame-index="${index}">${item}</button></li>` : `<li><div class="trace-step">${item}</div></li>`; }).join('') : '<li class="trajectory-empty">No action-level trajectory was retained for this historical record.</li>';
 }
 function renderFrame(detail) {
   const frames = detail.replay.frames; const image = $('#replay-image'); const empty = $('#frame-empty'); const previous = $('#frame-prev'); const next = $('#frame-next');
   if (!frames.length) { image.hidden = true; image.removeAttribute('src'); empty.hidden = false; $('#frame-index').textContent = 'NO ARCHIVE'; $('#frame-caption').textContent = detail.replay.note; previous.disabled = true; next.disabled = true; return; }
   state.frameIndex = Math.min(Math.max(state.frameIndex, 0), frames.length - 1); const frame = frames[state.frameIndex]; image.src = frame.image_url; image.hidden = false; empty.hidden = true;
-  $('#frame-label').textContent = `${frame.phase.toUpperCase()} FRAME`; $('#frame-index').textContent = `${String(state.frameIndex + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`; $('#frame-caption').textContent = `step ${frame.step ?? '—'} · ${frame.action ? actionLabel(frame.action) : 'agent observation'} · ${frame.url ?? 'local page'}`; previous.disabled = state.frameIndex === 0; next.disabled = state.frameIndex === frames.length - 1;
+  $('#frame-label').textContent = `${frame.phase.toUpperCase()} FRAME`; $('#frame-index').textContent = `${String(state.frameIndex + 1).padStart(2, '0')} / ${String(frames.length).padStart(2, '0')}`; $('#frame-caption').textContent = `step ${frame.step ?? '—'} · ${frame.action ? actionLabel(frame.action) : 'agent observation'} · ${frame.url ?? 'local page'}${stateLabel(frame.state) ? ` · ${stateLabel(frame.state)}` : ''}${frame.screenshot_digest ? ` · sha256 ${frame.screenshot_digest.slice(0, 16)}…` : ''}`; previous.disabled = state.frameIndex === 0; next.disabled = state.frameIndex === frames.length - 1;
 }
 function renderSelectedRun() { if (!state.runDetail) return; renderFrame(state.runDetail); renderDossier(state.runDetail); if (state.data) { renderRunQueue(state.data.recent_records); renderLedger(state.data.recent_records); } }
 async function selectRun(runId) {

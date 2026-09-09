@@ -66,6 +66,26 @@ function sanitizeTrace(trace) {
   }));
 }
 
+function sanitizeReplayState(state) {
+  if (!state || typeof state !== 'object') return null;
+  const safe = {};
+  for (const key of ['milestone', 'url_path', 'title_visible', 'title_filled', 'title_length', 'editor_visible', 'editor_focused', 'save_visible', 'save_disabled', 'save_clicked', 'saved_page_visible', 'authenticated', 'request_state']) {
+    if (typeof state[key] === 'boolean' || typeof state[key] === 'string' || Number.isInteger(state[key])) safe[key] = typeof state[key] === 'string' ? state[key].slice(0, 120) : state[key];
+  }
+  return Object.keys(safe).length ? safe : null;
+}
+
+function sanitizeProviderEvent(event) {
+  if (!event || typeof event !== 'object') return null;
+  const safe = {};
+  for (const key of ['id', 'provider', 'model', 'finish_reason', 'tool_name', 'error_class']) if (typeof event[key] === 'string') safe[key] = event[key].slice(0, 120);
+  for (const key of ['step', 'attempt', 'http_status', 'content_length', 'arguments_length']) if (Number.isInteger(event[key])) safe[key] = event[key];
+  for (const key of ['ok', 'has_text_content', 'has_tool_call']) if (typeof event[key] === 'boolean') safe[key] = event[key];
+  for (const key of ['content_digest', 'arguments_digest']) if (typeof event[key] === 'string' && /^[a-f0-9]{64}$/i.test(event[key])) safe[key] = event[key];
+  if (event.error && typeof event.error === 'object') safe.error = { name: String(event.error.name ?? 'Error').slice(0, 80), message: String(event.error.message ?? '').slice(0, 280) };
+  return Object.keys(safe).length ? safe : null;
+}
+
 function readReplay(runId) {
   const id = safeRunId(runId);
   if (!id) return null;
@@ -76,7 +96,7 @@ function readReplay(runId) {
 
 function replaySummary(runId) {
   const replay = readReplay(runId);
-  return replay ? { available: true, frame_count: replay.frames.length, schema_version: replay.schema_version } : { available: false, frame_count: 0, schema_version: null };
+  return replay ? { available: true, frame_count: replay.frames.length, provider_event_count: Array.isArray(replay.provider_events) ? replay.provider_events.length : 0, schema_version: replay.schema_version } : { available: false, frame_count: 0, provider_event_count: 0, schema_version: null };
 }
 
 function compactRecord(record, source, modified) {
@@ -212,6 +232,9 @@ function runDetail(runId) {
       step: Number.isInteger(frame.step) ? frame.step : null,
       url: typeof frame.url === 'string' ? frame.url.slice(0, 500) : null,
       action: frame.action ? sanitizeAction(frame.action) : null,
+      screenshot_digest: typeof frame.screenshot_digest === 'string' && /^[a-f0-9]{64}$/i.test(frame.screenshot_digest) ? frame.screenshot_digest : null,
+      state: sanitizeReplayState(frame.state),
+      provider_event_ids: Array.isArray(frame.provider_event_ids) ? frame.provider_event_ids.filter((value) => typeof value === 'string' && /^provider-\d+$/.test(value)).slice(0, 20) : [],
       image_url: `/artifacts/replays/${encodeURIComponent(id)}/${encodeURIComponent(frame.filename)}`
     })) ?? [];
   return {
@@ -221,6 +244,7 @@ function runDetail(runId) {
       schema_version: replay?.schema_version ?? null,
       outcome: replay?.outcome ?? null,
       frames,
+      provider_events: replay?.provider_events?.map(sanitizeProviderEvent).filter(Boolean) ?? [],
       note: replay ? 'Frames are local ignored artifacts; actions redact typed values.' : 'This run has no retained local replay frames. Historical records remain inspectable only at their stored ledger granularity.'
     }
   };

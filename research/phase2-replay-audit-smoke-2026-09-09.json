@@ -1,0 +1,52 @@
+{
+  "study": "PSS-WebTest Phase 2",
+  "artifact_type": "persistent-replay-audit-smoke",
+  "captured_at": "2026-09-09",
+  "provider_model": "aliyun-compatible/qwen3.7-flash",
+  "sut": "BookStack",
+  "task": "bookstack-create-page",
+  "protocol": "2.0-draft",
+  "status": "exploratory_smoke_only",
+  "evidence_boundary": "This is instrumentation and feasibility evidence, not an admitted matched pilot or confirmatory result.",
+  "runs": [
+    {
+      "run_id": "bookstack-playwright-1788922509023",
+      "arm": "playwright",
+      "strict_pass": true,
+      "frames": 20,
+      "provider_events": 0,
+      "per_frame_screenshot_digest": true,
+      "per_frame_state_milestones": true,
+      "independent_oracle": "passed"
+    },
+    {
+      "run_id": "bookstack-visual-1788921981557",
+      "arm": "visual",
+      "strict_pass": false,
+      "failure_category": "provider-timeout",
+      "frames": 7,
+      "provider_events": 3,
+      "per_frame_screenshot_digest": true,
+      "per_frame_state_milestones": true,
+      "provider_raw_content_persisted": false,
+      "independent_oracle": "not_reached"
+    },
+    {
+      "run_id": "bookstack-hybrid-1788922156114",
+      "arm": "hybrid",
+      "strict_pass": false,
+      "failure_category": "provider-timeout",
+      "frames": 7,
+      "provider_events": 3,
+      "per_frame_screenshot_digest": true,
+      "per_frame_state_milestones": true,
+      "provider_raw_content_persisted": false,
+      "independent_oracle": "not_reached"
+    }
+  ],
+  "local_artifacts": {
+    "replay_root": "artifacts/phase2/replays/",
+    "ledger": "artifacts/phase2/bookstack-replay-audit-live.jsonl",
+    "retention": "ignored local files; screenshots and raw credentials are not committed"
+  }
+}

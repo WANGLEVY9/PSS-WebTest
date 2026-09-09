@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 
 const SAFE_SEGMENT = /^[A-Za-z0-9._-]+$/;
@@ -35,6 +36,55 @@ function sanitizeError(error) {
   return { name: String(error.name ?? 'Error').slice(0, 80), message };
 }
 
+function digest(value) {
+  return crypto.createHash('sha256').update(value ?? '').digest('hex');
+}
+
+/**
+ * Keep only state facts needed for a screenshot audit.  In particular, this
+ * deliberately excludes field values, DOM dumps, page structure, and hidden
+ * evaluator state.  The booleans make title/editor/save milestones auditable
+ * without turning the replay archive into another oracle channel.
+ */
+export function sanitizeReplayState(state = {}) {
+  if (!state || typeof state !== 'object') return null;
+  const safe = {};
+  for (const key of [
+    'milestone', 'url_path', 'title_visible', 'title_filled', 'title_length',
+    'editor_visible', 'editor_focused', 'save_visible', 'save_disabled',
+    'save_clicked', 'saved_page_visible', 'authenticated', 'request_state'
+  ]) {
+    if (typeof state[key] === 'boolean' || typeof state[key] === 'string' || Number.isInteger(state[key])) {
+      safe[key] = typeof state[key] === 'string' ? state[key].slice(0, 120) : state[key];
+    }
+  }
+  return Object.keys(safe).length ? safe : null;
+}
+
+/**
+ * Provider evidence is a bounded summary, never the raw response.  Content
+ * and tool arguments are represented by length plus SHA-256 so a run can be
+ * joined to a provider event without leaking prompts, typed values, or keys.
+ */
+export function sanitizeProviderSummary(summary = {}) {
+  if (!summary || typeof summary !== 'object') return null;
+  const safe = {};
+  for (const key of ['step', 'attempt', 'http_status', 'content_length', 'arguments_length']) {
+    if (Number.isInteger(summary[key])) safe[key] = summary[key];
+  }
+  for (const key of ['provider', 'model', 'finish_reason', 'tool_name', 'error_class']) {
+    if (typeof summary[key] === 'string') safe[key] = summary[key].slice(0, 120);
+  }
+  for (const key of ['ok', 'has_text_content', 'has_tool_call']) {
+    if (typeof summary[key] === 'boolean') safe[key] = summary[key];
+  }
+  for (const key of ['content_digest', 'arguments_digest']) {
+    if (typeof summary[key] === 'string' && /^[a-f0-9]{64}$/i.test(summary[key])) safe[key] = summary[key];
+  }
+  if (summary.error) safe.error = sanitizeError(summary.error);
+  return Object.keys(safe).length ? safe : null;
+}
+
 /**
  * Stores replay frames in ignored local artifacts, separate from the compact
  * immutable run record.  The recorder never saves prompts, provider replies,
@@ -56,25 +106,42 @@ export function createLocalReplayRecorder({
   const safeArm = safeSegment(arm, 'arm');
   const directory = path.join(root, id);
   const frames = [];
+  const providerEvents = [];
   let ordinal = 0;
+  let providerOrdinal = 0;
   const limit = Number.isInteger(maxFrames) && maxFrames > 0 ? maxFrames : 40;
 
-  async function capture({ page, buffer = null, phase, step = null, action = null }) {
+  function recordProviderEvent(summary) {
+    if (!enabled) return null;
+    const safe = sanitizeProviderSummary(summary);
+    if (!safe || providerEvents.length >= 200) return null;
+    const id = `provider-${String(providerOrdinal).padStart(3, '0')}`;
+    providerOrdinal += 1;
+    providerEvents.push({ id, ...safe });
+    return id;
+  }
+
+  async function capture({ page, buffer = null, phase, step = null, action = null, state = null, providerEventIds = [] }) {
     if (!enabled || frames.length >= limit || !page || page.isClosed?.()) return null;
     const phaseLabel = safeSegment(String(phase), 'phase');
     const filename = `${String(ordinal).padStart(3, '0')}-${phaseLabel}${Number.isInteger(step) ? `-step-${String(step).padStart(2, '0')}` : ''}.jpg`;
     ordinal += 1;
     try {
       fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
-      if (buffer) fs.writeFileSync(path.join(directory, filename), buffer, { mode: 0o600 });
-      else await page.screenshot({ path: path.join(directory, filename), type: 'jpeg', quality: 80, animations: 'disabled' });
+      const imageBuffer = buffer ?? await page.screenshot({ type: 'jpeg', quality: 80, animations: 'disabled' });
+      fs.writeFileSync(path.join(directory, filename), imageBuffer, { mode: 0o600 });
       const frame = {
         id: `${phaseLabel}-${ordinal - 1}`,
         filename,
         phase: phaseLabel,
         step: Number.isInteger(step) ? step : null,
         url: page.url(),
-        action: action ? sanitizeReplayAction(action) : null
+        action: action ? sanitizeReplayAction(action) : null,
+        screenshot_digest: digest(imageBuffer),
+        state: sanitizeReplayState(state),
+        provider_event_ids: Array.isArray(providerEventIds)
+          ? providerEventIds.filter((value) => typeof value === 'string' && /^provider-\d+$/.test(value)).slice(0, 20)
+          : []
       };
       frames.push(frame);
       return frame;
@@ -103,7 +170,8 @@ export function createLocalReplayRecorder({
         oracle_passed: oraclePassed === true,
         error: sanitizeError(error)
       },
-      frames
+      frames,
+      provider_events: providerEvents
     };
     try {
       fs.mkdirSync(root, { recursive: true, mode: 0o700 });
@@ -114,5 +182,11 @@ export function createLocalReplayRecorder({
     }
   }
 
-  return { capture, finalize, get frames() { return [...frames]; } };
+  return {
+    capture,
+    recordProviderEvent,
+    finalize,
+    get frames() { return [...frames]; },
+    get providerEvents() { return [...providerEvents]; }
+  };
 }

@@ -36,6 +36,31 @@ function screenshotDigest(screenshot) {
   return crypto.createHash('sha256').update(asDataUrl(screenshot)).digest('hex');
 }
 
+function providerResponseSummary({ env, response, payload, step, attempt, ok = false, error = null } = {}) {
+  const message = payload?.choices?.[0]?.message ?? {};
+  const content = typeof message.content === 'string' ? message.content : '';
+  const toolArguments = typeof message.tool_calls?.[0]?.function?.arguments === 'string'
+    ? message.tool_calls[0].function.arguments : '';
+  const summary = {
+    provider: env.CUA_PROVIDER ?? null,
+    model: env.CUA_MODEL ?? null,
+    step: Number.isInteger(step) ? step : null,
+    attempt: Number.isInteger(attempt) ? attempt : null,
+    http_status: Number.isInteger(response?.status) ? response.status : null,
+    ok: ok === true,
+    finish_reason: typeof payload?.choices?.[0]?.finish_reason === 'string' ? payload.choices[0].finish_reason : null,
+    has_text_content: content.length > 0,
+    has_tool_call: Boolean(message.tool_calls?.length),
+    content_length: content.length,
+    content_digest: content ? crypto.createHash('sha256').update(content).digest('hex') : null,
+    tool_name: typeof message.tool_calls?.[0]?.function?.name === 'string' ? message.tool_calls[0].function.name : null,
+    arguments_length: toolArguments.length,
+    arguments_digest: toolArguments ? crypto.createHash('sha256').update(toolArguments).digest('hex') : null
+  };
+  if (error) summary.error = { name: error.name, message: error.message };
+  return summary;
+}
+
 function coordinateBounds(coordinateMode) {
   if (coordinateMode === 'pixels') return { maxX: 1280, maxY: 720, instruction: 'pixel coordinates: integer x from 0 to 1280 and integer y from 0 to 720' };
   if (coordinateMode === 'auto') return { maxX: 1280, maxY: 1000, instruction: 'pixel coordinates x=0..1280,y=0..720; if y>720 or x>1000, use normalized x/y=0..1000 so the harness can convert it' };
@@ -136,7 +161,7 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
   throw lastError;
 }
 
-export function createVolcengineCuaDriver({ env = process.env, observeScreenshot, executeAction, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
+export function createVolcengineCuaDriver({ env = process.env, observeScreenshot, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
   if (!['volcengine', 'aliyun'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
@@ -210,13 +235,21 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         } else {
           requestBody.response_format = { type: 'json_object' };
         }
+        let response;
+        let payload;
+        let providerRecorded = false;
+        const emitProviderSummary = (ok, error = null) => {
+          if (providerRecorded) return;
+          providerRecorded = true;
+          try { onProviderResponse?.(providerResponseSummary({ env, response, payload, step, attempt: decisionAttempt, ok, error })); } catch { /* instrumentation is non-fatal */ }
+        };
         try {
-          const response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
+          response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
             body: JSON.stringify(requestBody)
           }, timeoutMs, maxRetries, () => { retryCount += 1; });
-          const payload = await response.json();
+          payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
           decision = parseProviderDecision(payload, { coordinateMode });
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
@@ -229,8 +262,10 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           if (repeatsPointer && currentObservationDigest === lastAcceptedPointer.observationDigest) {
             throw new Error(`repeated non-progressing click at x=${decision.action.x} y=${decision.action.y}`);
           }
+          emitProviderSummary(true);
           break;
         } catch (error) {
+          emitProviderSummary(false, error);
           lastDecisionError = error;
           if (error.message.startsWith('repeated non-progressing click') && decision?.action) actionHistory.push({ type: 'rejected_click', x: decision.action.x, y: decision.action.y });
           if (decisionAttempt >= maxDecisionRetries) throw error;

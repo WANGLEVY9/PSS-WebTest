@@ -6,6 +6,7 @@ import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { appendRunRecord } from '../src/traditional-run-record.mjs';
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
 import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
+import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 
 dotenv.config();
 const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
@@ -32,18 +33,28 @@ const phase2Fields = phase2Protocol
 if (!username || !password) throw new Error('BookStack credentials must be configured in the local environment');
 
 const startedAt = Date.now();
+const runId = process.env.PSS_RUN_ID ?? `${taskId}-playwright-${Date.now()}`;
 let actions = 0;
 let failure = null;
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
 if (process.env.PSS_UI_MUTATION === 'bookstack-layout-v1') await installBookStackLayoutMutation(context);
 const page = await context.newPage();
-const click = async (locator) => { actions += 1; return locator.click(); };
+const replay = createLocalReplayRecorder({ runId, applicationId: 'bookstack', taskId, arm: 'playwright' });
+async function replayState() {
+  try {
+    const pathname = new URL(page.url()).pathname;
+    const savedPageVisible = pathname === '/books/book' || pathname === '/books/book2';
+    return { milestone: pathname === '/' ? 'authenticated-home' : pathname === '/books' ? 'books-list' : savedPageVisible ? 'book-overview' : /search/.test(pathname) ? 'search-results' : 'other', url_path: pathname, saved_page_visible: false, authenticated: await page.getByRole('link', { name: 'Books', exact: true }).isVisible().catch(() => false), request_state: 'not-submitted' };
+  } catch { return { milestone: 'state-read-error', url_path: new URL(page.url()).pathname }; }
+}
+const click = async (locator) => { const step = actions; await replay.capture({ page, phase: 'before-action', step, state: await replayState() }); actions += 1; const result = await locator.click(); await replay.capture({ page, phase: 'after-action', step, action: { type: 'click' }, state: await replayState() }); return result; };
+const fill = async (locator, value) => { const step = actions; await replay.capture({ page, phase: 'before-action', step, state: await replayState() }); actions += 1; const result = await locator.fill(value); await replay.capture({ page, phase: 'after-action', step, action: { type: 'type', text: value }, state: await replayState() }); return result; };
 try {
   await page.goto(`${baseURL}/`);
   await click(page.getByRole('link', { name: 'Log in' }));
-  await page.getByRole('textbox', { name: 'Email' }).fill(username); actions += 1;
-  await page.getByRole('textbox', { name: 'Password' }).fill(password); actions += 1;
+  await fill(page.getByRole('textbox', { name: 'Email' }), username);
+  await fill(page.getByRole('textbox', { name: 'Password' }), password);
   await click(page.getByRole('button', { name: 'Log In' }));
   if (taskId === 'bookstack-search-and-open-book2') {
     await click(page.getByRole('button', { name: 'Search', exact: true }));
@@ -59,7 +70,7 @@ const passed = !failure && oracle.passed === true;
 const { provenance: phase2Provenance = {}, ...phase2RecordFields } = phase2Fields ?? {};
 const runRecord = createRunRecord({
   ...phase2RecordFields,
-  run_id: `${taskId}-playwright-${Date.now()}`,
+  run_id: runId,
   application_id: 'bookstack', application_version: process.env.BOOKSTACK_VERSION ?? '24.10.1',
   task_id: taskId, condition, arm: 'playwright',
   status: failure ? 'test-failure' : (passed ? 'completed' : 'evaluator-error'),
@@ -69,6 +80,7 @@ const runRecord = createRunRecord({
   failure_category: failure ? 'execution' : (passed ? null : 'oracle'),
   trace: [{ kind: 'scripted-sequence', action_count: actions }]
 });
+replay.finalize({ status: runRecord.status, checkpointReached: runRecord.checkpoint_reached, emittedVerdict: runRecord.emitted_verdict, groundTruthVerdict: 'clean', failureCategory: runRecord.failure_category, error: failure, oraclePassed: oracle.passed === true });
 appendRunRecord(runRecord, process.env.PSS_RUN_RECORD_OUT);
 console.log(JSON.stringify({ application: 'bookstack', task_id: taskId, arm: 'playwright', failure, oracle, run_record: runRecord }));
 await browser.close();

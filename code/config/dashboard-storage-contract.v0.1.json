@@ -1,0 +1,54 @@
+{
+  "schema_version": "0.1",
+  "id": "dashboard-storage-contract-v1",
+  "purpose": "Keep raw run evidence, replay evidence, controller progress, and derived dashboard analytics separate and joinable.",
+  "storage_root": "artifacts/phase2",
+  "layers": [
+    {
+      "id": "run-ledger",
+      "path_pattern": "*.jsonl",
+      "role": "append-only sanitized run-record ledger",
+      "included_in_metrics": true,
+      "primary_join_keys": ["run_id", "application_id", "task_id", "condition", "arm", "randomization_block"]
+    },
+    {
+      "id": "replay-frames",
+      "path_pattern": "replays/<run_id>/*.jpg and replays/<run_id>.json",
+      "role": "step-level screenshot and bounded provider-event evidence",
+      "included_in_metrics": false,
+      "primary_join_keys": ["run_id", "frame.id", "screenshot_digest"]
+    },
+    {
+      "id": "controller-progress",
+      "path_pattern": "*progress.jsonl",
+      "role": "batch scheduling and circuit-breaker progress",
+      "included_in_metrics": false,
+      "primary_join_keys": ["campaign_id", "block_id", "run_tag"]
+    },
+    {
+      "id": "dashboard-overview",
+      "path_pattern": "dashboard/overview-latest.json",
+      "role": "atomically replaced local observability snapshot",
+      "included_in_metrics": false,
+      "primary_join_keys": ["run_id", "analysis.schema_version"]
+    },
+    {
+      "id": "dashboard-analysis",
+      "path_pattern": "dashboard/analysis-latest.json",
+      "role": "atomically replaced descriptive comparison aggregate",
+      "included_in_metrics": false,
+      "primary_join_keys": ["application_id", "task_id", "condition", "arm"]
+    }
+  ],
+  "forbidden_persistence": [
+    "API keys, passwords, cookies, authorization headers, or access tokens",
+    "raw prompts, raw provider replies, or literal typed values",
+    "hidden oracle/database state in visual or hybrid observations"
+  ],
+  "analysis_rules": [
+    "Controller progress rows without a valid visual, hybrid, or playwright run-record arm are excluded from run statistics.",
+    "Unknown and not-scored truth remain in denominators but are never counted as verdict-correct.",
+    "Complete matched blocks require all three arm labels under the same application, workflow, condition, and randomization block.",
+    "Derived snapshots are descriptive and never promote pilot records to confirmatory evidence."
+  ]
+}

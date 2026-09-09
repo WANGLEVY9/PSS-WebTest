@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
+import { buildDashboardAnalysis } from '../src/dashboard-analytics.mjs';
 
 dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.env') });
 
@@ -13,6 +14,10 @@ const repositoryRoot = path.resolve(codeRoot, '..');
 const artifactsRoot = path.join(repositoryRoot, 'artifacts', 'phase2');
 const replayRoot = path.join(artifactsRoot, 'replays');
 const matrixPath = path.join(codeRoot, 'config', 'benchmark-matrix.v0.1.json');
+const expansionPlanPath = path.join(codeRoot, 'config', 'phase2-large-scale-expansion.v0.1.json');
+const dashboardArtifactRoot = path.join(artifactsRoot, 'dashboard');
+const dashboardSnapshotPath = path.join(dashboardArtifactRoot, 'overview-latest.json');
+const dashboardAnalysisPath = path.join(dashboardArtifactRoot, 'analysis-latest.json');
 const host = process.env.PSS_DASHBOARD_HOST ?? '127.0.0.1';
 const port = Number.parseInt(process.env.PSS_DASHBOARD_PORT ?? '4173', 10);
 const sseClients = new Set();
@@ -35,6 +40,20 @@ function readJson(file) {
 
 function safeRunId(value) {
   return typeof value === 'string' && /^[A-Za-z0-9._-]+$/.test(value) ? value : null;
+}
+
+function isLedgerRunRecord(record) {
+  return Boolean(record)
+    && safeRunId(record.run_id)
+    && typeof record.application_id === 'string'
+    && typeof record.task_id === 'string'
+    && typeof record.condition === 'string'
+    && ['visual', 'hybrid', 'playwright'].includes(record.arm)
+    && typeof record.status === 'string'
+    && Boolean(record.timing)
+    && Number.isFinite(record.timing.wall_time_ms)
+    && Number.isFinite(record.timing.actions)
+    && Number.isFinite(record.timing.retries);
 }
 
 function sanitizeAction(action = {}) {
@@ -119,6 +138,10 @@ function compactRecord(record, source, modified) {
     schema_version: record.schema_version ?? null,
     protocol_version: record.protocol_version ?? null,
     configuration_id: record.configuration_id ?? null,
+    randomization_block: record.randomization_block ?? null,
+    reset_digest: record.reset_digest ?? null,
+    sut_image_digest: record.sut_image_digest ?? null,
+    run_manifest_digest: record.run_manifest_digest ?? null,
     observation_contract: record.provenance?.observation_contract ?? null,
     provider_id: record.provenance?.provider_id ?? null,
     model_id: record.provenance?.model_id ?? null,
@@ -139,6 +162,7 @@ function recentJsonlRecords() {
     for (const line of fs.readFileSync(file.fullPath, 'utf8').split(/\r?\n/).filter(Boolean)) {
       try {
         const record = JSON.parse(line);
+        if (!isLedgerRunRecord(record)) continue;
         rows.push(compactRecord(record, file.name, file.modified));
       } catch {
         // An incomplete final line can exist while a live runner appends; omit
@@ -169,6 +193,7 @@ function strictPass(record) {
 async function overview() {
   const records = recentJsonlRecords();
   const matrix = readJson(matrixPath) ?? { applications: [] };
+  const expansionPlan = readJson(expansionPlanPath);
   const byTask = new Map();
   for (const record of records) {
     const key = `${record.application_id}/${record.task_id}`;
@@ -200,7 +225,8 @@ async function overview() {
   const suts = await Promise.all(SUTS.map(checkSut));
   const strictPasses = records.filter(strictPass).length;
   const checkpointOnly = records.filter((record) => record.checkpoint_reached && !strictPass(record)).length;
-  return {
+  const analysis = buildDashboardAnalysis({ records, matrix, expansionPlan });
+  const payload = {
     generated_at: new Date().toISOString(),
     mode: 'local-read-only-observation',
     refresh_interval_ms: 2500,
@@ -214,8 +240,26 @@ async function overview() {
       checkpoint_only: checkpointOnly,
       recent_sources: [...new Set(records.slice(0, 12).map((record) => record.source))]
     },
+    analysis,
     recent_records: records.slice(0, 40)
   };
+  persistDashboardSnapshot(payload);
+  return payload;
+}
+
+function persistDashboardSnapshot(payload) {
+  if (process.env.PSS_DASHBOARD_PERSIST === '0') return;
+  try {
+    fs.mkdirSync(dashboardArtifactRoot, { recursive: true, mode: 0o700 });
+    const temporary = `${dashboardSnapshotPath}.tmp-${process.pid}`;
+    fs.writeFileSync(temporary, `${JSON.stringify(payload, null, 2)}\n`, { mode: 0o600 });
+    fs.renameSync(temporary, dashboardSnapshotPath);
+    const analysisTemporary = `${dashboardAnalysisPath}.tmp-${process.pid}`;
+    fs.writeFileSync(analysisTemporary, `${JSON.stringify(payload.analysis, null, 2)}\n`, { mode: 0o600 });
+    fs.renameSync(analysisTemporary, dashboardAnalysisPath);
+  } catch (error) {
+    console.error(`dashboard snapshot persistence failed: ${error.message}`);
+  }
 }
 
 function runDetail(runId) {
@@ -284,6 +328,7 @@ async function publish() {
 const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, `http://${host}`);
   if (requestUrl.pathname === '/api/overview') return json(response, await overview());
+  if (requestUrl.pathname === '/api/analysis') return json(response, (await overview()).analysis);
   if (requestUrl.pathname.startsWith('/api/runs/')) {
     const detail = runDetail(decodeURIComponent(requestUrl.pathname.slice('/api/runs/'.length)));
     return detail ? json(response, detail) : json(response, { error: 'run not found' }, 404);

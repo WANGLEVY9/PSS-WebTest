@@ -30,6 +30,20 @@
         <article class="metric"><span>Live SUTs</span><strong id="sut-count">—</strong><small>local health probes</small></article>
       </section>
 
+      <section class="section-heading analysis-heading"><div><p class="eyebrow">STUDY SCALE</p><h2>Coverage before conclusions</h2></div><span class="microcopy">The target is a planning boundary. Observed records and complete matched blocks are shown separately from confirmatory evidence.</span></section>
+      <section class="analysis-overview" aria-label="Study scale and current coverage">
+        <article class="analysis-panel scale-panel"><div class="panel-kicker"><span>TARGET / OBSERVED</span><span id="analysis-status">—</span></div><div id="scale-summary" class="scale-summary"></div><div class="scale-track"><span id="scale-track-fill"></span></div><div id="scale-note" class="analysis-note">Loading analysis…</div></article>
+        <article class="analysis-panel"><div class="panel-kicker"><span>ARM COMPARISON</span><span>DESCRIPTIVE</span></div><div id="arm-cards" class="arm-cards"></div></article>
+      </section>
+
+      <section class="analysis-grid" aria-label="Empirical comparison views">
+        <article class="analysis-panel"><div class="panel-kicker"><span>CONDITION × ARM</span><span>RATE / LATENCY</span></div><div class="analysis-table-wrap"><table class="analysis-table"><thead><tr><th>Condition</th><th>Arm</th><th>n</th><th>Strict</th><th>Median</th></tr></thead><tbody id="condition-body"></tbody></table></div></article>
+        <article class="analysis-panel"><div class="panel-kicker"><span>FAILURE TAXONOMY</span><span>COUNT</span></div><div id="failure-bars" class="failure-bars"></div></article>
+      </section>
+
+      <section class="section-heading coverage-heading"><div><p class="eyebrow">APPLICATION COVERAGE</p><h2>Where evidence exists</h2></div><span class="microcopy">Application rows preserve declared workflow coverage and arm-specific denominators; an observed row is not an admitted application.</span></section>
+      <section class="analysis-panel coverage-panel"><div class="analysis-table-wrap"><table class="analysis-table coverage-table"><thead><tr><th>Application</th><th>Status</th><th>Workflows</th><th>Visual</th><th>Hybrid</th><th>Playwright</th></tr></thead><tbody id="coverage-body"></tbody></table></div></section>
+
       <section class="section-heading replay-heading"><div><p class="eyebrow">TRACE REPLAY</p><h2>One run, rendered as evidence.</h2></div><span class="microcopy">Frames are captured only for new local runs. Historical ledgers are not retroactively illustrated.</span></section>
       <section class="replay-workbench" aria-label="Selected run replay">
         <aside class="run-queue-panel">

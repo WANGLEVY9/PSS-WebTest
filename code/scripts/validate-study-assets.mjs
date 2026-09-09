@@ -8,10 +8,15 @@ const references = read('benchmark-reference-matrix.v0.1.json');
 const metrics = read('metric-dictionary.v0.1.json');
 const templates = read('task-template-library.v0.1.json');
 const replication = read('replication-subset.v0.1.json');
+const dashboardStorage = read('dashboard-storage-contract.v0.1.json');
 
 for (const [name, asset] of [['benchmark references', references], ['metrics', metrics], ['task templates', templates], ['replication subset', replication]]) {
   if (asset.schema_version !== '0.1') errors.push(`${name}: schema_version must be 0.1`);
 }
+if (dashboardStorage.schema_version !== '0.1') errors.push('dashboard storage contract: schema_version must be 0.1');
+if (!Array.isArray(dashboardStorage.layers) || dashboardStorage.layers.length < 5) errors.push('dashboard storage contract must define raw, replay, progress, overview, and analysis layers');
+if (!Array.isArray(dashboardStorage.forbidden_persistence) || dashboardStorage.forbidden_persistence.length < 3) errors.push('dashboard storage contract must forbid credentials, raw provider data, and hidden oracle state');
+if (!Array.isArray(dashboardStorage.analysis_rules) || dashboardStorage.analysis_rules.length < 4) errors.push('dashboard storage contract must define denominator and matched-block rules');
 const referenceIds = new Set();
 for (const [i, reference] of (references.references ?? []).entries()) {
   if (!reference.id || referenceIds.has(reference.id)) errors.push(`references[${i}]: duplicate/missing id`);

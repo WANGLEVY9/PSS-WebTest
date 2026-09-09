@@ -49,7 +49,8 @@ const phase2Fields = phase2Protocol
       viewport: `${viewport.width}x${viewport.height}`, max_steps: maxSteps,
       timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10),
       coordinate_mode: process.env.CUA_COORDINATE_MODE ?? 'normalized_1000',
-      action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null
+      action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null,
+      hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate'
     }
   })
   : null;
@@ -127,6 +128,12 @@ const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
     throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   }
+  if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {
+    const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
+    if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
+    if (action.type === 'double_click') await target.dblclick(); else await target.click();
+    return page.waitForTimeout(350);
+  }
   if (action.type === 'click') {
     const save = page.getByRole('button', { name: /Save Page/i }).first();
     const box = await save.boundingBox().catch(() => null);
@@ -151,12 +158,13 @@ const hybridPageStructure = async () => page.locator('a,button,input:not([type="
     if (element.tagName === 'IFRAME') return 'textbox';
     return element.getAttribute('role') || (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' ? 'textbox' : element.tagName.toLowerCase());
   };
-  return elements.map((element) => {
+  const visible = elements.map((element) => {
     const rect = element.getBoundingClientRect();
     const style = getComputedStyle(element);
     if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
     const name = element.getAttribute('aria-label') || element.getAttribute('title') || element.getAttribute('placeholder') || element.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || (element.tagName === 'IFRAME' ? 'Page content editor' : '');
     return {
+      element,
       role: roleFor(element),
       name,
       center_normalized_1000: {
@@ -165,6 +173,8 @@ const hybridPageStructure = async () => page.locator('a,button,input:not([type="
       }
     };
   }).filter(Boolean).slice(0, 80);
+  visible.forEach((item, index) => { item.element.dataset.pssTargetId = `c${index}`; });
+  return visible.map((item, index) => ({ ...item, target_id: `c${index}`, element: undefined }));
 });
 
 const driverOptions = {
@@ -175,6 +185,7 @@ const driverOptions = {
   // A navigation workflow has only the historical pass label. A test
   // workflow must be able to explicitly report either visible outcome.
   doneVerdicts: ['bookstack-open-book', 'bookstack-search-and-open-book2'].includes(taskId) ? ['pass'] : ['clean', 'fault']
+  ,hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate'
   ,onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); }
 };
 if (arm === 'visual') {

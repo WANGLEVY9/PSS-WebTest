@@ -15,6 +15,7 @@ const UI_ACTION_TOOL = {
         action_type: { type: 'string', enum: [...TOOL_ACTION_TYPES] },
         x: { type: 'integer', minimum: 0, maximum: 2000 },
         y: { type: 'integer', minimum: 0, maximum: 2000 },
+        target_id: { type: 'string', pattern: '^c[0-9]{1,3}$' },
         text: { type: 'string', maxLength: 200 },
         key: { type: 'string' },
         delta_y: { type: 'integer' },
@@ -74,7 +75,7 @@ function toViewportPixels(action, coordinateMode) {
     : action;
 }
 
-function parseDecision(text, { coordinateMode = 'normalized_1000' } = {}) {
+function parseDecision(text, { coordinateMode = 'normalized_1000', allowTargetId = false } = {}) {
   let parsed;
   try { parsed = JSON.parse(text); } catch { throw new Error('CUA model did not return valid JSON'); }
   if (parsed?.type === 'done') return { type: 'done', verdict: String(parsed.verdict || 'unknown') };
@@ -104,7 +105,11 @@ function parseDecision(text, { coordinateMode = 'normalized_1000' } = {}) {
   for (const field of ['x', 'y', 'text', 'key', 'delta_y', 'ms']) {
     if (normalizedRawAction[field] !== undefined) action[field] = normalizedRawAction[field];
   }
-  if (['click', 'double_click'].includes(action.type)) {
+  if (allowTargetId && normalizedRawAction.target_id !== undefined) action.target_id = normalizedRawAction.target_id;
+  if (action.target_id !== undefined && !allowTargetId) throw new Error('target_id is not admitted for this observation contract');
+  if (['click', 'double_click'].includes(action.type) && action.target_id !== undefined) {
+    if (!/^c\d{1,3}$/.test(action.target_id)) throw new Error('target_id must be a bounded candidate id');
+  } else if (['click', 'double_click'].includes(action.type)) {
     const bounds = coordinateBounds(coordinateMode);
     if (!Number.isInteger(action.x) || !Number.isInteger(action.y) || action.x < 0 || action.x > bounds.maxX || action.y < 0 || action.y > bounds.maxY) {
       throw new Error(`pointer action coordinates must be ${bounds.instruction} (received x=${String(action.x)} y=${String(action.y)})`);
@@ -135,6 +140,7 @@ function parseToolDecision(toolCall, options = {}) {
   for (const field of ['x', 'y', 'text', 'key', 'delta_y', 'ms']) {
     if (candidate[field] !== undefined) action[field] = candidate[field];
   }
+  if (options.allowTargetId && candidate.target_id !== undefined) action.target_id = candidate.target_id;
   // Reuse the normal schema and bounds validation after translating the
   // provider's function-call arguments to the common arm representation.
   return parseDecision(JSON.stringify({ type: 'action', action }), options);

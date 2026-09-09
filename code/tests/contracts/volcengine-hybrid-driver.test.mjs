@@ -69,6 +69,22 @@ test('hybrid Alibaba JSON action mode preserves the structure boundary and avoid
   assert.doesNotMatch(body.messages[0].content[0].text, /goldOracle|applicationState|mutationLabel/);
 });
 
+test('semantic hybrid mode admits candidate IDs and does not synthesize coordinates', async () => {
+  let request;
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic' },
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'New Page' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c12"}' } }] } }] }; } };
+    }
+  });
+  const decision = await driver.decide({ intent: 'Open New Page', observation: await driver.observe(), step: 0 });
+  assert.deepEqual(decision.action, { type: 'click', target_id: 'c12' });
+  assert.match(JSON.parse(request.options.body).messages[0].content[0].text, /target_id/);
+});
+
 test('hybrid driver permits a repeated coordinate after a screenshot transition', async () => {
   let screenshot = 'before';
   const driver = createVolcengineHybridDriver({

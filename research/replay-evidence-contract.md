@@ -14,3 +14,5 @@ The manifest-level `provider_events` array records provider/model, HTTP status, 
 The local dashboard reads the manifest and exposes the frames, state milestones, screenshot digest prefixes, provider-event counts, and replay images through `/api/runs/:runId` and the live dossier. The compact JSONL run record remains the immutable statistical ledger; replay files are audit evidence and do not change strict-pass admission.
 
 The committed smoke summary in `phase2-replay-audit-smoke-2026-09-09.json` reports the real post-instrumentation BookStack run IDs and explicitly labels them exploratory rather than admitted or confirmatory evidence.
+
+Hybrid also has a separate `CUA_HYBRID_ACTION_MODE=semantic` exploratory mode. In that mode the model selects a bounded `target_id` from the declared page structure and the harness resolves it to the current visible control. Coordinate mode remains the original baseline. Stagehand, Browser Use, and AgentLab/BrowserGym are registered as optional candidate framework variants and are fail-closed until their dependencies and adapters are installed and conformance-tested.

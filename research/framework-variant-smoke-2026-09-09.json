@@ -1,0 +1,33 @@
+{
+  "study": "PSS-WebTest Phase 2",
+  "status": "exploratory_framework_variant",
+  "sut": "BookStack",
+  "task": "bookstack-create-page",
+  "provider_model": "aliyun-compatible/qwen3.7-flash",
+  "comparison": [
+    {
+      "variant": "native-hybrid-coordinate",
+      "run_id": "bookstack-hybrid-1788922156114",
+      "actions": 3,
+      "strict_pass": false,
+      "failure_category": "provider-timeout",
+      "grounding_protocol": "normalized coordinate click"
+    },
+    {
+      "variant": "native-hybrid-semantic-candidate",
+      "run_id": "bookstack-hybrid-1788925084958",
+      "actions": 6,
+      "strict_pass": true,
+      "failure_category": null,
+      "grounding_protocol": "candidate target_id resolved by harness",
+      "independent_oracle": "passed"
+    }
+  ],
+  "interpretation_boundary": "This is one exploratory, non-matched implementation comparison. It demonstrates feasibility of semantic grounding, not a causal estimate or confirmation that Hybrid is superior.",
+  "framework_candidates_registered": [
+    "stagehand",
+    "browser-use",
+    "agentlab-browsergym"
+  ],
+  "framework_candidate_status": "not installed; readiness is fail-closed until adapters and dependencies are verified"
+}

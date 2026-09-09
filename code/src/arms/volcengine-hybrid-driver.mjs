@@ -55,7 +55,7 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
   throw lastError;
 }
 
-export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
+export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', hybridActionMode = env.CUA_HYBRID_ACTION_MODE ?? 'coordinate', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
   if (!['volcengine', 'aliyun'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
@@ -67,6 +67,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
   const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
   const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
+  if (!['coordinate', 'semantic'].includes(hybridActionMode)) throw new Error('CUA_HYBRID_ACTION_MODE must be coordinate or semantic');
   if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
     throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
   }
@@ -106,9 +107,12 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         : coordinateMode === 'auto'
         ? 'pixel coordinates x=0..1280,y=0..720; if y>720 or x>1000, use normalized x/y=0..1000 so the harness can convert it'
         : 'normalized coordinates: integer x and y from 0 to 1000';
+      const groundingInstruction = hybridActionMode === 'semantic'
+        ? 'For click and double_click actions, select exactly one visible candidate by its target_id (for example c12) from the declared page structure. Do not invent target IDs and do not output coordinates for a semantic action. The harness resolves target_id to the current visible control.'
+        : `Use the declared normalized coordinates; ${coordinateInstruction}.`;
       const formatInstruction = config.provider === 'aliyun' && aliyunActionMode === 'tool'
         ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
-        : `Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"${doneVerdicts[0]}"}; or {"type":"action","action":{"type":"click","x":330,"y":512}}; or {"type":"action","action":{"type":"double_click","x":330,"y":512}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Allowed done verdicts: ${doneVerdicts.join(', ')}.`;
+        : `Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"${doneVerdicts[0]}"}; or {"type":"action","action":{"type":"click",${hybridActionMode === 'semantic' ? '"target_id":"c12"' : '"x":330,"y":512'}}}; or {"type":"action","action":{"type":"double_click",${hybridActionMode === 'semantic' ? '"target_id":"c12"' : '"x":330,"y":512'}}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Allowed done verdicts: ${doneVerdicts.join(', ')}.`;
       const lastTwo = actionHistory.slice(-2);
       const blockedClickInstruction = actionHistory.at(-1)?.type === 'rejected_click'
         ? 'The previous candidate click was rejected because it repeated a non-progressing coordinate. Choose a different visible target; do not reuse that coordinate.'
@@ -117,7 +121,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         ? 'The previous action typed text. Do not issue another type action into the same field; first click a different visible field or use a navigation key.'
         : '';
       const recentClicks = actionHistory.slice(-2);
-      const repeatedClickInstruction = recentClicks.length === 2 && recentClicks.every((action) => action.type === 'click' && action.x === recentClicks[0].x && action.y === recentClicks[0].y)
+      const clickIdentity = (action) => action.target_id ?? `${action.x},${action.y}`;
+      const repeatedClickInstruction = recentClicks.length === 2 && recentClicks.every((action) => action.type === 'click' && clickIdentity(action) === clickIdentity(recentClicks[0]))
         ? 'The last two clicks hit the same coordinate without advancing. Do not click that coordinate again; choose the next distinct visible control or type into the focused field.'
         : '';
       const editorFollowupInstruction = lastTwo.length === 2 && lastTwo[0].type === 'type' && lastTwo[1].type === 'click'
@@ -134,7 +139,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           temperature: 0,
           ...generationOptions,
           messages: [{ role: 'user', content: [
-            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives normalized center coordinates for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Pointer actions must use ${coordinateInstruction}; never output decimal coordinates. Never output selectors or evaluator fields.` },
+            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.` },
             { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
           ] }]
         };
@@ -160,7 +165,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           }, timeoutMs, maxRetries, () => { retryCount += 1; });
           payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
-          decision = parseProviderDecision(payload, { coordinateMode });
+          decision = parseProviderDecision(payload, { coordinateMode, allowTargetId: hybridActionMode === 'semantic' });
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
             && decision.action.x === lastAcceptedPointer.x && decision.action.y === lastAcceptedPointer.y;
           // Do not infer non-progress from coordinates alone.  The same point
@@ -183,7 +188,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         if (decision.type === 'action' && decision.action.type === 'click') {
           lastAcceptedPointer = { x: decision.action.x, y: decision.action.y, observationDigest: currentObservationDigest };
         }
-        if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type)) {
+        if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type) && Number.isInteger(decision.action.x) && Number.isInteger(decision.action.y)) {
           const normalized = coordinateMode === 'normalized_1000' || (coordinateMode === 'auto' && (decision.action.x > 1000 || decision.action.y > 720));
           if (normalized) decision.action = { ...decision.action, x: Math.round(decision.action.x * 1280 / 1000), y: Math.round(decision.action.y * 720 / 1000), coordinate_mode: 'pixels' };
         }

@@ -158,6 +158,66 @@
         "authoring_source": "human"
       },
       "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "visual-stagehand-cua-aliyun-qwen3-7-flash-candidate",
+      "family": "visual",
+      "status": "candidate",
+      "framework": { "id": "stagehand-cua", "version": "external-adapter-pending" },
+      "observation_contract": "screenshot-only",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3.7-flash",
+        "action_schema_version": "stagehand-cua-action-pending",
+        "prompt_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "hybrid-stagehand-grounded-candidate",
+      "family": "hybrid",
+      "status": "candidate",
+      "framework": { "id": "stagehand-grounded", "version": "external-adapter-pending" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3.7-flash",
+        "action_schema_version": "stagehand-grounded-action-pending",
+        "prompt_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "hybrid-browser-use-grounded-candidate",
+      "family": "hybrid",
+      "status": "candidate",
+      "framework": { "id": "browser-use-grounded", "version": "external-adapter-pending" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3.7-flash",
+        "action_schema_version": "browser-use-grounded-action-pending",
+        "prompt_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
+    },
+    {
+      "configuration_id": "hybrid-agentlab-browsergym-grounded-candidate",
+      "family": "hybrid",
+      "status": "candidate",
+      "framework": { "id": "agentlab-browsergym-grounded", "version": "external-adapter-pending" },
+      "observation_contract": "screenshot-plus-structure",
+      "runtime": {
+        "provider_id": "aliyun-compatible",
+        "model_id": "qwen3.7-flash",
+        "action_schema_version": "agentlab-browsergym-action-pending",
+        "prompt_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "test_implementation": { "code_framework": null, "authoring_source": null },
+      "admission": { "status": "not-started", "evidence": [] }
     }
   ]
 }

@@ -13,8 +13,12 @@ export function buildP1AdmissionBoard({ benchmarkMatrix, scalingPlan }) {
   const rows = [];
   for (const application of benchmarkMatrix.applications ?? []) {
     if (!requestedApplications.has(application.id)) continue;
-    const workflows = application.workflows ?? [];
-    if (workflows.length !== panel.workflows_per_application) throw new Error(`${application.id} must expose exactly ${panel.workflows_per_application} P1 workflows`);
+    const declaredWorkflows = application.workflows ?? [];
+    if (declaredWorkflows.length < panel.workflows_per_application) throw new Error(`${application.id} must expose at least ${panel.workflows_per_application} P1 workflows`);
+    // P1 remains the preregistered five-workflow reference panel. Additional
+    // candidate workflows stay visible in the broader benchmark matrix but do
+    // not silently change the P1 denominator.
+    const workflows = declaredWorkflows.slice(0, panel.workflows_per_application);
     for (const workflow of workflows) {
       rows.push({
         application: application.id,

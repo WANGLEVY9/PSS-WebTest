@@ -2,6 +2,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
+import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repositoryRoot = `${root}/..`;
@@ -9,8 +10,10 @@ const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 
 const taskId = process.env.PSS_BOOKSTACK_TASK_ID ?? 'bookstack-open-book';
 if (!['bookstack-open-book', 'bookstack-search-and-open-book2'].includes(taskId)) throw new Error(`Unsupported PSS_BOOKSTACK_TASK_ID: ${taskId}`);
 const isSearchTask = taskId === 'bookstack-search-and-open-book2';
-const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? (isSearchTask ? '10' : '8'), 10);
-const timeoutMs = Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10);
+const taskFamily = isSearchTask ? 'search-navigation' : 'navigation';
+const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily })]));
+const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(Math.max(optimizationByArm.visual.max_steps, optimizationByArm.hybrid.max_steps)), 10);
+const timeoutMs = Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(Math.max(optimizationByArm.visual.timeout_ms, optimizationByArm.hybrid.timeout_ms)), 10);
 const maxResetAttempts = Number.parseInt(process.env.PSS_RESET_MAX_ATTEMPTS ?? '2', 10);
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const mutation = process.env.PSS_UI_MUTATION ?? null;
@@ -94,8 +97,16 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       result = lastJson(execution.stdout);
     } else {
       execution = await run('node', ['scripts/run-bookstack-agent-pilot.mjs'], {
-        BOOKSTACK_ARM: arm, PSS_BOOKSTACK_TASK_ID: taskId, PSS_BOOKSTACK_TARGET_BOOK: targetBook, PSS_RUN_MANIFEST_PATH: runManifestPath, CUA_MAX_STEPS: String(maxSteps), CUA_TIMEOUT_MS: String(timeoutMs),
-        CUA_MAX_DECISION_RETRIES: process.env.CUA_MAX_DECISION_RETRIES ?? '3',
+        BOOKSTACK_ARM: arm, PSS_BOOKSTACK_TASK_ID: taskId, PSS_BOOKSTACK_TARGET_BOOK: targetBook, PSS_RUN_MANIFEST_PATH: runManifestPath,
+        CUA_MAX_STEPS: process.env.CUA_MAX_STEPS ?? String(optimizationByArm[arm].max_steps),
+        CUA_TIMEOUT_MS: process.env.CUA_TIMEOUT_MS ?? String(optimizationByArm[arm].timeout_ms),
+        CUA_MAX_DECISION_RETRIES: process.env.CUA_MAX_DECISION_RETRIES ?? String(optimizationByArm[arm].max_decision_retries),
+        CUA_MAX_RETRIES: process.env.CUA_MAX_RETRIES ?? String(optimizationByArm[arm].max_retries),
+        CUA_MAX_OUTPUT_TOKENS: process.env.CUA_MAX_OUTPUT_TOKENS ?? String(optimizationByArm[arm].max_output_tokens),
+        CUA_COORDINATE_MODE: process.env.CUA_COORDINATE_MODE ?? optimizationByArm[arm].coordinate_mode,
+        CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? (optimizationByArm[arm].hybrid_action_mode ?? 'coordinate'),
+        CUA_SCREENSHOT_QUALITY: process.env.CUA_SCREENSHOT_QUALITY ?? String(optimizationByArm[arm].screenshot_quality),
+        PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimizationByArm[arm].post_action_settle_ms),
         PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: arm === 'visual' ? 'visual-pss-native-aliyun-qwen3-7-flash-v1' : 'hybrid-pss-native-aliyun-qwen3-7-flash-v1', PSS_RESET_DIGEST: reset.resetDigest, PSS_RANDOMIZATION_BLOCK: block,
         PSS_PILOT_CONDITION: condition, PSS_UI_MUTATION: mutation ?? '',
         PSS_RUN_RECORD_OUT: recordsPath

@@ -85,9 +85,10 @@ function validateRunRecordV02(record) {
   if (typeof record.randomization_block !== 'string' || !record.randomization_block.trim()) throw new Error('v0.2 randomization_block must be non-empty');
 
   const p = record.provenance;
-  const provenanceFields = ['runner_version', 'trace_hash', 'observation_contract', 'model_id', 'seed', 'framework_id', 'framework_version', 'provider_id', 'prompt_digest', 'action_schema_version', 'code_framework', 'authoring_source', 'environment_digest'];
-  for (const field of provenanceFields) if (!(field in p)) throw new Error(`v0.2 provenance missing required field: ${field}`);
-  assertAllowedKeys(p, new Set(provenanceFields), 'v0.2 run record provenance');
+  const requiredProvenanceFields = ['runner_version', 'trace_hash', 'observation_contract', 'model_id', 'seed', 'framework_id', 'framework_version', 'provider_id', 'prompt_digest', 'action_schema_version', 'code_framework', 'authoring_source', 'environment_digest'];
+  const optionalProvenanceFields = ['optimization_profile', 'hybrid_action_mode'];
+  for (const field of requiredProvenanceFields) if (!(field in p)) throw new Error(`v0.2 provenance missing required field: ${field}`);
+  assertAllowedKeys(p, new Set([...requiredProvenanceFields, ...optionalProvenanceFields]), 'v0.2 run record provenance');
   if (p.observation_contract !== CONTRACT_BY_FAMILY[record.strategy_family]) throw new Error('v0.2 provenance observation_contract conflicts with strategy_family');
   for (const field of ['framework_id', 'framework_version']) if (typeof p[field] !== 'string' || !p[field].trim()) throw new Error(`v0.2 provenance.${field} must be non-empty`);
   if (!/^[a-f0-9]{64}$/.test(p.environment_digest)) throw new Error('v0.2 provenance.environment_digest must be a SHA-256 hex digest');

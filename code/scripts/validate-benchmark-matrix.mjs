@@ -8,6 +8,8 @@ const errors = [];
 const allowedWorkflowStatus = new Set(['candidate', 'pilot-only', 'admitted-pilot-only']);
 const allowedOracleStatus = new Set(['draft', 'independent-verified']);
 const requiredArms = new Set(['visual', 'hybrid', 'playwright']);
+const requiredComplexities = new Set(['navigation', 'search-navigation', 'multi-step', 'form-persistence', 'cross-page-state', 'authorization', 'runtime']);
+const observedComplexities = new Set();
 
 if (matrix.schema_version !== '0.1') errors.push('schema_version must be 0.1');
 if (matrix.reference_cutoff < '2023-01-01') errors.push('reference_cutoff must prioritize 2023 or newer work');
@@ -20,6 +22,8 @@ for (const [index, application] of (matrix.applications ?? []).entries()) {
     const location = `applications[${index}].workflows[${taskIndex}]`;
     if (workflowIds.has(workflow.id)) errors.push(`duplicate workflow id: ${workflow.id}`);
     workflowIds.add(workflow.id);
+    if (!requiredComplexities.has(workflow.complexity)) errors.push(`${location}.complexity is not a declared task family`);
+    else observedComplexities.add(workflow.complexity);
     if (!allowedWorkflowStatus.has(workflow.status)) errors.push(`${location}.status is not explicit/admissible`);
     if (!workflow.oracle_authority || !allowedOracleStatus.has(workflow.oracle_status)) errors.push(`${location}.oracle must declare authority and status`);
     if (!Array.isArray(workflow.fault_slots) || workflow.fault_slots.length === 0) errors.push(`${location}.fault_slots must be non-empty`);
@@ -31,6 +35,7 @@ const armIds = new Set((matrix.arms ?? []).map((arm) => arm.id));
 for (const arm of requiredArms) if (!armIds.has(arm)) errors.push(`missing required arm: ${arm}`);
 if (!Array.isArray(matrix.models) || matrix.models.length < 2) errors.push('at least two model strata must be declared');
 if (!Array.isArray(matrix.traditional_baselines) || matrix.traditional_baselines.length < 3) errors.push('traditional baseline matrix is too narrow');
+for (const complexity of requiredComplexities) if (!observedComplexities.has(complexity)) errors.push(`task family coverage is missing: ${complexity}`);
 
 if (errors.length) {
   console.error(`Benchmark matrix validation failed (${errors.length} error(s))`);

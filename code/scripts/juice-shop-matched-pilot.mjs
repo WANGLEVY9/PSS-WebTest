@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
+import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
 const phase2Protocol = protocolVersion === '2.0-draft';
 const registry = phase2Protocol ? loadConfigurationRegistry() : null;
+const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily: 'search-navigation' })]));
 const taskManifestPath = `${root}/manifests/task-manifest.v0.1.json`;
 const runManifestPath = `${root}/config/juice-shop-product-search-run-manifest.v0.2.json`;
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
@@ -61,10 +63,13 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const clean = reset.code === 0 ? await run('node', ['scripts/verify-juice-shop-clean.mjs']) : { code: 1, stdout: '' };
     const cleanResult = lastJson(clean.stdout);
     const cleanStateVerified = reset.code === 0 && (!phase2Protocol || typeof resetDigest === 'string') && clean.code === 0 && cleanResult?.clean_state_verified === true;
+    const optimization = arm === 'playwright' ? null : optimizationByArm[arm];
+    const armMaxSteps = arm === 'playwright' ? Number(maxSteps) : Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
+    const armTimeoutMs = arm === 'playwright' ? Number(timeoutMs) : Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10);
     const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
       registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'juice-shop',
       resetDigest, randomizationBlock: block,
-      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), action_output_mode: arm === 'playwright' || process.env.CUA_PROVIDER !== 'aliyun' ? null : (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool'), scheduling: 'parallel-feasibility-or-sequential-pilot' }
+      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: armMaxSteps, timeout_ms: armTimeoutMs, action_output_mode: arm === 'playwright' || process.env.CUA_PROVIDER !== 'aliyun' ? null : (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool'), optimization_profile: optimization?.profile_id ?? null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
     }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {
@@ -81,7 +86,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', [arm === 'visual' ? 'scripts/run-volcengine-juice-visual-smoke.mjs' : 'scripts/run-volcengine-juice-hybrid-smoke.mjs'], {
-        CUA_MAX_STEPS: maxSteps, CUA_TIMEOUT_MS: timeoutMs, CUA_PREPARE_SEARCH: '0', CUA_TASK_MODE: 'full-search',
+        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, CUA_PREPARE_SEARCH: '0', CUA_TASK_MODE: 'full-search',
         JUICE_SHOP_BASE_URL: baseURL, PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations[arm],
         PSS_RESET_DIGEST: resetDigest ?? '', PSS_RANDOMIZATION_BLOCK: block,
         PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath,

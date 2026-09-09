@@ -13,6 +13,7 @@ import { deriveAgentOutcome, normalizeAgentVerdict } from '../src/outcome-admiss
 import { evaluateBookStackOpenBookPage } from '../src/oracles/bookstack-visible.mjs';
 import { installBookStackLayoutMutation } from '../src/mutations/bookstack-layout.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
+import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
 dotenv.config();
 const arm = process.env.BOOKSTACK_ARM;
@@ -23,14 +24,17 @@ if (!username || !password) throw new Error('BookStack credentials must be confi
 const baseURL = process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081';
 const taskId = process.env.PSS_BOOKSTACK_TASK_ID ?? 'bookstack-create-page';
 if (!['bookstack-create-page', 'bookstack-open-book', 'bookstack-search-and-open-book2'].includes(taskId)) throw new Error(`Unsupported PSS_BOOKSTACK_TASK_ID: ${taskId}`);
+const taskFamily = taskId === 'bookstack-open-book' ? 'navigation' : taskId === 'bookstack-search-and-open-book2' ? 'search-navigation' : 'form-persistence';
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily });
 const targetBook = process.env.PSS_BOOKSTACK_TARGET_BOOK ?? (taskId === 'bookstack-search-and-open-book2' ? 'Book2' : 'Book');
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const title = process.env.PSS_BOOKSTACK_PAGE_TITLE ?? 'PSS Phase2 Page';
 const content = process.env.PSS_BOOKSTACK_PAGE_CONTENT ?? 'PSS Phase2 Content';
 const expectedVerdict = process.env.PSS_EXPECTED_VERDICT ?? 'clean';
 if (!['clean', 'fault'].includes(expectedVerdict)) throw new Error('PSS_EXPECTED_VERDICT must be clean or fault');
-const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '14', 10);
-const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? '85', 10);
+const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
+const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? String(optimization.screenshot_quality), 10);
+const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const viewport = { width: 1280, height: 720 };
 const phase2Protocol = process.env.PSS_PROTOCOL_VERSION === '2.0-draft';
@@ -47,10 +51,12 @@ const phase2Fields = phase2Protocol
     environment: {
       runner: 'bookstack-agent-pilot-v0.2', base_url: baseURL, arm,
       viewport: `${viewport.width}x${viewport.height}`, max_steps: maxSteps,
-      timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10),
-      coordinate_mode: process.env.CUA_COORDINATE_MODE ?? 'normalized_1000',
+      timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10),
+      coordinate_mode: process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode,
       action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null,
-      hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate'
+      hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate',
+      optimization_profile: optimization.profile_id,
+      progress_guard: optimization.progress_guard
     }
   })
   : null;
@@ -128,7 +134,7 @@ const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
     throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   }
-  if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {
+    if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {
     const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
     if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
     if (action.type === 'double_click') await target.dblclick(); else await target.click();
@@ -138,20 +144,22 @@ const executeAction = async (action) => {
     const save = page.getByRole('button', { name: /Save Page/i }).first();
     const box = await save.boundingBox().catch(() => null);
     if (box && action.x >= box.x && action.x <= box.x + box.width && action.y >= box.y && action.y <= box.y + box.height) saveClicked = true;
-    await page.mouse.click(action.x, action.y); return page.waitForTimeout(350);
+    await page.mouse.click(action.x, action.y); return page.waitForTimeout(postActionSettleMs);
   }
-  if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(350); }
-  if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(200); }
+  if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+  if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(Math.min(postActionSettleMs, 350)); }
   if (action.type === 'keypress') {
     const aliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' };
-    await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(350);
+    await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(postActionSettleMs);
   }
   if (action.type === 'scroll') return page.mouse.wheel(0, action.delta_y);
   if (action.type === 'wait') return page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
   throw new Error(`Unsupported action: ${action.type}`);
 };
 
-const hybridPageStructure = async () => page.locator('a,button,input:not([type="hidden"]),textarea,iframe[title="Rich Text Area"]').evaluateAll((elements) => {
+const structureLimit = Math.max(1, optimization.structure_items || 80);
+const hybridPageStructure = async () => {
+  const controls = await page.locator('a,button,input:not([type="hidden"]),textarea,iframe[title="Rich Text Area"]').evaluateAll((elements) => {
   const roleFor = (element) => {
     if (element.tagName === 'A') return 'link';
     if (element.tagName === 'BUTTON') return 'button';
@@ -174,18 +182,22 @@ const hybridPageStructure = async () => page.locator('a,button,input:not([type="
     };
   }).filter(Boolean).slice(0, 80);
   visible.forEach((item, index) => { item.element.dataset.pssTargetId = `c${index}`; });
-  return visible.map((item, index) => ({ ...item, target_id: `c${index}`, element: undefined }));
-});
+    return visible.map((item, index) => ({ ...item, target_id: `c${index}`, element: undefined }));
+  });
+  return controls.slice(0, structureLimit);
+};
 
 const driverOptions = {
   executeAction,
-  timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '15000', 10),
+  timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10),
   wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
-  coordinateMode: arm === 'visual' ? (process.env.CUA_VISUAL_COORDINATE_MODE ?? process.env.CUA_COORDINATE_MODE ?? 'normalized_1000') : (process.env.CUA_COORDINATE_MODE ?? 'normalized_1000'),
+  maxRetries: Number.parseInt(process.env.CUA_MAX_RETRIES ?? String(optimization.max_retries), 10),
+  maxDecisionRetries: Number.parseInt(process.env.CUA_MAX_DECISION_RETRIES ?? String(optimization.max_decision_retries), 10),
+  coordinateMode: arm === 'visual' ? (process.env.CUA_VISUAL_COORDINATE_MODE ?? process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode) : (process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode),
   // A navigation workflow has only the historical pass label. A test
   // workflow must be able to explicitly report either visible outcome.
   doneVerdicts: ['bookstack-open-book', 'bookstack-search-and-open-book2'].includes(taskId) ? ['pass'] : ['clean', 'fault']
-  ,hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate'
+  ,hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate'
   ,onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); }
 };
 if (arm === 'visual') {

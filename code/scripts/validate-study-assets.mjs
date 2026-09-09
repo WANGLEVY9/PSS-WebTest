@@ -9,6 +9,7 @@ const metrics = read('metric-dictionary.v0.1.json');
 const templates = read('task-template-library.v0.1.json');
 const replication = read('replication-subset.v0.1.json');
 const dashboardStorage = read('dashboard-storage-contract.v0.1.json');
+const agentOptimization = read('agent-optimization-profiles.v0.1.json');
 
 for (const [name, asset] of [['benchmark references', references], ['metrics', metrics], ['task templates', templates], ['replication subset', replication]]) {
   if (asset.schema_version !== '0.1') errors.push(`${name}: schema_version must be 0.1`);
@@ -17,6 +18,17 @@ if (dashboardStorage.schema_version !== '0.1') errors.push('dashboard storage co
 if (!Array.isArray(dashboardStorage.layers) || dashboardStorage.layers.length < 5) errors.push('dashboard storage contract must define raw, replay, progress, overview, and analysis layers');
 if (!Array.isArray(dashboardStorage.forbidden_persistence) || dashboardStorage.forbidden_persistence.length < 3) errors.push('dashboard storage contract must forbid credentials, raw provider data, and hidden oracle state');
 if (!Array.isArray(dashboardStorage.analysis_rules) || dashboardStorage.analysis_rules.length < 4) errors.push('dashboard storage contract must define denominator and matched-block rules');
+if (agentOptimization.schema_version !== '0.1') errors.push('agent optimization profiles: schema_version must be 0.1');
+if (!agentOptimization.default_profile || !Array.isArray(agentOptimization.profiles) || agentOptimization.profiles.length < 2) errors.push('agent optimization profiles must define a default and an explicit baseline');
+for (const [i, profile] of (agentOptimization.profiles ?? []).entries()) {
+  if (!profile.id || !profile.arms?.visual || !profile.arms?.hybrid || !profile.task_family_steps) errors.push(`agent optimization profiles[${i}] is incomplete`);
+  for (const arm of ['visual', 'hybrid']) {
+    const settings = profile.arms?.[arm] ?? {};
+    for (const field of ['timeout_ms', 'max_retries', 'max_decision_retries', 'max_output_tokens', 'post_action_settle_ms', 'progress_guard']) {
+      if (settings[field] === undefined) errors.push(`agent optimization profiles[${i}].arms.${arm}.${field} is required`);
+    }
+  }
+}
 const referenceIds = new Set();
 for (const [i, reference] of (references.references ?? []).entries()) {
   if (!reference.id || referenceIds.has(reference.id)) errors.push(`references[${i}]: duplicate/missing id`);

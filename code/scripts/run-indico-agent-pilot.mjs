@@ -12,6 +12,7 @@ import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { evaluateIndicoSearch } from '../src/oracles/indico-visible-search.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
+import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
 dotenv.config();
 const arm = process.env.INDICO_ARM;
@@ -24,10 +25,14 @@ const title = process.env.PSS_INDICO_EVENT_TITLE ?? 'PSS Phase2 Event';
 const date = process.env.PSS_INDICO_EVENT_DATE ?? '15/01/2030';
 const taskId = process.env.PSS_INDICO_TASK_ID ?? 'indico-create-event';
 if (!['indico-create-event', 'indico-search-events'].includes(taskId)) throw new Error('PSS_INDICO_TASK_ID must be indico-create-event or indico-search-events');
+const taskFamily = taskId === 'indico-search-events' ? 'search-navigation' : 'multi-step';
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily });
 const query = process.env.PSS_INDICO_SEARCH_QUERY ?? 'test';
-const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '14', 10);
+const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const viewport = { width: 1280, height: 720 };
-const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? '85', 10);
+const screenshotQuality = Number.parseInt(process.env.CUA_SCREENSHOT_QUALITY ?? String(optimization.screenshot_quality), 10);
+const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
+const structureLimit = Math.max(1, optimization.structure_items || 80);
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
@@ -44,7 +49,7 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'indico', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_id: taskId, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_id: taskId, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null, hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate', optimization_profile: optimization.profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 
 const screenshot = async ({ step } = {}) => {
@@ -65,24 +70,34 @@ const executeAction = async (action) => {
   // short fixed settle window keeps the observation contract screenshot-only
   // while preventing the next provider decision from seeing the stale home
   // dropdown.  The delay is part of the runner timing, never an oracle signal.
-  if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(1000); }
-  if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(1000); }
-  if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(200); }
-  if (action.type === 'keypress') { const aliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' }; await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(350); }
+  if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {
+    const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
+    if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
+    if (action.type === 'double_click') await target.dblclick(); else await target.click();
+    return page.waitForTimeout(postActionSettleMs);
+  }
+  if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+  if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+  if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(Math.min(postActionSettleMs, 350)); }
+  if (action.type === 'keypress') { const aliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' }; await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(postActionSettleMs); }
   if (action.type === 'scroll') return page.mouse.wheel(0, action.delta_y);
   if (action.type === 'wait') return page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
   throw new Error(`Unsupported action: ${action.type}`);
 };
 
-const hybridStructure = async () => page.locator('a,button,input:not([type="hidden"]),textarea,select').evaluateAll((elements) => elements.map((element) => {
+const hybridStructure = async () => {
+  const controls = await page.locator('a,button,input:not([type="hidden"]),textarea,select').evaluateAll((elements) => elements.map((element, index) => {
   const rect = element.getBoundingClientRect(); const style = getComputedStyle(element);
   if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
   const inputType = element.tagName === 'INPUT' ? (element.getAttribute('type') || 'text').toLowerCase() : '';
   const role = element.tagName === 'A' ? 'link' : element.tagName === 'BUTTON' || ['button', 'submit', 'reset'].includes(inputType) ? 'button' : element.tagName === 'SELECT' ? 'combobox' : 'textbox';
   const label = element.labels?.[0]?.textContent?.replace(/\s+/g, ' ').trim();
   const name = element.getAttribute('aria-label') || element.getAttribute('title') || element.getAttribute('placeholder') || label || element.getAttribute('name') || element.getAttribute('value') || element.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || '';
-  return { role, name, interaction: role === 'textbox' ? 'type' : 'click', center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
-}).filter(Boolean).slice(0, 80));
+  element.dataset.pssTargetId = `c${index}`;
+  return { role, name, interaction: role === 'textbox' ? 'type' : 'click', target_id: `c${index}`, center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
+}).filter(Boolean));
+  return controls.slice(0, structureLimit);
+};
 
 const evaluateCreateEventOracle = () => new Promise((resolve, reject) => {
   const child = spawn('node', ['scripts/evaluate-indico-event.mjs'], { cwd: process.cwd(), env: process.env, stdio: ['ignore', 'pipe', 'ignore'] });
@@ -110,7 +125,7 @@ try {
   // Never archive a login frame.  Replay capture starts only after shared
   // fixture authentication has completed and the arm's task begins.
   replayEligible = true;
-  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), onProviderResponse: (summary) => { const id = replayRecorder.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); } };
+  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), maxRetries: Number.parseInt(process.env.CUA_MAX_RETRIES ?? String(optimization.max_retries), 10), maxDecisionRetries: Number.parseInt(process.env.CUA_MAX_DECISION_RETRIES ?? String(optimization.max_decision_retries), 10), coordinateMode: process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode, hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? (optimization.hybrid_action_mode ?? 'coordinate'), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), onProviderResponse: (summary) => { const id = replayRecorder.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); } };
   if (arm === 'visual') driverOptions.observeScreenshot = screenshot;
   else driverOptions.observeHybrid = async (context) => ({ screenshot: await screenshot(context), pageStructure: { controls: await hybridStructure() }, viewport });
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);

@@ -10,11 +10,13 @@ import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
+import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
 dotenv.config();
 console.error('[cua-smoke] starting');
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
-const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '16', 10);
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'visual', taskFamily: 'search-navigation' });
+const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
@@ -28,7 +30,7 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'juice-shop-visual-agent-v0.3', base_url: baseURL, arm: 'visual', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? '20000', 10), task_mode: taskMode, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'juice-shop-visual-agent-v0.3', base_url: baseURL, arm: 'visual', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_mode: taskMode, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization.profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 const browser = await chromium.launch({ headless: true });
 console.error('[cua-smoke] browser-launched');
@@ -51,7 +53,7 @@ const replayState = async () => ({
 });
 
 const driver = createVolcengineCuaDriver({
-  observeScreenshot: async ({ step } = {}) => { const image = await page.screenshot({ type: 'jpeg', quality: 85, animations: 'disabled' }); await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); return `data:image/jpeg;base64,${image.toString('base64')}`; },
+  observeScreenshot: async ({ step } = {}) => { const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' }); await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); return `data:image/jpeg;base64,${image.toString('base64')}`; },
   onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
   executeAction: async (action) => {
@@ -123,7 +125,7 @@ const runRecord = createRunRecord({
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'juice-shop-visual-agent-v0.3', observation_contract: 'screenshot-only', model_id: process.env.CUA_MODEL ?? null },
+  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'juice-shop-visual-agent-v0.3', observation_contract: 'screenshot-only', model_id: process.env.CUA_MODEL ?? null, optimization_profile: optimization.profile_id },
   failure_category: cellPassed ? null : failureCategory,
   trace
 });

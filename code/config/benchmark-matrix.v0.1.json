@@ -12,7 +12,10 @@
         {"id":"bookstack-open-book","status":"candidate","complexity":"navigation","oracle_authority":"visible-ui","oracle_status":"draft","fault_slots":["wrong-book-target"],"evolution_slots":["dom-wrapper-only","navigation-layout-change"]},
         {"id":"bookstack-edit-existing-page","status":"candidate","complexity":"multi-step","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["save-suppressed","stale-page-write"],"evolution_slots":["editor-toolbar-layout-change","delayed-save"]},
         {"id":"bookstack-search-and-open-book2","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui","oracle_status":"draft","benchmark_source":"WebTestPilot/bookstack/search.yaml@b0659bd9908f11c7957602a9372fc100dda50e40","fault_slots":["search-result-mismatch","wrong-book-target"],"evolution_slots":["search-layout-change","access-name-preserving-layout-change"]},
-        {"id":"bookstack-create-chapter","status":"candidate","complexity":"multi-step","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["wrong-parent-book","persistence-mismatch"],"evolution_slots":["dom-wrapper-only","delayed-save"]}
+        {"id":"bookstack-create-chapter","status":"candidate","complexity":"multi-step","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["wrong-parent-book","persistence-mismatch"],"evolution_slots":["dom-wrapper-only","delayed-save"]},
+        {"id":"bookstack-move-page","status":"candidate","complexity":"cross-page-state","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["wrong-parent-book","stale-list-state"],"evolution_slots":["shelf-layout-change","navigation-layout-change"]},
+        {"id":"bookstack-permission-restricted-page","status":"candidate","complexity":"authorization","oracle_authority":"visible-ui+relational","oracle_status":"draft","fault_slots":["privilege-leak","denial-omission"],"evolution_slots":["permission-dialog-layout","access-name-change"]},
+        {"id":"bookstack-delayed-save-revisit","status":"candidate","complexity":"runtime","oracle_authority":"persisted-state","oracle_status":"draft","fault_slots":["duplicate-submit","save-omission"],"evolution_slots":["delayed-save","async-order-change"]}
       ]
     },
     {
@@ -23,7 +26,10 @@
         {"id":"indico-create-event-with-description","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["description-omission","publish-state-mismatch"],"evolution_slots":["form-layout","access-description"]},
         {"id":"indico-search-events","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui","oracle_status":"draft","benchmark_source":"WebTestPilot/indico/search_events.yaml@b0659bd9908f11c7957602a9372fc100dda50e40","fault_slots":["search-result-mismatch","query-routing-mismatch"],"evolution_slots":["search-layout","access-name-preserving-layout-change"]},
         {"id":"indico-edit-event-date","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["date-field-mismatch","stale-update"],"evolution_slots":["form-layout","delayed-background"]},
-        {"id":"indico-create-event-with-privacy","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["privacy-state-mismatch"],"evolution_slots":["form-layout","access-description"]}
+        {"id":"indico-create-event-with-privacy","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["privacy-state-mismatch"],"evolution_slots":["form-layout","access-description"]},
+        {"id":"indico-edit-event-title","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["title-field-mismatch","stale-update"],"evolution_slots":["form-layout","delayed-background"]},
+        {"id":"indico-manage-event-session","status":"candidate","complexity":"cross-page-state","oracle_authority":"relational","oracle_status":"draft","fault_slots":["wrong-session-parent","session-omission"],"evolution_slots":["timetable-layout","access-description"]},
+        {"id":"indico-registration-form-toggle","status":"candidate","complexity":"authorization","oracle_authority":"relational","oracle_status":"draft","fault_slots":["privacy-state-mismatch","registration-omission"],"evolution_slots":["form-layout","permission-dialog-layout"]}
       ]
     },
     {
@@ -34,7 +40,10 @@
         {"id":"juice-shop-register-user","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["validation-omission","wrong-field"],"evolution_slots":["form-layout","access-description"]},
         {"id":"juice-shop-login","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["credential-field-mismatch","auth-state-mismatch"],"evolution_slots":["form-layout","access-name-preserving-layout-change"]},
         {"id":"juice-shop-add-product-to-basket","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["wrong-product","basket-omission"],"evolution_slots":["product-card-layout","delayed-results"]},
-        {"id":"juice-shop-checkout-address","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["address-field-mismatch","order-omission"],"evolution_slots":["checkout-layout","access-description"]}
+        {"id":"juice-shop-checkout-address","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","fault_slots":["address-field-mismatch","order-omission"],"evolution_slots":["checkout-layout","access-description"]},
+        {"id":"juice-shop-change-password","status":"candidate","complexity":"authorization","oracle_authority":"relational","oracle_status":"draft","fault_slots":["credential-field-mismatch","auth-state-mismatch"],"evolution_slots":["form-layout","access-name-preserving-layout-change"]},
+        {"id":"juice-shop-cart-quantity-update","status":"candidate","complexity":"runtime","oracle_authority":"relational","oracle_status":"draft","fault_slots":["quantity-mismatch","duplicate-submit"],"evolution_slots":["cart-layout-change","delayed-results"]},
+        {"id":"juice-shop-register-validation","status":"candidate","complexity":"form-persistence","oracle_authority":"relational","oracle_status":"draft","fault_slots":["validation-omission","wrong-field"],"evolution_slots":["form-layout","access-description"]}
       ]
     }
   ],

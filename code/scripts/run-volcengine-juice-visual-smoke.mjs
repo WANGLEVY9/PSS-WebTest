@@ -51,7 +51,7 @@ const replayState = async () => ({
 });
 
 const driver = createVolcengineCuaDriver({
-  observeScreenshot: async ({ step } = {}) => { const image = await page.screenshot({ type: 'png' }); await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); return image.toString('base64'); },
+  observeScreenshot: async ({ step } = {}) => { const image = await page.screenshot({ type: 'jpeg', quality: 85, animations: 'disabled' }); await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); return `data:image/jpeg;base64,${image.toString('base64')}`; },
   onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
   executeAction: async (action) => {

@@ -39,7 +39,7 @@ const replayState = async () => ({ milestone: page.url().includes('/search') ? '
 
 const driver = createVolcengineHybridDriver({
   observeHybrid: async ({ step } = {}) => {
-    const image = await page.screenshot({ type: 'png' });
+    const image = await page.screenshot({ type: 'jpeg', quality: 85, animations: 'disabled' });
     await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
     return { screenshot: image.toString('base64'), pageStructure: await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable'), viewport };
   },

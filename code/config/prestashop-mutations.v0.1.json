@@ -1,0 +1,32 @@
+{
+  "schema_version": "0.1",
+  "application_id": "prestashop",
+  "status": "candidate-not-admitted",
+  "source": "WebTestPilot benchmark/prestashop/bugs/buyer_search_product.js plus a local presentation-only evolution",
+  "oracle_contract": {
+    "authority": "independent-database",
+    "hidden_from_testing_arms": true,
+    "truth_key": "ps_product_lang.id_product,name",
+    "rule": "Mutation checks must not modify the seeded database or expose the expected name to an agent observation."
+  },
+  "mutations": [
+    {
+      "id": "search-result-label-omission",
+      "condition": "functional-fault",
+      "trigger": "search-results",
+      "mechanism": "visible-text-mutation",
+      "target_text": "Pack Mug + Framed poster",
+      "replacement_text": "Framed Poster",
+      "expected_invariant": "independent database rows remain unchanged",
+      "status": "candidate"
+    },
+    {
+      "id": "search-layout-preserving-v1",
+      "condition": "ui-evolution",
+      "trigger": "search-results",
+      "mechanism": "presentation-only-style",
+      "expected_invariant": "target identity and product count remain unchanged",
+      "status": "candidate"
+    }
+  ]
+}

@@ -91,6 +91,8 @@
     "pilot:invoiceninja:playwright": "node scripts/run-invoiceninja-playwright-cell.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",
     "pilot:prestashop:playwright": "node scripts/run-prestashop-playwright-cell.mjs",
+    "validate:prestashop-mutations": "node scripts/validate-prestashop-mutations.mjs",
+    "gate:prestashop:fault-evolution": "node scripts/prestashop-fault-evolution-gate.mjs",
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"
   },
   "devDependencies": {

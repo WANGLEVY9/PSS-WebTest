@@ -19,6 +19,7 @@ for (const name of ['PSS_PRESTASHOP_USERNAME', 'PSS_PRESTASHOP_PASSWORD', 'CUA_P
 if (process.env.CUA_PROVIDER !== plan.provider_stratum.provider || process.env.CUA_MODEL !== plan.provider_stratum.model) throw new Error(`provider stratum must be ${plan.provider_stratum.provider}/${plan.provider_stratum.model}`);
 const profile = process.env.PSS_AGENT_PROFILE ?? plan.provider_stratum.profile;
 const concurrency = Math.min(Math.max(Number.parseInt(process.env.PSS_AGENT_BATCH_CONCURRENCY ?? String(plan.guardrails.max_concurrency_per_arm), 10), 1), plan.guardrails.max_concurrency_per_arm);
+const healthInterval = Math.max(Number.parseInt(process.env.PSS_AGENT_HEALTH_INTERVAL ?? '25', 10), 1);
 const baseURL = process.env.PRESTASHOP_BASE_URL ?? 'http://localhost:8083';
 const seed = process.env.PSS_AGENT_SEED ?? `${plan.id}|${arm}`;
 const runTag = process.env.PSS_AGENT_RUN_TAG ?? `prestashop-${arm}-agent-500-${Date.now()}`;
@@ -58,6 +59,7 @@ const healthBefore = await healthGate('before');
 const dbBefore = await databaseSnapshot();
 const startedAt = Date.now();
 const results = [];
+let healthFailure = null;
 let cursor = 0;
 function runJob(job, ordinal) {
   return new Promise((resolve) => {
@@ -93,6 +95,10 @@ async function worker() {
     const result = await runJob(jobs[ordinal], ordinal + 1);
     results.push(result);
     if (results.length % 25 === 0) console.error(`[${arm}-agent-500] completed ${results.length}/${jobs.length}`);
+    if (results.length % healthInterval === 0 && results.length < jobs.length) {
+      try { await healthGate(`mid-campaign-${results.length}`); }
+      catch (error) { healthFailure = { after_observations: results.length, error: { name: error.name, message: error.message } }; return; }
+    }
   }
 }
 await Promise.all(Array.from({ length: concurrency }, () => worker()));
@@ -103,7 +109,7 @@ const byComplexity = Object.fromEntries(['simple', 'medium', 'complex'].map((com
   const rows = results.filter((row) => row.complexity === complexity);
   return [complexity, { planned: rows.length, completed: rows.filter((row) => row.status === 'completed').length, failures: rows.filter((row) => row.status !== 'completed').length, task_state_reached: rows.filter((row) => row.task_state_reached === true).length, oracle_passed: rows.filter((row) => row.oracle_passed === true).length, failure_categories: Object.fromEntries([...new Set(rows.map((row) => row.failure_category).filter(Boolean))].map((category) => [category, rows.filter((row) => row.failure_category === category).length])) }];
 }));
-const summary = { schema_version: '0.1', campaign_id: plan.id, run_tag: runTag, arm, provider: process.env.CUA_PROVIDER, model: process.env.CUA_MODEL, profile, status: results.length === jobs.length && healthAfter.ok ? 'completed-diagnostic-batch' : 'incomplete', application: plan.application, total_planned: jobs.length, total_observed: results.length, subset_recovery_probe: allowSubset, concurrency, seed, health_before: healthBefore, health_after: healthAfter, database_before: dbBefore, database_after: dbAfter, records_out: recordsOut, by_complexity: byComplexity, wall_time_ms: Date.now() - startedAt, evidence_boundary: 'CUA/Hybrid exploratory diagnostic; same distribution as traditional arm, but no three-arm matched or confirmatory claim', results };
+const summary = { schema_version: '0.1', campaign_id: plan.id, run_tag: runTag, arm, provider: process.env.CUA_PROVIDER, model: process.env.CUA_MODEL, profile, status: results.length === jobs.length && !healthFailure && healthAfter.ok ? 'completed-diagnostic-batch' : 'incomplete', application: plan.application, total_planned: jobs.length, total_observed: results.length, subset_recovery_probe: allowSubset, concurrency, health_interval: healthInterval, health_failure: healthFailure, seed, health_before: healthBefore, health_after: healthAfter, database_before: dbBefore, database_after: dbAfter, records_out: recordsOut, by_complexity: byComplexity, wall_time_ms: Date.now() - startedAt, evidence_boundary: 'CUA/Hybrid exploratory diagnostic; same distribution as traditional arm, but no three-arm matched or confirmatory claim', results };
 fs.writeFileSync(summaryOut, `${JSON.stringify(summary, null, 2)}\n`, { mode: 0o600 });
 console.log(JSON.stringify({ status: summary.status, arm, provider: summary.provider, model: summary.model, profile, total_planned: summary.total_planned, total_observed: summary.total_observed, concurrency, by_complexity: summary.by_complexity, records_out: recordsOut, summary_out: summaryOut, wall_time_ms: summary.wall_time_ms }));
 if (summary.status !== 'completed-diagnostic-batch') process.exitCode = 1;

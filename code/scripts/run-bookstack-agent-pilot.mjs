@@ -258,6 +258,21 @@ while (oracle.value?.passed !== true && Date.now() < oracleDeadline) {
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true, expectedVerdict });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached, expectedVerdict });
 const { provenance: phase2Provenance = {}, ...phase2RecordFields } = phase2Fields ?? {};
+const recordProvenance = {
+  ...phase2Provenance,
+  runner_version: 'bookstack-agent-pilot-v0.2',
+  observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure',
+  model_id: process.env.CUA_MODEL ?? null
+};
+// v0.1 is still used by legacy feasibility pilots and has a deliberately
+// closed provenance schema. Optimization metadata is only legal in v0.2,
+// where it is optional and can be displayed without breaking old runners.
+if (phase2Protocol) {
+  recordProvenance.optimization_profile = optimization.profile_id;
+  recordProvenance.hybrid_action_mode = arm === 'hybrid'
+    ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate')
+    : null;
+}
 const runRecord = createRunRecord({
   ...phase2RecordFields,
   run_id: runId,
@@ -269,7 +284,7 @@ const runRecord = createRunRecord({
   emitted_verdict: normalizeAgentVerdict(result?.emitted_verdict),
   ground_truth_verdict: expectedVerdict,
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { ...phase2Provenance, runner_version: 'bookstack-agent-pilot-v0.2', observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null, optimization_profile: optimization.profile_id, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : null },
+  provenance: recordProvenance,
   failure_category: passed ? null : failureCategory, trace
 });
 const replayManifest = replay.finalize({

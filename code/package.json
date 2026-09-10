@@ -26,6 +26,7 @@
     "metrics:summarize": "node scripts/summarize-run-records.mjs",
     "metrics:paired-clean-fault": "node scripts/paired-clean-fault-metrics.mjs",
     "report:phase2-evidence": "node scripts/phase2-evidence-report.mjs",
+    "report:phase2-failure-attribution": "node scripts/phase2-failure-attribution.mjs",
     "report:phase2-p1-board": "node scripts/phase2-p1-admission-board.mjs",
     "pilot:variance": "node scripts/pilot-variance-report.mjs",
     "validate:benchmark-matrix": "node scripts/validate-benchmark-matrix.mjs",

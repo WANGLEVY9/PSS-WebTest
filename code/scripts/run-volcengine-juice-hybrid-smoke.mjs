@@ -17,8 +17,10 @@ const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'hybrid', taskFamily: 'search-navigation' });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
+const dismissOverlaysOnly = process.env.CUA_DISMISS_OVERLAYS === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
+const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const viewport = { width: 1280, height: 720 };
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
@@ -39,11 +41,31 @@ const replay = createLocalReplayRecorder({ runId, applicationId: 'juice-shop', t
 let pendingProviderEventIds = [];
 const replayState = async () => ({ milestone: page.url().includes('/search') ? 'search-results' : 'catalog', url_path: new URL(page.url()).pathname, save_clicked: false, saved_page_visible: false, authenticated: true, request_state: 'not-submitted', title_visible: false, title_filled: false, editor_visible: false, editor_focused: false });
 
+const hybridPageStructure = async () => {
+  const controls = await page.locator('a,button,input:not([type="hidden"]),textarea,[role="button"]').evaluateAll((elements) => {
+    const roleFor = (element) => {
+      if (element.tagName === 'A') return 'link';
+      if (element.tagName === 'BUTTON') return 'button';
+      return element.getAttribute('role') || (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' ? 'textbox' : element.tagName.toLowerCase());
+    };
+    const visible = elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
+      const name = element.getAttribute('aria-label') || element.getAttribute('title') || element.getAttribute('placeholder') || element.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || '';
+      return { element, role: roleFor(element), name, interaction: roleFor(element) === 'textbox' ? 'type' : 'click', center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
+    }).filter(Boolean).slice(0, 120);
+    visible.forEach((item, index) => { item.element.dataset.pssTargetId = `c${index}`; });
+    return visible.map((item, index) => ({ ...item, target_id: `c${index}`, element: undefined }));
+  });
+  return { controls };
+};
+
 const driver = createVolcengineHybridDriver({
   observeHybrid: async ({ step } = {}) => {
     const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' });
     await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
-    return { screenshot: image.toString('base64'), pageStructure: await page.locator('body').ariaSnapshot().catch(() => 'aria-snapshot-unavailable'), viewport };
+    return { screenshot: image.toString('base64'), pageStructure: await hybridPageStructure(), viewport };
   },
   onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
@@ -51,12 +73,18 @@ const driver = createVolcengineHybridDriver({
     if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
       throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
     }
-    if (action.type === 'click') return page.mouse.click(action.x, action.y);
-    if (action.type === 'double_click') return page.mouse.dblclick(action.x, action.y);
-    if (action.type === 'type') return page.keyboard.type(action.text);
+    if (action.target_id && ['click', 'double_click'].includes(action.type)) {
+      const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
+      if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
+      if (action.type === 'double_click') await target.dblclick(); else await target.click();
+      return page.waitForTimeout(postActionSettleMs);
+    }
+    if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+    if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+    if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(Math.min(postActionSettleMs, 350)); }
     if (action.type === 'keypress') {
       const keyAliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' };
-      return page.keyboard.press(keyAliases[action.key.toUpperCase()] ?? action.key);
+      await page.keyboard.press(keyAliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(postActionSettleMs);
     }
     if (action.type === 'scroll') return page.mouse.wheel(0, action.delta_y);
     if (action.type === 'wait') return page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
@@ -64,11 +92,35 @@ const driver = createVolcengineHybridDriver({
   }
 });
 
+const hybridActionMode = process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate';
+const runnerProvenance = {
+  ...(phase2Fields?.provenance ?? {}),
+  runner_version: 'juice-shop-hybrid-agent-v0.3',
+  observation_contract: 'screenshot-plus-structure',
+  model_id: process.env.CUA_MODEL ?? null
+};
+if (phase2Protocol) {
+  runnerProvenance.optimization_profile = optimization.profile_id;
+  runnerProvenance.hybrid_action_mode = hybridActionMode;
+}
+
 let result;
 let failure;
 const agentStartedAt = Date.now();
 try {
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+  // Wait for the API-backed catalog before exposing the first screenshot to
+  // the provider; otherwise a 0-of-0 shell can consume the first action.
+  await page.locator('mat-card').first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForTimeout(250);
+  if (dismissOverlaysOnly) {
+    const dismiss = page.getByText('Dismiss', { exact: true });
+    if (await dismiss.isVisible().catch(() => false)) await dismiss.click({ force: true });
+    const cookies = page.getByText('Me want it!', { exact: true });
+    if (await cookies.isVisible().catch(() => false)) await cookies.click({ force: true });
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(250);
+  }
   if (prepareSearch) {
     const dismiss = page.getByText('Dismiss', { exact: true });
     if (await dismiss.isVisible().catch(() => false)) await dismiss.click({ force: true });
@@ -112,7 +164,7 @@ const runRecord = createRunRecord({
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'juice-shop-hybrid-agent-v0.3', observation_contract: 'screenshot-plus-structure', model_id: process.env.CUA_MODEL ?? null, optimization_profile: optimization.profile_id, hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate' },
+  provenance: runnerProvenance,
   failure_category: cellPassed ? null : failureCategory,
   trace
 });

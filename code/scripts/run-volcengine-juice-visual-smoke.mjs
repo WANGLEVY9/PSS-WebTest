@@ -18,8 +18,10 @@ const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'visual', taskFamily: 'search-navigation' });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
+const dismissOverlaysOnly = process.env.CUA_DISMISS_OVERLAYS === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
+const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const viewport = { width: 1280, height: 720 };
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
@@ -60,12 +62,12 @@ const driver = createVolcengineCuaDriver({
     if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
       throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
     }
-    if (action.type === 'click') return page.mouse.click(action.x, action.y);
-    if (action.type === 'double_click') return page.mouse.dblclick(action.x, action.y);
-    if (action.type === 'type') return page.keyboard.type(action.text);
+    if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+    if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
+    if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(Math.min(postActionSettleMs, 350)); }
     if (action.type === 'keypress') {
       const keyAliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' };
-      return page.keyboard.press(keyAliases[action.key.toUpperCase()] ?? action.key);
+      await page.keyboard.press(keyAliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(postActionSettleMs);
     }
     if (action.type === 'scroll') return page.mouse.wheel(0, action.delta_y);
     if (action.type === 'wait') return page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
@@ -73,11 +75,31 @@ const driver = createVolcengineCuaDriver({
   }
 });
 
+const runnerProvenance = {
+  ...(phase2Fields?.provenance ?? {}),
+  runner_version: 'juice-shop-visual-agent-v0.3',
+  observation_contract: 'screenshot-only',
+  model_id: process.env.CUA_MODEL ?? null
+};
+if (phase2Protocol) runnerProvenance.optimization_profile = optimization.profile_id;
+
 let result;
 let failure;
 const agentStartedAt = Date.now();
 try {
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
+  // The catalog is API-backed and briefly renders a 0-of-0 shell after
+  // domcontentloaded. Do not spend the first visual action on a stale frame.
+  await page.locator('mat-card').first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.waitForTimeout(250);
+  if (dismissOverlaysOnly) {
+    const dismiss = page.getByText('Dismiss', { exact: true });
+    if (await dismiss.isVisible().catch(() => false)) await dismiss.click({ force: true });
+    const cookies = page.getByText('Me want it!', { exact: true });
+    if (await cookies.isVisible().catch(() => false)) await cookies.click({ force: true });
+    await page.keyboard.press('Escape').catch(() => {});
+    await page.waitForTimeout(250);
+  }
   if (prepareSearch) {
     const dismiss = page.getByText('Dismiss', { exact: true });
     if (await dismiss.isVisible().catch(() => false)) await dismiss.click({ force: true });
@@ -125,7 +147,7 @@ const runRecord = createRunRecord({
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: 'juice-shop-visual-agent-v0.3', observation_contract: 'screenshot-only', model_id: process.env.CUA_MODEL ?? null, optimization_profile: optimization.profile_id },
+  provenance: runnerProvenance,
   failure_category: cellPassed ? null : failureCategory,
   trace
 });

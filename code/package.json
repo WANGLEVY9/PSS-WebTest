@@ -36,6 +36,7 @@
     "validate:large-scale-expansion": "node scripts/validate-large-scale-expansion.mjs",
     "validate:application-catalog": "node scripts/validate-application-expansion-catalog.mjs",
     "validate:application-workflows": "node scripts/validate-application-workflow-blueprints.mjs",
+    "validate:application-triage": "node scripts/validate-application-triage-queue.mjs",
     "validate:exploratory-batch": "node scripts/validate-exploratory-batch-plan.mjs",
     "batch:prepare-500": "node scripts/prepare-exploratory-500-batch.mjs",
     "batch:run-500": "node scripts/run-exploratory-500-batch.mjs",

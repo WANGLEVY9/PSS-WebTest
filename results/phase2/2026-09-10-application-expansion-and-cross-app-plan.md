@@ -8,6 +8,7 @@ This artifact expands the benchmark design without inflating the current experim
 
 - Added `code/config/application-expansion-catalog.v0.1.json` with 22 countable candidate applications, including the two locally available WebTestPilot candidates, and one explicitly non-countable role record.
 - Added `code/config/application-workflow-blueprints.v0.1.json`, reserving eight reusable workflow slots for every one of the 22 countable candidates. These are not executable tasks until the application-specific adapter, seed, oracle, and matched pilot exist.
+- Added `code/config/application-triage-queue.v0.1.json`, which orders all 22 candidates into four waves and records the next gate and main infrastructure risk for each application.
 - Registered the 20 additional candidate applications as explicit `candidate` rows in `code/config/benchmark-matrix.v0.1.json`; the matrix now has 25 registry rows but still only 5 applications with local workflow implementations. Empty candidate rows point to the eight-slot planning manifest and cannot enter a denominator.
 - Added four cross-application task families: issue-to-chat notification, file-share-to-knowledge-page, project-work-item-to-release-note, and business-record-to-approval-chat.
 - Added a fail-closed validator and contract tests. Candidates have no version pin and remain `candidate-unverified`; cross-application tasks require individually admitted endpoint applications, a shared reset coordinator, causal handoff identifiers, bounded eventual consistency, and an independent source/target oracle.

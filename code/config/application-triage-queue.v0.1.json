@@ -1,0 +1,63 @@
+{
+  "schema_version": "0.1",
+  "status": "triage-only-not-admitted",
+  "purpose": "Order the 22 countable candidate applications for feasibility work without converting candidate names into empirical denominators.",
+  "ordering_policy": [
+    "prefer an existing local compose, seed, or benchmark asset",
+    "prefer a deterministic self-hosted deployment with a narrow independent oracle surface",
+    "defer applications with external identity, mail, calendar, storage, or multi-service dependencies",
+    "record rejection and infrastructure boundaries before selecting the next application"
+  ],
+  "waves": [
+    {
+      "id": "wave-0-existing-local",
+      "purpose": "Finish or isolate the two candidates with repository-local deployment assets before adding another adapter.",
+      "application_ids": ["invoiceninja", "prestashop"]
+    },
+    {
+      "id": "wave-1-low-friction-self-hosted",
+      "purpose": "Prefer applications likely to expose stable database/file state and a bounded browser workflow.",
+      "application_ids": ["gitea", "nextcloud", "mediawiki", "ghost", "wordpress", "redmine", "kanboard"]
+    },
+    {
+      "id": "wave-2-multi-user-collaboration",
+      "purpose": "Expand interaction diversity after one wave-1 application passes reset and oracle triage.",
+      "application_ids": ["mattermost", "taiga", "discourse", "roundcube", "owncloud", "outline", "plane"]
+    },
+    {
+      "id": "wave-3-heavy-or-external-dependencies",
+      "purpose": "Defer high-cost or multi-service systems until the harness has stable diagnostics and a repeatable reset budget.",
+      "application_ids": ["gitlab", "odoo", "erpnext", "penpot", "openproject", "calcom"]
+    }
+  ],
+  "candidate_status": [
+    {"application_id":"invoiceninja","wave":"wave-0-existing-local","local_asset":"WebTestPilot compose, seed, and task files","next_gate":"digest pin + independent invoice/payment oracle","risk":"seed and image provenance"},
+    {"application_id":"prestashop","wave":"wave-0-existing-local","local_asset":"WebTestPilot compose, seed, and task files","next_gate":"platform-compatible image + independent cart/order oracle","risk":"architecture mismatch observed"},
+    {"application_id":"gitea","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"official image/compose feasibility triage","risk":"repository fixtures and auth"},
+    {"application_id":"nextcloud","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"official image/compose feasibility triage","risk":"database plus file-share state"},
+    {"application_id":"mediawiki","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"version-pinned wiki deployment and revision oracle","risk":"upload and revision semantics"},
+    {"application_id":"ghost","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"version-pinned deployment and publication oracle","risk":"database/storage coupling"},
+    {"application_id":"wordpress","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"version-pinned deployment and post/media oracle","risk":"plugin-free deterministic seed"},
+    {"application_id":"redmine","wave":"wave-1-low-friction-self-hosted","local_asset":"official source only","next_gate":"version-pinned deployment and issue oracle","risk":"Ruby image/build time"},
+    {"application_id":"kanboard","wave":"wave-1-low-friction-self-hosted","local_asset":"official source only","next_gate":"version-pinned deployment and card oracle","risk":"source/license verification"},
+    {"application_id":"mattermost","wave":"wave-2-multi-user-collaboration","local_asset":"official source only","next_gate":"database fixture and message/channel oracle","risk":"multi-user and websocket timing"},
+    {"application_id":"taiga","wave":"wave-2-multi-user-collaboration","local_asset":"official docker source","next_gate":"deployment and work-item oracle","risk":"multi-service startup"},
+    {"application_id":"discourse","wave":"wave-2-multi-user-collaboration","local_asset":"official source only","next_gate":"self-hosted image and topic/post oracle","risk":"resource-heavy bootstrap"},
+    {"application_id":"roundcube","wave":"wave-2-multi-user-collaboration","local_asset":"official source only","next_gate":"mailbox fixture and independent mail oracle","risk":"SMTP/IMAP isolation"},
+    {"application_id":"owncloud","wave":"wave-2-multi-user-collaboration","local_asset":"official source only","next_gate":"file/share reset and oracle","risk":"storage service coupling"},
+    {"application_id":"outline","wave":"wave-2-multi-user-collaboration","local_asset":"official source only","next_gate":"database/storage/auth feasibility","risk":"external auth and object storage"},
+    {"application_id":"plane","wave":"wave-2-multi-user-collaboration","local_asset":"official source only","next_gate":"multi-service startup and work-item oracle","risk":"rapidly evolving deployment"},
+    {"application_id":"gitlab","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"resource budget and omnibus/container feasibility","risk":"large image and slow reset"},
+    {"application_id":"odoo","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"database/filestore seed and workflow oracle","risk":"module configuration"},
+    {"application_id":"erpnext","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"sites database and workflow oracle","risk":"multi-service bootstrap"},
+    {"application_id":"penpot","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"database/assets and collaboration oracle","risk":"multi-service plus asset state"},
+    {"application_id":"openproject","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"version-pinned deployment and work-package oracle","risk":"heavy Rails deployment"},
+    {"application_id":"calcom","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"calendar fixture and availability oracle","risk":"timezone/email/calendar semantics"}
+  ],
+  "admission_rule": [
+    "The queue is not evidence and does not authorize execution.",
+    "A candidate advances only after source/license, version/digest, deterministic reset, independent oracle, and clean three-arm pilot checks.",
+    "A failed deployment is classified as infrastructure evidence and remains outside the success denominator.",
+    "Cross-application tasks remain blocked until both endpoint applications are individually admitted."
+  ]
+}

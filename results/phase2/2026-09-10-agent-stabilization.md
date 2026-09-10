@@ -7,8 +7,8 @@ hidden oracle state. The observations are not confirmatory estimates.
 ## Engineering validation
 
 - Contract tests: **106/106 passed**.
-- Latest public code commit: `c769a1d` (Hybrid textbox retry guard) plus the
-  subsequent Pure visual retry-prompt patch.
+- Latest public code commit: `c8bba00` (Pure visual retry-prompt patch,
+  including the earlier Hybrid textbox guard).
 - The Hybrid guard now identifies repeated clicks on `interaction=type`
   controls and asks for the required type action. The Pure visual driver now
   recomputes its re-plan instruction inside the retry loop after a rejected

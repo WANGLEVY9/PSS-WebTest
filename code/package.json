@@ -93,6 +93,9 @@
     "pilot:prestashop:playwright": "node scripts/run-prestashop-playwright-cell.mjs",
     "pilot:prestashop:visual": "PSS_ARM=visual node scripts/run-prestashop-agent-cell.mjs",
     "pilot:prestashop:hybrid": "PSS_ARM=hybrid node scripts/run-prestashop-agent-cell.mjs",
+    "validate:traditional-500-plan": "node scripts/validate-traditional-500-plan.mjs",
+    "pilot:prestashop:traditional-task": "node scripts/run-prestashop-traditional-task.mjs",
+    "batch:traditional-500": "node scripts/run-traditional-500-batch.mjs",
     "validate:prestashop-mutations": "node scripts/validate-prestashop-mutations.mjs",
     "gate:prestashop:fault-evolution": "node scripts/prestashop-fault-evolution-gate.mjs",
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"

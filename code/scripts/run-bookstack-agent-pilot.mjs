@@ -175,6 +175,7 @@ const hybridPageStructure = async () => {
       element,
       role: roleFor(element),
       name,
+      interaction: roleFor(element) === 'textbox' ? 'type' : 'click',
       center_normalized_1000: {
         x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth),
         y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight)

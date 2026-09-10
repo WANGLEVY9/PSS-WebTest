@@ -18,6 +18,7 @@ This is provider/grounding diagnostic evidence after the PrestaShop platform and
 | `prestashop-visual-search-r3-pixels` | Pure visual, Qwen tool-call + pixel coordinates | 6 actions | fail / timeout | click at `(829,125)` missed the search input; type/Enter had no effect; `agent-step-budget` |
 | `prestashop-hybrid-search-r1` | Hybrid, coordinate mode | 2 attempted actions | fail | repeated non-progressing coordinate click; `grounding-loop` |
 | `prestashop-hybrid-search-r2-semantic` | Hybrid, semantic target-id mode | 3 | pass | `c9` search textbox, type `Mug`, Enter; search results and oracle both passed |
+| `prestashop-hybrid-search-r3-semantic` | Hybrid, semantic target-id mode | 3 | pass | independent replay reproduced the same three-action path; search results and oracle both passed |
 
 ## Interpretation
 
@@ -25,5 +26,7 @@ The controls rule out reset failure, database-oracle failure, and authentication
 
 1. Pure visual Qwen responses are not yet reliable for pixel grounding on this 1280×720 page. The model either repeats a near-input click or selects a coordinate outside the input hitbox; this is not a provider timeout.
 2. Hybrid structure is useful when the semantic target-id action mode is enabled. The coordinate mode still inherits the visual grounding error, while semantic mode completed the same intent with three actions.
+
+The two semantic runs are a repeated diagnostic signal, not a frozen reliability estimate: they use one workflow, one application, one provider/model, one clean condition, and no matched repetitions for the other arms.
 
 The successful semantic run is a diagnostic single repetition only. It does not freeze repetitions or admit PrestaShop, because the three arms and all declared conditions still need matched replication.

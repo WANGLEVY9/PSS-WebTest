@@ -20,7 +20,7 @@ test('large-scale target expands to 2,160 cells and 30,240 executions', () => {
 test('current inventory is fail-closed and does not pretend to have 30 admitted applications', () => {
   const inventory = deriveLargeScaleInventory({ plan, benchmarkMatrix: matrix, taskManifest });
   assert.equal(inventory.ready_for_execution, false);
-  assert.equal(inventory.current.declared_applications, 3);
+  assert.equal(inventory.current.declared_applications, 5);
   assert.equal(inventory.current.admitted_or_frozen_applications, 0);
   assert.match(inventory.blockers.join('\n'), /30/);
   assert.match(inventory.blockers.join('\n'), /power freeze/);

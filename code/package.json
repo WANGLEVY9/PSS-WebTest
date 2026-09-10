@@ -34,6 +34,7 @@
     "validate:configuration-registry": "node scripts/validate-configuration-registry.mjs",
     "validate:phase2-scaling-plan": "node scripts/validate-phase2-scaling-plan.mjs",
     "validate:large-scale-expansion": "node scripts/validate-large-scale-expansion.mjs",
+    "validate:application-catalog": "node scripts/validate-application-expansion-catalog.mjs",
     "validate:exploratory-batch": "node scripts/validate-exploratory-batch-plan.mjs",
     "batch:prepare-500": "node scripts/prepare-exploratory-500-batch.mjs",
     "batch:run-500": "node scripts/run-exploratory-500-batch.mjs",
@@ -77,6 +78,15 @@
     "sut:juice-shop:reset": "node scripts/juice-shop-lifecycle.mjs reset",
     "sut:juice-shop:ready": "node scripts/juice-shop-lifecycle.mjs ready",
     "sut:juice-shop:stop": "node scripts/juice-shop-lifecycle.mjs stop",
+    "sut:invoiceninja:start": "node scripts/webtestpilot-lifecycle.mjs invoiceninja start",
+    "sut:invoiceninja:reset": "node scripts/webtestpilot-lifecycle.mjs invoiceninja reset",
+    "sut:invoiceninja:ready": "node scripts/webtestpilot-lifecycle.mjs invoiceninja ready",
+    "sut:invoiceninja:stop": "node scripts/webtestpilot-lifecycle.mjs invoiceninja stop",
+    "sut:prestashop:start": "node scripts/webtestpilot-lifecycle.mjs prestashop start",
+    "sut:prestashop:reset": "node scripts/webtestpilot-lifecycle.mjs prestashop reset",
+    "sut:prestashop:ready": "node scripts/webtestpilot-lifecycle.mjs prestashop ready",
+    "sut:prestashop:stop": "node scripts/webtestpilot-lifecycle.mjs prestashop stop",
+    "pilot:invoiceninja:playwright": "node scripts/run-invoiceninja-playwright-cell.mjs",
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"
   },
   "devDependencies": {

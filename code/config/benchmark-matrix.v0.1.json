@@ -45,6 +45,38 @@
         {"id":"juice-shop-cart-quantity-update","status":"candidate","complexity":"runtime","oracle_authority":"relational","oracle_status":"draft","fault_slots":["quantity-mismatch","duplicate-submit"],"evolution_slots":["cart-layout-change","delayed-results"]},
         {"id":"juice-shop-register-validation","status":"candidate","complexity":"form-persistence","oracle_authority":"relational","oracle_status":"draft","fault_slots":["validation-omission","wrong-field"],"evolution_slots":["form-layout","access-description"]}
       ]
+    },
+    {
+      "id": "invoiceninja",
+      "status": "candidate",
+      "source": "third_party/WebTestPilot/webapps/invoiceninja",
+      "benchmark_family": "WebTestPilot",
+      "workflows": [
+        {"id":"invoiceninja-view-invoice-details","status":"candidate","complexity":"navigation","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/view_invoice_details.yaml","fault_slots":["wrong-invoice-target","detail-omission"],"evolution_slots":["table-layout-change","access-description"]},
+        {"id":"invoiceninja-recent-payments","status":"candidate","complexity":"search-navigation","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/recent_payments.yaml","fault_slots":["filter-omission","wrong-payment-target"],"evolution_slots":["filter-layout","delayed-results"]},
+        {"id":"invoiceninja-create-invoice","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/create_invoice.yaml","fault_slots":["line-item-omission","save-suppressed"],"evolution_slots":["form-layout","delayed-save"]},
+        {"id":"invoiceninja-mark-invoice-paid","status":"candidate","complexity":"form-persistence","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/mark_invoice_as_paid.yaml","fault_slots":["status-mismatch","duplicate-submit"],"evolution_slots":["dialog-layout","access-description"]},
+        {"id":"invoiceninja-convert-quote-to-invoice","status":"candidate","complexity":"cross-page-state","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/convert_quote_to_invoice.yaml","fault_slots":["wrong-source-quote","conversion-omission"],"evolution_slots":["navigation-layout","delayed-background"]},
+        {"id":"invoiceninja-settings","status":"candidate","complexity":"authorization","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/settings.yaml","fault_slots":["privilege-leak","setting-omission"],"evolution_slots":["settings-layout","permission-dialog-layout"]},
+        {"id":"invoiceninja-localization","status":"candidate","complexity":"runtime","oracle_authority":"visible-ui+relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/localization.yaml","fault_slots":["locale-mismatch","delayed-render"],"evolution_slots":["text-layout","runtime-delay"]},
+        {"id":"invoiceninja-create-product","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/invoiceninja/test_cases/create_product.yaml","fault_slots":["wrong-product-field","persistence-mismatch"],"evolution_slots":["form-layout","access-description"]}
+      ]
+    },
+    {
+      "id": "prestashop",
+      "status": "candidate",
+      "source": "third_party/WebTestPilot/webapps/prestashop",
+      "benchmark_family": "WebTestPilot",
+      "workflows": [
+        {"id":"prestashop-buyer-search-product","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui+relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/buyer_search_product.yaml","fault_slots":["search-omission","product-mismatch"],"evolution_slots":["search-layout","delayed-results"]},
+        {"id":"prestashop-buyer-add-product-to-cart","status":"candidate","complexity":"multi-step","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/buyer_add_product_to_cart.yaml","fault_slots":["wrong-product","cart-omission"],"evolution_slots":["product-card-layout","access-description"]},
+        {"id":"prestashop-buyer-contact-us","status":"candidate","complexity":"form-persistence","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/buyer_contact_us.yaml","fault_slots":["message-omission","send-suppressed"],"evolution_slots":["form-layout","delayed-save"]},
+        {"id":"prestashop-seller-view-catalog-product","status":"candidate","complexity":"navigation","oracle_authority":"visible-ui+relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/seller_view_catalog_product_details.yaml","fault_slots":["wrong-product-target","detail-omission"],"evolution_slots":["catalog-layout","access-description"]},
+        {"id":"prestashop-buyer-edit-quantity-in-cart","status":"candidate","complexity":"runtime","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/buyer_edit_quantity_in_cart.yaml","fault_slots":["quantity-mismatch","duplicate-submit"],"evolution_slots":["cart-layout","delayed-results"]},
+        {"id":"prestashop-seller-cancel-order","status":"candidate","complexity":"authorization","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/seller_cancel_order.yaml","fault_slots":["privilege-leak","cancel-omission"],"evolution_slots":["dialog-layout","permission-dialog-layout"]},
+        {"id":"prestashop-buyer-sort-products-by-price","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui+relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/buyer_sort_products_by_price_low_to_high.yaml","fault_slots":["sort-mismatch","filter-omission"],"evolution_slots":["sort-control-layout","delayed-results"]},
+        {"id":"prestashop-seller-ship-order","status":"candidate","complexity":"cross-page-state","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/seller_ship_order.yaml","fault_slots":["wrong-order-target","shipping-omission"],"evolution_slots":["order-layout","delayed-background"]}
+      ]
     }
   ],
   "arms": [

@@ -31,7 +31,7 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'juice-shop-hybrid-agent-v0.3', base_url: baseURL, arm: 'hybrid', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_mode: taskMode, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization.profile_id, hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate', scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'juice-shop-hybrid-agent-v0.3', base_url: baseURL, arm: 'hybrid', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_mode: taskMode, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization.profile_id, hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate', scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });

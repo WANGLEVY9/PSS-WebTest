@@ -18,6 +18,7 @@
     "framework:agentlab:adapter": "${PSS_AGENTLAB_PYTHON:-python3} scripts/run-agentlab-bookstack-adapter.py",
     "framework:stagehand:qwen:v02": "node scripts/run-stagehand-bookstack-v02.mjs",
     "provider:bookstack:connectivity": "node scripts/provider-bookstack-connectivity.mjs",
+    "provider:deepseek:connectivity": "node scripts/provider-bookstack-connectivity.mjs",
     "provider:aliyun:json-diagnostic": "node scripts/diagnose-aliyun-json.mjs",
     "provider:aliyun:sequence-diagnostic": "node scripts/diagnose-aliyun-sequence.mjs",
     "provider:aliyun:tool-diagnostic": "node scripts/diagnose-aliyun-tool-call.mjs",

@@ -53,7 +53,7 @@ const phase2Fields = phase2Protocol
       viewport: `${viewport.width}x${viewport.height}`, max_steps: maxSteps,
       timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10),
       coordinate_mode: process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode,
-      action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : null,
+      action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null,
       hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate',
       optimization_profile: optimization.profile_id,
       progress_guard: optimization.progress_guard

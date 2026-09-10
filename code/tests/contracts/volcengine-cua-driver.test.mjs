@@ -102,6 +102,29 @@ test('Alibaba JSON action mode uses a strict textual JSON response instead of fu
   assert.match(body.messages[0].content[0].text, /JSON object/);
 });
 
+test('DeepSeek V4.1-Flash profile uses the official OpenAI-compatible vision endpoint and tool-call action mode', async () => {
+  let request;
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'deepseek', CUA_MODEL: 'deepseek-flash', CUA_API_KEY: 'test-key' },
+    observeScreenshot: async () => 'abc123',
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":20,"y":30}' } }] } }] }; } };
+    }
+  });
+  const decision = await driver.decide({ intent: 'Inspect the page', observation: await driver.observe(), step: 0 });
+  assert.deepEqual(decision.action, { type: 'click', x: 26, y: 22, coordinate_mode: 'pixels' });
+  assert.equal(request.url, 'https://api.deepseek.com/chat/completions');
+  const body = JSON.parse(request.options.body);
+  assert.equal(body.model, 'deepseek-flash');
+  assert.deepEqual(body.thinking, { type: 'disabled' });
+  assert.equal(body.response_format, undefined);
+  assert.equal(body.tool_choice.function.name, 'ui_action');
+  assert.equal(body.tools[0].function.name, 'ui_action');
+  assert.match(body.messages[0].content[1].image_url.url, /data:image\/png;base64,abc123/);
+});
+
 test('Alibaba driver retries one empty tool-call argument set without changing the observation', async () => {
   let calls = 0;
   const driver = createVolcengineCuaDriver({

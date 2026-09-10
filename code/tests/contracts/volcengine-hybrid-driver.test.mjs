@@ -69,6 +69,31 @@ test('hybrid Alibaba JSON action mode preserves the structure boundary and avoid
   assert.doesNotMatch(body.messages[0].content[0].text, /goldOracle|applicationState|mutationLabel/);
 });
 
+test('hybrid DeepSeek V4.1-Flash profile sends screenshot plus declared structure with tool-call output', async () => {
+  let request;
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'deepseek', CUA_MODEL: 'deepseek-flash', CUA_API_KEY: 'test-key' },
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":20,"y":30}' } }] } }] }; } };
+    }
+  });
+  const observation = await driver.observe();
+  const decision = await driver.decide({ intent: 'Save the page', observation, step: 0 });
+  assert.deepEqual(decision.action, { type: 'click', x: 26, y: 22, coordinate_mode: 'pixels' });
+  assert.equal(request.url, 'https://api.deepseek.com/chat/completions');
+  const body = JSON.parse(request.options.body);
+  assert.equal(body.model, 'deepseek-flash');
+  assert.deepEqual(body.thinking, { type: 'disabled' });
+  assert.equal(body.response_format, undefined);
+  assert.equal(body.tool_choice.function.name, 'ui_action');
+  assert.equal(body.tools[0].function.name, 'ui_action');
+  assert.match(body.messages[0].content[0].text, /Save/);
+  assert.match(body.messages[0].content[1].image_url.url, /data:image\/png;base64,abc123/);
+});
+
 test('semantic hybrid mode admits candidate IDs and does not synthesize coordinates', async () => {
   let request;
   const driver = createVolcengineHybridDriver({

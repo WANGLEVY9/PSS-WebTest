@@ -7,11 +7,22 @@ export const BOOKSTACK_CREATE_PAGE_CONDITIONS = Object.freeze({
   'ui-evolution:bookstack-layout-v1': Object.freeze({ expectedVerdict: 'clean', uiMutation: 'bookstack-layout-v1', applyFault: false })
 });
 
-const CONFIGURATION_BY_ARM = Object.freeze({
+const DEFAULT_CONFIGURATION_BY_ARM = Object.freeze({
   playwright: 'scripted-playwright-accessibility-human-v2',
   visual: 'visual-pss-native-aliyun-qwen3-7-flash-v1',
   hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1'
 });
+
+function configurationByArm(provider, model) {
+  if (provider === 'deepseek' && model === 'deepseek-flash') {
+    return Object.freeze({
+      playwright: 'scripted-playwright-accessibility-human-v2',
+      visual: 'visual-pss-native-deepseek-flash-v1',
+      hybrid: 'hybrid-pss-native-deepseek-flash-v1'
+    });
+  }
+  return DEFAULT_CONFIGURATION_BY_ARM;
+}
 
 function slug(value, fallback) {
   return String(value ?? '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || fallback;
@@ -27,7 +38,8 @@ function orderedArms(seed, repetition) {
  */
 export function createBookStackCreatePagePilotPlan({
   condition = 'clean-stable', repetitions = 1,
-  randomizationSeed = 'bookstack-create-page-phase2-v1', runTag = null
+  randomizationSeed = 'bookstack-create-page-phase2-v1', runTag = null,
+  provider = null, model = null
 } = {}) {
   if (!Number.isInteger(repetitions) || repetitions < 1) throw new Error('repetitions must be a positive integer');
   if (typeof randomizationSeed !== 'string' || !randomizationSeed.trim()) throw new Error('randomizationSeed must be non-empty');
@@ -38,6 +50,7 @@ export function createBookStackCreatePagePilotPlan({
   if (runTag !== null && !tagSlug) throw new Error('runTag must contain at least one letter or digit');
   const blocks = [];
   const cells = [];
+  const configurations = configurationByArm(provider, model);
   for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const arms = orderedArms(randomizationSeed, repetition);
     const tag = tagSlug ? `-${tagSlug}` : '';
@@ -46,7 +59,7 @@ export function createBookStackCreatePagePilotPlan({
     for (const arm of arms) {
       cells.push({
         repetition, arm, randomizationBlock,
-        configurationId: CONFIGURATION_BY_ARM[arm],
+        configurationId: configurations[arm],
         expectedVerdict: conditionSpec.expectedVerdict,
         externalModelCall: arm !== 'playwright'
       });

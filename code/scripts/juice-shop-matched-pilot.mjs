@@ -38,8 +38,8 @@ const run = (command, args, env = {}) => new Promise((resolve, reject) => {
 });
 const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => { try { return JSON.parse(line); } catch { return null; } }).find(Boolean) ?? null;
 const configurations = {
-  visual: 'visual-pss-native-aliyun-qwen3-7-flash-v1',
-  hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1',
+  visual: provider === 'deepseek' && model === 'deepseek-flash' ? 'visual-pss-native-deepseek-flash-v1' : 'visual-pss-native-aliyun-qwen3-7-flash-v1',
+  hybrid: provider === 'deepseek' && model === 'deepseek-flash' ? 'hybrid-pss-native-deepseek-flash-v1' : 'hybrid-pss-native-aliyun-qwen3-7-flash-v1',
   playwright: 'scripted-playwright-accessibility-human-v2'
 };
 const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((left, right) =>
@@ -69,7 +69,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
       registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'juice-shop',
       resetDigest, randomizationBlock: block,
-      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: armMaxSteps, timeout_ms: armTimeoutMs, action_output_mode: arm === 'playwright' || process.env.CUA_PROVIDER !== 'aliyun' ? null : (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool'), optimization_profile: optimization?.profile_id ?? null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: armMaxSteps, timeout_ms: armTimeoutMs, action_output_mode: arm === 'playwright' ? null : process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization?.profile_id ?? null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
     }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {

@@ -19,7 +19,7 @@ const runTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 
-const plan = createBookStackCreatePagePilotPlan({ condition, repetitions, randomizationSeed, runTag });
+const plan = createBookStackCreatePagePilotPlan({ condition, repetitions, randomizationSeed, runTag, provider, model });
 const conditionSpec = plan.conditionSpec;
 const slug = (value, fallback) => String(value ?? '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || fallback;
 const conditionSlug = slug(condition, 'condition');

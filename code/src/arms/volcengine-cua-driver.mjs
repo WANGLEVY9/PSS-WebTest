@@ -169,26 +169,39 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
 
 export function createVolcengineCuaDriver({ env = process.env, observeScreenshot, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
-  if (!['volcengine', 'aliyun'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
+  if (!['volcengine', 'aliyun', 'deepseek'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
   if (typeof observeScreenshot !== 'function' || typeof executeAction !== 'function') throw new TypeError('observeScreenshot and executeAction are required');
   if (!Array.isArray(doneVerdicts) || doneVerdicts.length === 0 || doneVerdicts.some((verdict) => !['pass', 'clean', 'fault'].includes(verdict))) throw new TypeError('doneVerdicts must contain pass, clean, or fault labels');
   const defaultBaseUrl = config.provider === 'aliyun'
     ? 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+    : config.provider === 'deepseek'
+    ? 'https://api.deepseek.com'
     : 'https://ark.cn-beijing.volces.com/api/v3';
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
   const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
   const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
+  const deepseekActionMode = env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool';
   if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
     throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
   }
+  if (config.provider === 'deepseek' && !['tool', 'json'].includes(deepseekActionMode)) {
+    throw new Error('CUA_DEEPSEEK_ACTION_MODE must be tool or json');
+  }
+  const actionMode = config.provider === 'aliyun'
+    ? aliyunActionMode
+    : config.provider === 'deepseek'
+    ? deepseekActionMode
+    : 'json';
   // Qwen3-VL's JSON mode is not reliable when thinking is enabled.  Alibaba's
   // OpenAI-compatible endpoint also prefers max_completion_tokens; keep the
   // Volcengine request shape unchanged for backward compatibility.
   const generationOptions = config.provider === 'aliyun'
     ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: 1.5 }
+    : config.provider === 'deepseek'
+    ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
-  const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (config.provider === 'aliyun' ? '1' : '0'), 10);
+  const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (['aliyun', 'deepseek'].includes(config.provider) ? '1' : '0'), 10);
   const actionHistory = [];
   let lastAcceptedPointer = null;
   let retryCount = 0;
@@ -203,7 +216,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
       if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
       const coordinateInstruction = coordinateBounds(coordinateMode).instruction;
-      const formatInstruction = config.provider === 'aliyun' && aliyunActionMode === 'tool'
+      const formatInstruction = actionMode === 'tool'
         ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
         : `Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"${doneVerdicts[0]}"}; or {"type":"action","action":{"type":"click","x":330,"y":512}}; or {"type":"action","action":{"type":"double_click","x":330,"y":512}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Allowed done verdicts: ${doneVerdicts.join(', ')}.`;
       const lastTwo = actionHistory.slice(-2);
@@ -241,7 +254,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
             { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
           ] }]
         };
-        if (config.provider === 'aliyun' && aliyunActionMode === 'tool') {
+        if (actionMode === 'tool') {
           requestBody.tools = [UI_ACTION_TOOL];
           requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
         } else {

@@ -21,6 +21,9 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
 const randomizationSeed = process.env.PSS_RANDOMIZATION_SEED ?? `${taskId}-phase2-v1`;
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
+const configurationByArm = provider === 'deepseek' && model === 'deepseek-flash'
+  ? { visual: 'visual-pss-native-deepseek-flash-v1', hybrid: 'hybrid-pss-native-deepseek-flash-v1' }
+  : { visual: 'visual-pss-native-aliyun-qwen3-7-flash-v1', hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1' };
 const runTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const conditionSlug = condition.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || 'condition';
 const modelSlug = model ? `${provider ?? 'provider'}-${model}`.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : 'unconfigured';
@@ -107,7 +110,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? (optimizationByArm[arm].hybrid_action_mode ?? 'coordinate'),
         CUA_SCREENSHOT_QUALITY: process.env.CUA_SCREENSHOT_QUALITY ?? String(optimizationByArm[arm].screenshot_quality),
         PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimizationByArm[arm].post_action_settle_ms),
-        PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: arm === 'visual' ? 'visual-pss-native-aliyun-qwen3-7-flash-v1' : 'hybrid-pss-native-aliyun-qwen3-7-flash-v1', PSS_RESET_DIGEST: reset.resetDigest, PSS_RANDOMIZATION_BLOCK: block,
+        PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurationByArm[arm], PSS_RESET_DIGEST: reset.resetDigest, PSS_RANDOMIZATION_BLOCK: block,
         PSS_PILOT_CONDITION: condition, PSS_UI_MUTATION: mutation ?? '',
         PSS_RUN_RECORD_OUT: recordsPath
       });

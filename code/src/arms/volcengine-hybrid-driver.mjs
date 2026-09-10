@@ -78,6 +78,11 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (config.provider === 'aliyun' ? '1' : '0'), 10);
   const actionHistory = [];
+  const pointerIdentity = (action) => {
+    if (typeof action?.target_id === 'string' && action.target_id.length > 0) return `target_id=${action.target_id}`;
+    if (Number.isFinite(action?.x) && Number.isFinite(action?.y)) return `x=${action.x},y=${action.y}`;
+    return null;
+  };
   let lastAcceptedPointer = null;
   let retryCount = 0;
   const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
@@ -115,13 +120,13 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         : `Return ONLY one complete JSON object, with no markdown or explanation. The outer object MUST use exactly one of these forms: {"type":"done","verdict":"${doneVerdicts[0]}"}; or {"type":"action","action":{"type":"click",${hybridActionMode === 'semantic' ? '"target_id":"c12"' : '"x":330,"y":512'}}}; or {"type":"action","action":{"type":"double_click",${hybridActionMode === 'semantic' ? '"target_id":"c12"' : '"x":330,"y":512'}}}; or {"type":"action","action":{"type":"type","text":"apple"}}; or {"type":"action","action":{"type":"keypress","key":"ENTER"}}; or {"type":"action","action":{"type":"scroll","delta_y":400}}; or {"type":"action","action":{"type":"wait","ms":500}}. Allowed done verdicts: ${doneVerdicts.join(', ')}.`;
       const lastTwo = actionHistory.slice(-2);
       const blockedClickInstruction = actionHistory.at(-1)?.type === 'rejected_click'
-        ? 'The previous candidate click was rejected because it repeated a non-progressing coordinate. Choose a different visible target; do not reuse that coordinate.'
+        ? 'The previous candidate click was rejected because it repeated a non-progressing target. Choose a different visible target; do not reuse that target.'
         : '';
       const typingGuardInstruction = actionHistory.at(-1)?.type === 'type'
         ? 'The previous action typed text. Do not issue another type action into the same field; first click a different visible field or use a navigation key.'
         : '';
       const recentClicks = actionHistory.slice(-2);
-      const clickIdentity = (action) => action.target_id ?? `${action.x},${action.y}`;
+      const clickIdentity = (action) => pointerIdentity(action);
       const repeatedClickInstruction = recentClicks.length === 2 && recentClicks.every((action) => action.type === 'click' && clickIdentity(action) === clickIdentity(recentClicks[0]))
         ? 'The last two clicks hit the same coordinate without advancing. Do not click that coordinate again; choose the next distinct visible control or type into the focused field.'
         : '';
@@ -166,19 +171,21 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
           decision = parseProviderDecision(payload, { coordinateMode, allowTargetId: hybridActionMode === 'semantic' });
+          const decisionIdentity = pointerIdentity(decision?.action);
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
-            && decision.action.x === lastAcceptedPointer.x && decision.action.y === lastAcceptedPointer.y;
-          // Do not infer non-progress from coordinates alone.  The same point
-          // can represent a different control after a visible page transition.
+            && decisionIdentity !== null && decisionIdentity === lastAcceptedPointer.identity;
+          // Compare target_id in semantic mode and coordinates in coordinate
+          // mode. The observation digest still gates the rejection because
+          // the same target/point can be valid after a visible transition.
           if (repeatsPointer && currentObservationDigest === lastAcceptedPointer.observationDigest) {
-            throw new Error(`repeated non-progressing click at x=${decision.action.x} y=${decision.action.y}`);
+            throw new Error(`repeated non-progressing click at ${decisionIdentity}`);
           }
           emitProviderSummary(true);
           break;
         } catch (error) {
           emitProviderSummary(false, error);
           lastDecisionError = error;
-          if (error.message.startsWith('repeated non-progressing click') && decision?.action) actionHistory.push({ type: 'rejected_click', x: decision.action.x, y: decision.action.y });
+          if (error.message.startsWith('repeated non-progressing click') && decision?.action) actionHistory.push({ type: 'rejected_click', ...decision.action });
           if (decisionAttempt >= maxDecisionRetries) throw error;
           retryCount += 1;
         }
@@ -186,7 +193,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       if (!decision) throw lastDecisionError || new Error('CUA provider did not return a decision');
         actionHistory.push(decision.type === 'action' ? { ...decision.action } : decision);
         if (decision.type === 'action' && decision.action.type === 'click') {
-          lastAcceptedPointer = { x: decision.action.x, y: decision.action.y, observationDigest: currentObservationDigest };
+          lastAcceptedPointer = { identity: pointerIdentity(decision.action), observationDigest: currentObservationDigest };
         }
         if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type) && Number.isInteger(decision.action.x) && Number.isInteger(decision.action.y)) {
           const normalized = coordinateMode === 'normalized_1000' || (coordinateMode === 'auto' && (decision.action.x > 1000 || decision.action.y > 720));

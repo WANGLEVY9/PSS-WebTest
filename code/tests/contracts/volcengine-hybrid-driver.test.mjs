@@ -100,3 +100,20 @@ test('hybrid driver permits a repeated coordinate after a screenshot transition'
   const second = await driver.decide({ intent: 'Navigate', observation: secondObservation, step: 1 });
   assert.equal(second.type, 'action');
 });
+
+test('semantic hybrid guard compares target ids instead of undefined coordinates', async () => {
+  let calls = 0;
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic', CUA_MAX_DECISION_RETRIES: '0' },
+    observeHybrid: async () => ({ screenshot: 'same', pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'New Page' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async () => {
+      calls += 1;
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c12"}' } }] } }] }; } };
+    }
+  });
+  const observation = await driver.observe();
+  await driver.decide({ intent: 'Navigate', observation, step: 0 });
+  await assert.rejects(() => driver.decide({ intent: 'Navigate', observation, step: 1 }), /target_id=c12/);
+  assert.equal(calls, 2);
+});

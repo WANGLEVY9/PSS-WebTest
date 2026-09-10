@@ -23,7 +23,7 @@ function parseJsonl(file) {
 
 function loadRecords() {
   const files = fs.readdirSync(artifactsRoot)
-    .filter((name) => name.endsWith('-records.jsonl') && /attribution-qwen37/.test(name))
+    .filter((name) => name.endsWith('-records.jsonl') && /(attribution-qwen37|admission-)/.test(name))
     .sort()
     .map((name) => path.join(artifactsRoot, name));
   const byRunId = new Map();
@@ -49,6 +49,8 @@ function loadReplays() {
 
 function classifyBoundary(record, replay) {
   const category = record.failure_category;
+  const replayError = String(replay?.outcome?.error?.message ?? '').toLowerCase();
+  if (/locator\.|waiting for locator|element is not receiving|intercepts pointer|page\./.test(replayError)) return 'runner/execution';
   if (!category) return record.status === 'completed' ? 'pass' : 'unclassified';
   if (category === 'provider-timeout' || category === 'provider-api' || category === 'provider-format'
     || (category === 'provider' && (record.timing?.actions ?? 0) === 0)) return 'provider';

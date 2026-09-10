@@ -17,3 +17,8 @@ test('separates step budget, termination verdict, and oracle failure', () => {
   assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'clean' }, oraclePassed: true, expectedVerdict: 'fault' }), 'termination-verdict');
   assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'fault' }, oraclePassed: true, expectedVerdict: 'fault' }), null);
 });
+
+test('does not mislabel Playwright actionability timeout as provider timeout', () => {
+  assert.equal(classifyAgentFailure({ failure: { name: 'TimeoutError', message: 'locator.click: Timeout 30000ms exceeded waiting for locator' } }), 'execution');
+  assert.equal(classifyAgentFailure({ failure: { name: 'Error', message: 'agent wall-time budget exceeded' } }), 'agent-step-budget');
+});

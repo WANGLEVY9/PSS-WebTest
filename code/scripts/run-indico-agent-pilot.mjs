@@ -73,7 +73,12 @@ const executeAction = async (action) => {
   if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {
     const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
     if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
-    if (action.type === 'double_click') await target.dblclick(); else await target.click();
+    // A visible control may be outside the current scroll position or have a
+    // transient menu layer over it. Give Playwright a bounded actionability
+    // window and record it as execution if that window is exceeded; it must
+    // not be misclassified as provider latency.
+    await target.scrollIntoViewIfNeeded({ timeout: 5000 });
+    if (action.type === 'double_click') await target.dblclick({ timeout: 5000 }); else await target.click({ timeout: 5000 });
     return page.waitForTimeout(postActionSettleMs);
   }
   if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
@@ -87,9 +92,18 @@ const executeAction = async (action) => {
 
 const hybridStructure = async () => {
   const controls = await page.locator('a,button,input:not([type="hidden"]),textarea,select').evaluateAll((elements) => elements.map((element, index) => {
-  const rect = element.getBoundingClientRect(); const style = getComputedStyle(element);
-  if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
-  const inputType = element.tagName === 'INPUT' ? (element.getAttribute('type') || 'text').toLowerCase() : '';
+    const rect = element.getBoundingClientRect(); const style = getComputedStyle(element);
+    if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
+    // Do not advertise a control whose hit-test center is intercepted by an
+    // overlay/menu layer. It may be visible in a screenshot, but a semantic
+    // locator click would not be executable without changing the UI state.
+    const hit = document.elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2);
+    if (hit && hit !== element && !element.contains(hit)) return null;
+    // Indico's navigation trigger lives inside an <ind-menu> component whose
+    // closed layer can still intercept pointer events. Prefer the actionable
+    // page-level Create event control over this non-actionable trigger.
+    if (element.closest('ind-menu')) return null;
+    const inputType = element.tagName === 'INPUT' ? (element.getAttribute('type') || 'text').toLowerCase() : '';
   const role = element.tagName === 'A' ? 'link' : element.tagName === 'BUTTON' || ['button', 'submit', 'reset'].includes(inputType) ? 'button' : element.tagName === 'SELECT' ? 'combobox' : 'textbox';
   const label = element.labels?.[0]?.textContent?.replace(/\s+/g, ' ').trim();
   const name = element.getAttribute('aria-label') || element.getAttribute('title') || element.getAttribute('placeholder') || label || element.getAttribute('name') || element.getAttribute('value') || element.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || '';

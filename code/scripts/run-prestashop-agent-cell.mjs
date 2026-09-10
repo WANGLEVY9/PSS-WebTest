@@ -135,7 +135,14 @@ const executeAction = async (action) => {
   if (action.type === 'click') await page.mouse.click(action.x, action.y);
   else if (action.type === 'double_click') await page.mouse.dblclick(action.x, action.y);
   else if (action.type === 'type') await page.keyboard.type(action.text);
-  else if (action.type === 'keypress') await page.keyboard.press(({ ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' })[action.key?.toUpperCase()] ?? action.key);
+  else if (action.type === 'keypress') {
+    const key = action.key?.toUpperCase();
+    if (['BACK', 'ALT+LEFT', 'BROWSER_BACK'].includes(key)) {
+      await page.goBack({ waitUntil: 'domcontentloaded' }).catch(() => {});
+    } else {
+      await page.keyboard.press(({ ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' })[key] ?? action.key);
+    }
+  }
   else if (action.type === 'scroll') await page.mouse.wheel(0, action.delta_y);
   else if (action.type === 'wait') await page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
   else throw new Error(`Unsupported action: ${action.type}`);

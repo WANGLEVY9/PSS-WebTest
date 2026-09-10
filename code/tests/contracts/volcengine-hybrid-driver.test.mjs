@@ -117,3 +117,20 @@ test('semantic hybrid guard compares target ids instead of undefined coordinates
   await assert.rejects(() => driver.decide({ intent: 'Navigate', observation, step: 1 }), /target_id=c12/);
   assert.equal(calls, 2);
 });
+
+test('semantic hybrid repeated textbox click instructs the model to type', async () => {
+  const requests = [];
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic', CUA_MAX_DECISION_RETRIES: '1' },
+    observeHybrid: async () => ({ screenshot: 'same', pageStructure: { controls: [{ target_id: 'c11', role: 'textbox', interaction: 'type', name: 'Page Title' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      requests.push(JSON.parse(options.body));
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c11"}' } }] } }] }; } };
+    }
+  });
+  const observation = await driver.observe();
+  await driver.decide({ intent: 'Set the page title to PSS Phase2 Page', observation, step: 0 });
+  await assert.rejects(() => driver.decide({ intent: 'Set the page title to PSS Phase2 Page', observation, step: 1 }), /textbox click.*target_id=c11/);
+  assert.ok(requests.some((body) => body.messages[0].content[0].text.includes('next action MUST be a type action')));
+});

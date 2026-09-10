@@ -136,6 +136,9 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       let decision;
       let lastDecisionError;
       for (let decisionAttempt = 0; decisionAttempt <= maxDecisionRetries; decisionAttempt += 1) {
+        const retryTextboxClickInstruction = actionHistory.at(-1)?.type === 'rejected_click' && actionHistory.at(-1)?.interaction === 'type'
+          ? 'The previous repeated click targeted a textbox. The textbox is already focused; your next action MUST be a type action using the exact literal requested by the task.'
+          : '';
         const retryInstruction = decisionAttempt > 0
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
@@ -144,7 +147,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           temperature: 0,
           ...generationOptions,
           messages: [{ role: 'user', content: [
-            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.` },
+            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.` },
             { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
           ] }]
         };
@@ -178,6 +181,12 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           // mode. The observation digest still gates the rejection because
           // the same target/point can be valid after a visible transition.
           if (repeatsPointer && currentObservationDigest === lastAcceptedPointer.observationDigest) {
+            const repeatedTarget = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
+              ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
+              : null;
+            if (repeatedTarget?.interaction === 'type' || repeatedTarget?.role === 'textbox') {
+              throw new Error(`repeated non-progressing textbox click at ${decisionIdentity}`);
+            }
             throw new Error(`repeated non-progressing click at ${decisionIdentity}`);
           }
           emitProviderSummary(true);
@@ -185,7 +194,12 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         } catch (error) {
           emitProviderSummary(false, error);
           lastDecisionError = error;
-          if (error.message.startsWith('repeated non-progressing click') && decision?.action) actionHistory.push({ type: 'rejected_click', ...decision.action });
+          if ((error.message.startsWith('repeated non-progressing click') || error.message.startsWith('repeated non-progressing textbox click')) && decision?.action) {
+            const target = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
+              ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
+              : null;
+            actionHistory.push({ ...decision.action, type: 'rejected_click', interaction: target?.interaction ?? null });
+          }
           if (decisionAttempt >= maxDecisionRetries) throw error;
           retryCount += 1;
         }

@@ -24,9 +24,25 @@ if (!username || !password) throw new Error('Set PSS_PRESTASHOP_USERNAME/PSS_PRE
 const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';
 const expectedName = process.env.PSS_PRESTASHOP_EXPECTED_PRODUCT ?? 'Mug The adventure begins';
 const viewport = { width: 1280, height: 720 };
-const taskId = 'prestashop-buyer-search-product';
+const complexity = process.env.PSS_AGENT_COMPLEXITY ?? 'simple';
+const taskDefinitions = {
+  simple: {
+    taskId: 'prestashop-search-product',
+    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". Finish only after the search results visibly include the product "Mug The Adventure Begins"; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+  },
+  medium: {
+    taskId: 'prestashop-search-open-product',
+    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}", then open the visible product "Mug The Adventure Begins". Finish only after that product's detail page is visibly open; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+  },
+  complex: {
+    taskId: 'prestashop-search-revisit-product',
+    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}", open the visible product "Mug The Adventure Begins", use the browser Back control or an equivalent visible navigation action to return to the search results, and reopen the same product. Finish only after the product detail page is visibly open for the second time; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+  }
+};
+if (!taskDefinitions[complexity]) throw new Error(`PSS_AGENT_COMPLEXITY must be simple, medium, or complex (got ${complexity})`);
+const { taskId, intent } = taskDefinitions[complexity];
 const runId = process.env.PSS_RUN_ID ?? `prestashop-${arm}-${Date.now()}`;
-const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', taskId, arm });
+const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', taskId, arm, maxFrames: 40 });
 const trace = [];
 let pendingProviderEventIds = [];
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily: 'search-navigation' });
@@ -45,12 +61,24 @@ const driverEnv = {
 };
 
 async function pageState(page) {
+  const pathname = new URL(page.url()).pathname;
+  const searchResultsVisible = await page.getByRole('heading', { name: /Search results/i }).isVisible().catch(() => false);
+  const targetProductVisible = await page.locator('#js-product-list .product-title').filter({ hasText: /Mug The Adventure Begins/i }).first().isVisible().catch(() => false);
+  const productDetailVisible = await page.locator('h1').filter({ hasText: /Mug The Adventure Begins/i }).first().isVisible().catch(() => false);
+  const milestone = productDetailVisible || pathname.includes('.html')
+    ? 'product-detail'
+    : pathname.includes('/search') || searchResultsVisible
+      ? 'search-results'
+      : pathname.includes('/login')
+        ? 'login'
+        : 'authenticated-home';
   return {
-    milestone: page.url().includes('/search') ? 'search-results' : 'authenticated-home',
-    url_path: new URL(page.url()).pathname,
-    authenticated: !page.url().includes('/login'),
-    search_results_heading_visible: await page.getByRole('heading', { name: /Search results/i }).isVisible().catch(() => false),
-    target_product_visible: await page.locator('#js-product-list .product-title').filter({ hasText: /Mug The Adventure Begins/i }).first().isVisible().catch(() => false),
+    milestone,
+    url_path: pathname,
+    authenticated: !pathname.includes('/login'),
+    search_results_heading_visible: searchResultsVisible,
+    target_product_visible: targetProductVisible,
+    product_detail_visible: productDetailVisible,
     product_count: await page.locator('#js-product-list .js-product').count().catch(() => 0)
   };
 }
@@ -141,15 +169,18 @@ try {
     : createVolcengineHybridDriver({ ...driverOptions, observeHybrid, hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate' });
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   result = await adapter.run({
-    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". Finish only after the search results visibly include the product "Mug The Adventure Begins"; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`,
-    onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); await replay.capture({ page, phase: 'after-action', step, action, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); }
+    intent,
+    onStep: async ({ step, action }) => { const state = await replayState(); trace.push({ step, action, url: page.url(), milestone: state.milestone, state }); await replay.capture({ page, phase: 'after-action', step, action, state, providerEventIds: pendingProviderEventIds.splice(0) }); }
   });
 } catch (error) {
   failure = { name: error.name, message: error.message };
 }
 const state = await pageState(page).catch(() => ({}));
 const oracle = await databaseOracle().catch((error) => ({ oracle: 'database-product-search', passed: false, error: { name: error.name, message: error.message.slice(0, 240) } }));
-const visiblePassed = state.milestone === 'search-results' && state.target_product_visible === true;
+const detailMilestones = trace.filter((item) => item.milestone === 'product-detail').length;
+const visiblePassed = complexity === 'simple'
+  ? state.milestone === 'search-results' && state.target_product_visible === true
+  : state.milestone === 'product-detail' && state.product_detail_visible === true && (complexity === 'medium' || detailMilestones >= 2);
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: visiblePassed && oracle.passed === true });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({

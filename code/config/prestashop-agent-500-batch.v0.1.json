@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1",
+  "id": "phase2-prestashop-agent-500-v1",
+  "status": "exploratory-preflight-required",
+  "collection_class": "agent-reliability-by-task-complexity",
+  "application": "prestashop",
+  "task_family": "buyer-search-navigation",
+  "target_executions_per_arm": 500,
+  "arms": ["visual", "hybrid"],
+  "complexity_distribution": {
+    "simple": 200,
+    "medium": 175,
+    "complex": 125
+  },
+  "provider_stratum": {
+    "provider": "aliyun",
+    "model": "qwen3.7-flash",
+    "profile": "aliyun-qwen-grounded-v1",
+    "visual_action_mode": "tool",
+    "hybrid_action_mode": "semantic"
+  },
+  "workflows": [
+    {
+      "id": "prestashop-search-product",
+      "complexity": "simple",
+      "intent": "Authenticate, search for Mug, and verify the target product is visible.",
+      "mutates_application_state": false,
+      "oracle": "database-product-search plus visible search result"
+    },
+    {
+      "id": "prestashop-search-open-product",
+      "complexity": "medium",
+      "intent": "Authenticate, search for Mug, open the target product, and verify its detail page.",
+      "mutates_application_state": false,
+      "oracle": "database-product-search plus visible product detail"
+    },
+    {
+      "id": "prestashop-search-revisit-product",
+      "complexity": "complex",
+      "intent": "Authenticate, search for Mug, open the target product, return to results, reopen it, and verify the detail page.",
+      "mutates_application_state": false,
+      "oracle": "database-product-search plus visible repeated navigation milestones"
+    }
+  ],
+  "protocol_boundary": [
+    "Every execution uses a fresh browser context and its own append-only run record and replay trace.",
+    "The application/database is not mutated by these read-only workflows; a batch-level database snapshot is checked before and after collection.",
+    "Authentication is a matched scripted preamble; the provider sees only the authenticated task state.",
+    "Pure visual receives screenshots only; hybrid receives screenshots plus visible pageStructure and may use semantic target ids.",
+    "The independent database oracle is separate from the agent verdict and visible milestone checks.",
+    "This is an exploratory diagnostic batch, not a three-arm matched estimate or superiority claim.",
+    "The complexity distribution and provider/model/profile are fixed before execution and must not be changed after inspecting outcomes."
+  ],
+  "guardrails": {
+    "requires_local_sut_health_gate": true,
+    "requires_explicit_credentials": true,
+    "requires_provider_api_key": true,
+    "requires_database_snapshot_before_after": true,
+    "max_concurrency_per_arm": 1,
+    "max_wall_minutes_per_arm": 240
+  }
+}

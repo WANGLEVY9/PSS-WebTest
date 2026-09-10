@@ -8,7 +8,8 @@ const repositoryRoot = path.resolve(codeRoot, '..');
 const planPath = path.join(codeRoot, 'config/traditional-500-playwright.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const total = Number.parseInt(process.env.PSS_TRADITIONAL_TOTAL ?? String(plan.target_executions), 10);
-if (!Number.isInteger(total) || total < 500) throw new Error('PSS_TRADITIONAL_TOTAL must be an integer of at least 500');
+const allowSubset = process.env.PSS_TRADITIONAL_ALLOW_SUBSET === '1';
+if (!Number.isInteger(total) || total < 1 || (!allowSubset && total < 500)) throw new Error('PSS_TRADITIONAL_TOTAL must be at least 500 unless PSS_TRADITIONAL_ALLOW_SUBSET=1 is explicitly set for a recovery probe');
 if (!process.env.PSS_PRESTASHOP_USERNAME || !process.env.PSS_PRESTASHOP_PASSWORD) throw new Error('PSS_PRESTASHOP_USERNAME and PSS_PRESTASHOP_PASSWORD are required in the process environment');
 const concurrency = Math.min(Math.max(Number.parseInt(process.env.PSS_TRADITIONAL_CONCURRENCY ?? String(plan.guardrails.max_concurrency), 10), 1), plan.guardrails.max_concurrency);
 const seed = process.env.PSS_TRADITIONAL_SEED ?? plan.id;
@@ -66,7 +67,7 @@ const byComplexity = Object.fromEntries(['simple', 'medium', 'complex'].map((com
   const rows = results.filter((row) => row.complexity === complexity);
   return [complexity, { planned: rows.length, completed: rows.filter((row) => row.status === 'completed').length, failures: rows.filter((row) => row.status !== 'completed').length, oracle_passed: rows.filter((row) => row.independent_oracle_passed === true).length }];
 }));
-const summary = { schema_version: '0.1', campaign_id: plan.id, run_tag: runTag, status: results.length === jobs.length ? 'completed-diagnostic-batch' : 'incomplete', application: plan.application, total_planned: jobs.length, total_observed: results.length, concurrency, seed, records_out: recordsOut, by_complexity: byComplexity, wall_time_ms: Date.now() - startedAt, evidence_boundary: 'traditional-only exploratory diagnostic; no three-arm matched or confirmatory claim', results };
+const summary = { schema_version: '0.1', campaign_id: plan.id, run_tag: runTag, status: results.length === jobs.length ? 'completed-diagnostic-batch' : 'incomplete', application: plan.application, total_planned: jobs.length, total_observed: results.length, subset_recovery_probe: allowSubset, concurrency, seed, records_out: recordsOut, by_complexity: byComplexity, wall_time_ms: Date.now() - startedAt, evidence_boundary: 'traditional-only exploratory diagnostic; no three-arm matched or confirmatory claim', results };
 fs.writeFileSync(summaryOut, `${JSON.stringify(summary, null, 2)}\n`, { mode: 0o600 });
 console.log(JSON.stringify({ status: summary.status, total_planned: summary.total_planned, total_observed: summary.total_observed, concurrency, by_complexity: byComplexity, records_out: recordsOut, summary_out: summaryOut, wall_time_ms: summary.wall_time_ms }));
 if (summary.status !== 'completed-diagnostic-batch') process.exitCode = 1;

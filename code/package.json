@@ -89,6 +89,8 @@
     "sut:prestashop:ready": "node scripts/webtestpilot-lifecycle.mjs prestashop ready",
     "sut:prestashop:stop": "node scripts/webtestpilot-lifecycle.mjs prestashop stop",
     "pilot:invoiceninja:playwright": "node scripts/run-invoiceninja-playwright-cell.mjs",
+    "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",
+    "pilot:prestashop:playwright": "node scripts/run-prestashop-playwright-cell.mjs",
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"
   },
   "devDependencies": {

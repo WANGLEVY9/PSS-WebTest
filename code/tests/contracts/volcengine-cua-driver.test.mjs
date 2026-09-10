@@ -147,6 +147,28 @@ test('driver rejects a repeated non-progressing click and asks the provider agai
   assert.equal(calls, 3);
 });
 
+test('visual retry prompt re-plans after a rejected click', async () => {
+  let calls = 0;
+  const requests = [];
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '1' },
+    observeScreenshot: async () => 'same-screen',
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      calls += 1;
+      requests.push(JSON.parse(options.body));
+      const message = calls === 1
+        ? { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] }
+        : { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] };
+      return { ok: true, status: 200, async json() { return { choices: [{ message }] }; } };
+    }
+  });
+  const observation = await driver.observe();
+  await driver.decide({ intent: 'Open the next task-specific control', observation, step: 0 });
+  await assert.rejects(() => driver.decide({ intent: 'Open the next task-specific control', observation, step: 1 }), /repeated non-progressing click/);
+  assert.ok(requests.some((body) => body.messages[0].content[0].text.includes('Re-plan from the current screenshot')));
+});
+
 test('driver permits the same coordinate after the screenshot visibly changes', async () => {
   let calls = 0;
   let screenshot = 'before-navigation';

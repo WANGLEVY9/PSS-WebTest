@@ -223,6 +223,12 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
       let decision;
       let lastDecisionError;
       for (let decisionAttempt = 0; decisionAttempt <= maxDecisionRetries; decisionAttempt += 1) {
+        const retryBlockedClickInstruction = actionHistory.at(-1)?.type === 'rejected_click'
+          ? 'The previous click was rejected because the screenshot did not change. Re-plan from the current screenshot and choose a different visible target from the task sequence; do not reuse that coordinate.'
+          : blockedClickInstruction;
+        const retryRepeatedClickInstruction = actionHistory.at(-1)?.type === 'rejected_click'
+          ? 'The current page did not advance after the previous click. Do not click the same navigation or sidebar control again; inspect the current screenshot and select the next task-specific control, or type into the focused field.'
+          : repeatedClickInstruction;
         const retryInstruction = decisionAttempt > 0
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
@@ -231,7 +237,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           temperature: 0,
           ...generationOptions,
           messages: [{ role: 'user', content: [
-            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. For pointer actions, use ${coordinateInstruction}; never output decimal coordinates. Never omit required fields and do not invent DOM selectors.` },
+            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryRepeatedClickInstruction}\n${retryBlockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. For pointer actions, use ${coordinateInstruction}; never output decimal coordinates. Never omit required fields and do not invent DOM selectors.` },
             { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
           ] }]
         };

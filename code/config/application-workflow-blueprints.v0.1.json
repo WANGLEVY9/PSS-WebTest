@@ -1,0 +1,102 @@
+{
+  "schema_version": "0.1",
+  "status": "candidate-workflow-pool-not-admitted",
+  "purpose": "Reserve a common eight-slot workflow design for every countable candidate application without claiming that any candidate is locally runnable or eligible for confirmatory collection.",
+  "workflow_slots": [
+    {
+      "id": "slot-01-navigate-target",
+      "complexity": "navigation",
+      "intent_template": "Open a seeded target record or workspace from a stable entry point.",
+      "required_oracle": "visible-plus-independent-record-state",
+      "fault_axis": "wrong-target",
+      "evolution_axis": "navigation-layout-change"
+    },
+    {
+      "id": "slot-02-search-and-open",
+      "complexity": "search-navigation",
+      "intent_template": "Search for a seeded entity and open the exact matching result.",
+      "required_oracle": "independent-result-identity",
+      "fault_axis": "result-mismatch",
+      "evolution_axis": "search-layout-change"
+    },
+    {
+      "id": "slot-03-create-record",
+      "complexity": "multi-step",
+      "intent_template": "Create a new record with at least two semantically meaningful fields.",
+      "required_oracle": "independent-persisted-record",
+      "fault_axis": "save-suppressed",
+      "evolution_axis": "form-layout-change"
+    },
+    {
+      "id": "slot-04-edit-and-persist",
+      "complexity": "form-persistence",
+      "intent_template": "Edit an existing record and verify the changed value after revisiting it.",
+      "required_oracle": "independent-persisted-diff",
+      "fault_axis": "stale-write",
+      "evolution_axis": "editor-layout-change"
+    },
+    {
+      "id": "slot-05-cross-page-state",
+      "complexity": "cross-page-state",
+      "intent_template": "Perform a state-changing action on one page and verify its effect on another page.",
+      "required_oracle": "independent-cross-page-state",
+      "fault_axis": "state-propagation-omission",
+      "evolution_axis": "async-order-change"
+    },
+    {
+      "id": "slot-06-authorization",
+      "complexity": "authorization",
+      "intent_template": "Attempt a role-sensitive action and verify both the UI response and persisted permission state.",
+      "required_oracle": "independent-authorization-state",
+      "fault_axis": "privilege-leak-or-denial-omission",
+      "evolution_axis": "access-name-or-dialog-change"
+    },
+    {
+      "id": "slot-07-runtime-delay",
+      "complexity": "runtime",
+      "intent_template": "Complete a workflow with a bounded asynchronous or delayed result.",
+      "required_oracle": "independent-eventual-state",
+      "fault_axis": "duplicate-submit-or-delayed-omission",
+      "evolution_axis": "runtime-delay"
+    },
+    {
+      "id": "slot-08-related-entity",
+      "complexity": "multi-step",
+      "intent_template": "Create or update a related entity and verify the relationship from both sides.",
+      "required_oracle": "independent-relational-state",
+      "fault_axis": "wrong-parent-or-relation-omission",
+      "evolution_axis": "relation-layout-change"
+    }
+  ],
+  "application_workflow_plan": [
+    {"application_id":"invoiceninja","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"prestashop","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"nextcloud","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"gitea","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"mattermost","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"taiga","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"kanboard","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"mediawiki","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"gitlab","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"ghost","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"wordpress","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"roundcube","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"odoo","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"erpnext","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"discourse","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"redmine","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"penpot","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"plane","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"openproject","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"calcom","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"owncloud","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]},
+    {"application_id":"outline","status":"candidate-only","workflow_slots":["slot-01-navigate-target","slot-02-search-and-open","slot-03-create-record","slot-04-edit-and-persist","slot-05-cross-page-state","slot-06-authorization","slot-07-runtime-delay","slot-08-related-entity"]}
+  ],
+  "admission_rule": [
+    "candidate workflow slots are planning artifacts, not executable observations",
+    "each application must have a version-pinned local deployment before a slot becomes runnable",
+    "each slot requires a deterministic reset, an independent oracle, and a condition-specific fault/evolution contract",
+    "all three arms must run the same intent and persist standardized run records",
+    "no candidate workflow contributes to a confirmatory denominator until the application-level matched pilot gate passes"
+  ]
+}

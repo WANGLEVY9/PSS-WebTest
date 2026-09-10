@@ -11,7 +11,7 @@ test('application expansion catalog is fail-closed and broader than the current 
   assert.deepEqual(catalog.current_application_inventory.pilot_suts, ['bookstack', 'indico', 'juice-shop']);
   assert.deepEqual(catalog.current_application_inventory.admitted_for_confirmatory, []);
   const countable = catalog.candidate_applications.filter((app) => app.status !== 'role-only-not-an-application');
-  assert.ok(countable.length >= 10, `expected at least 10 countable candidates, got ${countable.length}`);
+  assert.ok(countable.length >= 20, `expected at least 20 countable candidates, got ${countable.length}`);
   assert.ok(countable.every((app) => app.status === 'candidate-unverified'));
   assert.ok(countable.every((app) => app.version_pin === null));
 });

@@ -17,6 +17,9 @@ const ids = new Set();
 for (const [index, application] of (matrix.applications ?? []).entries()) {
   if (ids.has(application.id)) errors.push(`duplicate application id: ${application.id}`);
   ids.add(application.id);
+  if (application.status === 'candidate' && (application.workflows ?? []).length === 0 && !application.workflow_plan_ref) {
+    errors.push(`applications[${index}] candidate-only rows with no workflows must reference a workflow plan`);
+  }
   const workflowIds = new Set();
   for (const [taskIndex, workflow] of (application.workflows ?? []).entries()) {
     const location = `applications[${index}].workflows[${taskIndex}]`;

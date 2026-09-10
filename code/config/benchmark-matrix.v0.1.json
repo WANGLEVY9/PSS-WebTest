@@ -77,7 +77,27 @@
         {"id":"prestashop-buyer-sort-products-by-price","status":"candidate","complexity":"search-navigation","oracle_authority":"visible-ui+relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/buyer_sort_products_by_price_low_to_high.yaml","fault_slots":["sort-mismatch","filter-omission"],"evolution_slots":["sort-control-layout","delayed-results"]},
         {"id":"prestashop-seller-ship-order","status":"candidate","complexity":"cross-page-state","oracle_authority":"relational","oracle_status":"draft","benchmark_source":"third_party/WebTestPilot/benchmark/prestashop/test_cases/seller_ship_order.yaml","fault_slots":["wrong-order-target","shipping-omission"],"evolution_slots":["order-layout","delayed-background"]}
       ]
-    }
+    },
+    {"id":"nextcloud","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"gitea","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"mattermost","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"taiga","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"kanboard","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"mediawiki","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"gitlab","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"ghost","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"wordpress","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"roundcube","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"odoo","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"erpnext","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"discourse","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"redmine","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"penpot","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"plane","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"openproject","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"calcom","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"owncloud","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"outline","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]}
   ],
   "arms": [
     {"id":"visual","observation_contract":"screenshot-only","status":"implemented-provider","confirmatory_status":"blocked-by-pilot"},

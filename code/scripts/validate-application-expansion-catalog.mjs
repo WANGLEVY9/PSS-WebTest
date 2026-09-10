@@ -52,7 +52,8 @@ const currentIds = new Set(catalog.current_application_inventory?.pilot_suts ?? 
 for (const id of currentIds) if (candidateIds.has(id)) errors.push(`current pilot SUT must not be duplicated as a candidate: ${id}`);
 
 const target = catalog.expansion_target ?? {};
-if (target.target_application_count < 10) errors.push('target_application_count should reserve room for a genuinely broader benchmark');
+if (target.target_application_count < 20) errors.push('target_application_count should reserve room for a genuinely broader benchmark');
+if (candidateIds.size < 20) errors.push(`candidate pool must expose at least 20 countable applications, got ${candidateIds.size}`);
 if (target.authorization !== 'planning-only-until-admission-gates-pass') errors.push('expansion authorization must remain planning-only until gates pass');
 
 if (errors.length) {

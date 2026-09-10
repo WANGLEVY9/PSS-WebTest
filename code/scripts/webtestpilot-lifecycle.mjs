@@ -77,13 +77,16 @@ async function waitForReady() {
   let last = 'not attempted';
   while (Date.now() < deadline) {
     try {
-      const response = await fetch(url, { redirect: 'manual' });
+      const response = await fetch(url, { redirect: 'follow' });
       const text = await response.text();
-      if (response.status >= 200 && response.status < 500 && definition.readyMarkers.some((marker) => text.includes(marker))) {
+      const finalUrl = new URL(response.url || url);
+      const sameSutHost = ['127.0.0.1', 'localhost'].includes(finalUrl.hostname)
+        && (finalUrl.port === String(definition.port) || finalUrl.port === '');
+      if (sameSutHost && response.status >= 200 && response.status < 500 && definition.readyMarkers.some((marker) => text.includes(marker))) {
         console.log(JSON.stringify({ application: app, status: 'ready', url, http_status: response.status }));
         return;
       }
-      last = `HTTP ${response.status}`;
+      last = `HTTP ${response.status} final_url=${response.url || url}`;
     } catch (error) {
       last = error.message;
     }

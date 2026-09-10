@@ -32,8 +32,8 @@
   ],
   "candidate_status": [
     {"application_id":"invoiceninja","wave":"wave-0-existing-local","local_asset":"WebTestPilot compose, seed, and task files","next_gate":"digest pin + independent invoice/payment oracle","risk":"seed and image provenance"},
-    {"application_id":"prestashop","wave":"wave-0-existing-local","local_asset":"WebTestPilot compose, seed, and task files","next_gate":"platform-compatible image + independent cart/order oracle","risk":"architecture mismatch observed"},
-    {"application_id":"gitea","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"official image/compose feasibility triage","risk":"repository fixtures and auth"},
+    {"application_id":"prestashop","wave":"wave-0-existing-local","local_asset":"WebTestPilot compose, seed, and task files","next_gate":"repeat native reset + digest pin + independent cart/order oracle","risk":"one native reset passed; repeated reset and oracle remain open"},
+    {"application_id":"gitea","wave":"wave-1-low-friction-self-hosted","local_asset":"official rootless Docker path; local triage recorded","next_gate":"restore Docker/Colima access, then implement pinned image/compose","risk":"current Docker/Colima access boundary; repository fixtures and auth"},
     {"application_id":"nextcloud","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"official image/compose feasibility triage","risk":"database plus file-share state"},
     {"application_id":"mediawiki","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"version-pinned wiki deployment and revision oracle","risk":"upload and revision semantics"},
     {"application_id":"ghost","wave":"wave-1-low-friction-self-hosted","local_asset":"not collected","next_gate":"version-pinned deployment and publication oracle","risk":"database/storage coupling"},

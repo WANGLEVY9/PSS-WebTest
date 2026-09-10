@@ -18,11 +18,9 @@ The following reversible environment repair was applied locally:
 4. Ran the project reset once with the hard-coded x86 platform. The app and MySQL containers started and PrestaShop installation completed, but the readiness gate did not complete: the app repeatedly returned HTTP `302` from `/`, redirecting to `http://localhost:8083/`; Apache workers subsequently emitted `Segmentation fault (11)` under Rosetta. No seed snapshot was produced.
 5. Removed the hard-coded platform lines from the local ignored WebTestPilot compose copy so a future run can use native `arm64` images. This local third-party tree is ignored/not tracked by the public repository, so the change is not yet a publishable repository patch.
 
-## Gate status
+## Gate status at the time of this diagnostic
 
-**PrestaShop reset/ready/seed gate: NOT PASSED.**
-
-The architecture mismatch was mitigated for local construction, but the only tested cross-architecture runtime remained unstable under Rosetta. The native-arm compose change still needs one bounded reset verification; it must not be treated as successful until the HTTP ready marker and numeric seed snapshot are both captured.
+The cross-architecture recovery attempt did not pass the readiness gate: the Rosetta runtime returned a persistent `302` and later showed instability. A subsequent native-arm reset probe and readiness-harness fix are recorded separately in `2026-09-10-prestashop-native-reset-result.md`; that later probe passed one reset/ready/seed trial but does not complete application admission.
 
 ## Recommended next bounded action
 
@@ -35,4 +33,3 @@ Run exactly one native-arm reset after confirming the local compose copy has no 
 - app logs if any readiness failure occurs.
 
 If native-arm reset passes, pin the resulting app/database image digests in the local benchmark manifest and implement the independent relational oracle before any matched pilot. If it fails, keep PrestaShop `candidate-unverified` and move to another candidate application; do not record the failure as an agent result.
-

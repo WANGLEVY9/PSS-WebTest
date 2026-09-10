@@ -23,8 +23,6 @@ const password = process.env.PSS_PRESTASHOP_PASSWORD;
 if (!username || !password) throw new Error('Set PSS_PRESTASHOP_USERNAME/PSS_PRESTASHOP_PASSWORD in the process environment.');
 const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';
 const expectedName = process.env.PSS_PRESTASHOP_EXPECTED_PRODUCT ?? 'Mug The adventure begins';
-const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? '8', 10);
-const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? '500', 10);
 const viewport = { width: 1280, height: 720 };
 const taskId = 'prestashop-buyer-search-product';
 const runId = process.env.PSS_RUN_ID ?? `prestashop-${arm}-${Date.now()}`;
@@ -32,6 +30,19 @@ const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', t
 const trace = [];
 let pendingProviderEventIds = [];
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily: 'search-navigation' });
+// Resolve the profile before constructing the adapter.  Earlier versions read
+// the profile for screenshot quality only, while max steps, timeout, retry,
+// and coordinate settings silently fell back to driver defaults.  That made a
+// selected optimization profile non-reproducible and, in particular, left
+// visual runs with the legacy eight-step budget.
+const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
+const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
+const driverEnv = {
+  ...process.env,
+  CUA_MAX_OUTPUT_TOKENS: process.env.CUA_MAX_OUTPUT_TOKENS ?? String(optimization.max_output_tokens),
+  CUA_COORDINATE_MODE: process.env.CUA_COORDINATE_MODE ?? String(optimization.coordinate_mode),
+  CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? String(optimization.hybrid_action_mode ?? 'coordinate')
+};
 
 async function pageState(page) {
   return {
@@ -115,9 +126,19 @@ try {
   await page.locator('#submit-login').click();
   await page.waitForLoadState('domcontentloaded');
   await page.locator('input[name="s"]').waitFor({ state: 'visible', timeout: 15000 });
+  const driverOptions = {
+    env: driverEnv,
+    timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10),
+    maxRetries: Number.parseInt(process.env.CUA_MAX_RETRIES ?? String(optimization.max_retries), 10),
+    maxDecisionRetries: Number.parseInt(process.env.CUA_MAX_DECISION_RETRIES ?? String(optimization.max_decision_retries), 10),
+    coordinateMode: process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode,
+    wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? String(optimization.wall_timeout_ms ?? 0), 10),
+    onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
+    executeAction
+  };
   const driver = arm === 'visual'
-    ? createVolcengineCuaDriver({ observeScreenshot, executeAction, onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); }, wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? String(optimization.wall_timeout_ms ?? 0), 10) })
-    : createVolcengineHybridDriver({ observeHybrid, executeAction, onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); }, wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? String(optimization.wall_timeout_ms ?? 0), 10), hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate' });
+    ? createVolcengineCuaDriver({ ...driverOptions, observeScreenshot })
+    : createVolcengineHybridDriver({ ...driverOptions, observeHybrid, hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate' });
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   result = await adapter.run({
     intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". Finish only after the search results visibly include the product "Mug The Adventure Begins"; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`,

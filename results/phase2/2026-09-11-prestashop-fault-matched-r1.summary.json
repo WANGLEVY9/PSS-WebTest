@@ -1,0 +1,22 @@
+{
+  "schema_version": "phase2-summary-0.1",
+  "status": "pilot-diagnostic",
+  "application_id": "prestashop",
+  "task_id": "prestashop-buyer-search-product",
+  "condition": "functional-fault",
+  "mutation_id": "search-result-label-omission",
+  "ground_truth_verdict": "fault",
+  "independent_oracle_passed": true,
+  "records": [
+    {"run_id":"prestashop-playwright-fault-r1","stratum":"aliyun/qwen3.7-flash","arm":"playwright","status":"completed","emitted_verdict":"fault","failure_category":null},
+    {"run_id":"prestashop-qwen-visual-fault-r1","stratum":"aliyun/qwen3.7-flash","arm":"visual","status":"test-failure","emitted_verdict":"not-emitted","failure_category":"grounding-loop"},
+    {"run_id":"prestashop-qwen-hybrid-fault-r1","stratum":"aliyun/qwen3.7-flash","arm":"hybrid","status":"test-failure","emitted_verdict":"not-emitted","failure_category":"grounding-loop"},
+    {"run_id":"prestashop-playwright-deepseek-fault-r1","stratum":"deepseek/deepseek-v4-flash-vision-exp","arm":"playwright","status":"completed","emitted_verdict":"fault","failure_category":null},
+    {"run_id":"prestashop-deepseek-visual-fault-r1","stratum":"deepseek/deepseek-v4-flash-vision-exp","arm":"visual","status":"test-failure","emitted_verdict":"not-emitted","failure_category":"grounding-loop"},
+    {"run_id":"prestashop-deepseek-hybrid-fault-r1","stratum":"deepseek/deepseek-v4-flash-vision-exp","arm":"hybrid","status":"test-failure","emitted_verdict":"not-emitted","failure_category":"grounding-loop"},
+    {"run_id":"prestashop-playwright-doubao-fault-r1","stratum":"volcengine/doubao-seed-2-1-pro-260628","arm":"playwright","status":"completed","emitted_verdict":"fault","failure_category":null},
+    {"run_id":"prestashop-doubao-visual-fault-r1","stratum":"volcengine/doubao-seed-2-1-pro-260628","arm":"visual","status":"test-failure","emitted_verdict":"not-emitted","failure_category":"provider-format"},
+    {"run_id":"prestashop-doubao-hybrid-fault-r1","stratum":"volcengine/doubao-seed-2-1-pro-260628","arm":"hybrid","status":"test-failure","emitted_verdict":"not-emitted","failure_category":"provider-format"}
+  ],
+  "ledger_audit": {"records": 9, "unique_run_ids": 9, "missing_or_duplicate_run_ids": false}
+}

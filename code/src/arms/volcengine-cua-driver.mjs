@@ -28,6 +28,16 @@ const UI_ACTION_TOOL = {
   }
 };
 
+// Ark Responses API uses the same function schema without the OpenAI
+// Chat-Completions `function` wrapper. Keep both shapes explicit so the
+// provider mode is auditable and the existing chat path remains unchanged.
+const RESPONSES_UI_ACTION_TOOL = {
+  type: 'function',
+  name: 'ui_action',
+  description: UI_ACTION_TOOL.function.description,
+  parameters: UI_ACTION_TOOL.function.parameters
+};
+
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
   return screenshot.startsWith('data:image/') ? screenshot : `data:image/png;base64,${screenshot}`;
@@ -42,6 +52,10 @@ function providerResponseSummary({ env, response, payload, step, attempt, ok = f
   const content = typeof message.content === 'string' ? message.content : '';
   const toolArguments = typeof message.tool_calls?.[0]?.function?.arguments === 'string'
     ? message.tool_calls[0].function.arguments : '';
+  const responseTool = payload?.output?.find?.((item) => item?.type === 'function_call');
+  const responseText = typeof payload?.output_text === 'string' ? payload.output_text : '';
+  const normalizedContent = content || responseText;
+  const normalizedArguments = toolArguments || (typeof responseTool?.arguments === 'string' ? responseTool.arguments : '');
   const summary = {
     provider: env.CUA_PROVIDER ?? null,
     model: env.CUA_MODEL ?? null,
@@ -49,14 +63,14 @@ function providerResponseSummary({ env, response, payload, step, attempt, ok = f
     attempt: Number.isInteger(attempt) ? attempt : null,
     http_status: Number.isInteger(response?.status) ? response.status : null,
     ok: ok === true,
-    finish_reason: typeof payload?.choices?.[0]?.finish_reason === 'string' ? payload.choices[0].finish_reason : null,
-    has_text_content: content.length > 0,
-    has_tool_call: Boolean(message.tool_calls?.length),
-    content_length: content.length,
-    content_digest: content ? crypto.createHash('sha256').update(content).digest('hex') : null,
-    tool_name: typeof message.tool_calls?.[0]?.function?.name === 'string' ? message.tool_calls[0].function.name : null,
-    arguments_length: toolArguments.length,
-    arguments_digest: toolArguments ? crypto.createHash('sha256').update(toolArguments).digest('hex') : null
+    finish_reason: typeof payload?.choices?.[0]?.finish_reason === 'string' ? payload.choices[0].finish_reason : (typeof payload?.status === 'string' ? payload.status : null),
+    has_text_content: normalizedContent.length > 0,
+    has_tool_call: Boolean(message.tool_calls?.length || responseTool),
+    content_length: normalizedContent.length,
+    content_digest: normalizedContent ? crypto.createHash('sha256').update(normalizedContent).digest('hex') : null,
+    tool_name: typeof message.tool_calls?.[0]?.function?.name === 'string' ? message.tool_calls[0].function.name : (typeof responseTool?.name === 'string' ? responseTool.name : null),
+    arguments_length: normalizedArguments.length,
+    arguments_digest: normalizedArguments ? crypto.createHash('sha256').update(normalizedArguments).digest('hex') : null
   };
   if (error) summary.error = { name: error.name, message: error.message };
   return summary;
@@ -147,6 +161,16 @@ function parseToolDecision(toolCall, options = {}) {
 }
 
 function parseProviderDecision(payload, options = {}) {
+  const responseToolCall = payload?.output?.find?.((item) => item?.type === 'function_call');
+  if (responseToolCall) {
+    return parseToolDecision({ function: { name: responseToolCall.name, arguments: responseToolCall.arguments } }, options);
+  }
+  if (Array.isArray(payload?.output)) {
+    const text = typeof payload.output_text === 'string'
+      ? payload.output_text
+      : payload.output.flatMap((item) => item?.content ?? []).find((item) => typeof item?.text === 'string')?.text ?? '';
+    return parseDecision(text, options);
+  }
   const toolCall = payload?.choices?.[0]?.message?.tool_calls?.[0];
   return toolCall ? parseToolDecision(toolCall, options) : parseDecision(payload?.choices?.[0]?.message?.content || '', options);
 }
@@ -182,17 +206,21 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
   const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
   const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
   const deepseekActionMode = env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool';
+  const volcengineActionMode = env.CUA_VOLCENGINE_ACTION_MODE ?? 'json';
   if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
     throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
   }
   if (config.provider === 'deepseek' && !['tool', 'json'].includes(deepseekActionMode)) {
     throw new Error('CUA_DEEPSEEK_ACTION_MODE must be tool or json');
   }
+  if (config.provider === 'volcengine' && !['tool', 'json'].includes(volcengineActionMode)) {
+    throw new Error('CUA_VOLCENGINE_ACTION_MODE must be tool or json');
+  }
   const actionMode = config.provider === 'aliyun'
     ? aliyunActionMode
     : config.provider === 'deepseek'
     ? deepseekActionMode
-    : 'json';
+    : volcengineActionMode;
   // Qwen3-VL's JSON mode is not reliable when thinking is enabled.  Alibaba's
   // OpenAI-compatible endpoint also prefers max_completion_tokens; keep the
   // Volcengine request shape unchanged for backward compatibility.
@@ -202,6 +230,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (['aliyun', 'deepseek'].includes(config.provider) ? '1' : '0'), 10);
+  const responsesMode = config.provider === 'volcengine' && (env.CUA_VOLCENGINE_API_MODE ?? 'chat') === 'responses';
   const actionHistory = [];
   let lastAcceptedPointer = null;
   let retryCount = 0;
@@ -245,19 +274,29 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         const retryInstruction = decisionAttempt > 0
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
-        const requestBody = {
-          model: config.model,
-          temperature: 0,
-          ...generationOptions,
-          messages: [{ role: 'user', content: [
-            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryRepeatedClickInstruction}\n${retryBlockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. For pointer actions, use ${coordinateInstruction}; never output decimal coordinates. Never omit required fields and do not invent DOM selectors.` },
-            { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
-          ] }]
-        };
+        const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryRepeatedClickInstruction}\n${retryBlockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. For pointer actions, use ${coordinateInstruction}; never output decimal coordinates. Never omit required fields and do not invent DOM selectors.`;
+        const requestBody = responsesMode
+          ? {
+              model: config.model,
+              max_output_tokens: maxOutputTokens,
+              input: [{ type: 'message', role: 'user', content: [
+                { type: 'input_text', text: instructionText },
+                { type: 'input_image', image_url: asDataUrl(observation.screenshot) }
+              ] }]
+            }
+          : {
+              model: config.model,
+              temperature: 0,
+              ...generationOptions,
+              messages: [{ role: 'user', content: [
+                { type: 'text', text: instructionText },
+                { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
+              ] }]
+            };
         if (actionMode === 'tool') {
-          requestBody.tools = [UI_ACTION_TOOL];
-          requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
-        } else {
+          requestBody.tools = [responsesMode ? RESPONSES_UI_ACTION_TOOL : UI_ACTION_TOOL];
+          if (!responsesMode) requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
+        } else if (!responsesMode) {
           requestBody.response_format = { type: 'json_object' };
         }
         let response;
@@ -269,7 +308,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           try { onProviderResponse?.(providerResponseSummary({ env, response, payload, step, attempt: decisionAttempt, ok, error })); } catch { /* instrumentation is non-fatal */ }
         };
         try {
-          response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
+          response = await fetchWithRetry(fetchImpl, `${baseUrl}/${responsesMode ? 'responses' : 'chat/completions'}`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
             body: JSON.stringify(requestBody)
@@ -316,4 +355,4 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
   };
 }
 
-export { parseDecision, parseToolDecision, parseProviderDecision, UI_ACTION_TOOL };
+export { parseDecision, parseToolDecision, parseProviderDecision, UI_ACTION_TOOL, RESPONSES_UI_ACTION_TOOL };

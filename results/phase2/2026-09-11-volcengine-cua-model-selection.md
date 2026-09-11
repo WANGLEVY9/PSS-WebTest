@@ -20,26 +20,29 @@ candidate, not as admitted evidence.
 
 ## Capability screening
 
-The existing Ark key was tested against the selected model with a minimal
-image request and against a small set of account-visible generative models with
-text-only requests. The selected model returned HTTP 404 `ModelNotOpen`. The
-other tested candidates likewise returned `ModelNotOpen` or
-`InvalidEndpointOrModel.NotFound`.
+An initial request returned HTTP 404 `ModelNotOpen`, but a retry using the
+console's exact Responses API example subsequently returned HTTP 200. The
+project's actual visual driver then completed a bounded click decision from a
+Playwright-generated screenshot, and the hybrid driver completed a bounded
+semantic click from the same screenshot plus declared page structure.
 
-This means the API key can enumerate model metadata but currently has no usable
-online-inference access to a generative model on the tested endpoint. The
-embedding probe independently returned `ModelNotOpen` for the embedding model.
-No screenshot from the SUT was uploaded in the failed screening.
+The reproducible provider smoke reported:
+
+```json
+{"visual":{"status":"ok","decision_type":"action","action_type":"click"},"hybrid":{"status":"ok","decision_type":"action","action_type":"click","target_id":"c1"}}
+```
+
+These are provider/adapter connectivity smokes only. They do not establish
+BookStack task success or matched-pilot admission. The embedding probe remains
+separate and is not used as a CUA model.
 
 ## Required console action
 
-In Ark, open the model's **开通管理/模型服务** access for the account, or create
-an **在线推理接入点** for `doubao-seed-2-1-pro-260628` and copy the resulting
-endpoint ID. If the console provides an endpoint ID, set that ID as
-`CUA_MODEL` in the ignored profile and rerun the probe. Do not start matched
-pilot collection until the probe returns HTTP 200 and both visual and hybrid
-drivers complete a bounded one-step smoke.
+If the console later supplies a dedicated **在线推理接入点** ID, set that ID
+as `CUA_MODEL` in the ignored profile and rerun the same smoke. The current
+prebuilt model ID is already working. Do not start matched pilot collection
+until the SUT reset gate, independent oracle, and three-arm admission checks
+also pass.
 
-The profile and registry changes are intentionally fail-closed: model access is
-recorded as pending rather than treating model-list visibility as evidence of
-successful inference.
+The profile and registry changes remain fail-closed: provider connectivity is
+verified, but no SUT task or matched-pilot evidence is admitted yet.

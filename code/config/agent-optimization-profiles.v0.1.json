@@ -82,7 +82,7 @@
       "id": "doubao-seed-2-1-pro-grounded-v1",
       "provider_family": "volcengine-ark",
       "model_family": "doubao-seed-2-1-pro-260628",
-      "status": "pilot-candidate-awaiting-model-access",
+      "status": "pilot-candidate-connectivity-verified",
       "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
       "arms": {
         "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },

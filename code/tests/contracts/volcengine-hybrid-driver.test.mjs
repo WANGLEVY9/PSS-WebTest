@@ -21,6 +21,34 @@ test('hybrid driver sends screenshot and declared structure, never hidden evalua
   assert.match(body.messages[0].content[1].image_url.url, /data:image\/png;base64,abc123/);
 });
 
+test('hybrid Responses API mode sends declared structure with input_image and parses function_call output', async () => {
+  let request;
+  const driver = createVolcengineHybridDriver({
+    env: {
+      CUA_PROVIDER: 'volcengine', CUA_MODEL: 'doubao-seed-2-1-pro-260628', CUA_API_KEY: 'test-key',
+      CUA_BASE_URL: 'https://example.test/v1', CUA_VOLCENGINE_API_MODE: 'responses', CUA_VOLCENGINE_ACTION_MODE: 'tool', CUA_HYBRID_ACTION_MODE: 'coordinate'
+    },
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() {
+        return { status: 'completed', output: [{ type: 'function_call', name: 'ui_action', arguments: '{"action_type":"click","x":20,"y":30}' }] };
+      } };
+    }
+  });
+  const observation = await driver.observe();
+  const decision = await driver.decide({ intent: 'Save the page', observation, step: 0 });
+  assert.deepEqual(decision.action, { type: 'click', x: 26, y: 22, coordinate_mode: 'pixels' });
+  assert.equal(request.url, 'https://example.test/v1/responses');
+  const body = JSON.parse(request.options.body);
+  assert.equal(body.input[0].content[1].type, 'input_image');
+  assert.match(body.input[0].content[0].text, /Accessibility\/page structure/);
+  assert.match(body.input[0].content[0].text, /Save/);
+  assert.equal(body.tools[0].name, 'ui_action');
+  assert.equal(body.tools[0].function, undefined);
+});
+
 test('hybrid driver rejects nested hidden evaluator fields before provider request', async () => {
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'volcengine', CUA_MODEL: 'test-model', CUA_API_KEY: 'test-key' },

@@ -19,6 +19,7 @@
     "framework:stagehand:qwen:v02": "node scripts/run-stagehand-bookstack-v02.mjs",
     "provider:bookstack:connectivity": "node scripts/provider-bookstack-connectivity.mjs",
     "provider:deepseek:connectivity": "node scripts/provider-bookstack-connectivity.mjs",
+    "provider:volcengine:responses-smoke": "node scripts/provider-volcengine-responses-smoke.mjs",
     "provider:volcengine:embedding": "node scripts/check-volcengine-embedding.mjs",
     "provider:aliyun:json-diagnostic": "node scripts/diagnose-aliyun-json.mjs",
     "provider:aliyun:sequence-diagnostic": "node scripts/diagnose-aliyun-sequence.mjs",

@@ -48,7 +48,7 @@
       "key_env": "CUA_API_KEY",
       "image_input": true,
       "tool_calling": true,
-      "status": "registered-awaiting-model-access",
+      "status": "connectivity-verified-profile",
       "profile": "doubao-seed-2-1-pro-grounded-v1"
     }
   ],

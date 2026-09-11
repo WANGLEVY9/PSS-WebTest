@@ -62,6 +62,33 @@ test('driver sends screenshot-only input and parses provider response', async ()
   assert.match(request.options.body, /data:image\/png;base64,abc123/);
 });
 
+test('Volcengine Responses API mode sends input_image and parses function_call output', async () => {
+  let request;
+  const driver = createVolcengineCuaDriver({
+    env: {
+      CUA_PROVIDER: 'volcengine', CUA_MODEL: 'doubao-seed-2-1-pro-260628', CUA_API_KEY: 'test-key',
+      CUA_BASE_URL: 'https://example.test/v1', CUA_VOLCENGINE_API_MODE: 'responses', CUA_VOLCENGINE_ACTION_MODE: 'tool'
+    },
+    observeScreenshot: async () => 'abc123',
+    executeAction: async () => {},
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return { ok: true, status: 200, async json() {
+        return { status: 'completed', output: [{ type: 'function_call', name: 'ui_action', arguments: '{"action_type":"click","x":20,"y":30}' }] };
+      } };
+    }
+  });
+  const decision = await driver.decide({ intent: 'Inspect the page', observation: await driver.observe(), step: 0 });
+  assert.deepEqual(decision.action, { type: 'click', x: 26, y: 22, coordinate_mode: 'pixels' });
+  assert.equal(request.url, 'https://example.test/v1/responses');
+  const body = JSON.parse(request.options.body);
+  assert.equal(body.messages, undefined);
+  assert.equal(body.input[0].content[0].type, 'input_text');
+  assert.equal(body.input[0].content[1].type, 'input_image');
+  assert.equal(body.tools[0].name, 'ui_action');
+  assert.equal(body.tools[0].function, undefined);
+});
+
 test('driver accepts Alibaba OpenAI-compatible provider configuration', async () => {
   let request;
   const driver = createVolcengineCuaDriver({

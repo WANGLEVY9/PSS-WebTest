@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
 import { assertObservationContract } from './observation-contracts.mjs';
-import { parseProviderDecision, UI_ACTION_TOOL } from './volcengine-cua-driver.mjs';
+import { parseProviderDecision, UI_ACTION_TOOL, RESPONSES_UI_ACTION_TOOL } from './volcengine-cua-driver.mjs';
 
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
@@ -17,6 +17,10 @@ function providerResponseSummary({ env, response, payload, step, attempt, ok = f
   const content = typeof message.content === 'string' ? message.content : '';
   const toolArguments = typeof message.tool_calls?.[0]?.function?.arguments === 'string'
     ? message.tool_calls[0].function.arguments : '';
+  const responseTool = payload?.output?.find?.((item) => item?.type === 'function_call');
+  const responseText = typeof payload?.output_text === 'string' ? payload.output_text : '';
+  const normalizedContent = content || responseText;
+  const normalizedArguments = toolArguments || (typeof responseTool?.arguments === 'string' ? responseTool.arguments : '');
   const summary = {
     provider: env.CUA_PROVIDER ?? null,
     model: env.CUA_MODEL ?? null,
@@ -24,14 +28,14 @@ function providerResponseSummary({ env, response, payload, step, attempt, ok = f
     attempt: Number.isInteger(attempt) ? attempt : null,
     http_status: Number.isInteger(response?.status) ? response.status : null,
     ok: ok === true,
-    finish_reason: typeof payload?.choices?.[0]?.finish_reason === 'string' ? payload.choices[0].finish_reason : null,
-    has_text_content: content.length > 0,
-    has_tool_call: Boolean(message.tool_calls?.length),
-    content_length: content.length,
-    content_digest: content ? crypto.createHash('sha256').update(content).digest('hex') : null,
-    tool_name: typeof message.tool_calls?.[0]?.function?.name === 'string' ? message.tool_calls[0].function.name : null,
-    arguments_length: toolArguments.length,
-    arguments_digest: toolArguments ? crypto.createHash('sha256').update(toolArguments).digest('hex') : null
+    finish_reason: typeof payload?.choices?.[0]?.finish_reason === 'string' ? payload.choices[0].finish_reason : (typeof payload?.status === 'string' ? payload.status : null),
+    has_text_content: normalizedContent.length > 0,
+    has_tool_call: Boolean(message.tool_calls?.length || responseTool),
+    content_length: normalizedContent.length,
+    content_digest: normalizedContent ? crypto.createHash('sha256').update(normalizedContent).digest('hex') : null,
+    tool_name: typeof message.tool_calls?.[0]?.function?.name === 'string' ? message.tool_calls[0].function.name : (typeof responseTool?.name === 'string' ? responseTool.name : null),
+    arguments_length: normalizedArguments.length,
+    arguments_digest: normalizedArguments ? crypto.createHash('sha256').update(normalizedArguments).digest('hex') : null
   };
   if (error) summary.error = { name: error.name, message: error.message };
   return summary;
@@ -70,6 +74,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
   const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
   const deepseekActionMode = env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool';
+  const volcengineActionMode = env.CUA_VOLCENGINE_ACTION_MODE ?? 'json';
   if (!['coordinate', 'semantic'].includes(hybridActionMode)) throw new Error('CUA_HYBRID_ACTION_MODE must be coordinate or semantic');
   if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
     throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
@@ -77,11 +82,14 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   if (config.provider === 'deepseek' && !['tool', 'json'].includes(deepseekActionMode)) {
     throw new Error('CUA_DEEPSEEK_ACTION_MODE must be tool or json');
   }
+  if (config.provider === 'volcengine' && !['tool', 'json'].includes(volcengineActionMode)) {
+    throw new Error('CUA_VOLCENGINE_ACTION_MODE must be tool or json');
+  }
   const actionMode = config.provider === 'aliyun'
     ? aliyunActionMode
     : config.provider === 'deepseek'
     ? deepseekActionMode
-    : 'json';
+    : volcengineActionMode;
   // Qwen3-VL JSON mode can fail with thinking enabled.  Use Alibaba's
   // generation-limit field explicitly while preserving the Ark shape.
   const generationOptions = config.provider === 'aliyun'
@@ -90,6 +98,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (['aliyun', 'deepseek'].includes(config.provider) ? '1' : '0'), 10);
+  const responsesMode = config.provider === 'volcengine' && (env.CUA_VOLCENGINE_API_MODE ?? 'chat') === 'responses';
   const actionHistory = [];
   const pointerIdentity = (action) => {
     if (typeof action?.target_id === 'string' && action.target_id.length > 0) return `target_id=${action.target_id}`;
@@ -155,19 +164,29 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         const retryInstruction = decisionAttempt > 0
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
-        const requestBody = {
-          model: config.model,
-          temperature: 0,
-          ...generationOptions,
-          messages: [{ role: 'user', content: [
-            { type: 'text', text: `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.` },
-            { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
-          ] }]
-        };
+        const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.`;
+        const requestBody = responsesMode
+          ? {
+              model: config.model,
+              max_output_tokens: maxOutputTokens,
+              input: [{ type: 'message', role: 'user', content: [
+                { type: 'input_text', text: instructionText },
+                { type: 'input_image', image_url: asDataUrl(observation.screenshot) }
+              ] }]
+            }
+          : {
+              model: config.model,
+              temperature: 0,
+              ...generationOptions,
+              messages: [{ role: 'user', content: [
+                { type: 'text', text: instructionText },
+                { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
+              ] }]
+            };
         if (actionMode === 'tool') {
-          requestBody.tools = [UI_ACTION_TOOL];
-          requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
-        } else {
+          requestBody.tools = [responsesMode ? RESPONSES_UI_ACTION_TOOL : UI_ACTION_TOOL];
+          if (!responsesMode) requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
+        } else if (!responsesMode) {
           requestBody.response_format = { type: 'json_object' };
         }
         let response;
@@ -179,7 +198,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           try { onProviderResponse?.(providerResponseSummary({ env, response, payload, step, attempt: decisionAttempt, ok, error })); } catch { /* instrumentation is non-fatal */ }
         };
         try {
-          response = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
+          response = await fetchWithRetry(fetchImpl, `${baseUrl}/${responsesMode ? 'responses' : 'chat/completions'}`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
             body: JSON.stringify(requestBody)

@@ -45,6 +45,20 @@ The combined partial block (12 records: 9 clean plus 3 Qwen fault) also passes
 the ledger audit. Its fault visual failure is counted as a failure, not removed
 from the denominator.
 
+## Qwen budget ablation
+
+An additional reset-isolated Qwen Pure Visual fault run increased the action
+budget from the profile's 12 steps to 18:
+
+`prestashop-qwen-visual-budget-ablation-r1` → timeout, 18 actions, no emitted
+verdict, independent database oracle passed.
+
+The trace repeated the search/scroll loop and ended with a one-product visible
+state rather than the fault verdict. Increasing the step budget alone therefore
+did not resolve the failure; the current evidence points to grounding/progress
+control and fault-state recognition, not only an insufficient numeric budget.
+This ablation is diagnostic and is excluded from the matched denominator.
+
 ## Boundary and next action
 
 This repetition strengthens two conclusions without establishing a ranking:

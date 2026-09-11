@@ -12,6 +12,7 @@ import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+import { applyPrestashopMutation } from '../src/prestashop-mutations.mjs';
 
 dotenv.config();
 const execFileAsync = promisify(execFile);
@@ -41,6 +42,8 @@ const taskDefinitions = {
 };
 if (!taskDefinitions[complexity]) throw new Error(`PSS_AGENT_COMPLEXITY must be simple, medium, or complex (got ${complexity})`);
 const { taskId, intent } = taskDefinitions[complexity];
+const mutationId = process.env.PSS_UI_MUTATION ?? null;
+let mutationApplied = false;
 const runId = process.env.PSS_RUN_ID ?? `prestashop-${arm}-${Date.now()}`;
 const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', taskId, arm, maxFrames: 40 });
 const trace = [];
@@ -130,7 +133,12 @@ const executeAction = async (action) => {
     const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
     if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
     if (action.type === 'double_click') await target.dblclick(); else await target.click();
-    return page.waitForTimeout(postActionSettleMs);
+    await page.waitForTimeout(postActionSettleMs);
+    if (mutationId && !mutationApplied && (await pageState(page)).milestone === 'search-results') {
+      await applyPrestashopMutation(page, mutationId);
+      mutationApplied = true;
+    }
+    return;
   }
   if (action.type === 'click') await page.mouse.click(action.x, action.y);
   else if (action.type === 'double_click') await page.mouse.dblclick(action.x, action.y);
@@ -146,7 +154,11 @@ const executeAction = async (action) => {
   else if (action.type === 'scroll') await page.mouse.wheel(0, action.delta_y);
   else if (action.type === 'wait') await page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
   else throw new Error(`Unsupported action: ${action.type}`);
-  return page.waitForTimeout(Math.min(postActionSettleMs, action.type === 'type' ? 350 : postActionSettleMs));
+  await page.waitForTimeout(Math.min(postActionSettleMs, action.type === 'type' ? 350 : postActionSettleMs));
+  if (mutationId && !mutationApplied && (await pageState(page)).milestone === 'search-results') {
+    await applyPrestashopMutation(page, mutationId);
+    mutationApplied = true;
+  }
 };
 
 let result = null;

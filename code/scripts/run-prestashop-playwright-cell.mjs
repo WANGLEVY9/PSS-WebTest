@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { chromium } from 'playwright';
 import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
+import { applyPrestashopMutation } from '../src/prestashop-mutations.mjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -15,6 +16,7 @@ const expectedName = process.env.PSS_PRESTASHOP_EXPECTED_PRODUCT ?? 'Mug The adv
 const runId = process.env.PSS_RUN_ID ?? `prestashop-playwright-${Date.now()}`;
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const taskId = 'prestashop-buyer-search-product';
+const mutationId = process.env.PSS_UI_MUTATION ?? null;
 if (!username || !password) throw new Error('PrestaShop credentials are missing; set PSS_PRESTASHOP_USERNAME/PSS_PRESTASHOP_PASSWORD locally.');
 
 const startedAt = Date.now();
@@ -79,6 +81,7 @@ try {
   await page.waitForLoadState('domcontentloaded');
   await page.goto(`${baseURL}/search?s=${encodeURIComponent(query)}`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('heading', { name: 'Search results', exact: true }).waitFor({ state: 'visible' });
+  if (mutationId) await applyPrestashopMutation(page, mutationId);
   oracle = await independentOracle();
 } catch (error) {
   failure = { name: error.name, message: error.message };

@@ -24,25 +24,32 @@ const password = process.env.PSS_PRESTASHOP_PASSWORD;
 if (!username || !password) throw new Error('Set PSS_PRESTASHOP_USERNAME/PSS_PRESTASHOP_PASSWORD in the process environment.');
 const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';
 const expectedName = process.env.PSS_PRESTASHOP_EXPECTED_PRODUCT ?? 'Mug The adventure begins';
+const expectedNamePattern = new RegExp(expectedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 const viewport = { width: 1280, height: 720 };
 const complexity = process.env.PSS_AGENT_COMPLEXITY ?? 'simple';
+const mutationId = process.env.PSS_UI_MUTATION ?? null;
+const expectedVerdict = process.env.PSS_EXPECTED_VERDICT ?? (mutationId === 'search-result-label-omission' ? 'fault' : 'clean');
+if (!['clean', 'fault'].includes(expectedVerdict)) throw new Error('PSS_EXPECTED_VERDICT must be clean or fault');
+if (expectedVerdict === 'fault' && mutationId !== 'search-result-label-omission') throw new Error('fault verdict requires the isolated search-result-label-omission mutation');
+if (expectedVerdict === 'clean' && mutationId === 'search-result-label-omission') throw new Error('functional fault mutation requires expected verdict fault');
 const taskDefinitions = {
   simple: {
     taskId: 'prestashop-buyer-search-product',
-    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". Finish only after the search results visibly include the product "Mug The Adventure Begins"; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+    intent: expectedVerdict === 'fault'
+      ? `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". The expected product is "${expectedName}". If the result set visibly shows a renamed replacement instead of that product, report the observed fault and return done with verdict fault. If the expected product is visibly present, return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+      : `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". Finish only after the search results visibly include the product "${expectedName}"; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
   },
   medium: {
     taskId: 'prestashop-search-open-product',
-    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}", then open the visible product "Mug The Adventure Begins". Finish only after that product's detail page is visibly open; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}", then open the visible product "${expectedName}". Finish only after that product's detail page is visibly open; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
   },
   complex: {
     taskId: 'prestashop-search-revisit-product',
-    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}", open the visible product "Mug The Adventure Begins", use the browser Back control or an equivalent visible navigation action to return to the search results, and reopen the same product. Finish only after the product detail page is visibly open for the second time; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
+    intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}", open the visible product "${expectedName}", use the browser Back control or an equivalent visible navigation action to return to the search results, and reopen the same product. Finish only after the product detail page is visibly open for the second time; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
   }
 };
 if (!taskDefinitions[complexity]) throw new Error(`PSS_AGENT_COMPLEXITY must be simple, medium, or complex (got ${complexity})`);
 const { taskId, intent } = taskDefinitions[complexity];
-const mutationId = process.env.PSS_UI_MUTATION ?? null;
 let mutationApplied = false;
 const runId = process.env.PSS_RUN_ID ?? `prestashop-${arm}-${Date.now()}`;
 const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', taskId, arm, maxFrames: 40 });
@@ -66,8 +73,8 @@ const driverEnv = {
 async function pageState(page) {
   const pathname = new URL(page.url()).pathname;
   const searchResultsVisible = await page.getByRole('heading', { name: /Search results/i }).isVisible().catch(() => false);
-  const targetProductVisible = await page.locator('#js-product-list .product-title').filter({ hasText: /Mug The Adventure Begins/i }).first().isVisible().catch(() => false);
-  const productDetailVisible = await page.locator('h1').filter({ hasText: /Mug The Adventure Begins/i }).first().isVisible().catch(() => false);
+  const targetProductVisible = await page.locator('#js-product-list .product-title').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false);
+  const productDetailVisible = await page.locator('h1').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false);
   const milestone = productDetailVisible || pathname.includes('.html')
     ? 'product-detail'
     : pathname.includes('/search') || searchResultsVisible
@@ -81,6 +88,7 @@ async function pageState(page) {
     authenticated: !pathname.includes('/login'),
     search_results_heading_visible: searchResultsVisible,
     target_product_visible: targetProductVisible,
+    replacement_visible: await page.locator('#js-product-list .product-title').filter({ hasText: /Framed Poster/i }).first().isVisible().catch(() => false),
     product_detail_visible: productDetailVisible,
     product_count: await page.locator('#js-product-list .js-product').count().catch(() => 0)
   };
@@ -198,14 +206,16 @@ const state = await pageState(page).catch(() => ({}));
 const oracle = await databaseOracle().catch((error) => ({ oracle: 'database-product-search', passed: false, error: { name: error.name, message: error.message.slice(0, 240) } }));
 const detailMilestones = trace.filter((item) => item.milestone === 'product-detail').length;
 const visiblePassed = complexity === 'simple'
-  ? state.milestone === 'search-results' && state.target_product_visible === true
+  ? expectedVerdict === 'fault'
+    ? state.milestone === 'search-results' && state.target_product_visible === false && state.replacement_visible === true
+    : state.milestone === 'search-results' && state.target_product_visible === true
   : state.milestone === 'product-detail' && state.product_detail_visible === true && (complexity === 'medium' || detailMilestones >= 2);
-const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: visiblePassed && oracle.passed === true });
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: visiblePassed && oracle.passed === true, expectedVerdict });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
   run_id: runId, application_id: 'prestashop', application_version: '8-local-arm-unpinned', task_id: taskId, condition: process.env.PSS_PILOT_CONDITION ?? 'clean-stable', arm,
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (cellPassed ? 'completed' : 'test-failure')),
-  checkpoint_reached: taskStateReached, emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'), ground_truth_verdict: 'clean',
+  checkpoint_reached: taskStateReached, emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'), ground_truth_verdict: expectedVerdict,
   independent_oracle_passed: oracle.passed === true,
   timing: { wall_time_ms: result?.wall_time_ms ?? Date.now() - startedAt, actions: trace.length, retries: result?.retries ?? 0 },
   provenance: { runner_version: `prestashop-${arm}-agent-v0.1`, observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', provider_id: process.env.CUA_PROVIDER ?? null, model_id: process.env.CUA_MODEL ?? null },

@@ -9,6 +9,12 @@ The clean and functional-fault conditions each started from an independent local
 PrestaShop reset. The readiness gate returned HTTP 200 and the seed snapshot was
 `[3,19,5,6]`. The database product oracle is independent of all testing arms.
 
+One attempted reset before the fault block returned before seed verification and
+left the baseline counts at `[2,19,5,5]`. No agent execution was started under
+that state. The reset was repeated until the validated `[3,19,5,6]` snapshot was
+present; the failed attempt is treated as infrastructure evidence, not as an
+agent result.
+
 ## Clean-stable block
 
 All nine provider-labelled executions completed and passed the independent oracle:

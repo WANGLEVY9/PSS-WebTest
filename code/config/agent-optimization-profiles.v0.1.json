@@ -8,6 +8,7 @@
       "id": "aliyun-qwen-grounded-v1",
       "provider_family": "aliyun-compatible",
       "model_family": "qwen3-vl",
+      "prompt_profile": "explicit-search-v1",
       "status": "pilot-candidate",
       "principles": [
         "lower output budget to reduce provider latency",
@@ -56,6 +57,7 @@
       "id": "deepseek-flash-grounded-v1",
       "provider_family": "deepseek-api",
       "model_family": "deepseek-v4.1-flash",
+      "prompt_profile": "explicit-search-v1",
       "status": "pilot-candidate",
       "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
       "arms": {
@@ -69,6 +71,7 @@
       "id": "doubao-seed-grounded-v1",
       "provider_family": "volcengine-ark",
       "model_family": "doubao-seed-2-0-pro-260215",
+      "prompt_profile": "explicit-search-v1",
       "status": "pilot-candidate",
       "principles": ["keep JSON action schema explicit", "bounded retries", "preserve screenshot-only versus structure contracts"],
       "arms": {
@@ -82,6 +85,7 @@
       "id": "doubao-seed-2-1-pro-grounded-v1",
       "provider_family": "volcengine-ark",
       "model_family": "doubao-seed-2-1-pro-260628",
+      "prompt_profile": "explicit-search-v1",
       "status": "pilot-candidate-connectivity-verified",
       "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
       "arms": {
@@ -95,6 +99,7 @@
       "id": "baseline-v0",
       "provider_family": "any",
       "model_family": "any",
+      "prompt_profile": "legacy-v0",
       "status": "legacy-pilot",
       "principles": ["preserve historical pilot settings"],
       "arms": {

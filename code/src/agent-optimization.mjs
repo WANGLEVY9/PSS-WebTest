@@ -21,7 +21,7 @@ export function resolveAgentOptimization({ env = process.env, arm, taskFamily = 
   const armProfile = profile.arms[arm];
   if (!armProfile) throw new Error(`Profile ${profileId} has no ${arm} settings`);
   const maxSteps = profile.task_family_steps[taskFamily] ?? profile.task_family_steps['multi-step'] ?? 14;
-  return { profile_id: profile.id, task_family: taskFamily, arm, max_steps: maxSteps, ...armProfile };
+  return { profile_id: profile.id, prompt_profile: profile.prompt_profile ?? 'legacy-v0', task_family: taskFamily, arm, max_steps: maxSteps, ...armProfile };
 }
 
 export { profilePath };

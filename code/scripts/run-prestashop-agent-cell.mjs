@@ -49,13 +49,18 @@ const taskDefinitions = {
   }
 };
 if (!taskDefinitions[complexity]) throw new Error(`PSS_AGENT_COMPLEXITY must be simple, medium, or complex (got ${complexity})`);
-const { taskId, intent } = taskDefinitions[complexity];
+const { taskId, intent: baseIntent } = taskDefinitions[complexity];
+const providerProfile = process.env.PSS_AGENT_PROFILE ?? ({ aliyun: 'aliyun-qwen-grounded-v1', deepseek: 'deepseek-flash-grounded-v1', volcengine: 'doubao-seed-2-1-pro-grounded-v1' }[process.env.CUA_PROVIDER] ?? 'baseline-v0');
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerProfile }, arm, taskFamily: 'search-navigation' });
+const promptProfile = process.env.PSS_AGENT_PROMPT_PROFILE ?? optimization.prompt_profile;
+const explicitSequence = `Mandatory first three actions: (1) click the visible search input, (2) type the single search term "${query}", (3) press Enter. Do not inspect or solve the product condition before the search results appear.`;
+const explicitFaultTermination = 'When the visible results show a renamed replacement instead of the expected product, immediately call done with verdict fault; do not scroll or click again.';
+const intent = [baseIntent, promptProfile === 'explicit-search-v1' ? explicitSequence : null, promptProfile === 'explicit-search-v1' && expectedVerdict === 'fault' ? explicitFaultTermination : null, process.env.PSS_AGENT_INTENT_SUFFIX?.trim()].filter(Boolean).join(' ');
 let mutationApplied = false;
 const runId = process.env.PSS_RUN_ID ?? `prestashop-${arm}-${Date.now()}`;
 const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', taskId, arm, maxFrames: 40 });
 const trace = [];
 let pendingProviderEventIds = [];
-const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily: 'search-navigation' });
 // Resolve the profile before constructing the adapter.  Earlier versions read
 // the profile for screenshot quality only, while max steps, timeout, retry,
 // and coordinate settings silently fell back to driver defaults.  That made a
@@ -156,7 +161,7 @@ const executeAction = async (action) => {
     if (['BACK', 'ALT+LEFT', 'BROWSER_BACK'].includes(key)) {
       await page.goBack({ waitUntil: 'domcontentloaded' }).catch(() => {});
     } else {
-      await page.keyboard.press(({ ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' })[key] ?? action.key);
+      await page.keyboard.press(({ ENTER: 'Enter', RETURN: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' })[key] ?? action.key);
     }
   }
   else if (action.type === 'scroll') await page.mouse.wheel(0, action.delta_y);

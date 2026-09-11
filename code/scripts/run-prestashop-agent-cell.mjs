@@ -27,7 +27,7 @@ const viewport = { width: 1280, height: 720 };
 const complexity = process.env.PSS_AGENT_COMPLEXITY ?? 'simple';
 const taskDefinitions = {
   simple: {
-    taskId: 'prestashop-search-product',
+    taskId: 'prestashop-buyer-search-product',
     intent: `The browser is authenticated and the PrestaShop catalog home page is visible. Search for "${query}". Finish only after the search results visibly include the product "Mug The Adventure Begins"; then return done with verdict pass. Do not inspect source code, databases, or hidden evaluator state.`
   },
   medium: {

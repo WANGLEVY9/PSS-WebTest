@@ -13,7 +13,7 @@
   },
   "workflows": [
     {
-      "id": "prestashop-search-product",
+      "id": "prestashop-buyer-search-product",
       "complexity": "simple",
       "intent": "Authenticate, search for Mug, and verify the target product is visible.",
       "mutates_application_state": false,

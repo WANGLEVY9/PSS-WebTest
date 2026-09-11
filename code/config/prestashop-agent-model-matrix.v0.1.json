@@ -38,6 +38,18 @@
       "image_input": true,
       "status": "registered-awaiting-local-key",
       "profile": "doubao-seed-grounded-v1"
+    },
+    {
+      "id": "volcengine-doubao-seed-2-1-pro-260628",
+      "provider": "volcengine",
+      "model": "doubao-seed-2-1-pro-260628",
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "base_url_env": "CUA_BASE_URL",
+      "key_env": "CUA_API_KEY",
+      "image_input": true,
+      "tool_calling": true,
+      "status": "registered-awaiting-model-access",
+      "profile": "doubao-seed-2-1-pro-grounded-v1"
     }
   ],
   "execution_contract": {

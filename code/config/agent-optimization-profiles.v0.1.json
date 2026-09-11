@@ -79,6 +79,19 @@
       "admission_note": "Registered provider-specific pilot profile; separate connectivity and matched admission evidence required."
     },
     {
+      "id": "doubao-seed-2-1-pro-grounded-v1",
+      "provider_family": "volcengine-ark",
+      "model_family": "doubao-seed-2-1-pro-260628",
+      "status": "pilot-candidate-awaiting-model-access",
+      "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
+      "arms": {
+        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest", "structure_items": 40 }
+      },
+      "task_family_steps": { "navigation": 10, "search-navigation": 12, "multi-step": 18, "form-persistence": 18, "cross-page-state": 20, "authorization": 18, "runtime": 20 },
+      "admission_note": "Candidate selected from the account-visible Ark model list; separate model-access, connectivity, and matched admission evidence required."
+    },
+    {
       "id": "baseline-v0",
       "provider_family": "any",
       "model_family": "any",

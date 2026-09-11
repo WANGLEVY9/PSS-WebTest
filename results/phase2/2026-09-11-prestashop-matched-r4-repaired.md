@@ -25,25 +25,27 @@ The selected 9 clean records pass the ledger audit with no duplicate run IDs or
 missing arms. The provider labels are retained in run IDs/provenance; they are
 not collapsed into an arm-level universal estimate.
 
-## Functional-fault block completed so far
+## Functional-fault block
 
 The isolated `search-result-label-omission` mutation was applied only in the
-fault condition. The Qwen stratum completed all three arms:
+fault condition. All three provider strata completed all three arms:
 
 | Provider stratum | Pure visual | Hybrid | Playwright |
 |---|---:|---:|---:|
 | Qwen3.7-Flash | 0/1 (`agent-step-budget`, no verdict) | 1/1 | 1/1 |
+| DeepSeek V4.1-Flash | 1/1 | 1/1 | 1/1 |
+| Doubao Seed 2.1 Pro | 1/1 | 1/1 | 1/1 |
 
 The Qwen Pure Visual trace reached the fault attempt but exhausted its action
 budget without emitting `fault`; the database oracle still passed. This is a
 protocol/grounding failure, not an oracle failure. The result is retained as a
 negative observation.
 
-Raw records: `artifacts/phase2/run-records/2026-09-11-prestashop-qwen-matched-r4-fault-*.jsonl`.
+Raw records: `artifacts/phase2/run-records/2026-09-11-prestashop-*-matched-r4-fault-*.jsonl`.
 
-The combined partial block (12 records: 9 clean plus 3 Qwen fault) also passes
-the ledger audit. Its fault visual failure is counted as a failure, not removed
-from the denominator.
+The complete block (18 records: 9 clean plus 9 fault) passes the ledger audit
+with no duplicate run IDs or missing arms. Its single Qwen Pure Visual fault
+failure is counted as a failure, not removed from the denominator.
 
 ## Qwen budget ablation
 
@@ -70,9 +72,6 @@ This repetition strengthens two conclusions without establishing a ranking:
    earlier repaired diagnostic but failed again here through step-budget
    exhaustion. One successful diagnostic is therefore not a reliability claim.
 
-The DeepSeek/Doubao fault executions were not started in this round because
-sending their screenshots (and Hybrid page structures) requires explicit
-provider-specific authorization in the current task context. No missing runs
-are converted into failures. Once authorized, execute the same fault block with
-the existing reset and mutation contract, then audit the complete three-provider
-repetition before any repetition or power decision.
+The complete three-provider repetition is still exploratory. It should be
+replicated across additional repetitions and task families before any
+repetition or power decision.

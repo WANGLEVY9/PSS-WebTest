@@ -11,6 +11,11 @@ test('creates schema-compatible immutable record with trace hash', () => {
   assert.equal(r.failure_category, null);
   assert.equal('trace' in r, false);
 });
+test('persists the independent oracle outcome without accepting hidden oracle state', () => {
+  const r = createRunRecord({ ...base(), independent_oracle_passed: true });
+  assert.equal(r.independent_oracle_passed, true);
+  assert.throws(() => createRunRecord({ ...base(), independent_oracle_passed: 'true' }), /independent_oracle_passed/);
+});
 test('rejects credentials and provider secrets', () => {
   assert.throws(() => createRunRecord({ ...base(), trace: [{ api_key: 'sk-should-not-be-recorded' }] }), /sensitive field/);
   assert.throws(() => createRunRecord({ ...base(), provenance: { runner_version: 'x', observation_contract: 'screenshot-only', trace_hash: 'x', authorization: 'Bearer abcdefghijklmnop' } }), /sensitive field/);

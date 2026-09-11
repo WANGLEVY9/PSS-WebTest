@@ -194,6 +194,7 @@ const runRecord = createRunRecord({
   run_id: runId, application_id: 'prestashop', application_version: '8-local-arm-unpinned', task_id: taskId, condition: process.env.PSS_PILOT_CONDITION ?? 'clean-stable', arm,
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (cellPassed ? 'completed' : 'test-failure')),
   checkpoint_reached: taskStateReached, emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'), ground_truth_verdict: 'clean',
+  independent_oracle_passed: oracle.passed === true,
   timing: { wall_time_ms: result?.wall_time_ms ?? Date.now() - startedAt, actions: trace.length, retries: result?.retries ?? 0 },
   provenance: { runner_version: `prestashop-${arm}-agent-v0.1`, observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', provider_id: process.env.CUA_PROVIDER ?? null, model_id: process.env.CUA_MODEL ?? null },
   failure_category: cellPassed ? null : failureCategory, trace

@@ -35,6 +35,7 @@ export function createTraditionalRunRecord({
     arm: 'playwright',
     status: passed ? 'completed' : (execution_exit_code === 0 ? 'evaluator-error' : 'test-failure'),
     checkpoint_reached: oracle?.passed === true,
+    independent_oracle_passed: oracle?.passed === true,
     emitted_verdict: passed ? expected_verdict : 'not-emitted',
     ground_truth_verdict: expected_verdict,
     timing: { wall_time_ms: Math.max(0, Math.round(wall_time_ms)), actions: Math.max(0, Math.trunc(actions)), retries: 0 },

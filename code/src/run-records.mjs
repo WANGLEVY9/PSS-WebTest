@@ -54,6 +54,7 @@ function validateCommonRunRecord(record) {
   if (!VERDICTS.has(record.emitted_verdict)) throw new Error(`unsupported emitted_verdict: ${record.emitted_verdict}`);
   if (!TRUTH.has(record.ground_truth_verdict)) throw new Error(`unsupported ground_truth_verdict: ${record.ground_truth_verdict}`);
   if (typeof record.checkpoint_reached !== 'boolean') throw new Error('checkpoint_reached must be boolean');
+  if ('independent_oracle_passed' in record && typeof record.independent_oracle_passed !== 'boolean' && record.independent_oracle_passed !== null) throw new Error('independent_oracle_passed must be boolean or null');
   const t = record.timing;
   for (const field of ['wall_time_ms', 'actions', 'retries']) if (!Number.isFinite(t[field]) || t[field] < 0) throw new Error(`invalid timing.${field}`);
   for (const field of ['tokens', 'cost_usd']) if (t[field] !== undefined && t[field] !== null && (!Number.isFinite(t[field]) || t[field] < 0)) throw new Error(`invalid timing.${field}`);
@@ -67,7 +68,7 @@ function validateCommonRunRecord(record) {
 }
 
 function validateRunRecordV01(record) {
-  assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category']));
+  assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category']));
   // v0.1 remains readable for historical pilots, but agent records must still
   // retain the provider/model stratum.  provider_id is optional for legacy
   // records and required by the newer runner paths when a provider is used.
@@ -77,7 +78,7 @@ function validateRunRecordV01(record) {
 function validateRunRecordV02(record) {
   const required = ['configuration_id', 'strategy_family', 'protocol_version', 'run_manifest_digest', 'sut_image_digest', 'reset_digest', 'randomization_block'];
   for (const field of required) if (!(field in record)) throw new Error(`v0.2 run record missing required field: ${field}`);
-  assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', ...required]));
+  assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', ...required]));
   if (!/^[a-z0-9][a-z0-9-]{2,127}$/.test(record.configuration_id)) throw new Error('v0.2 configuration_id is invalid');
   const expectedFamily = FAMILY_BY_ARM[record.arm];
   if (record.strategy_family !== expectedFamily) throw new Error(`v0.2 strategy_family must be ${expectedFamily} for arm ${record.arm}`);
@@ -155,7 +156,7 @@ export function createRunRecord(input) {
   // Explicitly whitelist the immutable schema; traces and arbitrary provider metadata never leave this function.
   const allowed = schemaVersion === '0.2'
     ? ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'configuration_id', 'strategy_family', 'protocol_version', 'run_manifest_digest', 'sut_image_digest', 'reset_digest', 'randomization_block']
-    : ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category'];
+    : ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category'];
   const output = Object.fromEntries(allowed.filter((key) => record[key] !== undefined).map((key) => [key, record[key]]));
   if (!('failure_category' in output)) output.failure_category = null;
   return validateRunRecord(output);

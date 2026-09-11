@@ -18,6 +18,7 @@ test('traditional helper emits the same ledger schema as agent arms', () => {
   assert.equal(record.timing.actions, 11);
   assert.equal(record.provenance.observation_contract, 'scripted-locator');
   assert.equal(record.provenance.model_id, null);
+  assert.equal(record.independent_oracle_passed, true);
 });
 
 test('traditional helper preserves failed execution as a non-success record', () => {

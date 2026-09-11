@@ -4,7 +4,7 @@
 
 This is a reset-isolated diagnostic canary for the provider/model matrix. It is **not** a matched three-arm admission block and must not be pooled into confirmatory estimates. Both runs used the same PrestaShop clean reset, the same `complex` search → open → back → reopen intent, the same independent MySQL product oracle, and the Aliyun `qwen3.7-flash` profile.
 
-The matrix is registered in `code/config/prestashop-agent-model-matrix.v0.1.json`. DeepSeek V4.1-Flash and Doubao Seed are registered as separate strata but remain fail-closed until their own local API keys are configured; no result is imputed for either.
+The matrix is registered in `code/config/prestashop-agent-model-matrix.v0.1.json`. DeepSeek V4.1-Flash and Doubao Seed are registered as separate strata. Their local profiles and provider-level smokes now pass, but this particular canary contains Qwen observations only; no result is imputed for the other strata.
 
 ## Observed runs
 

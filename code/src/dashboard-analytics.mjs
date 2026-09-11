@@ -65,7 +65,14 @@ export function buildDashboardAnalysis({ records = [], matrix = { applications: 
   const byArm = groupBy(normalized, (record) => record.arm ?? 'unknown');
   const byConditionArm = groupBy(normalized, (record) => `${record.condition ?? 'unknown'}::${record.arm ?? 'unknown'}`);
   const byApplicationArm = groupBy(normalized, (record) => `${record.application_id ?? 'unknown'}::${record.arm ?? 'unknown'}`);
-  const byProviderModelArm = groupBy(normalized, (record) => `${record.provider_id ?? 'scripted'}::${record.model_id ?? 'deterministic'}::${record.arm ?? 'unknown'}`);
+  // Scripted/deterministic is a valid fallback only for the Playwright arm.
+  // Legacy agent pilots may have a model id but no provider_id; keep that
+  // stratum explicitly unknown instead of mislabelling it as scripted.
+  const byProviderModelArm = groupBy(normalized, (record) => {
+    const provider = record.provider_id ?? (record.arm === 'playwright' ? 'scripted' : 'unknown-provider');
+    const model = record.model_id ?? (record.arm === 'playwright' ? 'deterministic' : 'unknown-model');
+    return `${provider}::${model}::${record.arm ?? 'unknown'}`;
+  });
   const byFailure = groupBy(normalized.filter((record) => record.failure_category), (record) => record.failure_category);
   const blocks = groupBy(normalized, matchedBlockKey);
   const completeBlocks = [...blocks.values()].filter((group) => ARMS.every((arm) => group.some((record) => record.arm === arm))).length;

@@ -68,7 +68,10 @@ function validateCommonRunRecord(record) {
 
 function validateRunRecordV01(record) {
   assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category']));
-  assertAllowedKeys(record.provenance, new Set(['runner_version', 'trace_hash', 'observation_contract', 'model_id', 'seed']), 'run record provenance');
+  // v0.1 remains readable for historical pilots, but agent records must still
+  // retain the provider/model stratum.  provider_id is optional for legacy
+  // records and required by the newer runner paths when a provider is used.
+  assertAllowedKeys(record.provenance, new Set(['runner_version', 'trace_hash', 'observation_contract', 'provider_id', 'model_id', 'seed']), 'run record provenance');
 }
 
 function validateRunRecordV02(record) {
@@ -147,7 +150,7 @@ export function createRunRecord(input) {
     schema_version: schemaVersion,
     ...fields,
     timing: { tokens: null, cost_usd: null, ...(fields.timing || {}) },
-    provenance: { model_id: null, seed: null, ...(fields.provenance || {}), trace_hash: traceHash(trace) }
+    provenance: { provider_id: null, model_id: null, seed: null, ...(fields.provenance || {}), trace_hash: traceHash(trace) }
   };
   // Explicitly whitelist the immutable schema; traces and arbitrary provider metadata never leave this function.
   const allowed = schemaVersion === '0.2'

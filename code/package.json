@@ -94,6 +94,8 @@
     "pilot:prestashop:visual": "PSS_ARM=visual node scripts/run-prestashop-agent-cell.mjs",
     "pilot:prestashop:hybrid": "PSS_ARM=hybrid node scripts/run-prestashop-agent-cell.mjs",
     "validate:prestashop-agent-500-plan": "node scripts/validate-prestashop-agent-500-plan.mjs",
+    "validate:agent-model-matrix": "node scripts/validate-agent-model-matrix.mjs",
+    "check:agent-model-matrix": "node scripts/check-agent-model-matrix.mjs",
     "batch:prestashop:agent-500": "node scripts/run-prestashop-agent-500-batch.mjs",
     "validate:traditional-500-plan": "node scripts/validate-traditional-500-plan.mjs",
     "pilot:prestashop:traditional-task": "node scripts/run-prestashop-traditional-task.mjs",

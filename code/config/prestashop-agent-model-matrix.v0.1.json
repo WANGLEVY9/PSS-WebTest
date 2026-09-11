@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.1",
+  "campaign_id": "prestashop-agent-model-matrix-v1",
+  "status": "diagnostic-strata-only",
+  "purpose": "Run the same PrestaShop complexity mix separately for each image-capable provider/model; never pool provider/model strata or treat this matrix as confirmatory evidence.",
+  "application": "prestashop",
+  "arm_scope": ["visual", "hybrid"],
+  "complexity_distribution": {"simple": 200, "medium": 175, "complex": 125},
+  "models": [
+    {
+      "id": "aliyun-qwen3.7-flash",
+      "provider": "aliyun",
+      "model": "qwen3.7-flash",
+      "base_url_env": "CUA_BASE_URL",
+      "key_env": "CUA_API_KEY",
+      "image_input": true,
+      "status": "configured-current",
+      "profile": "aliyun-qwen-grounded-v1"
+    },
+    {
+      "id": "deepseek-v4.1-flash",
+      "provider": "deepseek",
+      "model": "deepseek-flash",
+      "base_url": "https://api.deepseek.com",
+      "base_url_env": "CUA_BASE_URL",
+      "key_env": "CUA_API_KEY",
+      "image_input": true,
+      "status": "registered-awaiting-local-key",
+      "profile": "deepseek-flash-grounded-v1"
+    },
+    {
+      "id": "volcengine-doubao-seed-2-0-pro-260215",
+      "provider": "volcengine",
+      "model": "doubao-seed-2-0-pro-260215",
+      "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+      "base_url_env": "CUA_BASE_URL",
+      "key_env": "CUA_API_KEY",
+      "image_input": true,
+      "status": "registered-awaiting-local-key",
+      "profile": "doubao-seed-grounded-v1"
+    }
+  ],
+  "execution_contract": {
+    "reset_isolation": "reset-before-each-cell-block",
+    "block_size": 100,
+    "health_gate_interval": 25,
+    "failure_policy": "stop-on-sut-or-provider-health-failure",
+    "record_policy": "one run-record per arm/model/task/repetition; retain provider/model strata",
+    "evidence_boundary": "diagnostic pilot until each provider/model has a separate three-arm matched admission block"
+  }
+}

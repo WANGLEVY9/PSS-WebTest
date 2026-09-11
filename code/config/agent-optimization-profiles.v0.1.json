@@ -53,6 +53,32 @@
       "admission_note": "This profile is an optimization candidate. It must be compared against the prior profile on the same reset-isolated matched tasks before it can be used for confirmatory collection."
     },
     {
+      "id": "deepseek-flash-grounded-v1",
+      "provider_family": "deepseek-api",
+      "model_family": "deepseek-v4.1-flash",
+      "status": "pilot-candidate",
+      "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
+      "arms": {
+        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest", "structure_items": 40 }
+      },
+      "task_family_steps": { "navigation": 10, "search-navigation": 12, "multi-step": 18, "form-persistence": 18, "cross-page-state": 20, "authorization": 18, "runtime": 20 },
+      "admission_note": "Registered provider-specific pilot profile; separate connectivity and matched admission evidence required."
+    },
+    {
+      "id": "doubao-seed-grounded-v1",
+      "provider_family": "volcengine-ark",
+      "model_family": "doubao-seed-2-0-pro-260215",
+      "status": "pilot-candidate",
+      "principles": ["keep JSON action schema explicit", "bounded retries", "preserve screenshot-only versus structure contracts"],
+      "arms": {
+        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest", "structure_items": 40 }
+      },
+      "task_family_steps": { "navigation": 10, "search-navigation": 12, "multi-step": 18, "form-persistence": 18, "cross-page-state": 20, "authorization": 18, "runtime": 20 },
+      "admission_note": "Registered provider-specific pilot profile; separate connectivity and matched admission evidence required."
+    },
+    {
       "id": "baseline-v0",
       "provider_family": "any",
       "model_family": "any",

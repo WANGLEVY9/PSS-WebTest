@@ -66,9 +66,30 @@ function renderSuts(suts) {
   $('#sut-count').textContent = `${suts.filter((sut) => sut.reachable).length}/${suts.length}`;
   $('#sut-grid').innerHTML = suts.map((sut) => `<article class="sut"><div class="sut-header"><h3>${escapeHtml(sut.name)}</h3><span class="tag ${sut.reachable ? 'ok' : 'down'}">${sut.reachable ? 'REACHABLE' : 'OFFLINE'}</span></div><p>${escapeHtml(sut.url.replace(/^https?:\/\//, ''))} · ${sut.http_status ?? sut.error ?? '—'} · ${formatMs(sut.latency_ms)}</p></article>`).join('');
 }
+function renderLiveRun(data) {
+  const latest = data.recent_records?.[0] ?? null;
+  const status = latest ? outcome(latest)[0] : 'IDLE';
+  const title = latest ? `${latest.application_id} · ${latest.task_id}` : 'Waiting for a local run';
+  const intent = latest
+    ? `${latest.condition} · ${latest.arm} · ${latest.provider_id ?? (latest.arm === 'playwright' ? 'scripted' : 'unknown-provider')} / ${latest.model_id ?? (latest.arm === 'playwright' ? 'deterministic' : 'unknown-model')} · ${status.toLowerCase()}`
+    : 'Select a task row or a run record to inspect its screenshots, action trace, and independent oracle state.';
+  $('#current-test-title').textContent = title;
+  $('#current-task-intent').textContent = intent;
+  $('#framework-name').textContent = latest?.arm === 'playwright' ? 'Playwright' : latest?.arm ? `${latest.arm} agent` : '—';
+  $('#current-step').textContent = latest ? `${latest.actions ?? 0} actions` : '—';
+  $('#current-batch').textContent = latest?.randomization_block ? shortId(latest.randomization_block, 12) : `${data.ledger.record_count ?? 0} runs`;
+  $('#current-workers').textContent = latest ? `${latest.arm} / ${latest.application_id}` : '—';
+  $('#worker-count').textContent = `${latest ? 1 : 0} online`;
+  $('#worker-strip').innerHTML = ['visual', 'hybrid', 'playwright'].map((arm) => {
+    const record = data.recent_records?.find((item) => item.arm === arm);
+    const label = record ? `${record.application_id} / ${record.task_id}` : 'ready for next task';
+    return `<div class="worker-card ${record ? 'active' : ''}"><strong>${arm === 'playwright' ? 'accessibility-locator Playwright' : `${arm} agent`}</strong><small>${escapeHtml(label)} · ${record ? outcome(record)[0].toLowerCase() : 'READY'}</small></div>`;
+  }).join('');
+}
 function taskClass(task) { if (!task.evidence.n) return ''; return task.evidence.all_arms_observed ? 'observed' : 'partial'; }
 function renderTasks(tasks) {
   const visible = tasks.filter((task) => state.filter === 'all' || (state.filter === 'observed' ? task.evidence.n > 0 : task.status === 'candidate'));
+  $('#task-count').textContent = tasks.length;
   $('#task-grid').innerHTML = visible.length ? visible.map((task) => `<button type="button" class="task ${taskClass(task)} ${state.task === `${task.application_id}/${task.id}` ? 'selected' : ''}" data-task-key="${escapeHtml(`${task.application_id}/${task.id}`)}"><div class="task-top"><span class="tag">${escapeHtml(task.application_id.toUpperCase())}</span><span class="tag">${escapeHtml(task.status.toUpperCase())}</span></div><h3>${escapeHtml(task.id)}</h3><div class="task-meta"><span class="pill">${escapeHtml(task.complexity)}</span><span class="pill">${escapeHtml(task.oracle_authority)}</span></div><div class="task-footer"><span>${task.evidence.n ? `${task.evidence.n} recorded run${task.evidence.n === 1 ? '' : 's'}` : 'No live evidence'}</span><strong>${task.evidence.all_arms_observed ? '3 arms observed' : task.evidence.n ? 'partial cell' : 'candidate'}</strong></div></button>`).join('') : $('#empty-template').innerHTML;
 }
 function renderRunQueue(records) {
@@ -101,8 +122,8 @@ function renderAnalysis(analysis) {
 function renderDossier(detail) {
   const record = detail.record; const [label, className] = outcome(record); $('#run-outcome').textContent = label; $('#run-outcome').className = `outcome ${className}`;
   const profile = record.optimization_profile ?? 'not recorded';
-  const provider = record.provider_id ?? 'scripted';
-  const model = record.model_id ?? 'deterministic';
+  const provider = record.provider_id ?? (record.arm === 'playwright' ? 'scripted' : 'unknown-provider');
+  const model = record.model_id ?? (record.arm === 'playwright' ? 'deterministic' : 'unknown-model');
   $('#run-dossier').innerHTML = `<dl><div><dt>RUN ID</dt><dd>${escapeHtml(record.run_id)}</dd></div><div><dt>ARM / CONTRACT</dt><dd><span class="arm-label arm-${escapeHtml(record.arm)}">${escapeHtml(record.arm)}</span> · ${escapeHtml(record.observation_contract ?? 'legacy')}</dd></div><div><dt>PROVIDER / MODEL</dt><dd>${escapeHtml(provider)} / ${escapeHtml(model)}</dd></div><div><dt>PROFILE / ACTION MODE</dt><dd>${escapeHtml(profile)}${record.hybrid_action_mode ? ` · ${escapeHtml(record.hybrid_action_mode)}` : ''} · ${record.retries ?? 0} retries · ${record.actions ?? '—'} actions</dd></div><div><dt>STATE / VERDICT</dt><dd>${record.checkpoint_reached ? 'checkpoint reached' : 'checkpoint not reached'} · ${escapeHtml(record.emitted_verdict ?? '—')}</dd></div><div><dt>FAILURE BOUNDARY</dt><dd>${escapeHtml(record.failure_category ?? 'none')}</dd></div><div><dt>LOCAL ARCHIVE</dt><dd>${detail.replay.available ? `${detail.replay.frames.length} frames · ${detail.replay.provider_events.length} provider summaries · screenshot digests retained` : 'not retained'}</dd></div></dl>`;
   const events = detail.replay.frames.length ? detail.replay.frames : record.trajectory;
   $('#trajectory-list').innerHTML = events.length ? events.map((event, index) => { const item = `<span class="trace-index">${String(index + 1).padStart(2, '0')}</span><span><strong>${escapeHtml(event.phase ?? `step ${event.step ?? index}`)}</strong><small>${escapeHtml(event.action ? actionLabel(event.action) : 'observation captured')}${stateLabel(event.state) ? ` · ${escapeHtml(stateLabel(event.state))}` : ''}</small>${event.url ? `<small class="trace-url">${escapeHtml(event.url)}</small>` : ''}${event.screenshot_digest ? `<small class="trace-url">sha256 ${escapeHtml(event.screenshot_digest.slice(0, 16))}…${event.provider_event_ids?.length ? ` · ${event.provider_event_ids.length} provider event` : ''}</small>` : ''}</span>`; return event.image_url ? `<li><button type="button" class="trace-step ${index === state.frameIndex ? 'active' : ''}" data-frame-index="${index}">${item}</button></li>` : `<li><div class="trace-step">${item}</div></li>`; }).join('') : '<li class="trajectory-empty">No action-level trajectory was retained for this historical record.</li>';
@@ -123,7 +144,7 @@ async function selectRun(runId) {
   renderSelectedRun();
 }
 function render(data) {
-  state.data = data; $('#boundary-copy').textContent = data.evidence_boundary; $('#record-count').textContent = data.ledger.record_count; $('#strict-passes').textContent = data.ledger.strict_passes; $('#checkpoint-only').textContent = data.ledger.checkpoint_only; $('#updated').textContent = new Intl.DateTimeFormat(undefined, { hour: '2-digit', minute: '2-digit', second: '2-digit' }).format(new Date(data.generated_at));
+  state.data = data; $('#boundary-copy').textContent = data.evidence_boundary; $('#record-count').textContent = data.ledger.record_count; $('#strict-passes').textContent = data.ledger.strict_passes; $('#checkpoint-only').textContent = data.ledger.checkpoint_only; renderLiveRun(data);
   renderAnalysis(data.analysis); renderSuts(data.suts); renderReplayFilters(data.recent_records); renderTasks(data.tasks); renderArmComparison(data.recent_records); renderRunQueue(data.recent_records); renderLedger(data.recent_records); const selectedStillPresent = data.recent_records.some((record) => record.run_id === state.selectedRunId); if (!selectedStillPresent && data.recent_records[0]) selectRun(data.recent_records[0].run_id);
 }
 document.addEventListener('click', (event) => { const taskTarget = event.target.closest('[data-task-key]'); if (taskTarget && state.data) { state.task = taskTarget.dataset.taskKey; state.application = taskTarget.dataset.taskKey.split('/')[0]; state.condition = 'all'; state.selectedBlock = null; renderReplayFilters(state.data.recent_records); renderTasks(state.data.tasks); renderArmComparison(state.data.recent_records); renderRunQueue(state.data.recent_records); renderLedger(state.data.recent_records); const first = filteredRecords(state.data.recent_records)[0]; if (first) selectRun(first.run_id); document.querySelector('.replay-heading')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); } const runTarget = event.target.closest('[data-run-id]'); if (runTarget) selectRun(runTarget.dataset.runId); const frameTarget = event.target.closest('[data-frame-index]'); if (frameTarget && state.runDetail) { state.frameIndex = Number(frameTarget.dataset.frameIndex); renderSelectedRun(); } });

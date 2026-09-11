@@ -3,90 +3,59 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#09111d" />
-    <title>PSS-WebTest Observatory</title>
+    <meta name="theme-color" content="#13283d" />
+    <title>ProbeFlow · PSS-WebTest Live Run</title>
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/replay.css" />
   </head>
   <body>
-    <main class="shell">
-      <header class="topbar">
-        <a class="mark" href="#top" aria-label="PSS-WebTest Observatory home"><span class="mark-dot"></span><span>PSS / OBSERVATORY</span></a>
-        <div class="topbar-right"><span id="connection" class="connection">CONNECTING</span><time id="updated" aria-live="polite">—</time></div>
-      </header>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Primary navigation">
+        <a class="brand" href="#live-run" aria-label="ProbeFlow home"><span class="brand-mark">PF</span><span><strong>ProbeFlow</strong><small>GUI TESTING LAB</small></span></a>
+        <nav class="side-nav">
+          <a class="active" href="#live-run"><span>01</span><strong>Live Run</strong><small>Observe execution</small></a>
+          <a href="#experiments"><span>02</span><strong>Experiments</strong><small>Plan &amp; compare</small></a>
+          <a href="#replay"><span>03</span><strong>Trajectories</strong><small>Inspect evidence</small></a>
+          <a href="#dataset"><span>04</span><strong>Dataset</strong><small>Curate &amp; export</small></a>
+        </nav>
+        <div class="sidebar-foot"><span class="online-dot"></span><strong>AGENT WORKER POOL</strong><b id="worker-count">— online</b><small>local reset-isolated workers<br/>provider/model strata stay separate</small></div>
+      </aside>
 
-      <section id="top" class="hero">
-        <p class="eyebrow">PHASE 02 · LIVE LOCAL INSTRUMENTATION</p>
-        <div class="hero-row">
-          <div><h1>Evidence, not<br><em>impressions.</em></h1><p class="lede">A read-only observatory for the matched comparison of screenshot-only CUA, hybrid agents, and accessibility-locator Playwright.</p></div>
-          <aside class="boundary"><span>01 / Evidence boundary</span><p id="boundary-copy">Loading protocol boundary…</p></aside>
-        </div>
-      </section>
+      <main class="workspace" id="live-run">
+        <header class="workspace-header">
+          <div><p class="kicker">AUTONOMOUS WEB UI EVALUATION / PHASE 2</p><h1>Live Run</h1></div>
+          <div class="runtime-controls"><span class="runtime-dot"></span><span><small>RUNTIME</small><strong id="connection">CONNECTING</strong><time id="updated" hidden>—</time></span><i></i><button type="button" class="stop-button" disabled>Stop safely</button><button type="button" class="refresh-button" onclick="location.reload()" aria-label="Refresh dashboard">↻</button></div>
+        </header>
 
-      <section class="metric-grid" aria-label="Experiment ledger summary">
-        <article class="metric"><span>Ledger records</span><strong id="record-count">—</strong><small>append-only run records</small></article>
-        <article class="metric"><span>Strict passes</span><strong id="strict-passes">—</strong><small>protocol + independent oracle</small></article>
-        <article class="metric"><span>Checkpoint only</span><strong id="checkpoint-only">—</strong><small>state reached, protocol incomplete</small></article>
-        <article class="metric"><span>Live SUTs</span><strong id="sut-count">—</strong><small>local health probes</small></article>
-      </section>
+        <section class="current-test" aria-labelledby="current-test-title">
+          <div class="current-copy"><p class="kicker">CURRENT TEST</p><h2 id="current-test-title">Waiting for a local run</h2><p id="current-task-intent">Select a task row or a run record to inspect its screenshots, action trace, and independent oracle state.</p></div>
+          <div class="run-stats" aria-label="Current run summary"><div><small>FRAMEWORK</small><strong id="framework-name">—</strong></div><div><small>STEP</small><strong id="current-step">—</strong></div><div><small>BATCH</small><strong id="current-batch">—</strong></div><div><small>WORKERS</small><strong id="current-workers">—</strong></div></div>
+        </section>
+        <section class="worker-strip" id="worker-strip" aria-label="Worker status"></section>
 
-      <section class="section-heading analysis-heading"><div><p class="eyebrow">STUDY SCALE</p><h2>Coverage before conclusions</h2></div><span class="microcopy">The target is a planning boundary. Observed records and complete matched blocks are shown separately from confirmatory evidence.</span></section>
-      <section class="analysis-overview" aria-label="Study scale and current coverage">
-        <article class="analysis-panel scale-panel"><div class="panel-kicker"><span>TARGET / OBSERVED</span><span id="analysis-status">—</span></div><div id="scale-summary" class="scale-summary"></div><div class="scale-track"><span id="scale-track-fill"></span></div><div id="scale-note" class="analysis-note">Loading analysis…</div></article>
-        <article class="analysis-panel"><div class="panel-kicker"><span>ARM COMPARISON</span><span>DESCRIPTIVE</span></div><div id="arm-cards" class="arm-cards"></div></article>
-      </section>
+        <section class="overview-grid" id="experiments" aria-label="Study overview">
+          <article class="paper-card boundary-card"><div class="card-label"><span>01 / EVIDENCE BOUNDARY</span><span class="live-pill">LIVE</span></div><p id="boundary-copy">Loading protocol boundary…</p><div class="boundary-rule"><span>strict pass = completed + independent checkpoint + matching verdict</span></div></article>
+          <div class="metric-grid" aria-label="Experiment ledger summary"><article class="metric"><span>Ledger records</span><strong id="record-count">—</strong><small>append-only run records</small></article><article class="metric"><span>Strict passes</span><strong id="strict-passes">—</strong><small>protocol + independent oracle</small></article><article class="metric"><span>Checkpoint only</span><strong id="checkpoint-only">—</strong><small>state reached, protocol incomplete</small></article><article class="metric"><span>Live SUTs</span><strong id="sut-count">—</strong><small>local health probes</small></article></div>
+        </section>
 
-      <section class="analysis-grid" aria-label="Empirical comparison views">
-        <article class="analysis-panel"><div class="panel-kicker"><span>CONDITION × ARM</span><span>RATE / LATENCY</span></div><div class="analysis-table-wrap"><table class="analysis-table"><thead><tr><th>Condition</th><th>Arm</th><th>n</th><th>Strict</th><th>Median</th></tr></thead><tbody id="condition-body"></tbody></table></div></article>
-        <article class="analysis-panel"><div class="panel-kicker"><span>FAILURE TAXONOMY</span><span>COUNT</span></div><div id="failure-bars" class="failure-bars"></div></article>
-      </section>
+        <section class="section-heading"><div><p class="kicker">STUDY SCALE</p><h2>Coverage before conclusions</h2></div><span class="microcopy">Observed records, complete matched blocks, and confirmatory evidence remain separate.</span></section>
+        <section class="analysis-overview" aria-label="Study scale and current coverage"><article class="analysis-panel scale-panel"><div class="panel-kicker"><span>TARGET / OBSERVED</span><span id="analysis-status">—</span></div><div id="scale-summary" class="scale-summary"></div><div class="scale-track"><span id="scale-track-fill"></span></div><div id="scale-note" class="analysis-note">Loading analysis…</div></article><article class="analysis-panel"><div class="panel-kicker"><span>ARM COMPARISON</span><span>DESCRIPTIVE</span></div><div id="arm-cards" class="arm-cards"></div></article></section>
+        <section class="analysis-grid" aria-label="Empirical comparison views"><article class="analysis-panel"><div class="panel-kicker"><span>CONDITION × ARM</span><span>RATE / LATENCY</span></div><div class="analysis-table-wrap"><table class="analysis-table"><thead><tr><th>Condition</th><th>Arm</th><th>n</th><th>Strict</th><th>Median</th></tr></thead><tbody id="condition-body"></tbody></table></div></article><article class="analysis-panel"><div class="panel-kicker"><span>FAILURE TAXONOMY</span><span>COUNT</span></div><div id="failure-bars" class="failure-bars"></div></article></section>
+        <section class="analysis-panel strata-panel" aria-label="Provider and model strata"><div class="panel-kicker"><span>PROVIDER × MODEL × ARM</span><span>STRATIFIED DESCRIPTIVE VIEW</span></div><div class="analysis-table-wrap"><table class="analysis-table strata-table"><thead><tr><th>Provider</th><th>Model</th><th>Arm</th><th>n</th><th>Strict</th><th>Median</th></tr></thead><tbody id="strata-body"></tbody></table></div></section>
 
-      <section class="analysis-panel strata-panel" aria-label="Provider and model strata"><div class="panel-kicker"><span>PROVIDER × MODEL × ARM</span><span>STRATIFIED DESCRIPTIVE VIEW</span></div><div class="analysis-table-wrap"><table class="analysis-table strata-table"><thead><tr><th>Provider</th><th>Model</th><th>Arm</th><th>n</th><th>Strict</th><th>Median</th></tr></thead><tbody id="strata-body"></tbody></table></div></section>
+        <section class="section-heading" id="replay"><div><p class="kicker">TRACE REPLAY</p><h2>One run, rendered as evidence.</h2></div><span class="microcopy">Each new agent run retains local frame archives, redacted action summaries, URLs, state milestones, and screenshot digests.</span></section>
+        <section class="replay-toolbar" aria-label="Replay filters"><div class="replay-filter-intro"><span class="panel-kicker">INSPECT A MATCHED CELL</span><strong id="replay-context">Choose a task to compare its three arms.</strong></div><label><span>Application</span><select id="replay-application"><option value="all">All applications</option></select></label><label><span>Workflow</span><select id="replay-task"><option value="all">All workflows</option></select></label><label><span>Condition</span><select id="replay-condition"><option value="all">All conditions</option></select></label><button id="replay-clear" class="filter-clear" type="button">CLEAR FILTERS</button></section>
+        <section id="arm-comparison" class="arm-comparison" aria-label="Selected task three-arm comparison"></section>
+        <section class="replay-workbench" aria-label="Selected run replay"><aside class="run-queue-panel"><div class="panel-kicker"><span>RUN QUEUE</span><span id="queue-count">—</span></div><div id="run-queue" class="run-queue" role="listbox" aria-label="Recent run records"></div></aside><article class="frame-panel"><div class="panel-kicker"><span id="frame-label">FRAME VIEW</span><span id="frame-index">—</span></div><div id="frame-stage" class="frame-stage"><img id="replay-image" alt="Selected experiment replay frame" hidden /><div id="frame-empty" class="frame-empty"><strong>No frame archive yet.</strong><span>New agent runs will retain local replay frames after fixture login. Historical records remain ledger evidence, not reconstructed screenshots.</span></div></div><div id="frame-strip" class="frame-strip" aria-label="Replay frame thumbnails"></div><div class="frame-controls"><button id="frame-prev" type="button" aria-label="Previous replay frame">← PREV</button><div id="frame-caption">Select a run to inspect its local evidence.</div><button id="frame-next" type="button" aria-label="Next replay frame">NEXT →</button></div></article><aside class="trajectory-panel"><div class="panel-kicker"><span>TRAJECTORY</span><span id="run-outcome" class="outcome">—</span></div><div id="run-dossier" class="run-dossier">Loading selected run…</div><ol id="trajectory-list" class="trajectory-list"></ol></aside></section>
 
-      <section class="section-heading coverage-heading"><div><p class="eyebrow">APPLICATION COVERAGE</p><h2>Where evidence exists</h2></div><span class="microcopy">Application rows preserve declared workflow coverage and arm-specific denominators; an observed row is not an admitted application.</span></section>
-      <section class="analysis-panel coverage-panel"><div class="analysis-table-wrap"><table class="analysis-table coverage-table"><thead><tr><th>Application</th><th>Status</th><th>Workflows</th><th>Visual</th><th>Hybrid</th><th>Playwright</th></tr></thead><tbody id="coverage-body"></tbody></table></div></section>
+        <section class="section-heading"><div><p class="kicker">SYSTEMS UNDER TEST</p><h2>Runtime perimeter</h2></div><span class="microcopy">HTTP health is observational; it is not a reset or admission gate.</span></section><section id="sut-grid" class="sut-grid" aria-live="polite"></section>
+        <section class="section-heading" id="dataset"><div><p class="kicker">APPLICATION COVERAGE</p><h2>Where evidence exists</h2></div><span class="microcopy">Application rows preserve workflow coverage and arm-specific denominators.</span></section><section class="analysis-panel coverage-panel"><div class="analysis-table-wrap"><table class="analysis-table coverage-table"><thead><tr><th>Application</th><th>Status</th><th>Workflows</th><th>Visual</th><th>Hybrid</th><th>Playwright</th></tr></thead><tbody id="coverage-body"></tbody></table></div></section>
+        <section class="section-heading ledger-heading"><div><p class="kicker">RECENT EXECUTION</p><h2>Run ledger</h2></div><span class="microcopy">Credentials, prompts, raw provider replies, and hidden oracle state are never served.</span></section><section class="ledger-wrap"><table><thead><tr><th>Task / condition</th><th>Arm</th><th>Outcome</th><th>Timing</th><th>Evidence note</th></tr></thead><tbody id="ledger-body"></tbody></table></section>
+        <footer><span>ProbeFlow · PSS-WebTest local observatory</span><span>pilot records remain pilot records</span></footer>
+      </main>
 
-      <section class="section-heading replay-heading"><div><p class="eyebrow">TRACE REPLAY</p><h2>One run, rendered as evidence.</h2></div><span class="microcopy">Frames are captured only for new local runs. Historical ledgers are not retroactively illustrated.</span></section>
-      <section class="replay-toolbar" aria-label="Replay filters">
-        <div class="replay-filter-intro"><span class="panel-kicker">INSPECT A MATCHED CELL</span><strong id="replay-context">Choose a task to compare its three arms.</strong></div>
-        <label><span>Application</span><select id="replay-application"><option value="all">All applications</option></select></label>
-        <label><span>Workflow</span><select id="replay-task"><option value="all">All workflows</option></select></label>
-        <label><span>Condition</span><select id="replay-condition"><option value="all">All conditions</option></select></label>
-        <button id="replay-clear" class="filter-clear" type="button">CLEAR FILTERS</button>
-      </section>
-      <section id="arm-comparison" class="arm-comparison" aria-label="Selected task three-arm comparison"></section>
-      <section class="replay-workbench" aria-label="Selected run replay">
-        <aside class="run-queue-panel">
-          <div class="panel-kicker"><span>RUN QUEUE</span><span id="queue-count">—</span></div>
-          <div id="run-queue" class="run-queue" role="listbox" aria-label="Recent run records"></div>
-        </aside>
-        <article class="frame-panel">
-          <div class="panel-kicker"><span id="frame-label">FRAME VIEW</span><span id="frame-index">—</span></div>
-          <div id="frame-stage" class="frame-stage">
-            <img id="replay-image" alt="Selected experiment replay frame" hidden />
-            <div id="frame-empty" class="frame-empty"><strong>No frame archive yet.</strong><span>New agent runs will retain local replay frames after fixture login. Existing records remain evidence-ledger entries, not reconstructed screenshots.</span></div>
-          </div>
-          <div id="frame-strip" class="frame-strip" aria-label="Replay frame thumbnails"></div>
-          <div class="frame-controls"><button id="frame-prev" type="button" aria-label="Previous replay frame">← PREV</button><div id="frame-caption">Select a run to inspect its local evidence.</div><button id="frame-next" type="button" aria-label="Next replay frame">NEXT →</button></div>
-        </article>
-        <aside class="trajectory-panel">
-          <div class="panel-kicker"><span>TRAJECTORY</span><span id="run-outcome" class="outcome">—</span></div>
-          <div id="run-dossier" class="run-dossier">Loading selected run…</div>
-          <ol id="trajectory-list" class="trajectory-list"></ol>
-        </aside>
-      </section>
-
-      <section class="section-heading"><div><p class="eyebrow">SYSTEMS UNDER TEST</p><h2>Runtime perimeter</h2></div><span class="microcopy">HTTP health is observational; it is not a reset or admission gate.</span></section>
-      <section id="sut-grid" class="sut-grid" aria-live="polite"></section>
-
-      <section class="section-heading task-heading"><div><p class="eyebrow">BENCHMARK COVERAGE</p><h2>Task strata</h2></div><div class="filters" role="group" aria-label="Filter tasks"><button data-filter="all" class="active">All</button><button data-filter="observed">Observed</button><button data-filter="candidate">Candidate</button></div></section>
-      <section id="task-grid" class="task-grid" aria-live="polite"></section>
-
-      <section class="section-heading ledger-heading"><div><p class="eyebrow">RECENT EXECUTION</p><h2>Run ledger</h2></div><span class="microcopy">Typed values, credentials, prompts, provider replies, and hidden oracle state are never served.</span></section>
-      <section class="ledger-wrap"><table><thead><tr><th>Task / condition</th><th>Arm</th><th>Outcome</th><th>Timing</th><th>Evidence note</th></tr></thead><tbody id="ledger-body"></tbody></table></section>
-
-      <footer><span>PSS-WebTest · local observability surface</span><span>pilot records remain pilot records</span></footer>
-    </main>
+      <aside class="task-rail" aria-label="Benchmark task list"><div class="task-rail-head"><div><p class="kicker">TASKS</p><h2><span id="task-count">—</span> scenarios</h2></div><span class="rail-glyph">✦</span></div><p class="rail-help">Click a task row · click a framework badge to inspect its trace</p><div class="filters" role="group" aria-label="Filter tasks"><button data-filter="all" class="active">All</button><button data-filter="observed">Observed</button><button data-filter="candidate">Candidate</button></div><section id="task-grid" class="task-grid" aria-live="polite"></section></aside>
+    </div>
     <template id="empty-template"><div class="empty">No live records yet. Start a reset-isolated pilot to populate this surface.</div></template>
     <script type="module" src="/app.js"></script>
   </body>

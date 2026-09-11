@@ -100,7 +100,18 @@ async function seedAndSnapshot() {
   let seed = await fs.readFile(definition.seedFile, 'utf8');
   seed = seed.replaceAll('YYYY-MM-DD', new Date(Date.now() - 86400000).toISOString().slice(0, 10));
   await run('docker', definition.seedCommand(env), { input: seed });
-  if (app === 'prestashop') await run('docker', ['exec', definition.appContainer, 'php', '/var/www/html/tools/create_user.php']);
+  if (app === 'prestashop') {
+    await run('docker', ['exec', definition.appContainer, 'php', '/var/www/html/tools/create_user.php']);
+    // The fixture helper creates the authenticated customer before a cart is
+    // materialized.  Under MySQL strict date validation, that cart can retain
+    // a zero date and make the first authenticated request fail with
+    // `Property Cart->date_add is not valid`.  Normalize only those generated
+    // zero-date rows before admitting the SUT; this does not alter task data.
+    await run('docker', [
+      'exec', definition.dbContainer, 'mysql', '-u', 'root', '-proot', 'prestashop', '-e',
+      "UPDATE ps_cart SET date_add=NOW(), date_upd=NOW() WHERE DATE_FORMAT(date_add,'%Y')='0000' OR DATE_FORMAT(date_upd,'%Y')='0000';"
+    ]);
+  }
   const snapshot = await run('docker', definition.snapshotCommand(env), { capture: true });
   const counts = snapshot.stdout.trim().split(/\s+/).map(Number);
   if (!counts.length || counts.some((value) => !Number.isInteger(value))) throw new Error(`${app} seed snapshot was not numeric`);

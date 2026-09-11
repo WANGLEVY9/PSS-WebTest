@@ -1,0 +1,22 @@
+{
+  "schema_version": "replay-v1",
+  "run_id": "prestashop-deepseek-matched-r8-complex-visual",
+  "application_id": "prestashop",
+  "task_id": "prestashop-search-revisit-product",
+  "arm": "visual",
+  "created_at": "2026-09-11T12:14:27.504Z",
+  "outcome": {
+    "status": "test-failure",
+    "checkpoint_reached": false,
+    "emitted_verdict": "not-emitted",
+    "ground_truth_verdict": "clean",
+    "failure_category": "execution",
+    "oracle_passed": true,
+    "error": {
+      "name": "TimeoutError",
+      "message": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"s\"]') to be visible\u001b[22m\n"
+    }
+  },
+  "frames": [],
+  "provider_events": []
+}

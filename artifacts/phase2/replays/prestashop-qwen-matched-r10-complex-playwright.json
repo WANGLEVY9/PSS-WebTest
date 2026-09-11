@@ -1,0 +1,218 @@
+{
+  "schema_version": "replay-v1",
+  "run_id": "prestashop-qwen-matched-r10-complex-playwright",
+  "application_id": "prestashop",
+  "task_id": "prestashop-search-revisit-product",
+  "arm": "playwright",
+  "created_at": "2026-09-11T14:36:37.071Z",
+  "outcome": {
+    "status": "completed",
+    "checkpoint_reached": true,
+    "emitted_verdict": "clean",
+    "ground_truth_verdict": "clean",
+    "failure_category": null,
+    "oracle_passed": true,
+    "error": null
+  },
+  "frames": [
+    {
+      "id": "before-action-0",
+      "filename": "000-before-action-step-00.jpg",
+      "phase": "before-action",
+      "step": 0,
+      "url": "http://localhost:8083/login",
+      "action": null,
+      "screenshot_digest": "39656557c16dafb4ef74ded12665d00c37a94fdd7bbba5a1f4eab5bab0d9eed5",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-1",
+      "filename": "001-after-action-step-00.jpg",
+      "phase": "after-action",
+      "step": 0,
+      "url": "http://localhost:8083/login",
+      "action": {
+        "type": "type",
+        "text_redacted": true,
+        "text_length": null
+      },
+      "screenshot_digest": "45cfa6ce3f378eaf4637e2533ae202b18557f5d78c80cc1a36cfb2a430372df9",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-2",
+      "filename": "002-before-action-step-01.jpg",
+      "phase": "before-action",
+      "step": 1,
+      "url": "http://localhost:8083/login",
+      "action": null,
+      "screenshot_digest": "45cfa6ce3f378eaf4637e2533ae202b18557f5d78c80cc1a36cfb2a430372df9",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-3",
+      "filename": "003-after-action-step-01.jpg",
+      "phase": "after-action",
+      "step": 1,
+      "url": "http://localhost:8083/login",
+      "action": {
+        "type": "type",
+        "text_redacted": true,
+        "text_length": null
+      },
+      "screenshot_digest": "061e1606671a2863632f9be2d59c28ac727c64f4dfd1784f964fb2eb8704c459",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-4",
+      "filename": "004-before-action-step-02.jpg",
+      "phase": "before-action",
+      "step": 2,
+      "url": "http://localhost:8083/login",
+      "action": null,
+      "screenshot_digest": "061e1606671a2863632f9be2d59c28ac727c64f4dfd1784f964fb2eb8704c459",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-5",
+      "filename": "005-after-action-step-02.jpg",
+      "phase": "after-action",
+      "step": 2,
+      "url": "http://localhost:8083/",
+      "action": {
+        "type": "click"
+      },
+      "screenshot_digest": "a8212dd3742678976ee8a89cc194efc9a29ff37e2804aa8ad568c4b5231d6c1b",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-6",
+      "filename": "006-before-action-step-03.jpg",
+      "phase": "before-action",
+      "step": 3,
+      "url": "http://localhost:8083/",
+      "action": null,
+      "screenshot_digest": "613e061c410e55f28d9cb65ef5aae2f45670693126a5e9e4c07f86e1b73ac55e",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-7",
+      "filename": "007-after-action-step-03.jpg",
+      "phase": "after-action",
+      "step": 3,
+      "url": "http://localhost:8083/",
+      "action": {
+        "type": "type",
+        "text_redacted": true,
+        "text_length": null
+      },
+      "screenshot_digest": "db42843a6bb33dff498687d0ac9d32ee52ea381be12e9c20f8c12e5da63000ec",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-8",
+      "filename": "008-before-action-step-04.jpg",
+      "phase": "before-action",
+      "step": 4,
+      "url": "http://localhost:8083/search?controller=search&s=Mug",
+      "action": null,
+      "screenshot_digest": "c7ce94c7b3adf1089e88f2c716ff6d7923fd65ade013b68c234e7a04299bcb61",
+      "state": {
+        "milestone": "search-results",
+        "url_path": "/search",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-9",
+      "filename": "009-after-action-step-04.jpg",
+      "phase": "after-action",
+      "step": 4,
+      "url": "http://localhost:8083/home-accessories/7-mug-the-adventure-begins.html",
+      "action": {
+        "type": "click"
+      },
+      "screenshot_digest": "efd2cc1917245cce1ecd487072059b6499eb71d342f53f885ed00f575f90c6c4",
+      "state": {
+        "milestone": "product-detail",
+        "url_path": "/home-accessories/7-mug-the-adventure-begins.html",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-10",
+      "filename": "010-before-action-step-05.jpg",
+      "phase": "before-action",
+      "step": 5,
+      "url": "http://localhost:8083/search?controller=search&s=Mug",
+      "action": null,
+      "screenshot_digest": "c7ce94c7b3adf1089e88f2c716ff6d7923fd65ade013b68c234e7a04299bcb61",
+      "state": {
+        "milestone": "search-results",
+        "url_path": "/search",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-11",
+      "filename": "011-after-action-step-05.jpg",
+      "phase": "after-action",
+      "step": 5,
+      "url": "http://localhost:8083/home-accessories/7-mug-the-adventure-begins.html",
+      "action": {
+        "type": "click"
+      },
+      "screenshot_digest": "efd2cc1917245cce1ecd487072059b6499eb71d342f53f885ed00f575f90c6c4",
+      "state": {
+        "milestone": "product-detail",
+        "url_path": "/home-accessories/7-mug-the-adventure-begins.html",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    }
+  ],
+  "provider_events": []
+}

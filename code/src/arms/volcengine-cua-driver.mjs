@@ -233,17 +233,40 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
   const responsesMode = config.provider === 'volcengine' && (env.CUA_VOLCENGINE_API_MODE ?? 'chat') === 'responses';
   const actionHistory = [];
   let lastAcceptedPointer = null;
+  let observationSequence = 0;
+  let lastObservedProgressToken = null;
   let retryCount = 0;
   const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
 
   return {
     async observe(context = {}) {
-      const screenshot = await observeScreenshot(context);
-      return { screenshot: asDataUrl(screenshot) };
+      const observed = await observeScreenshot(context);
+      const screenshot = typeof observed === 'string' ? observed : observed?.screenshot;
+      if (!screenshot) throw new TypeError('observeScreenshot must return a screenshot or { screenshot }');
+      const admitted = { screenshot: asDataUrl(screenshot) };
+      // progressToken is harness-local metadata used only to distinguish a
+      // legitimate same-coordinate action after a URL/state transition from
+      // a true non-progressing click. It is never included in the provider
+      // request, so the screenshot-only observation contract is unchanged.
+      if (observed && typeof observed === 'object' && observed.progressToken !== undefined) {
+        admitted.progressToken = String(observed.progressToken);
+      }
+      return admitted;
     },
     async decide({ intent, observation, step }) {
       if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
+      const currentProgressToken = observation.progressToken ?? currentObservationDigest;
+      // A task may legitimately revisit an earlier page (for example, open a
+      // result, press Back, and reopen it).  Track observation transitions so
+      // returning to the same URL/milestone is not confused with a click that
+      // never changed the UI.  The sequence stays fixed across decision
+      // retries for one observation, so genuine non-progressing loops remain
+      // fail-closed.
+      if (currentProgressToken !== lastObservedProgressToken) {
+        observationSequence += 1;
+        lastObservedProgressToken = currentProgressToken;
+      }
       const coordinateInstruction = coordinateBounds(coordinateMode).instruction;
       const formatInstruction = actionMode === 'tool'
         ? 'Call the ui_action function exactly once. Do not emit textual JSON, markdown, or explanations. For a type action, use the exact single-line literal from the task and immediately finish the function arguments.'
@@ -323,7 +346,10 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           // screenshot before the prior accepted click.  Coordinate equality
           // alone is insufficient because a navigation or save transition can
           // place a different control at the same screen position.
-          if (repeatsPointer && currentObservationDigest === lastAcceptedPointer.observationDigest) {
+          if (repeatsPointer
+            && currentObservationDigest === lastAcceptedPointer.observationDigest
+            && currentProgressToken === lastAcceptedPointer.progressToken
+            && observationSequence === lastAcceptedPointer.observationSequence) {
             throw new Error(`repeated non-progressing click at x=${decision.action.x} y=${decision.action.y}`);
           }
           emitProviderSummary(true);
@@ -343,7 +369,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         // with like.
         actionHistory.push(decision.type === 'action' ? { ...decision.action } : decision);
         if (decision.type === 'action' && decision.action.type === 'click') {
-          lastAcceptedPointer = { x: decision.action.x, y: decision.action.y, observationDigest: currentObservationDigest };
+          lastAcceptedPointer = { x: decision.action.x, y: decision.action.y, observationDigest: currentObservationDigest, progressToken: currentProgressToken, observationSequence };
         }
         if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type)) {
           decision.action = toViewportPixels(decision.action, coordinateMode);

@@ -240,6 +240,36 @@ test('driver permits the same coordinate after the screenshot visibly changes', 
   assert.equal(calls, 2);
 });
 
+test('driver permits the same coordinate after a harness progress token changes', async () => {
+  let progressToken = 'search-results:entry';
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '0' },
+    observeScreenshot: async () => ({ screenshot: 'same-pixels', progressToken }),
+    executeAction: async () => {},
+    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] } }] }; } })
+  });
+  await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 0 });
+  progressToken = 'search-results:after-back';
+  const second = await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 1 });
+  assert.equal(second.type, 'action');
+});
+
+test('driver permits a legitimate revisit after an A-B-A navigation cycle', async () => {
+  let progressToken = 'search-results';
+  const driver = createVolcengineCuaDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '0' },
+    observeScreenshot: async () => ({ screenshot: 'same-pixels', progressToken }),
+    executeAction: async () => {},
+    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"action","action":{"type":"click","x":10,"y":10}}' } }] }; } })
+  });
+  await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 0 });
+  progressToken = 'product-detail';
+  await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 1 });
+  progressToken = 'search-results';
+  const second = await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 2 });
+  assert.equal(second.type, 'action');
+});
+
 test('driver enforces an optional agent wall-time budget before another provider call', async () => {
   let calls = 0;
   const driver = createVolcengineCuaDriver({

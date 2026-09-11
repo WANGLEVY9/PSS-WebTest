@@ -154,6 +154,36 @@ test('hybrid driver permits a repeated coordinate after a screenshot transition'
   assert.equal(second.type, 'action');
 });
 
+test('hybrid driver permits the same target after a harness progress token changes', async () => {
+  let progressToken = 'search-results:entry';
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic', CUA_MAX_DECISION_RETRIES: '0' },
+    observeHybrid: async () => ({ screenshot: 'same-pixels', progressToken, pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'Target' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c12"}' } }] } }] }; } })
+  });
+  await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 0 });
+  progressToken = 'search-results:after-back';
+  const second = await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 1 });
+  assert.equal(second.type, 'action');
+});
+
+test('hybrid driver permits a legitimate revisit after an A-B-A navigation cycle', async () => {
+  let progressToken = 'search-results';
+  const driver = createVolcengineHybridDriver({
+    env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic', CUA_MAX_DECISION_RETRIES: '0' },
+    observeHybrid: async () => ({ screenshot: 'same-pixels', progressToken, pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'Target' }] } }),
+    executeAction: async () => {},
+    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c12"}' } }] } }] }; } })
+  });
+  await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 0 });
+  progressToken = 'product-detail';
+  await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 1 });
+  progressToken = 'search-results';
+  const second = await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 2 });
+  assert.equal(second.type, 'action');
+});
+
 test('semantic hybrid guard compares target ids instead of undefined coordinates', async () => {
   let calls = 0;
   const driver = createVolcengineHybridDriver({

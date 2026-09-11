@@ -1,0 +1,175 @@
+{
+  "schema_version": "replay-v1",
+  "run_id": "prestashop-doubao-matched-r13-complex-hybrid",
+  "application_id": "prestashop",
+  "task_id": "prestashop-search-revisit-product",
+  "arm": "hybrid",
+  "created_at": "2026-09-11T15:13:48.521Z",
+  "outcome": {
+    "status": "test-failure",
+    "checkpoint_reached": false,
+    "emitted_verdict": "not-emitted",
+    "ground_truth_verdict": "clean",
+    "failure_category": "provider-api",
+    "oracle_passed": true,
+    "error": {
+      "name": "Error",
+      "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mod"
+    }
+  },
+  "frames": [
+    {
+      "id": "before-action-0",
+      "filename": "000-before-action-step-00.jpg",
+      "phase": "before-action",
+      "step": 0,
+      "url": "http://localhost:8083/",
+      "action": null,
+      "screenshot_digest": "a8212dd3742678976ee8a89cc194efc9a29ff37e2804aa8ad568c4b5231d6c1b",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-1",
+      "filename": "001-after-action-step-00.jpg",
+      "phase": "after-action",
+      "step": 0,
+      "url": "http://localhost:8083/",
+      "action": {
+        "type": "click"
+      },
+      "screenshot_digest": "613e061c410e55f28d9cb65ef5aae2f45670693126a5e9e4c07f86e1b73ac55e",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": [
+        "provider-000"
+      ]
+    },
+    {
+      "id": "before-action-2",
+      "filename": "002-before-action-step-01.jpg",
+      "phase": "before-action",
+      "step": 1,
+      "url": "http://localhost:8083/",
+      "action": null,
+      "screenshot_digest": "613e061c410e55f28d9cb65ef5aae2f45670693126a5e9e4c07f86e1b73ac55e",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-3",
+      "filename": "003-after-action-step-01.jpg",
+      "phase": "after-action",
+      "step": 1,
+      "url": "http://localhost:8083/",
+      "action": {
+        "type": "type",
+        "text_redacted": true,
+        "text_length": 3
+      },
+      "screenshot_digest": "d0636a754a6bd3a0301cf7e66da8ef08258115c7c00ea04179f4f4a5879df8f9",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": [
+        "provider-001"
+      ]
+    },
+    {
+      "id": "before-action-4",
+      "filename": "004-before-action-step-02.jpg",
+      "phase": "before-action",
+      "step": 2,
+      "url": "http://localhost:8083/",
+      "action": null,
+      "screenshot_digest": "d0636a754a6bd3a0301cf7e66da8ef08258115c7c00ea04179f4f4a5879df8f9",
+      "state": {
+        "milestone": "authenticated-home",
+        "url_path": "/",
+        "authenticated": true
+      },
+      "provider_event_ids": []
+    }
+  ],
+  "provider_events": [
+    {
+      "id": "provider-000",
+      "step": 0,
+      "attempt": 0,
+      "http_status": 200,
+      "content_length": 0,
+      "arguments_length": 43,
+      "provider": "volcengine",
+      "model": "doubao-seed-2-1-pro-260628",
+      "finish_reason": "tool_calls",
+      "tool_name": "ui_action",
+      "ok": true,
+      "has_text_content": false,
+      "has_tool_call": true,
+      "arguments_digest": "52eca287c45dcadb9a2f9fe29f03cc2beb9bb30ea16a91f3df2cd9882f123423"
+    },
+    {
+      "id": "provider-001",
+      "step": 1,
+      "attempt": 0,
+      "http_status": 200,
+      "content_length": 0,
+      "arguments_length": 57,
+      "provider": "volcengine",
+      "model": "doubao-seed-2-1-pro-260628",
+      "finish_reason": "tool_calls",
+      "tool_name": "ui_action",
+      "ok": true,
+      "has_text_content": false,
+      "has_tool_call": true,
+      "arguments_digest": "3abd8bf13b11b428a1486572867a01d20bf2b99b1ff09ac3a20bdb7ee6098ba1"
+    },
+    {
+      "id": "provider-002",
+      "step": 2,
+      "attempt": 0,
+      "http_status": 429,
+      "content_length": 0,
+      "arguments_length": 0,
+      "provider": "volcengine",
+      "model": "doubao-seed-2-1-pro-260628",
+      "ok": false,
+      "has_text_content": false,
+      "has_tool_call": false,
+      "error": {
+        "name": "Error",
+        "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mod"
+      }
+    },
+    {
+      "id": "provider-003",
+      "step": 2,
+      "attempt": 1,
+      "http_status": 429,
+      "content_length": 0,
+      "arguments_length": 0,
+      "provider": "volcengine",
+      "model": "doubao-seed-2-1-pro-260628",
+      "ok": false,
+      "has_text_content": false,
+      "has_tool_call": false,
+      "error": {
+        "name": "Error",
+        "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mod"
+      }
+    }
+  ]
+}

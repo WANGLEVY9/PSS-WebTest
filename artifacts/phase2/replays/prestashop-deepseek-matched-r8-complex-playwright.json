@@ -1,0 +1,123 @@
+{
+  "schema_version": "replay-v1",
+  "run_id": "prestashop-deepseek-matched-r8-complex-playwright",
+  "application_id": "prestashop",
+  "task_id": "prestashop-search-revisit-product",
+  "arm": "playwright",
+  "created_at": "2026-09-11T12:14:59.384Z",
+  "outcome": {
+    "status": "test-failure",
+    "checkpoint_reached": false,
+    "emitted_verdict": "not-emitted",
+    "ground_truth_verdict": "clean",
+    "failure_category": "execution",
+    "oracle_passed": false,
+    "error": {
+      "name": "TimeoutError",
+      "message": "locator.waitFor: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('input[name=\"s\"]') to be visible\u001b[22m\n"
+    }
+  },
+  "frames": [
+    {
+      "id": "before-action-0",
+      "filename": "000-before-action-step-00.jpg",
+      "phase": "before-action",
+      "step": 0,
+      "url": "http://localhost:8083/login",
+      "action": null,
+      "screenshot_digest": "39656557c16dafb4ef74ded12665d00c37a94fdd7bbba5a1f4eab5bab0d9eed5",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-1",
+      "filename": "001-after-action-step-00.jpg",
+      "phase": "after-action",
+      "step": 0,
+      "url": "http://localhost:8083/login",
+      "action": {
+        "type": "type",
+        "text_redacted": true,
+        "text_length": null
+      },
+      "screenshot_digest": "45cfa6ce3f378eaf4637e2533ae202b18557f5d78c80cc1a36cfb2a430372df9",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-2",
+      "filename": "002-before-action-step-01.jpg",
+      "phase": "before-action",
+      "step": 1,
+      "url": "http://localhost:8083/login",
+      "action": null,
+      "screenshot_digest": "45cfa6ce3f378eaf4637e2533ae202b18557f5d78c80cc1a36cfb2a430372df9",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-3",
+      "filename": "003-after-action-step-01.jpg",
+      "phase": "after-action",
+      "step": 1,
+      "url": "http://localhost:8083/login",
+      "action": {
+        "type": "type",
+        "text_redacted": true,
+        "text_length": null
+      },
+      "screenshot_digest": "061e1606671a2863632f9be2d59c28ac727c64f4dfd1784f964fb2eb8704c459",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "before-action-4",
+      "filename": "004-before-action-step-02.jpg",
+      "phase": "before-action",
+      "step": 2,
+      "url": "http://localhost:8083/login",
+      "action": null,
+      "screenshot_digest": "061e1606671a2863632f9be2d59c28ac727c64f4dfd1784f964fb2eb8704c459",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    },
+    {
+      "id": "after-action-5",
+      "filename": "005-after-action-step-02.jpg",
+      "phase": "after-action",
+      "step": 2,
+      "url": "http://localhost:8083/login",
+      "action": {
+        "type": "click"
+      },
+      "screenshot_digest": "c34ea516bc3f22ff143b8285b12f866f748b3cdc37b93a975ec93d87d6a47d9c",
+      "state": {
+        "milestone": "other",
+        "url_path": "/login",
+        "authenticated": false
+      },
+      "provider_event_ids": []
+    }
+  ],
+  "provider_events": []
+}

@@ -25,3 +25,5 @@ The independent product database oracle passed for all 500 observations in each 
 The strongest conditional pattern is task complexity: both agents are much less reliable on the browser-back/reopen workflow than on search or search/open. Under this provider/profile, Hybrid retains a higher completion rate in every matched complexity stratum, while Pure Visual has additional coordinate grounding, step-budget, and format failures. These are hypotheses for the next matched analysis, not final causal conclusions: the runs are currently diagnostic, the provider/model is one stratum, and Playwright must be collected under the same reset-block protocol before a three-arm comparison.
 
 Raw run records, screenshots, and provider summaries remain under ignored `artifacts/phase2/`; only the de-identified aggregates are committed.
+
+The generic ledger audit intentionally reports `status: fail` for this two-arm selection because the cell is missing the Playwright arm. This is the expected fail-closed behavior while the script arm is not yet collected under the same reset-block protocol; it does not invalidate the two-arm diagnostic totals above.

@@ -36,6 +36,7 @@
     "validate:configuration-registry": "node scripts/validate-configuration-registry.mjs",
     "validate:phase2-scaling-plan": "node scripts/validate-phase2-scaling-plan.mjs",
     "validate:large-scale-expansion": "node scripts/validate-large-scale-expansion.mjs",
+    "validate:3000plus-plan": "node scripts/validate-3000plus-plan.mjs",
     "validate:application-catalog": "node scripts/validate-application-expansion-catalog.mjs",
     "validate:application-workflows": "node scripts/validate-application-workflow-blueprints.mjs",
     "validate:application-triage": "node scripts/validate-application-triage-queue.mjs",

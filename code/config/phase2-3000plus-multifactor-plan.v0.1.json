@@ -1,0 +1,157 @@
+{
+  "schema_version": "0.1",
+  "plan_id": "phase2-3000plus-multifactor-v0.1",
+  "status": "planning-not-authorized",
+  "evidence_boundary": "This file defines a target design only. Candidate applications, workflows, model/framework replicas, and scale arithmetic are not empirical observations.",
+  "objective": "Estimate conditional success boundaries, oracle correctness, maintenance effort, cost, latency, and repeatability for visual CUA, hybrid visual-plus-structure agents, and traditional scripted testing without assuming a universal winner.",
+  "scale_contract": {
+    "admitted_application_minimum": 30,
+    "workflows_per_admitted_application": 8,
+    "conditions_per_workflow": 3,
+    "primary_strategies_per_cell": 3,
+    "minimum_repetitions_per_arm_condition": 2,
+    "confirmatory_repetitions_per_arm_condition": 14,
+    "minimum_core_executions": 4320,
+    "confirmatory_core_executions": 30240,
+    "minimum_formula": "30 applications * 8 workflows * 3 conditions * 3 arms * 2 repetitions",
+    "confirmatory_formula": "30 applications * 8 workflows * 3 conditions * 3 arms * 14 repetitions",
+    "counting_unit": "one arm execution with a complete run record and an independent oracle outcome",
+    "counting_exclusions": [
+      "connectivity checks",
+      "framework conformance checks",
+      "reset-only or oracle-only checks",
+      "provider failures without an eligible matched task record",
+      "duplicate replays of the same repetition id",
+      "synthetic smoke runs"
+    ]
+  },
+  "current_registry_boundary": {
+    "named_application_rows_now": 25,
+    "additional_application_slots_required_before_admission": 5,
+    "currently_admitted_applications": 0,
+    "currently_admitted_workflow_slots": 0,
+    "rule": "Do not report the 30-application target as achieved until each application has a version pin, reset contract, independent oracle, and a passed three-arm admission pilot."
+  },
+  "task_stratification": {
+    "scope_levels": [
+      {"id": "single-app-single-page", "definition": "All actions stay on one page of one application."},
+      {"id": "single-app-cross-page", "definition": "A persisted or navigational dependency crosses pages within one application."},
+      {"id": "cross-app-handoff", "definition": "A value or identity produced in app A is consumed or checked in app B."},
+      {"id": "multi-app-workflow", "definition": "At least three applications participate in one intent-preserving workflow."}
+    ],
+    "length_bands": [
+      {"id": "short", "action_count_min": 1, "action_count_max": 4},
+      {"id": "medium", "action_count_min": 5, "action_count_max": 10},
+      {"id": "long", "action_count_min": 11, "action_count_max": 20}
+    ],
+    "goal_cardinality": [
+      {"id": "single-goal", "definition": "One observable task objective."},
+      {"id": "sequential-multi-goal", "definition": "Multiple objectives with an ordered dependency."},
+      {"id": "dependent-multi-goal", "definition": "A later objective is valid only if an earlier persisted state is correct."}
+    ],
+    "per_application_quota": {
+      "workflow_count": 8,
+      "length_minimums": {"short": 2, "medium": 3, "long": 3},
+      "scope_minimums": {"single-app-single-page": 1, "single-app-cross-page": 2, "cross-app-handoff": 1, "multi-app-workflow": 1},
+      "goal_cardinality_minimums": {"single-goal": 2, "sequential-multi-goal": 2, "dependent-multi-goal": 1},
+      "unallocated_slots": 3,
+      "note": "The remaining three workflow slots are allocated after application-specific oracle and mutation review; they must not be filled by near-duplicate tasks."
+    },
+    "workflow_families": [
+      "navigation",
+      "search-filter",
+      "form-persist",
+      "cross-page-create-revisit",
+      "authorization",
+      "delayed-save-retry",
+      "visual-layout-targeting",
+      "repair-after-locator-break"
+    ]
+  },
+  "conditions": [
+    {"id": "clean-stable", "purpose": "Baseline behavior with no seeded fault or UI change."},
+    {"id": "functional-fault", "purpose": "A seeded fault changes a persistence, validation, relation, or request outcome while the intent stays fixed."},
+    {"id": "behavior-preserving-ui-evolution", "purpose": "DOM, accessibility semantics, visual layout, or runtime timing changes while task and oracle semantics stay fixed."}
+  ],
+  "primary_arms": [
+    {
+      "id": "pure-visual-cua",
+      "observation_contract": "screenshot-only",
+      "prohibited_inputs": ["DOM", "accessibility tree", "selectors", "hidden oracle state", "mutation labels"],
+      "primary_role": "visual grounding and coordinate/keyboard action arm"
+    },
+    {
+      "id": "hybrid-visual-structure",
+      "observation_contract": "screenshot-plus-declared-page-structure",
+      "prohibited_inputs": ["gold oracle state", "mutation labels", "database state"],
+      "primary_role": "grounded browser-action arm with structural context"
+    },
+    {
+      "id": "scripted-traditional",
+      "observation_contract": "deterministic-scripted-locator",
+      "primary_role": "traditional baseline",
+      "locator_policy": "accessibility role/name first; CSS/XPath only in a separately labelled ablation"
+    }
+  ],
+  "model_replication_strata": {
+    "status": "separate-from-core-estimand-until-admitted",
+    "models": [
+      {"id": "qwen3.7-flash", "provider": "aliyun-compatible", "status": "configured; matched admission pending"},
+      {"id": "deepseek-v4-flash-vision-exp", "provider": "deepseek-api", "status": "configured; matched admission pending"},
+      {"id": "doubao-seed-2-1-pro-260628", "provider": "volcengine-ark", "status": "configured; matched admission pending"}
+    ],
+    "pooling_rule": "Never pool provider or model strata in the primary estimate. Report model-by-condition interactions and provider failures separately.",
+    "minimum_replication_sentinel": {
+      "applications": 3,
+      "workflows_per_application": 2,
+      "conditions": 3,
+      "agent_arms": 2,
+      "repetitions": 2,
+      "formula": "3 applications * 2 workflows * 3 conditions * 2 agent arms * 2 repetitions per model = 72 executions per model before framework replication"
+    }
+  },
+  "agent_framework_strata": {
+    "rule": "A framework is a separate protocol stratum. It can generalize the result only after adapter conformance, replay equivalence, and a matched sentinel pass.",
+    "frameworks": [
+      {"id": "pss-native", "status": "implemented; current reference adapter"},
+      {"id": "browser-use", "status": "adapter smoke evidence; matched sentinel pending"},
+      {"id": "agentlab", "status": "adapter smoke evidence; matched sentinel pending"},
+      {"id": "stagehand", "status": "adapter smoke evidence; custom-model matched sentinel pending"}
+    ],
+    "required_conformance": ["same task intent", "same initial state digest", "same action budget", "same screenshot/structure contract", "same run-record schema", "same independent oracle"]
+  },
+  "traditional_baseline_strata": [
+    {"id": "playwright-accessibility-locator", "status": "primary implemented baseline"},
+    {"id": "playwright-css-xpath", "status": "planned exploratory locator ablation"},
+    {"id": "selenium-webdriver-locator", "status": "planned exploratory tooling replication"},
+    {"id": "state-model-scripted-testing", "status": "planned exploratory coverage-strategy comparator"},
+    {"id": "script-generation-assisted-testing", "status": "planned exploratory secondary comparator"}
+  ],
+  "admission_gates": [
+    "version-pinned SUT and deterministic reset digest",
+    "reset success and isolation on every counted repetition",
+    "independent oracle hidden from all testing arms",
+    "clean negative control and seeded-fault positive control",
+    "behavior-preserving evolution invariant when applicable",
+    "all three primary arms execute the same matched intent and initial state",
+    "complete step-level replay record: screenshot or digest, URL, action, model summary, milestone, and timing",
+    "provider/framework health failures are classified and excluded from arm-effect denominators",
+    "duplicate repetition IDs and cross-cell contamination are rejected",
+    "pilot variance is used to freeze repetition count before confirmatory collection"
+  ],
+  "analysis_contract": {
+    "primary_estimand": "conditional arm differences in task completion and oracle correctness under a fixed admitted provider/framework stratum",
+    "secondary_estimands": ["arm-by-scope interaction", "arm-by-length interaction", "arm-by-goal-cardinality interaction", "arm-by-condition interaction", "maintenance and repair effort", "cost and latency", "repeat-run stability"],
+    "failure_attribution": ["sut-or-reset", "provider-or-model", "agent-framework", "arm-capability", "oracle-or-harness", "unknown"],
+    "no_universal_winner": true,
+    "reporting_rule": "Use conditional decision boundaries and uncertainty intervals; do not rank a single method as globally best unless the preregistered estimand supports that claim."
+  },
+  "execution_order": [
+    "Complete the current-provider matched pilot on the same admitted SUT/workflow before adding applications.",
+    "Standardize visual and hybrid step-level run records and replay traces.",
+    "Admit applications one at a time after reset/oracle/three-arm gates; expand the named pool from 25 to at least 30.",
+    "Run model and framework sentinel replications as labelled strata.",
+    "Estimate pilot variance and run power simulation; freeze repetitions.",
+    "Collect the 4,320-execution minimum core cohort, then expand to the 30,240-execution confirmatory target if gates remain green."
+  ]
+}

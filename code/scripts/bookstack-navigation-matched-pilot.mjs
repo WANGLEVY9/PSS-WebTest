@@ -21,7 +21,7 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
 const randomizationSeed = process.env.PSS_RANDOMIZATION_SEED ?? `${taskId}-phase2-v1`;
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
-const configurationByArm = provider === 'deepseek' && model === 'deepseek-flash'
+const configurationByArm = provider === 'deepseek' && model === 'deepseek-v4-flash-vision-exp'
   ? { visual: 'visual-pss-native-deepseek-flash-v1', hybrid: 'hybrid-pss-native-deepseek-flash-v1' }
   : { visual: 'visual-pss-native-aliyun-qwen3-7-flash-v1', hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1' };
 const runTag = process.env.PSS_PILOT_RUN_TAG ?? null;

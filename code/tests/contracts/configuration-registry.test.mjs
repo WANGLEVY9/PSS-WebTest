@@ -9,7 +9,7 @@ test('configuration registry records legacy configurations separately across all
   assert.equal(findConfiguration(registry, 'legacy-scripted-playwright-accessibility-human').test_implementation.authoring_source, 'human');
   assert.equal(registry.configurations.filter((item) => item.status === 'legacy-pilot').length, 5);
   assert.equal(registry.configurations.filter((item) => item.status === 'implemented').length, 9);
-  assert.equal(findConfiguration(registry, 'visual-pss-native-deepseek-flash-v1').runtime.model_id, 'deepseek-flash');
+  assert.equal(findConfiguration(registry, 'visual-pss-native-deepseek-flash-v1').runtime.model_id, 'deepseek-v4-flash-vision-exp');
   assert.equal(findConfiguration(registry, 'hybrid-pss-native-deepseek-flash-v1').runtime.provider_id, 'deepseek-api');
 });
 

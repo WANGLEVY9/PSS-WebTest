@@ -14,7 +14,7 @@ const DEFAULT_CONFIGURATION_BY_ARM = Object.freeze({
 });
 
 function configurationByArm(provider, model) {
-  if (provider === 'deepseek' && model === 'deepseek-flash') {
+  if (provider === 'deepseek' && model === 'deepseek-v4-flash-vision-exp') {
     return Object.freeze({
       playwright: 'scripted-playwright-accessibility-human-v2',
       visual: 'visual-pss-native-deepseek-flash-v1',

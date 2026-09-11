@@ -20,7 +20,7 @@
     {
       "id": "deepseek-v4.1-flash",
       "provider": "deepseek",
-      "model": "deepseek-flash",
+      "model": "deepseek-v4-flash-vision-exp",
       "base_url": "https://api.deepseek.com",
       "base_url_env": "CUA_BASE_URL",
       "key_env": "CUA_API_KEY",

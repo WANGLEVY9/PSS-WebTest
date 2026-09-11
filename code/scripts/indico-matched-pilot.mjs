@@ -37,8 +37,8 @@ const run = (command, args, env = {}) => new Promise((resolve, reject) => {
 });
 const lastJson = (stdout) => stdout.trim().split('\n').reverse().map((line) => { try { return JSON.parse(line); } catch { return null; } }).find(Boolean) ?? null;
 const configurations = {
-  visual: provider === 'deepseek' && model === 'deepseek-flash' ? 'visual-pss-native-deepseek-flash-v1' : 'visual-pss-native-aliyun-qwen3-7-flash-v1',
-  hybrid: provider === 'deepseek' && model === 'deepseek-flash' ? 'hybrid-pss-native-deepseek-flash-v1' : 'hybrid-pss-native-aliyun-qwen3-7-flash-v1',
+  visual: provider === 'deepseek' && model === 'deepseek-v4-flash-vision-exp' ? 'visual-pss-native-deepseek-flash-v1' : 'visual-pss-native-aliyun-qwen3-7-flash-v1',
+  hybrid: provider === 'deepseek' && model === 'deepseek-v4-flash-vision-exp' ? 'hybrid-pss-native-deepseek-flash-v1' : 'hybrid-pss-native-aliyun-qwen3-7-flash-v1',
   playwright: 'scripted-playwright-accessibility-human-v2'
 };
 const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((left, right) =>

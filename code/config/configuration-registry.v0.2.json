@@ -167,7 +167,7 @@
       "observation_contract": "screenshot-only",
       "runtime": {
         "provider_id": "deepseek-api",
-        "model_id": "deepseek-flash",
+        "model_id": "deepseek-v4-flash-vision-exp",
         "action_schema_version": "coordinate-action-json-v0.1",
         "prompt_digest": "d3823a719568bafc15dd18a998d4421ca5d9d84ec8ae819477d8da2e63a4db7a"
       },
@@ -182,7 +182,7 @@
       "observation_contract": "screenshot-plus-structure",
       "runtime": {
         "provider_id": "deepseek-api",
-        "model_id": "deepseek-flash",
+        "model_id": "deepseek-v4-flash-vision-exp",
         "action_schema_version": "coordinate-action-json-v0.1",
         "prompt_digest": "84d5d829eab66a016319e868fcec6bf8512d422a8ebc8b2d065e7c11b50b38f2"
       },

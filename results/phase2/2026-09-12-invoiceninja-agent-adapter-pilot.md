@@ -121,3 +121,20 @@ The post-fix sentinel outcomes are more informative than these pooled pilot
 rates: Qwen Hybrid and DeepSeek Pure visual each passed one clean run, while the
 other agent records expose distinct engineering or protocol boundaries. No
 application denominator or repetition count is frozen from this audit.
+
+## Repetition sentinel (r4)
+
+One further independent clean run was collected for each working agent/model
+stratum and for Playwright:
+
+| Stratum | Result | Wall time |
+|---|---:|---:|
+| Qwen Hybrid | 1/1 strict pass | 5,749 ms |
+| DeepSeek Pure visual | 1/1 strict pass | 4,963 ms |
+| DeepSeek Hybrid | 1/1 strict pass | 6,357 ms |
+| Playwright | 1/1 strict pass | 985 ms |
+
+The combined ledger now has 16 unique records, no duplicate IDs, and zero
+schema-audit errors. Pooled rates remain descriptive because the ledger mixes
+pre-fix diagnostics, model strata, and repeated clean sentinels; no fault or
+evolution evidence has been added for Invoice Ninja.

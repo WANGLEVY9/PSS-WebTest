@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1",
+  "id": "pss-phase2-long-run-campaign-2026-09-13",
+  "status": "execution-plan-not-confirmatory",
+  "primary_target": {
+    "applications": 30,
+    "workflows_per_application": 8,
+    "conditions": ["clean-stable", "functional-fault", "ui-evolution"],
+    "strategies": ["visual", "hybrid", "playwright"],
+    "repetitions_per_cell": 14,
+    "execution_units": 30240
+  },
+  "current_inventory": {
+    "triage_queue_candidates": 22,
+    "matrix_workflow_bearing_applications": 5,
+    "confirmatory_admitted_applications": 0,
+    "confirmatory_admitted_workflows": 0
+  },
+  "provider_strata": [
+    {"provider": "aliyun", "model": "qwen3.7-flash", "agent_arms": ["visual", "hybrid"], "status": "pilot-runnable"},
+    {"provider": "deepseek", "model": "deepseek-v4-flash-vision-exp", "agent_arms": ["visual", "hybrid"], "status": "pilot-runnable"},
+    {"provider": "volcengine", "model": "doubao-seed-2-1-pro-260628", "agent_arms": ["visual", "hybrid"], "status": "blocked-by-provider-readiness"}
+  ],
+  "tranches": [
+    {"id": "T0", "name": "protocol-provider-stability", "status": "active", "exit": "available model/arm strata have complete records; blocked strata have readiness evidence"},
+    {"id": "T1", "name": "local-sut-admission", "status": "active", "applications": ["invoiceninja", "prestashop", "bookstack", "indico", "juice-shop"], "exit": "reset, oracle, fault, evolution, and three-arm pilot gates pass"},
+    {"id": "T2", "name": "candidate-wave-expansion", "status": "queued", "exit": "each candidate is admitted, rejected, or parked with evidence"},
+    {"id": "T3", "name": "model-framework-replication", "status": "queued", "exit": "adapter conformance and replay-equivalence gates pass"},
+    {"id": "T4", "name": "cross-application-workflows", "status": "blocked-until-endpoints-admitted", "exit": "both endpoints and handoff oracle independently admitted"},
+    {"id": "T5", "name": "variance-power-confirmatory-freeze", "status": "blocked", "exit": "pilot variance, power, concurrency, and analysis hashes frozen"}
+  ],
+  "branch_policy": {
+    "provider_block": "retain provider-api record; exclude from capability pooling; backfill exact cell after reactivation",
+    "visual_instability": "classify provider-format, grounding, termination, budget, and sut boundaries before redesign",
+    "application_failure": "park candidate and advance queue; never fill target with repeated admitted applications",
+    "power_infeasible": "reduce pre-specified interaction scope rather than run underpowered universal comparison"
+  },
+  "non_substitution_rules": [
+    "Blueprint workflows are not experimental records.",
+    "Provider connectivity and framework smoke are not cell passes.",
+    "Pilot and confirmatory denominators never mix.",
+    "Model and framework replication strata are not silently pooled with primary arm effects."
+  ]
+}

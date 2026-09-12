@@ -100,6 +100,7 @@
     "pilot:invoiceninja:visual": "PSS_ARM=visual node scripts/run-invoiceninja-agent-cell.mjs",
     "pilot:invoiceninja:hybrid": "PSS_ARM=hybrid node scripts/run-invoiceninja-agent-cell.mjs",
     "pilot:invoiceninja:matched": "node scripts/invoiceninja-matched-pilot.mjs",
+    "validate:phase2-campaign": "node scripts/validate-phase2-campaign-tranches.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",
     "oracle:invoiceninja": "node scripts/evaluate-invoiceninja-invoice.mjs",

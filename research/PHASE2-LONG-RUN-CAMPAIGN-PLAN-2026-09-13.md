@@ -30,6 +30,7 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Confirmatory admissions | 0 applications, 0 workflow slots | Confirmatory collection remains frozen |
 | Invoice Ninja | 66 diagnostic records across 2 workflows, 3 conditions, and multiple model strata | Useful pilot evidence; two workflows now have independent oracles, still not admitted |
 | PrestaShop | clean/fault/evolution canaries on one workflow across Qwen and DeepSeek; 18 arm/model records plus reset-retry evidence | Mutation gate passed; fault canary remains mixed and application is not admitted |
+| BookStack | Qwen clean navigation retry: Playwright and pure visual pass; hybrid malformed-action provider-format failure | SUT reset/oracle reachable; hybrid admission remains blocked |
 | Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
 | DeepSeek Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/fault/evolution mixed but mostly passing | Model-stratum pilot evidence |
 | Doubao Hybrid | 0/3 because Ark returned HTTP 429 | External blocked stratum; excluded from capability pooling |

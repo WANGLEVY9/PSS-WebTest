@@ -14,6 +14,6 @@
 
 - **Database rows before:** [{"id_product":15,"name":"Pack Mug + Framed poster"}]
 - **Database rows after:** [{"id_product":15,"name":"Pack Mug + Framed poster"}]
-- **Wall time:** 2562 ms
+- **Wall time:** 2859 ms
 
 A PASS is only a prerequisite for later arm-specific fault/evolution runs. It does not admit PrestaShop into the benchmark or justify repetition/power decisions.

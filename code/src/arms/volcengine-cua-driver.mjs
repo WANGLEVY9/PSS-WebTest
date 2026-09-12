@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
+import { resolveProviderProtocol } from '../provider-profile.mjs';
 
 const ACTION_TYPES = new Set(['click', 'double_click', 'type', 'keypress', 'scroll', 'wait']);
 const TOOL_ACTION_TYPES = new Set([...ACTION_TYPES, 'done']);
@@ -20,7 +21,7 @@ const UI_ACTION_TOOL = {
         key: { type: 'string' },
         delta_y: { type: 'integer' },
         ms: { type: 'integer', minimum: 100, maximum: 3000 },
-        verdict: { type: 'string' }
+        verdict: { type: 'string', enum: ['pass', 'clean', 'fault'] }
       },
       required: ['action_type'],
       additionalProperties: false
@@ -191,7 +192,7 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
   throw lastError;
 }
 
-export function createVolcengineCuaDriver({ env = process.env, observeScreenshot, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
+export function createVolcengineCuaDriver({ env = process.env, observeScreenshot, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries, coordinateMode, wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
   if (!['volcengine', 'aliyun', 'deepseek'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
@@ -203,24 +204,16 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     ? 'https://api.deepseek.com'
     : 'https://ark.cn-beijing.volces.com/api/v3';
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
-  const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
-  const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
-  const deepseekActionMode = env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool';
-  const volcengineActionMode = env.CUA_VOLCENGINE_ACTION_MODE ?? 'json';
-  if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
-    throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
-  }
-  if (config.provider === 'deepseek' && !['tool', 'json'].includes(deepseekActionMode)) {
-    throw new Error('CUA_DEEPSEEK_ACTION_MODE must be tool or json');
-  }
-  if (config.provider === 'volcengine' && !['tool', 'json'].includes(volcengineActionMode)) {
-    throw new Error('CUA_VOLCENGINE_ACTION_MODE must be tool or json');
-  }
-  const actionMode = config.provider === 'aliyun'
-    ? aliyunActionMode
-    : config.provider === 'deepseek'
-    ? deepseekActionMode
-    : volcengineActionMode;
+  // The provider protocol comes from the frozen profile manifest instead of an
+  // implicit per-provider default.  A profile file that omits the action-mode
+  // variable previously changed the protocol silently; `action_mode_source`
+  // now records which layer produced the value.
+  const protocol = resolveProviderProtocol({ env, provider: config.provider, model: config.model, arm: 'visual' });
+  const maxOutputTokens = protocol.max_output_tokens ?? 512;
+  const actionMode = protocol.action_mode;
+  const responsesMode = config.provider === 'volcengine' && protocol.api_mode === 'responses';
+  if (maxRetries === undefined) maxRetries = protocol.max_retries ?? 1;
+  if (coordinateMode === undefined) coordinateMode = protocol.coordinate_mode ?? 'normalized_1000';
   // Qwen3-VL's JSON mode is not reliable when thinking is enabled.  Alibaba's
   // OpenAI-compatible endpoint also prefers max_completion_tokens; keep the
   // Volcengine request shape unchanged for backward compatibility.
@@ -229,8 +222,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     : config.provider === 'deepseek'
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
-  const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (['aliyun', 'deepseek'].includes(config.provider) ? '1' : '0'), 10);
-  const responsesMode = config.provider === 'volcengine' && (env.CUA_VOLCENGINE_API_MODE ?? 'chat') === 'responses';
+  const maxDecisionRetries = protocol.max_decision_retries ?? (['aliyun', 'deepseek'].includes(config.provider) ? 1 : 0);
   const actionHistory = [];
   let lastAcceptedPointer = null;
   let observationSequence = 0;
@@ -377,7 +369,21 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         return decision;
     },
     async act(action) { return executeAction(action); },
-    getRetryCount() { return retryCount; }
+    getRetryCount() { return retryCount; },
+    getProtocolResolution() {
+      return {
+        profile_id: protocol.profile_id,
+        profile_status: protocol.profile_status,
+        frozen: protocol.frozen,
+        action_mode: protocol.action_mode,
+        action_mode_source: protocol.action_mode_source,
+        api_mode: protocol.api_mode,
+        api_mode_source: protocol.api_mode_source,
+        coordinate_mode: protocol.coordinate_mode,
+        max_output_tokens: protocol.max_output_tokens,
+        max_decision_retries: protocol.max_decision_retries
+      };
+    }
   };
 }
 

@@ -76,3 +76,21 @@ open:
 3. Repeat the same task with randomized arm order and independent reset.
 4. Only after three-arm clean/fault/evolution evidence is complete, reconsider
    application admission and include Invoice Ninja in pilot variance estimates.
+
+## Protocol-schema follow-up
+
+After the first diagnostic runs, the shared `ui_action` schema was tightened so
+that `verdict` is an enum (`pass`, `clean`, `fault`). Two additional runs were
+then collected without changing the observation contracts:
+
+| Run | Arm | Model | Strict cell | Boundary |
+|---|---|---|---:|---|
+| `invoiceninja-hybrid-qwen-clean-r3` | Hybrid | Qwen3.7-VL-Flash | pass | none |
+| `invoiceninja-visual-deepseek-clean-r3` | Pure visual | DeepSeek V4.1-Flash | pass | none |
+
+Both runs reached the invoice detail route, passed the independent persisted
+oracle, and emitted the required `done/pass` tool call. The earlier natural
+language termination failures remain in the ledger and are not rewritten. This
+is an engineering improvement to the declared tool contract, so any future
+confirmatory collection must freeze this schema version and report pre/post
+schema strata separately.

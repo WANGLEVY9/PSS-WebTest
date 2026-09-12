@@ -1,0 +1,28 @@
+{
+  "schema_version": "0.1",
+  "status": "candidate-not-admitted",
+  "application_id": "invoiceninja",
+  "mutations": [
+    {
+      "id": "invoiceninja-visible-number-mismatch",
+      "condition": "functional-fault",
+      "scope": "page-context",
+      "mechanism": "replace_visible_invoice_number_only",
+      "trigger": "invoice-detail-route",
+      "replacement": "999999",
+      "expected_invariant": "persisted invoice row remains exactly 123456/status_id=4/amount=120000/balance=0",
+      "reversible": true,
+      "status": "candidate"
+    },
+    {
+      "id": "invoiceninja-layout-v1",
+      "condition": "ui-evolution",
+      "scope": "page-context",
+      "mechanism": "presentation-only-css",
+      "trigger": "all-routes",
+      "expected_invariant": "invoice route, invoice number, heading, and persisted row remain unchanged",
+      "reversible": true,
+      "status": "candidate"
+    }
+  ]
+}

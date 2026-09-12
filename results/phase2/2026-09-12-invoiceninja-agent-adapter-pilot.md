@@ -136,5 +136,91 @@ stratum and for Playwright:
 
 The combined ledger now has 16 unique records, no duplicate IDs, and zero
 schema-audit errors. Pooled rates remain descriptive because the ledger mixes
-pre-fix diagnostics, model strata, and repeated clean sentinels; no fault or
-evolution evidence has been added for Invoice Ninja.
+pre-fix diagnostics, model strata, and repeated clean sentinels. At this point
+in the chronology, no fault or evolution evidence had yet been added for
+Invoice Ninja; the subsequent probes are reported separately below.
+
+## Fault/evolution preflight and first arm probes
+
+The page-context mutation layer was then repaired and exercised through an
+apply-remove-isolation gate before interpreting any arm outcome. The gate
+passed all six checks: the functional fault changes only the visible invoice
+number to `999999`, the persisted row remains unchanged, removing the fault
+restores `123456`, the presentation-only evolution installs and preserves the
+invoice semantics, and removing it leaves no mutation marker. The gate report
+is `results/phase2/2026-09-12-invoiceninja-fault-evolution-gate.md`. This is a
+preflight condition, not an admission or confirmatory result.
+
+The first arm probes under that gate are recorded separately below. The
+Playwright fault retry supersedes its earlier evaluator-error probe for
+interpretation, but the earlier record remains in the ledger to preserve the
+failure history.
+
+| Condition | Arm | Model | n | Strict pass | First boundary |
+|---|---|---|---:|---:|---|
+| functional fault | Pure visual | Qwen3.7-VL-Flash | 1 | 0 | `provider-format` before invoice detail |
+| functional fault | Hybrid | Qwen3.7-VL-Flash | 1 | 1 | none |
+| functional fault | Playwright | scripted locator | 1 successful retry (plus 1 retained evaluator-error) | 1/1 retry | none on retry |
+| UI evolution | Pure visual | Qwen3.7-VL-Flash | 1 | 0 | `provider-format` on invoices route |
+| UI evolution | Hybrid | Qwen3.7-VL-Flash | 1 | 1 | none |
+| UI evolution | Playwright | scripted locator | 1 | 1 | none |
+
+The fault and evolution ledgers independently report `status=ok`, with no
+duplicate run IDs or schema errors. These observations narrow the current
+engineering diagnosis: the Qwen Pure-visual failures occur before the
+independent oracle boundary and are not caused by reset contamination; the
+same task and mutation are executable by Hybrid and Playwright in this probe.
+However, one repetition per stratum is insufficient to infer a capability
+limit or a stable arm effect. The result is therefore a provider/protocol
+diagnostic, not evidence that pure visual CUA is intrinsically incapable of
+fault or evolution testing.
+
+## Cross-model repetition probes
+
+To distinguish a model-specific boundary from an arm-wide capability limit, the
+same mutation contracts were replayed after an independent Invoice Ninja reset
+with the DeepSeek V4.1-Flash tool-call profile. Every completed DeepSeek probe
+reached the invoice-detail route, emitted the expected verdict, and passed the
+independent database oracle:
+
+| Condition | Arm | DeepSeek strict pass |
+|---|---|---:|
+| functional fault | Pure visual | 1/1 |
+| functional fault | Hybrid | 1/1 |
+| UI evolution | Pure visual | 1/1 |
+| UI evolution | Hybrid | 1/1 |
+
+The all-model fault ledger audit has 7 unique records (visual 1/2,
+Hybrid 3/3, Playwright 1/2 successful retries), and the all-model evolution
+ledger has 5 unique records (visual 1/2, Hybrid 2/2, Playwright 1/1); both
+audits report `status=ok`, no duplicate IDs, and no schema errors. The retained
+Qwen Pure-visual failures therefore identify a Qwen/provider-format boundary in
+this protocol stratum, while the DeepSeek probes demonstrate that the visual
+arm can execute these workflows under another declared model. Neither table is
+a confirmatory arm comparison: models, conditions, and repetition counts are
+not yet balanced.
+
+## Current admission consequence
+
+Invoice Ninja remains **not admitted**. The mutation gate is now closed in the
+required direction, but admission still requires: (i) repeated clean,
+fault, and evolution runs for all three arms; (ii) a frozen reset/image digest;
+(iii) a declared model/provider and action-protocol stratum; and (iv) a
+pre-specified minimum pilot repetition count with no unresolved infrastructure
+boundary. Until those conditions are met, no repetition number is frozen, no
+power simulation is promoted to a design decision, and no confirmatory record
+is collected.
+
+## Next controlled iteration
+
+1. Repeat both models on the same fault/evolution cells, preserving Qwen and
+   DeepSeek as separate model strata and retaining every failure.
+2. Collect at least three independent repetitions per arm/condition/model
+   after freezing reset digest, mutation IDs, action schema, and wall-time
+   budget; randomize arm order within each matched block.
+3. Audit all records with the standard ledger checker and retain screenshot
+   digests, URL/milestone state, provider summaries, visible verdict, and
+   independent oracle output for every step.
+4. Only if the repeated three-arm blocks pass the admission gate should their
+   variance inform repetition/power planning. The resulting rates will remain
+   pilot evidence until the preregistered confirmatory collection is started.

@@ -12,6 +12,7 @@ import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { assertProtocolMatchesFrozenProfile } from '../src/provider-profile.mjs';
 import { evaluateInvoiceNinjaInvoice } from '../src/invoiceninja-oracle.mjs';
+import { installInvoiceNinjaMutation } from '../src/mutations/invoiceninja.mjs';
 
 // Invoice Ninja agent cell. Authentication is a matched preamble; credentials
 // are never included in an observation or a persisted record.
@@ -29,8 +30,11 @@ const applicationId = 'invoiceninja';
 const applicationVersion = process.env.PSS_INVOICENINJA_VERSION ?? '5.11.61';
 const taskId = 'invoiceninja-view-invoice-details';
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
-const expectedVerdict = process.env.PSS_EXPECTED_VERDICT ?? 'clean';
-if (expectedVerdict !== 'clean') throw new Error('Invoice Ninja agent cell currently supports the clean workflow only; fault/evolution adapters must be registered separately.');
+const mutationId = process.env.PSS_UI_MUTATION ?? null;
+const expectedVerdict = process.env.PSS_EXPECTED_VERDICT ?? (mutationId === 'invoiceninja-visible-number-mismatch' ? 'fault' : 'clean');
+if (!['clean', 'fault'].includes(expectedVerdict)) throw new Error('PSS_EXPECTED_VERDICT must be clean or fault');
+if (expectedVerdict === 'fault' && mutationId !== 'invoiceninja-visible-number-mismatch') throw new Error('Invoice Ninja fault runs require invoiceninja-visible-number-mismatch');
+if (expectedVerdict === 'clean' && mutationId === 'invoiceninja-visible-number-mismatch') throw new Error('Invoice Ninja mismatch mutation requires expected verdict fault');
 const viewport = { width: 1280, height: 720 };
 const runId = process.env.PSS_RUN_ID ?? `invoiceninja-${arm}-${Date.now()}`;
 
@@ -59,13 +63,22 @@ let mutationApplied = false;
 
 async function pageState(page) {
   const url = new URL(page.url());
+  const bodyText = await page.locator('body').innerText().catch(() => '');
+  const visibleInvoiceValues = await page.locator('input:visible').evaluateAll((inputs) => inputs.map((input) => input.value).filter(Boolean)).catch(() => []);
+  const invoiceNumberVisible = visibleInvoiceValues.includes('999999') || bodyText.includes('999999')
+    ? '999999'
+    : visibleInvoiceValues.includes('123456') || bodyText.includes('123456')
+      ? '123456'
+      : null;
   return {
     milestone: url.pathname.includes('/login') ? 'login' : url.pathname.includes('/invoices') ? (await page.getByRole('heading', { name: 'Edit Invoice', exact: true }).isVisible().catch(() => false) ? 'invoice-detail' : 'invoices') : 'other',
     url_path: url.pathname,
     authenticated: !url.pathname.includes('/login'),
     invoices_heading_visible: await page.getByRole('heading', { name: 'Invoices', exact: true }).isVisible().catch(() => false),
     edit_invoice_heading_visible: await page.getByRole('heading', { name: 'Edit Invoice', exact: true }).isVisible().catch(() => false),
-    target_invoice_visible: await page.getByText('123456', { exact: true }).first().isVisible().catch(() => false)
+    target_invoice_visible: await page.getByText('123456', { exact: true }).first().isVisible().catch(() => false),
+    invoice_number_visible: invoiceNumberVisible,
+    mutation_marker_visible: await page.locator('#pss-invoiceninja-number-mismatch').count().catch(() => 0) > 0
   };
 }
 
@@ -97,6 +110,7 @@ async function pageStructure(page) {
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport });
 const page = await context.newPage();
+await installInvoiceNinjaMutation(page, mutationId);
 const replayState = () => pageState(page);
 const capture = async (phase, step, action = null) => {
   const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' });
@@ -182,7 +196,9 @@ try {
     : createVolcengineHybridDriver({ ...driverOptions, observeHybrid, hybridActionMode });
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   result = await adapter.run({
-    intent: 'The browser is already authenticated. Open the Invoices section, open the invoice with exact number 123456, and finish only when its Edit Invoice page is visibly open. Use only the visible interface. Do not inspect source code, database state, cookies, hidden evaluator fields, or any oracle information.',
+    intent: expectedVerdict === 'fault'
+      ? 'The browser is already authenticated. Open the Invoices section, open the invoice with exact number 123456, and inspect its Edit Invoice page. If the visible invoice number is 999999 instead of 123456, report the observed fault and finish with verdict fault. If the visible invoice number is exactly 123456, finish with verdict pass. Use only the visible interface. Do not inspect source code, database state, cookies, hidden evaluator fields, or any oracle information.'
+      : 'The browser is already authenticated. Open the Invoices section, open the invoice with exact number 123456, and finish only when its Edit Invoice page is visibly open with invoice number 123456. Use only the visible interface. Do not inspect source code, database state, cookies, hidden evaluator fields, or any oracle information.',
     onStep: async ({ step, action }) => { const state = await replayState(); trace.push({ step, action, url: page.url(), milestone: state.milestone, state }); await capture('after-action', step, action); }
   });
 } catch (error) {
@@ -191,7 +207,7 @@ try {
 
 const state = await pageState(page).catch(() => ({ milestone: 'unknown' }));
 const oracle = await evaluateInvoiceNinjaInvoice().catch((error) => ({ oracle: 'invoiceninja-database-invoice', passed: false, error: { name: error.name, message: error.message.slice(0, 240) } }));
-const visiblePassed = state.milestone === 'invoice-detail' && state.edit_invoice_heading_visible === true;
+const visiblePassed = state.milestone === 'invoice-detail' && state.edit_invoice_heading_visible === true && (expectedVerdict === 'fault' ? state.invoice_number_visible === '999999' : state.invoice_number_visible === '123456');
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: visiblePassed && oracle.passed === true, expectedVerdict });
 const failureCategory = cellPassed ? null : classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const profile = protocol ?? {};

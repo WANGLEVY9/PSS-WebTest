@@ -102,3 +102,22 @@ removed the parsing error but exposed a repeated non-progressing click on the
 invoice page (`grounding-loop`). It is not pooled with the frozen tool-call
 stratum and confirms that the remaining Pure-visual issue is grounding rather
 than reset or database-oracle contamination.
+
+## Ledger audit
+
+The combined local ledger contains 12 unique records across the three arms. The
+schema audit reported `status=ok`, zero duplicate run IDs, and no validation
+errors. Because the records intentionally mix pre-fix diagnostics, two model
+strata, and one Playwright reference run, the following rates are descriptive
+only:
+
+| Arm | n | valid completion | strict joint correctness | Main recorded boundaries |
+|---|---:|---:|---:|---|
+| Pure visual | 5 | 1/5 | 1/5 | provider-format (3), termination-verdict (1) |
+| Hybrid | 6 | 1/6 | 1/6 | execution/modal (3), termination-verdict (2) |
+| Playwright | 1 | 1/1 | 1/1 | none |
+
+The post-fix sentinel outcomes are more informative than these pooled pilot
+rates: Qwen Hybrid and DeepSeek Pure visual each passed one clean run, while the
+other agent records expose distinct engineering or protocol boundaries. No
+application denominator or repetition count is frozen from this audit.

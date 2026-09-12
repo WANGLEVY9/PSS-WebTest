@@ -162,16 +162,21 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       const editorFollowupInstruction = lastTwo.length === 2 && lastTwo[0].type === 'type' && lastTwo[1].type === 'click'
         ? 'The previous action typed the page title and the latest action clicked the content editor. Your next action MUST be a type action with the requested page content; do not click again.'
         : '';
+      const titleClearInstruction = lastAcceptedPointer?.interaction === 'type'
+        && /title/i.test(lastAcceptedPointer.targetName ?? '')
+        && ['click', 'rejected_click'].includes(actionHistory.at(-1)?.type)
+        ? 'The Page Title textbox is focused and may contain default text. Your next action MUST be keypress with key CTRL+A; do not click another control and do not type until the field is selected.'
+        : '';
       let decision;
       let lastDecisionError;
       for (let decisionAttempt = 0; decisionAttempt <= maxDecisionRetries; decisionAttempt += 1) {
         const retryTextboxClickInstruction = actionHistory.at(-1)?.type === 'rejected_click' && actionHistory.at(-1)?.interaction === 'type'
-          ? 'The previous repeated click targeted a textbox. The textbox is already focused; your next action MUST be a type action using the exact literal requested by the task.'
+          ? 'The previous click targeted a textbox. The textbox is already focused; if it is the Page Title field, your next action MUST be keypress CTRL+A, followed by the exact requested type action.'
           : '';
         const retryInstruction = decisionAttempt > 0
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
-        const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, always type the title into the Page Title textbox before clicking the Page content editor. After clicking the content editor once, the next action must be type with the requested content, not another click.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.`;
+        const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, if the Page Title textbox already contains default text, click it, press CTRL+A, and only then type the exact requested title; never append to the default. After the title is correct, click the Page content editor once and on the very next action type the requested content, not another click.\n${editorFollowupInstruction}\n${titleClearInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.`;
         const requestBody = responsesMode
           ? {
               model: config.model,
@@ -234,12 +239,21 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
             }
             throw new Error(`repeated non-progressing click at ${decisionIdentity}`);
           }
+          const titleNeedsClear = lastAcceptedPointer?.interaction === 'type'
+            && /title/i.test(lastAcceptedPointer.targetName ?? '')
+            && ['click', 'rejected_click'].includes(actionHistory.at(-1)?.type);
+          const isCtrlA = decision.type === 'action'
+            && decision.action.type === 'keypress'
+            && String(decision.action.key).replaceAll('+', '').replaceAll('-', '').toUpperCase() === 'CTRL+A';
+          if (titleNeedsClear && !isCtrlA) {
+            throw new Error(`title textbox requires CTRL+A before typing at ${lastAcceptedPointer.identity}`);
+          }
           emitProviderSummary(true);
           break;
         } catch (error) {
           emitProviderSummary(false, error);
           lastDecisionError = error;
-          if ((error.message.startsWith('repeated non-progressing click') || error.message.startsWith('repeated non-progressing textbox click')) && decision?.action) {
+          if ((error.message.startsWith('repeated non-progressing click') || error.message.startsWith('repeated non-progressing textbox click') || error.message.startsWith('title textbox requires CTRL+A')) && decision?.action) {
             const target = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
               ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
               : null;
@@ -252,7 +266,10 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       if (!decision) throw lastDecisionError || new Error('CUA provider did not return a decision');
         actionHistory.push(decision.type === 'action' ? { ...decision.action } : decision);
         if (decision.type === 'action' && decision.action.type === 'click') {
-          lastAcceptedPointer = { identity: pointerIdentity(decision.action), observationDigest: currentObservationDigest, progressToken: currentProgressToken, observationSequence };
+          const target = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
+            ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
+            : null;
+          lastAcceptedPointer = { identity: pointerIdentity(decision.action), interaction: target?.interaction ?? null, targetName: target?.name ?? null, observationDigest: currentObservationDigest, progressToken: currentProgressToken, observationSequence };
         }
         if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type) && Number.isInteger(decision.action.x) && Number.isInteger(decision.action.y)) {
           const normalized = coordinateMode === 'normalized_1000' || (coordinateMode === 'auto' && (decision.action.x > 1000 || decision.action.y > 720));

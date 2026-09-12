@@ -219,5 +219,6 @@ test('semantic hybrid repeated textbox click instructs the model to type', async
   const observation = await driver.observe();
   await driver.decide({ intent: 'Set the page title to PSS Phase2 Page', observation, step: 0 });
   await assert.rejects(() => driver.decide({ intent: 'Set the page title to PSS Phase2 Page', observation, step: 1 }), /textbox click.*target_id=c11/);
-  assert.ok(requests.some((body) => body.messages[0].content[0].text.includes('next action MUST be a type action')));
+  assert.ok(requests.some((body) => body.messages[0].content[0].text.includes('keypress CTRL+A')));
+  assert.ok(requests.some((body) => body.messages[0].content[0].text.includes('press CTRL+A')));
 });

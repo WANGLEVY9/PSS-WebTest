@@ -11,6 +11,7 @@ test('classifies provider and grounding failures by observed boundary', () => {
 
 test('classifies malformed hybrid pointer output as provider format, not SUT execution', () => {
   assert.equal(classifyAgentFailure({ failure: { name: 'Error', message: 'pointer action coordinates must be normalized coordinates (received x=undefined y=undefined)' } }), 'provider-format');
+  assert.equal(classifyAgentFailure({ failure: { name: 'Error', message: 'title textbox requires CTRL+A before typing at target_id=c11' } }), 'provider-format');
 });
 
 test('separates step budget, termination verdict, and oracle failure', () => {

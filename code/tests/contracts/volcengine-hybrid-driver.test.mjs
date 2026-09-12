@@ -135,7 +135,11 @@ test('semantic hybrid mode admits candidate IDs and does not synthesize coordina
   });
   const decision = await driver.decide({ intent: 'Open New Page', observation: await driver.observe(), step: 0 });
   assert.deepEqual(decision.action, { type: 'click', target_id: 'c12' });
-  assert.match(JSON.parse(request.options.body).messages[0].content[0].text, /target_id/);
+  const body = JSON.parse(request.options.body);
+  assert.match(body.messages[0].content[0].text, /target_id/);
+  const clickBranch = body.tools[0].function.parameters.oneOf.find((branch) => branch.properties?.action_type?.enum?.includes('click'));
+  assert.deepEqual(clickBranch.required, ['action_type', 'target_id']);
+  assert.equal(body.tools[0].function.parameters.properties.x, undefined);
 });
 
 test('hybrid driver permits a repeated coordinate after a screenshot transition', async () => {

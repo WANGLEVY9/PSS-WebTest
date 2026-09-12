@@ -39,6 +39,49 @@ const RESPONSES_UI_ACTION_TOOL = {
   parameters: UI_ACTION_TOOL.function.parameters
 };
 
+// Semantic hybrid mode gets a stricter schema than coordinate mode.  The
+// provider must bind pointer actions to one of the visible candidate IDs
+// emitted by pageStructure; making that requirement explicit at the tool
+// boundary prevents an empty click (or an undefined coordinate pair) from
+// reaching the harness and being misclassified as an execution failure.
+const SEMANTIC_ACTION_PARAMETERS = {
+  type: 'object',
+  properties: {
+    action_type: { type: 'string', enum: [...TOOL_ACTION_TYPES] },
+    target_id: { type: 'string', pattern: '^c[0-9]{1,3}$' },
+    text: { type: 'string', maxLength: 200 },
+    key: { type: 'string' },
+    delta_y: { type: 'integer' },
+    ms: { type: 'integer', minimum: 100, maximum: 3000 },
+    verdict: { type: 'string', enum: ['pass', 'clean', 'fault'] }
+  },
+  oneOf: [
+    { properties: { action_type: { enum: ['click', 'double_click'] } }, required: ['action_type', 'target_id'] },
+    { properties: { action_type: { const: 'type' } }, required: ['action_type', 'text'] },
+    { properties: { action_type: { const: 'keypress' } }, required: ['action_type', 'key'] },
+    { properties: { action_type: { const: 'scroll' } }, required: ['action_type', 'delta_y'] },
+    { properties: { action_type: { const: 'wait' } }, required: ['action_type', 'ms'] },
+    { properties: { action_type: { const: 'done' } }, required: ['action_type', 'verdict'] }
+  ],
+  additionalProperties: false
+};
+
+const SEMANTIC_UI_ACTION_TOOL = {
+  type: 'function',
+  function: {
+    name: 'ui_action',
+    description: 'Return exactly one next browser action. For click-like actions, target_id is required and must be a visible candidate from pageStructure.',
+    parameters: SEMANTIC_ACTION_PARAMETERS
+  }
+};
+
+const SEMANTIC_RESPONSES_UI_ACTION_TOOL = {
+  type: 'function',
+  name: 'ui_action',
+  description: SEMANTIC_UI_ACTION_TOOL.function.description,
+  parameters: SEMANTIC_ACTION_PARAMETERS
+};
+
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
   return screenshot.startsWith('data:image/') ? screenshot : `data:image/png;base64,${screenshot}`;
@@ -387,4 +430,12 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
   };
 }
 
-export { parseDecision, parseToolDecision, parseProviderDecision, UI_ACTION_TOOL, RESPONSES_UI_ACTION_TOOL };
+export {
+  parseDecision,
+  parseToolDecision,
+  parseProviderDecision,
+  UI_ACTION_TOOL,
+  RESPONSES_UI_ACTION_TOOL,
+  SEMANTIC_UI_ACTION_TOOL,
+  SEMANTIC_RESPONSES_UI_ACTION_TOOL
+};

@@ -1,7 +1,14 @@
 import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
+import { resolveProviderProtocol } from '../provider-profile.mjs';
 import { assertObservationContract } from './observation-contracts.mjs';
-import { parseProviderDecision, UI_ACTION_TOOL, RESPONSES_UI_ACTION_TOOL } from './volcengine-cua-driver.mjs';
+import {
+  parseProviderDecision,
+  UI_ACTION_TOOL,
+  RESPONSES_UI_ACTION_TOOL,
+  SEMANTIC_UI_ACTION_TOOL,
+  SEMANTIC_RESPONSES_UI_ACTION_TOOL
+} from './volcengine-cua-driver.mjs';
 
 function asDataUrl(screenshot) {
   if (typeof screenshot !== 'string' || screenshot.length === 0) throw new TypeError('screenshot must be a non-empty string');
@@ -59,7 +66,7 @@ async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRet
   throw lastError;
 }
 
-export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries = Number.parseInt(env.CUA_MAX_RETRIES ?? '1', 10), coordinateMode = env.CUA_COORDINATE_MODE ?? 'normalized_1000', hybridActionMode = env.CUA_HYBRID_ACTION_MODE ?? 'coordinate', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
+export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries, coordinateMode, hybridActionMode = env.CUA_HYBRID_ACTION_MODE ?? 'coordinate', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
   if (!['volcengine', 'aliyun', 'deepseek'].includes(config.provider)) throw new Error(`Unsupported CUA provider for this driver: ${config.provider}`);
   const apiKey = env.CUA_API_KEY.trim();
@@ -71,25 +78,16 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     ? 'https://api.deepseek.com'
     : 'https://ark.cn-beijing.volces.com/api/v3';
   const baseUrl = (env.CUA_BASE_URL || defaultBaseUrl).replace(/\/$/, '');
-  const maxOutputTokens = Number.parseInt(env.CUA_MAX_OUTPUT_TOKENS ?? '512', 10);
-  const aliyunActionMode = env.CUA_ALIYUN_ACTION_MODE ?? 'tool';
-  const deepseekActionMode = env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool';
-  const volcengineActionMode = env.CUA_VOLCENGINE_ACTION_MODE ?? 'json';
+  // The provider protocol comes from the frozen profile manifest instead of an
+  // implicit per-provider default.  The hybrid grounding mode is resolved
+  // separately from the optimization profile by the matched runners.
+  const protocol = resolveProviderProtocol({ env, provider: config.provider, model: config.model, arm: 'hybrid' });
+  const maxOutputTokens = protocol.max_output_tokens ?? 512;
+  const actionMode = protocol.action_mode;
+  const responsesMode = config.provider === 'volcengine' && protocol.api_mode === 'responses';
   if (!['coordinate', 'semantic'].includes(hybridActionMode)) throw new Error('CUA_HYBRID_ACTION_MODE must be coordinate or semantic');
-  if (config.provider === 'aliyun' && !['tool', 'json'].includes(aliyunActionMode)) {
-    throw new Error('CUA_ALIYUN_ACTION_MODE must be tool or json');
-  }
-  if (config.provider === 'deepseek' && !['tool', 'json'].includes(deepseekActionMode)) {
-    throw new Error('CUA_DEEPSEEK_ACTION_MODE must be tool or json');
-  }
-  if (config.provider === 'volcengine' && !['tool', 'json'].includes(volcengineActionMode)) {
-    throw new Error('CUA_VOLCENGINE_ACTION_MODE must be tool or json');
-  }
-  const actionMode = config.provider === 'aliyun'
-    ? aliyunActionMode
-    : config.provider === 'deepseek'
-    ? deepseekActionMode
-    : volcengineActionMode;
+  if (maxRetries === undefined) maxRetries = protocol.max_retries ?? 1;
+  if (coordinateMode === undefined) coordinateMode = protocol.coordinate_mode ?? 'normalized_1000';
   // Qwen3-VL JSON mode can fail with thinking enabled.  Use Alibaba's
   // generation-limit field explicitly while preserving the Ark shape.
   const generationOptions = config.provider === 'aliyun'
@@ -97,8 +95,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     : config.provider === 'deepseek'
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
-  const maxDecisionRetries = Number.parseInt(env.CUA_MAX_DECISION_RETRIES ?? (['aliyun', 'deepseek'].includes(config.provider) ? '1' : '0'), 10);
-  const responsesMode = config.provider === 'volcengine' && (env.CUA_VOLCENGINE_API_MODE ?? 'chat') === 'responses';
+  const maxDecisionRetries = protocol.max_decision_retries ?? (['aliyun', 'deepseek'].includes(config.provider) ? 1 : 0);
   const actionHistory = [];
   const pointerIdentity = (action) => {
     if (typeof action?.target_id === 'string' && action.target_id.length > 0) return `target_id=${action.target_id}`;
@@ -194,7 +191,10 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
               ] }]
             };
         if (actionMode === 'tool') {
-          requestBody.tools = [responsesMode ? RESPONSES_UI_ACTION_TOOL : UI_ACTION_TOOL];
+          const tool = hybridActionMode === 'semantic'
+            ? (responsesMode ? SEMANTIC_RESPONSES_UI_ACTION_TOOL : SEMANTIC_UI_ACTION_TOOL)
+            : (responsesMode ? RESPONSES_UI_ACTION_TOOL : UI_ACTION_TOOL);
+          requestBody.tools = [tool];
           if (!responsesMode) requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
         } else if (!responsesMode) {
           requestBody.response_format = { type: 'json_object' };
@@ -261,6 +261,20 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         return decision;
     },
     async act(action) { return executeAction(action); },
-    getRetryCount() { return retryCount; }
+    getRetryCount() { return retryCount; },
+    getProtocolResolution() {
+      return {
+        profile_id: protocol.profile_id,
+        profile_status: protocol.profile_status,
+        frozen: protocol.frozen,
+        action_mode: protocol.action_mode,
+        action_mode_source: protocol.action_mode_source,
+        api_mode: protocol.api_mode,
+        api_mode_source: protocol.api_mode_source,
+        coordinate_mode: protocol.coordinate_mode,
+        max_output_tokens: protocol.max_output_tokens,
+        max_decision_retries: protocol.max_decision_retries
+      };
+    }
   };
 }

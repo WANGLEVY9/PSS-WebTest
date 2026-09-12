@@ -30,7 +30,7 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Confirmatory admissions | 0 applications, 0 workflow slots | Confirmatory collection remains frozen |
 | Invoice Ninja | 66 diagnostic records across 2 workflows, 3 conditions, and multiple model strata | Useful pilot evidence; two workflows now have independent oracles, still not admitted |
 | PrestaShop | clean/fault/evolution canaries on one workflow across Qwen and DeepSeek; 18 arm/model records plus reset-retry evidence | Mutation gate passed; fault canary remains mixed and application is not admitted |
-| BookStack | Qwen clean navigation retry: Playwright and pure visual pass; hybrid malformed-action provider-format failure | SUT reset/oracle reachable; hybrid admission remains blocked |
+| BookStack | Qwen clean navigation: initial/retry blocks exposed malformed semantic clicks; schema-constrained semantic retry passed 3/3 | SUT reset/oracle reachable; one clean workflow diagnostic only, application admission remains blocked |
 | Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
 | DeepSeek Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/fault/evolution mixed but mostly passing | Model-stratum pilot evidence |
 | Doubao Hybrid | 0/3 because Ark returned HTTP 429 | External blocked stratum; excluded from capability pooling |
@@ -172,8 +172,9 @@ stratified rule; do not collect an underpowered universal leaderboard.
    variance. (Completed on 2026-09-13; evidence remains pilot-only.)
 3. Re-run PrestaShop and BookStack with the same run-record/replay contract and
    explicitly separate framework/model strata. PrestaShop's first workflow
-   clean/fault/evolution canaries are now complete; repetition expansion remains
-   gated by pilot variance.
+   clean/fault/evolution canaries are now complete; BookStack's schema-constrained
+   clean diagnostic passed 3/3, while fault/evolution and repetition expansion
+   remain gated by pilot variance.
 4. Admit the first application only after its complete eight-slot subset is
    machine-checkable; otherwise keep it pilot-only.
 5. Expand to the next candidate wave while maintaining the same admission gate.

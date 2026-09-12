@@ -9,6 +9,10 @@ test('classifies provider and grounding failures by observed boundary', () => {
   assert.equal(classifyAgentFailure({ failure: { name: 'Error', message: 'CUA model did not return valid JSON' } }), 'provider-format');
 });
 
+test('classifies malformed hybrid pointer output as provider format, not SUT execution', () => {
+  assert.equal(classifyAgentFailure({ failure: { name: 'Error', message: 'pointer action coordinates must be normalized coordinates (received x=undefined y=undefined)' } }), 'provider-format');
+});
+
 test('separates step budget, termination verdict, and oracle failure', () => {
   assert.equal(classifyAgentFailure({ result: { status: 'timeout' }, oraclePassed: true }), 'agent-step-budget');
   assert.equal(classifyAgentFailure({ result: { status: 'completed', emitted_verdict: 'not-emitted' }, oraclePassed: true }), 'termination-verdict');

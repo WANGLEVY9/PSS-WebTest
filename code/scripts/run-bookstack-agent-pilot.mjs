@@ -131,6 +131,9 @@ await page.getByRole('button', { name: 'Log In' }).click();
 await page.getByRole('link', { name: 'Books', exact: true }).waitFor();
 
 const executeAction = async (action) => {
+  if (arm === 'hybrid' && ['click', 'double_click'].includes(action.type) && !action.target_id && (!Number.isFinite(action.x) || !Number.isFinite(action.y))) {
+    throw new Error('hybrid pointer action requires either a visible target_id or finite coordinates');
+  }
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
     throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
   }

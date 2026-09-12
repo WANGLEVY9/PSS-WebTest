@@ -94,3 +94,11 @@ language termination failures remain in the ledger and are not rewritten. This
 is an engineering improvement to the declared tool contract, so any future
 confirmatory collection must freeze this schema version and report pre/post
 schema strata separately.
+
+The post-fix Qwen Pure-visual run (`invoiceninja-visual-qwen-clean-r3`) still
+failed before the invoice route with a provider-format error. A separately
+labelled JSON action-mode ablation (`invoiceninja-visual-qwen-json-ablation-r1`)
+removed the parsing error but exposed a repeated non-progressing click on the
+invoice page (`grounding-loop`). It is not pooled with the frozen tool-call
+stratum and confirms that the remaining Pure-visual issue is grounding rather
+than reset or database-oracle contamination.

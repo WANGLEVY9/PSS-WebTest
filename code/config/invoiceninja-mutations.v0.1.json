@@ -4,6 +4,17 @@
   "application_id": "invoiceninja",
   "mutations": [
     {
+      "id": "invoiceninja-visible-payment-omission",
+      "condition": "functional-fault",
+      "scope": "page-context",
+      "mechanism": "remove-visible-payment-row-only",
+      "trigger": "payments-route",
+      "replacement": null,
+      "expected_invariant": "persisted payment row remains exactly number=0001/status_id=4/amount=120000/refunded=0/applied=120000",
+      "reversible": true,
+      "status": "candidate"
+    },
+    {
       "id": "invoiceninja-visible-number-mismatch",
       "condition": "functional-fault",
       "scope": "page-context",

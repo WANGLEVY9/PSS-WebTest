@@ -53,7 +53,7 @@ export function sanitizeReplayState(state = {}) {
     'milestone', 'url_path', 'title_visible', 'title_filled', 'title_length',
     'editor_visible', 'editor_focused', 'save_visible', 'save_disabled',
     'save_clicked', 'saved_page_visible', 'authenticated', 'request_state',
-    'invoice_number_visible', 'mutation_marker_visible'
+    'invoice_number_visible', 'payment_number_visible', 'mutation_marker_visible'
   ]) {
     if (typeof state[key] === 'boolean' || typeof state[key] === 'string' || Number.isInteger(state[key])) {
       safe[key] = typeof state[key] === 'string' ? state[key].slice(0, 120) : state[key];

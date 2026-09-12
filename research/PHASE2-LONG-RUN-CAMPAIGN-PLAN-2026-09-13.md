@@ -28,9 +28,9 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Large-scale target | 30 applications, 8 workflows each, 3 conditions, 3 primary arms, 14 repetitions | Design target only |
 | Triage queue | 22 candidate application IDs | Five workflow-bearing matrix applications plus candidate-only rows; coverage gap is open |
 | Confirmatory admissions | 0 applications, 0 workflow slots | Confirmatory collection remains frozen |
-| Invoice Ninja | 48 diagnostic records across 3 conditions and multiple model strata | Useful pilot evidence; one workflow only, not admitted |
-| Qwen Hybrid | 9/9 strict in the Invoice Ninja block | Model-stratum pilot evidence |
-| DeepSeek Hybrid | 9/9 strict in the Invoice Ninja block | Model-stratum pilot evidence |
+| Invoice Ninja | 66 diagnostic records across 2 workflows, 3 conditions, and multiple model strata | Useful pilot evidence; two workflows now have independent oracles, still not admitted |
+| Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
+| DeepSeek Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/fault/evolution mixed but mostly passing | Model-stratum pilot evidence |
 | Doubao Hybrid | 0/3 because Ark returned HTTP 429 | External blocked stratum; excluded from capability pooling |
 
 The queue/matrix discrepancy must be resolved by adding or rejecting candidates
@@ -165,8 +165,9 @@ stratified rule; do not collect an underpowered universal leaderboard.
 ## 6. Immediate execution queue
 
 1. Complete T0 provider strata: backfill Doubao Hybrid once Ark is reactivated.
-2. Bind and gate a second Invoice Ninja workflow; repeat all available model
-   strata before using Invoice Ninja variance.
+2. Bind and gate a second Invoice Ninja workflow; complete a first matched
+   sentinel across all available model strata before using Invoice Ninja
+   variance. (Completed on 2026-09-13; evidence remains pilot-only.)
 3. Re-run PrestaShop and BookStack with the same run-record/replay contract and
    explicitly separate framework/model strata.
 4. Admit the first application only after its complete eight-slot subset is

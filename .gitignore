@@ -25,6 +25,9 @@
 !.env.example
 artifacts/*
 !artifacts/.gitkeep
+# Agent runs invoked from the code workspace also write local JSONL ledgers;
+# keep raw run records and replay screenshots out of the public repository.
+/code/artifacts/
 __pycache__/
 .venv/
 node_modules/

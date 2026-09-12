@@ -12,6 +12,11 @@ const repetitions = Number.parseInt(process.env.PSS_PILOT_REPS ?? '1', 10);
 if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 3) {
   throw new Error('PSS_PILOT_REPS must be an integer in [1,3]');
 }
+const repetitionOffset = Number.parseInt(process.env.PSS_PILOT_REP_OFFSET ?? '0', 10);
+if (!Number.isInteger(repetitionOffset) || repetitionOffset < 0 || repetitionOffset > 20) {
+  throw new Error('PSS_PILOT_REP_OFFSET must be an integer in [0,20]');
+}
+const campaignTag = (process.env.PSS_PILOT_TAG ?? 'round').replace(/[^a-z0-9_-]+/gi, '-');
 
 const conditions = ['clean-stable', 'functional-fault', 'ui-evolution'];
 const qwenEnv = path.join(codeDir, '.env');
@@ -106,28 +111,30 @@ for (const condition of conditions) {
     blockIndex += 1;
     const order = blockOrder(blockIndex);
     await resetSut();
-    const block = { condition, repetition, block_index: blockIndex, arm_order: order.map((arm) => arm.id), runs: [] };
+    const repetitionLabel = repetitionOffset + repetition;
+    const block = { condition, repetition: repetitionLabel, block_index: blockIndex, arm_order: order.map((arm) => arm.id), runs: [] };
     for (const arm of order) {
       const outputPath = path.join(rawDir, `invoiceninja-matched-${arm.id}.jsonl`);
-      const runId = `invoiceninja-matched-${condition}-${arm.id}-r${repetition}`;
+      const runId = `invoiceninja-matched-${condition}-${arm.id}-r${repetitionLabel}`;
       const result = await runCommand('npm', ['run', arm.npmScript], armEnv(arm, condition, runId, outputPath));
       const parsed = parseRunRecord(result.stdout);
+      const record = parsed?.run_record ?? parsed ?? null;
       const runSummary = {
         arm: arm.id,
-        run_id: parsed?.run_record?.run_id ?? parsed?.run_id ?? runId,
+        run_id: record?.run_id ?? runId,
         exit_code: result.exitCode,
-        status: parsed?.run_record?.status ?? 'no-record',
-        checkpoint_reached: parsed?.run_record?.checkpoint_reached ?? parsed?.checkpoint_reached ?? false,
-        independent_oracle_passed: parsed?.run_record?.independent_oracle_passed ?? false,
-        emitted_verdict: parsed?.run_record?.emitted_verdict ?? parsed?.emitted_verdict ?? 'not-emitted',
-        failure_category: parsed?.run_record?.failure_category ?? null,
-        provider_id: parsed?.run_record?.provenance?.provider_id ?? null,
-        model_id: parsed?.run_record?.provenance?.model_id ?? null,
-        wall_time_ms: parsed?.run_record?.timing?.wall_time_ms ?? null
+        status: record?.status ?? 'no-record',
+        checkpoint_reached: record?.checkpoint_reached ?? false,
+        independent_oracle_passed: record?.independent_oracle_passed ?? parsed?.independent_oracle?.passed ?? false,
+        emitted_verdict: record?.emitted_verdict ?? 'not-emitted',
+        failure_category: record?.failure_category ?? null,
+        provider_id: record?.provenance?.provider_id ?? null,
+        model_id: record?.provenance?.model_id ?? null,
+        wall_time_ms: record?.timing?.wall_time_ms ?? parsed?.wall_time_ms ?? null
       };
       if (!parsed && result.stderr) runSummary.error_tail = result.stderr.slice(-240);
       block.runs.push(runSummary);
-      outcomes.push({ condition, repetition, ...runSummary });
+      outcomes.push({ condition, repetition: repetitionLabel, ...runSummary });
     }
     console.log(JSON.stringify({ block_complete: true, ...block }));
   }
@@ -139,7 +146,7 @@ const lines = [
   '',
   'Evidence boundary: diagnostic pilot only; no application admission, repetition freeze, power decision, or confirmatory claim.',
   '',
-  `Design: ${repetitions} repetition(s) × ${conditions.length} conditions × ${arms.length} arm/model strata; each block was independently reset before the deterministic randomized arm order.`,
+  `Design: repetition labels ${repetitionOffset + 1}–${repetitionOffset + repetitions} × ${conditions.length} conditions × ${arms.length} arm/model strata; each block was independently reset before the deterministic randomized arm order.`,
   '',
   '| Condition | Arm/model | n | Strict pass | State reached | Oracle pass | First boundaries |',
   '|---|---|---:|---:|---:|---:|---|'
@@ -152,7 +159,7 @@ for (const condition of conditions) {
   }
 }
 lines.push('', '## Run-level audit notes', '', '- A missing or malformed run record remains `no-record` and is not converted into a success.', '- Provider/model strata are reported separately; no model pooling is performed.', '- Raw screenshots, provider summaries, and JSONL records remain local under ignored `code/artifacts/phase2/`.', '');
-const reportPath = path.join(repoDir, 'results', 'phase2', `${stamp}-invoiceninja-matched-pilot-round.md`);
+const reportPath = path.join(repoDir, 'results', 'phase2', `${stamp}-invoiceninja-matched-pilot-${campaignTag}.md`);
 fs.mkdirSync(path.dirname(reportPath), { recursive: true });
 fs.writeFileSync(reportPath, `${lines.join('\n')}\n`);
 console.log(JSON.stringify({ pilot: 'invoiceninja-matched', report: reportPath, records: outcomes.length, strict_passes: outcomes.filter(strictPass).length }));

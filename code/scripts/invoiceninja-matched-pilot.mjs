@@ -21,12 +21,14 @@ const campaignTag = (process.env.PSS_PILOT_TAG ?? 'round').replace(/[^a-z0-9_-]+
 const conditions = ['clean-stable', 'functional-fault', 'ui-evolution'];
 const qwenEnv = path.join(codeDir, '.env');
 const deepseekEnv = path.join(codeDir, '.env.deepseek');
+const doubaoEnv = path.join(codeDir, '.env.volcengine-cua');
 const arms = [
   { id: 'playwright', npmScript: 'pilot:invoiceninja:playwright', envFile: null },
   { id: 'visual-qwen', npmScript: 'pilot:invoiceninja:visual', envFile: qwenEnv },
   { id: 'hybrid-qwen', npmScript: 'pilot:invoiceninja:hybrid', envFile: qwenEnv },
   { id: 'visual-deepseek', npmScript: 'pilot:invoiceninja:visual', envFile: deepseekEnv },
-  { id: 'hybrid-deepseek', npmScript: 'pilot:invoiceninja:hybrid', envFile: deepseekEnv }
+  { id: 'hybrid-deepseek', npmScript: 'pilot:invoiceninja:hybrid', envFile: deepseekEnv },
+  { id: 'hybrid-doubao', npmScript: 'pilot:invoiceninja:hybrid', envFile: doubaoEnv }
 ];
 
 const now = new Date().toISOString();

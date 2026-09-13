@@ -67,12 +67,14 @@ does not prove that CUA or Hybrid is intrinsically incapable of the task.
 The six source JSONL ledgers are retained under `artifacts/phase2/` and pass
 the run-ledger audit with 18 unique run IDs and no missing arm.
 
-The broader Juice Shop audit now sees 362 parseable historical records. The
-pagination backfill and Qwen repetition tranche removed all missing cells and
-pooled repetition deficits; however, 73 provider/model strata are still below
-the three-repetition threshold, and 18 historical records are rejected by the
-registry as invalid/legacy evidence. The audit therefore recommends
-model-stratified repetition backfill before variance estimation.
+The broader Juice Shop audit now sees 530 parseable historical records. The
+pagination backfill and model-stratified repetition tranches removed all
+missing cells and pooled repetition deficits; only two explicitly quarantined
+legacy `qwen3-vl-flash` cells remain below the provider/model threshold, and 18
+historical records are rejected by the registry as invalid/legacy evidence.
+The current Qwen 3.7 Flash and DeepSeek V4.1 Flash strata are ready for a
+pre-specified variance/power analysis, but this does not authorize
+confirmatory collection.
 
 ## Decision
 

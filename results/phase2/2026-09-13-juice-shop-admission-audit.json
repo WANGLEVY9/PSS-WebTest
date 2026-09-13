@@ -101,11 +101,37 @@
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-product-detail-qwen-variance2-ui-evolution-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-qwen37-admission-v1-0005-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-qwen37-admission-v3-0005-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-add-to-basket-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-add-to-basket-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-authorization-guard-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-basket-feedback-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-basket-feedback-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-basket-feedback-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-basket-quantity-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-basket-quantity-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-basket-quantity-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-pagination-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-r3-aliyun-pagination-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-targeted-aliyun-authorization-guard-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-targeted-aliyun-pagination-last-item-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-targeted-aliyun-pagination-last-item-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-targeted-aliyun-pagination-last-item-ui-evolution-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-flash-deepseek-juice-search-v1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-authorization-deepseek-clean-r1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-authorization-deepseek-evolution-r1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-authorization-deepseek-fault-r1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-authorization-deepseek-fault-r2-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-add-to-basket-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-add-to-basket-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-authorization-guard-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-basket-feedback-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-basket-feedback-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-basket-feedback-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-basket-quantity-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-basket-quantity-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-basket-quantity-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-pagination-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-backfill-deepseek-pagination-ui-evolution-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-basket-deepseek-clean-stable-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-basket-deepseek-functional-fault-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-basket-deepseek-ui-evolution-records.jsonl",
@@ -134,12 +160,42 @@
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-product-detail-deepseek-clean-stable-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-product-detail-deepseek-functional-fault-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-product-detail-deepseek-ui-evolution-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-add-to-basket-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-add-to-basket-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-authorization-guard-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-basket-feedback-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-basket-feedback-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-basket-feedback-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-basket-quantity-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-basket-quantity-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-basket-quantity-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-pagination-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-deepseek-pagination-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-add-to-basket-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-authorization-guard-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-pagination-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-pagination-last-item-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-pagination-last-item-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-pagination-last-item-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-product-detail-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-product-detail-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-r3-final-deepseek-product-detail-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-add-to-basket-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-authorization-guard-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-authorization-guard-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-pagination-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-pagination-last-item-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-pagination-last-item-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-pagination-last-item-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-product-detail-clean-stable-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-product-detail-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-targeted-deepseek-product-detail-ui-evolution-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-volcengine-doubao-seed-2-0-pro-260215-clean-v02-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-volcengine-doubao-seed-2-0-pro-260215-oracle-poll-v01-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-volcengine-doubao-seed-2-0-pro-260215-watchdog-v01-records.jsonl"
   ],
-  "records": 362,
+  "records": 530,
   "errors": [
     "../artifacts/phase2/juice-shop-three-arm-aliyun-qwen3-vl-flash-exploratory-500-0005-records.jsonl:3: configuration registry framework conflicts with run record",
     "../artifacts/phase2/juice-shop-three-arm-aliyun-qwen3-vl-flash-v02-provenance-fix-r3-records.jsonl:1: configuration registry framework conflicts with run record",
@@ -368,8 +424,8 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-product-detail",
@@ -386,8 +442,8 @@
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-product-detail",
@@ -395,8 +451,8 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 5,
-      "strict_passes": 4
+      "n": 7,
+      "strict_passes": 6
     },
     {
       "task_id": "juice-shop-product-detail",
@@ -413,7 +469,7 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -431,7 +487,7 @@
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -440,8 +496,8 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 4,
-      "strict_passes": 4
+      "n": 6,
+      "strict_passes": 6
     },
     {
       "task_id": "juice-shop-product-detail",
@@ -458,15 +514,6 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
       "n": 3,
       "strict_passes": 3
     },
@@ -474,10 +521,19 @@
       "task_id": "juice-shop-product-detail",
       "condition": "ui-evolution",
       "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-product-detail",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-product-detail",
@@ -485,8 +541,8 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 4,
-      "strict_passes": 4
+      "n": 6,
+      "strict_passes": 6
     },
     {
       "task_id": "juice-shop-add-to-basket",
@@ -503,8 +559,8 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
+      "n": 3,
+      "strict_passes": 1
     },
     {
       "task_id": "juice-shop-add-to-basket",
@@ -521,476 +577,476 @@
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "clean-stable",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 4,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
       "n": 3,
       "strict_passes": 3
     },
     {
       "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
       "condition": "clean-stable",
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 3,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 3,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 5,
+      "n": 6,
       "strict_passes": 5
     },
     {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 2
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 1
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 2
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 2
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 2
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 2
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 1
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 2
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
       "task_id": "juice-shop-authorization-guard",
       "condition": "ui-evolution",
       "arm": "visual",
       "provider_id": "aliyun-compatible",
       "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-authorization-guard",
@@ -998,8 +1054,8 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-authorization-guard",
@@ -1007,8 +1063,8 @@
       "arm": "hybrid",
       "provider_id": "aliyun-compatible",
       "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-authorization-guard",
@@ -1016,8 +1072,8 @@
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
+      "n": 3,
+      "strict_passes": 3
     },
     {
       "task_id": "juice-shop-authorization-guard",
@@ -1025,8 +1081,8 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 3,
-      "strict_passes": 3
+      "n": 6,
+      "strict_passes": 6
     },
     {
       "task_id": "juice-shop-pagination",
@@ -1043,7 +1099,7 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -1061,7 +1117,7 @@
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -1070,102 +1126,12 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 10,
-      "strict_passes": 10
+      "n": 12,
+      "strict_passes": 12
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
-      "n": 3,
-      "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
       "arm": "visual",
       "provider_id": "aliyun-compatible",
       "model_id": "qwen3.7-flash",
@@ -1173,40 +1139,130 @@
       "strict_passes": 0
     },
     {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
+      "task_id": "juice-shop-pagination",
+      "condition": "functional-fault",
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
+      "task_id": "juice-shop-pagination",
+      "condition": "functional-fault",
       "arm": "hybrid",
       "provider_id": "aliyun-compatible",
       "model_id": "qwen3.7-flash",
-      "n": 2,
+      "n": 3,
       "strict_passes": 0
     },
     {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
+      "task_id": "juice-shop-pagination",
+      "condition": "functional-fault",
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 6,
+      "strict_passes": 6
     },
     {
       "task_id": "juice-shop-pagination-last-item",
       "condition": "clean-stable",
-      "arm": "playwright",
-      "provider_id": null,
-      "model_id": null,
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
       "n": 4,
-      "strict_passes": 4
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 3
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 7,
+      "strict_passes": 7
     },
     {
       "task_id": "juice-shop-pagination-last-item",
@@ -1214,7 +1270,7 @@
       "arm": "visual",
       "provider_id": "aliyun-compatible",
       "model_id": "qwen3.7-flash",
-      "n": 2,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -1223,7 +1279,7 @@
       "arm": "visual",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -1232,7 +1288,7 @@
       "arm": "hybrid",
       "provider_id": "aliyun-compatible",
       "model_id": "qwen3.7-flash",
-      "n": 2,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -1241,7 +1297,7 @@
       "arm": "hybrid",
       "provider_id": "deepseek-api",
       "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
+      "n": 3,
       "strict_passes": 0
     },
     {
@@ -1250,44 +1306,44 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
+      "n": 6,
+      "strict_passes": 6
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 3,
+      "strict_passes": 0
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
       "n": 3,
       "strict_passes": 3
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
     },
     {
       "task_id": "juice-shop-pagination-last-item",
@@ -1295,8 +1351,8 @@
       "arm": "playwright",
       "provider_id": null,
       "model_id": null,
-      "n": 3,
-      "strict_passes": 3
+      "n": 6,
+      "strict_passes": 6
     }
   ],
   "below_provider_repetition": [
@@ -1317,648 +1373,9 @@
       "model_id": "qwen3-vl-flash",
       "n": 2,
       "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-product-detail",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 2,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 2
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "aliyun-compatible",
-      "model_id": "qwen3.7-flash",
-      "n": 2,
-      "strict_passes": 0
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "provider_id": "deepseek-api",
-      "model_id": "deepseek-v4-flash-vision-exp",
-      "n": 1,
-      "strict_passes": 1
     }
   ],
-  "strict_passes": 174,
+  "strict_passes": 280,
   "cells": [
     {
       "task_id": "juice-shop-product-search",
@@ -2071,9 +1488,9 @@
       "task_id": "juice-shop-product-detail",
       "condition": "clean-stable",
       "arm": "visual",
-      "n": 5,
-      "strict_passes": 4,
-      "reset_verified": 5,
+      "n": 7,
+      "strict_passes": 6,
+      "reset_verified": 7,
       "failure_categories": {
         "provider-format": 1
       }
@@ -2082,9 +1499,9 @@
       "task_id": "juice-shop-product-detail",
       "condition": "clean-stable",
       "arm": "hybrid",
-      "n": 5,
-      "strict_passes": 4,
-      "reset_verified": 5,
+      "n": 7,
+      "strict_passes": 6,
+      "reset_verified": 7,
       "failure_categories": {
         "execution": 1
       }
@@ -2093,9 +1510,9 @@
       "task_id": "juice-shop-product-detail",
       "condition": "clean-stable",
       "arm": "playwright",
-      "n": 5,
-      "strict_passes": 4,
-      "reset_verified": 5,
+      "n": 7,
+      "strict_passes": 6,
+      "reset_verified": 7,
       "failure_categories": {
         "oracle": 1
       }
@@ -2104,40 +1521,40 @@
       "task_id": "juice-shop-product-detail",
       "condition": "functional-fault",
       "arm": "visual",
-      "n": 4,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 4,
+      "reset_verified": 6,
       "failure_categories": {
-        "agent-step-budget": 4
+        "agent-step-budget": 6
       }
     },
     {
       "task_id": "juice-shop-product-detail",
       "condition": "functional-fault",
       "arm": "hybrid",
-      "n": 4,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 4,
+      "reset_verified": 6,
       "failure_categories": {
-        "agent-step-budget": 4
+        "agent-step-budget": 6
       }
     },
     {
       "task_id": "juice-shop-product-detail",
       "condition": "functional-fault",
       "arm": "playwright",
-      "n": 4,
-      "strict_passes": 4,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-product-detail",
       "condition": "ui-evolution",
       "arm": "visual",
-      "n": 4,
-      "strict_passes": 3,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 5,
+      "reset_verified": 6,
       "failure_categories": {
         "provider-format": 1
       }
@@ -2146,39 +1563,39 @@
       "task_id": "juice-shop-product-detail",
       "condition": "ui-evolution",
       "arm": "hybrid",
-      "n": 4,
-      "strict_passes": 4,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-product-detail",
       "condition": "ui-evolution",
       "arm": "playwright",
-      "n": 4,
-      "strict_passes": 4,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-add-to-basket",
       "condition": "clean-stable",
       "arm": "visual",
-      "n": 4,
-      "strict_passes": 0,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 1,
+      "reset_verified": 6,
       "failure_categories": {
         "agent-step-budget": 3,
-        "oracle": 1
+        "oracle": 2
       }
     },
     {
       "task_id": "juice-shop-add-to-basket",
       "condition": "clean-stable",
       "arm": "hybrid",
-      "n": 4,
-      "strict_passes": 2,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 4,
+      "reset_verified": 6,
       "failure_categories": {
         "execution": 2
       }
@@ -2187,9 +1604,9 @@
       "task_id": "juice-shop-add-to-basket",
       "condition": "clean-stable",
       "arm": "playwright",
-      "n": 4,
-      "strict_passes": 3,
-      "reset_verified": 4,
+      "n": 6,
+      "strict_passes": 5,
+      "reset_verified": 6,
       "failure_categories": {
         "oracle": 1
       }
@@ -2198,22 +1615,22 @@
       "task_id": "juice-shop-add-to-basket",
       "condition": "functional-fault",
       "arm": "visual",
-      "n": 3,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "agent-step-budget": 3
+        "agent-step-budget": 6
       }
     },
     {
       "task_id": "juice-shop-add-to-basket",
       "condition": "functional-fault",
       "arm": "hybrid",
-      "n": 3,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "agent-step-budget": 2,
+        "agent-step-budget": 5,
         "execution": 1
       }
     },
@@ -2221,230 +1638,232 @@
       "task_id": "juice-shop-add-to-basket",
       "condition": "functional-fault",
       "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-add-to-basket",
       "condition": "ui-evolution",
       "arm": "visual",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
-      "failure_categories": {
-        "agent-step-budget": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-add-to-basket",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
-      "failure_categories": {
-        "agent-step-budget": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "clean-stable",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
-        "agent-step-budget": 3
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
-        "agent-step-budget": 3
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
-      "failure_categories": {
-        "agent-step-budget": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
-      "failure_categories": {
-        "oracle": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-feedback",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
-        "oracle": 1,
-        "grounding-loop": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "clean-stable",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
-        "agent-step-budget": 3
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
-        "oracle": 1,
-        "agent-step-budget": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
-      "failure_categories": {
-        "oracle": 1,
-        "agent-step-budget": 1
-      }
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-basket-quantity",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-authorization-guard",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "n": 3,
+      "n": 6,
       "strict_passes": 2,
-      "reset_verified": 3,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 3,
+        "oracle": 1
+      }
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-add-to-basket",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 3,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 3
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 6
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 6
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 3,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 3
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 3,
+      "reset_verified": 6,
+      "failure_categories": {
+        "oracle": 3
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-feedback",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "oracle": 1,
+        "grounding-loop": 2,
+        "agent-step-budget": 3
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 6
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 1,
+      "reset_verified": 6,
+      "failure_categories": {
+        "oracle": 1,
+        "agent-step-budget": 4
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "functional-fault",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 2,
+      "reset_verified": 6,
+      "failure_categories": {
+        "oracle": 2,
+        "agent-step-budget": 2
+      }
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-basket-quantity",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-authorization-guard",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 5,
+      "reset_verified": 6,
       "failure_categories": {
         "agent-step-budget": 1
       }
@@ -2453,9 +1872,9 @@
       "task_id": "juice-shop-authorization-guard",
       "condition": "clean-stable",
       "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 2,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 5,
+      "reset_verified": 6,
       "failure_categories": {
         "agent-step-budget": 1
       }
@@ -2464,18 +1883,18 @@
       "task_id": "juice-shop-authorization-guard",
       "condition": "clean-stable",
       "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-authorization-guard",
       "condition": "functional-fault",
       "arm": "visual",
-      "n": 5,
-      "strict_passes": 1,
-      "reset_verified": 5,
+      "n": 6,
+      "strict_passes": 2,
+      "reset_verified": 6,
       "failure_categories": {
         "execution": 3,
         "agent-step-budget": 1
@@ -2485,9 +1904,9 @@
       "task_id": "juice-shop-authorization-guard",
       "condition": "functional-fault",
       "arm": "hybrid",
-      "n": 5,
-      "strict_passes": 2,
-      "reset_verified": 5,
+      "n": 6,
+      "strict_passes": 3,
+      "reset_verified": 6,
       "failure_categories": {
         "execution": 3
       }
@@ -2496,60 +1915,60 @@
       "task_id": "juice-shop-authorization-guard",
       "condition": "functional-fault",
       "arm": "playwright",
-      "n": 5,
-      "strict_passes": 5,
-      "reset_verified": 5,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-authorization-guard",
       "condition": "ui-evolution",
       "arm": "visual",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-authorization-guard",
       "condition": "ui-evolution",
       "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-authorization-guard",
       "condition": "ui-evolution",
       "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "clean-stable",
       "arm": "visual",
-      "n": 10,
+      "n": 12,
       "strict_passes": 0,
-      "reset_verified": 10,
+      "reset_verified": 12,
       "failure_categories": {
         "provider-format": 1,
         "agent-step-budget": 8,
-        "grounding-loop": 1
+        "grounding-loop": 3
       }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "clean-stable",
       "arm": "hybrid",
-      "n": 10,
+      "n": 12,
       "strict_passes": 0,
-      "reset_verified": 10,
+      "reset_verified": 12,
       "failure_categories": {
-        "grounding-loop": 6,
+        "grounding-loop": 8,
         "execution": 4
       }
     },
@@ -2557,169 +1976,169 @@
       "task_id": "juice-shop-pagination",
       "condition": "clean-stable",
       "arm": "playwright",
-      "n": 10,
-      "strict_passes": 10,
-      "reset_verified": 10,
+      "n": 12,
+      "strict_passes": 12,
+      "reset_verified": 12,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "visual",
-      "n": 3,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "agent-step-budget": 2,
-        "grounding-loop": 1
-      }
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
+        "agent-step-budget": 3,
         "grounding-loop": 3
       }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
-      "failure_categories": {
-        "grounding-loop": 2,
-        "provider-format": 1
-      }
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
       "arm": "hybrid",
-      "n": 3,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "grounding-loop": 3
+        "grounding-loop": 6
       }
     },
     {
       "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
-      "arm": "visual",
-      "n": 4,
-      "strict_passes": 0,
-      "reset_verified": 4,
-      "failure_categories": {
-        "provider-format": 2,
-        "grounding-loop": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
-      "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
-      "failure_categories": {
-        "grounding-loop": 2
-      }
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
-      "condition": "clean-stable",
-      "arm": "playwright",
-      "n": 4,
-      "strict_passes": 4,
-      "reset_verified": 4,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination-last-item",
       "condition": "functional-fault",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
       "arm": "visual",
-      "n": 3,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "agent-step-budget": 2,
-        "grounding-loop": 1
+        "grounding-loop": 4,
+        "provider-format": 2
+      }
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "grounding-loop": 6
+      }
+    },
+    {
+      "task_id": "juice-shop-pagination",
+      "condition": "ui-evolution",
+      "arm": "playwright",
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "clean-stable",
+      "arm": "visual",
+      "n": 7,
+      "strict_passes": 0,
+      "reset_verified": 7,
+      "failure_categories": {
+        "provider-format": 3,
+        "grounding-loop": 4
       }
     },
     {
       "task_id": "juice-shop-pagination-last-item",
-      "condition": "functional-fault",
+      "condition": "clean-stable",
       "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 0,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 3,
+      "reset_verified": 6,
       "failure_categories": {
         "grounding-loop": 3
       }
     },
     {
       "task_id": "juice-shop-pagination-last-item",
+      "condition": "clean-stable",
+      "arm": "playwright",
+      "n": 7,
+      "strict_passes": 7,
+      "reset_verified": 7,
+      "failure_categories": {}
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "functional-fault",
+      "arm": "visual",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "agent-step-budget": 3,
+        "grounding-loop": 3
+      }
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
+      "condition": "functional-fault",
+      "arm": "hybrid",
+      "n": 6,
+      "strict_passes": 0,
+      "reset_verified": 6,
+      "failure_categories": {
+        "grounding-loop": 6
+      }
+    },
+    {
+      "task_id": "juice-shop-pagination-last-item",
       "condition": "functional-fault",
       "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-pagination-last-item",
       "condition": "ui-evolution",
       "arm": "visual",
-      "n": 3,
+      "n": 6,
       "strict_passes": 0,
-      "reset_verified": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "provider-format": 2,
-        "grounding-loop": 1
+        "provider-format": 3,
+        "grounding-loop": 3
       }
     },
     {
       "task_id": "juice-shop-pagination-last-item",
       "condition": "ui-evolution",
       "arm": "hybrid",
-      "n": 3,
-      "strict_passes": 1,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 3,
+      "reset_verified": 6,
       "failure_categories": {
-        "grounding-loop": 2
+        "grounding-loop": 3
       }
     },
     {
       "task_id": "juice-shop-pagination-last-item",
       "condition": "ui-evolution",
       "arm": "playwright",
-      "n": 3,
-      "strict_passes": 3,
-      "reset_verified": 3,
+      "n": 6,
+      "strict_passes": 6,
+      "reset_verified": 6,
       "failure_categories": {}
     }
   ],

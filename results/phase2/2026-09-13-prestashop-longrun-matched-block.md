@@ -14,44 +14,52 @@ global ranking.
   declared page structure.
 - Conditions: one clean baseline, one seeded visible-result omission fault,
   and one presentation-only search-layout evolution.
-- Repetitions: one fresh reset per arm in each provider/condition block;
-  arm order was randomized by the runner.
-- The six append-only ledgers each passed the ledger auditor with three unique
+- Repetitions: three fresh repetitions per provider/condition/arm cell; the
+  first repetition was collected in one campaign tag and repetitions two and
+  three in a second tag. Each arm reset the SUT independently and arm order was
+  randomized by the runner.
+- The twelve append-only ledgers each passed the ledger auditor with unique
   run IDs and no duplicate or malformed record.
 
 ## Outcomes
 
 | Provider/model | Condition | Playwright | Pure visual | Hybrid | Boundary notes |
 |---|---|---:|---:|---:|---|
-| Qwen3.7-Flash | clean-stable | 1/1 | 1/1 | 1/1 | none |
-| Qwen3.7-Flash | functional-fault | 1/1 | 0/1 | 1/1 | visual exhausted the agent step budget; provider response was available, but no fault verdict was emitted |
-| Qwen3.7-Flash | UI evolution | 1/1 | 1/1 | 1/1 | none |
-| DeepSeek V4.1-Flash | clean-stable | 1/1 | 1/1 | 1/1 | none |
-| DeepSeek V4.1-Flash | functional-fault | 1/1 | 1/1 | 1/1 | none |
-| DeepSeek V4.1-Flash | UI evolution | 1/1 | 1/1 | 1/1 | none |
+| Qwen3.7-Flash | clean-stable | 3/3 | 3/3 | 3/3 | none |
+| Qwen3.7-Flash | functional-fault | 3/3 | 0/3 | 2/3 | visual failed all three repetitions at agent-step-budget; hybrid failed one repetition at the same boundary |
+| Qwen3.7-Flash | UI evolution | 3/3 | 3/3 | 3/3 | none |
+| DeepSeek V4.1-Flash | clean-stable | 3/3 | 3/3 | 3/3 | none |
+| DeepSeek V4.1-Flash | functional-fault | 3/3 | 3/3 | 3/3 | none |
+| DeepSeek V4.1-Flash | UI evolution | 3/3 | 3/3 | 3/3 | none |
 
-The strict pass denominator is the independent oracle plus protocol-completion
-contract. The Qwen visual fault run is retained as a false-negative/termination
-boundary, not converted to an oracle success. Provider, model, arm, workflow,
-and condition strata remain separate.
+Across the 54 executions, 50 were strict passes. The strict pass denominator
+is the independent oracle plus protocol-completion contract. The Qwen visual
+fault executions are retained as false-negative/termination boundaries, not
+converted to oracle successes. Provider, model, arm, workflow, condition, and
+repetition strata remain separate.
 
 ## Interpretation and next action
 
 This block strengthens the conditional picture: both agents are currently
-capable on this clean/evolution task under these two providers, while fault
-grounding/termination is model-dependent in this repetition. One repetition
-per cell is not sufficient for a variance or power freeze. The next action is
-to repeat the same matched block under the pre-specified pilot repetition
-window, then complete the remaining PrestaShop workflow slots before any
-application admission decision.
+capable on the clean/evolution task under these two providers, while fault
+grounding/termination is model-dependent and repeats for Qwen. Three
+repetitions are still a pilot window, not a power freeze. The next action is
+to complete the remaining PrestaShop workflow slots, then collect matched
+pilot windows for those slots before any application admission decision.
 
 Raw ledgers (kept under ignored local artifacts) are:
 
 ```text
 artifacts/phase2/run-records/2026-09-13-aliyun-qwen3.7-flash-prestashop-clean-stable-canary-phase2-longrun-prestashop-clean-20260913-aligned.jsonl
+artifacts/phase2/run-records/2026-09-13-aliyun-qwen3.7-flash-prestashop-clean-stable-canary-phase2-longrun-prestashop-clean-r2-3-20260913-aligned.jsonl
 artifacts/phase2/run-records/2026-09-13-aliyun-qwen3.7-flash-prestashop-functional-fault-canary-phase2-longrun-prestashop-fault-20260913-aligned.jsonl
+artifacts/phase2/run-records/2026-09-13-aliyun-qwen3.7-flash-prestashop-functional-fault-canary-phase2-longrun-prestashop-fault-r2-3-20260913-aligned.jsonl
 artifacts/phase2/run-records/2026-09-13-aliyun-qwen3.7-flash-prestashop-ui-evolution-canary-phase2-longrun-prestashop-evolution-20260913-aligned.jsonl
+artifacts/phase2/run-records/2026-09-13-aliyun-qwen3.7-flash-prestashop-ui-evolution-canary-phase2-longrun-prestashop-evolution-r2-3-20260913-aligned.jsonl
 artifacts/phase2/run-records/2026-09-13-deepseek-deepseek-v4-flash-vision-exp-prestashop-clean-stable-canary-phase2-longrun-prestashop-clean-20260913-aligned.jsonl
+artifacts/phase2/run-records/2026-09-13-deepseek-deepseek-v4-flash-vision-exp-prestashop-clean-stable-canary-phase2-longrun-prestashop-clean-r2-3-20260913-aligned.jsonl
 artifacts/phase2/run-records/2026-09-13-deepseek-deepseek-v4-flash-vision-exp-prestashop-functional-fault-canary-phase2-longrun-prestashop-fault-20260913-aligned.jsonl
+artifacts/phase2/run-records/2026-09-13-deepseek-deepseek-v4-flash-vision-exp-prestashop-functional-fault-canary-phase2-longrun-prestashop-fault-r2-3-20260913-aligned.jsonl
 artifacts/phase2/run-records/2026-09-13-deepseek-deepseek-v4-flash-vision-exp-prestashop-ui-evolution-canary-phase2-longrun-prestashop-evolution-20260913-aligned.jsonl
+artifacts/phase2/run-records/2026-09-13-deepseek-deepseek-v4-flash-vision-exp-prestashop-ui-evolution-canary-phase2-longrun-prestashop-evolution-r2-3-20260913-aligned.jsonl
 ```

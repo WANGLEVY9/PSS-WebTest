@@ -68,3 +68,9 @@ configuration failure from model/SUT behavior. It does not admit either
 application, freeze repetition counts, or authorize confirmatory collection.
 Both applications still require complete workflow/condition coverage and
 repetition variance before admission.
+
+The refreshed short protocol-readiness probe separately marked DeepSeek visual
+as failed because the probe prompt received an unsupported tool call, while
+DeepSeek Hybrid remained ready. This is retained as a protocol-plumbing result;
+the SUT-level visual cells above are still classified from their replay traces
+as grounding-loop, not silently upgraded or downgraded by the readiness probe.

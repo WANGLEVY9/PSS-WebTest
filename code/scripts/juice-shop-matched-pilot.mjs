@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import dotenv from 'dotenv';
 import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
+import { createRunRecord } from '../src/run-records.mjs';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
@@ -79,6 +80,16 @@ const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({ application: 'juice-shop', task_id: 'juice-shop-product-search', condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
+const createMissingAgentRecord = ({ arm, phase2Fields, executionCode }) => createRunRecord({
+  ...(phase2Fields ?? {}),
+  run_id: `juice-shop-${arm}-missing-child-${Date.now()}`,
+  application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search',
+  condition: experimentCondition.condition, arm, status: 'infrastructure-error', checkpoint_reached: false,
+  emitted_verdict: 'not-emitted', ground_truth_verdict: expectedVerdict,
+  timing: { wall_time_ms: 0, actions: 0, retries: 0 },
+  provenance: { ...(phase2Fields?.provenance ?? {}), runner_version: `juice-shop-${arm}-matched-v0.1`, observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure' },
+  failure_category: 'environment', trace: [{ kind: 'runner-boundary', reason: 'child-record-missing', execution_exit_code: executionCode }]
+});
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
   const orderedArms = scheduledArms(repetition);
@@ -120,6 +131,10 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         PSS_RUN_RECORD_OUT: recordsPath
       });
       result = lastJson(execution.stdout); oracle = result?.ui_oracle ?? null; cellRunRecord = result?.run_record ?? null;
+      if (!cellRunRecord) {
+        cellRunRecord = createMissingAgentRecord({ arm, phase2Fields, executionCode: execution.code });
+        appendRunRecord(cellRunRecord, recordsPath);
+      }
     }
     const agentCompleted = arm === 'playwright' ? execution.code === 0 : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;

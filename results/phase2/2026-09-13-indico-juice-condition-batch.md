@@ -33,6 +33,12 @@ The larger pilot reinforces a conditional pattern without establishing a populat
 3. Inspect the missing-child boundary (provider process exit, browser launch, or runner exception) from captured stderr/replay evidence before labeling it a model failure.
 4. Repeat the same clean/fault/evolution strata at the pre-specified pilot size; only then run power simulation and freeze repetitions.
 
+The matched orchestrators now fail closed by appending an explicit
+`infrastructure-error` run record with `failure_category=environment` when an
+agent child exits without returning a run record. This repairs ledger
+accounting for future batches without retroactively inventing the two missing
+records in this batch.
+
 ## Artifacts
 
 - `artifacts/phase2/phase2-t1-condition-batch-20260913b-manifest.json`

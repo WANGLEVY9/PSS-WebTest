@@ -13,12 +13,12 @@ const DEFAULT_CONFIGURATION_BY_ARM = Object.freeze({
   hybrid: 'hybrid-pss-native-aliyun-qwen3-7-flash-v1'
 });
 
-function configurationByArm(provider, model) {
+function configurationByArm(provider, model, hybridTitleRecovery = false) {
   if (provider === 'deepseek' && model === 'deepseek-v4-flash-vision-exp') {
     return Object.freeze({
       playwright: 'scripted-playwright-accessibility-human-v2',
       visual: 'visual-pss-native-deepseek-flash-v1',
-      hybrid: 'hybrid-pss-native-deepseek-flash-v1'
+      hybrid: hybridTitleRecovery ? 'hybrid-pss-native-deepseek-title-recovery-v1' : 'hybrid-pss-native-deepseek-flash-v1'
     });
   }
   return DEFAULT_CONFIGURATION_BY_ARM;
@@ -39,7 +39,7 @@ function orderedArms(seed, repetition) {
 export function createBookStackCreatePagePilotPlan({
   condition = 'clean-stable', repetitions = 1,
   randomizationSeed = 'bookstack-create-page-phase2-v1', runTag = null,
-  provider = null, model = null
+  provider = null, model = null, hybridTitleRecovery = false
 } = {}) {
   if (!Number.isInteger(repetitions) || repetitions < 1) throw new Error('repetitions must be a positive integer');
   if (typeof randomizationSeed !== 'string' || !randomizationSeed.trim()) throw new Error('randomizationSeed must be non-empty');
@@ -50,7 +50,7 @@ export function createBookStackCreatePagePilotPlan({
   if (runTag !== null && !tagSlug) throw new Error('runTag must contain at least one letter or digit');
   const blocks = [];
   const cells = [];
-  const configurations = configurationByArm(provider, model);
+  const configurations = configurationByArm(provider, model, hybridTitleRecovery);
   for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const arms = orderedArms(randomizationSeed, repetition);
     const tag = tagSlug ? `-${tagSlug}` : '';

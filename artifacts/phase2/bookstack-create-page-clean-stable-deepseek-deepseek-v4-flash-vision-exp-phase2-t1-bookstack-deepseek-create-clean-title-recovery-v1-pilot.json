@@ -1,0 +1,213 @@
+{
+  "application": "bookstack",
+  "task_id": "bookstack-create-page",
+  "condition": "clean-stable",
+  "expected_verdict": "clean",
+  "ui_mutation": null,
+  "fault": null,
+  "protocol_version": "2.0-draft",
+  "randomization_seed": "bookstack-create-page-phase2-v1",
+  "run_tag": "phase2-t1-bookstack-deepseek-create-clean-title-recovery-v1",
+  "provider": "deepseek",
+  "model": "deepseek-v4-flash-vision-exp",
+  "repetitions": 1,
+  "arms": [
+    "playwright",
+    "visual",
+    "hybrid"
+  ],
+  "records": [
+    {
+      "repetition": 1,
+      "arm": "hybrid",
+      "randomization_block": "bookstack-create-page-clean-stable-phase2-t1-bookstack-deepseek-create-clean-title-recovery-v1-r01-hybrid-playwright-visual",
+      "reset_ok": true,
+      "reset_attempts": [
+        {
+          "attempt": 1,
+          "exit_code": 0,
+          "status": "seeded",
+          "reset_digest": "6246d6dbf78bf96557b59bdae5d4293ebf1236e6d61868139ee30ced0424257a",
+          "stderr": "_app_config Created \n Volume bookstack_app_config Created \n Network bookstack_default Created \n Network bookstack_default Created \n Container bookstack-db-1 Creating \n Container bookstack-app-1 Creating \n Container bookstack-app-1 Created \n Container bookstack-db-1 Created \n Container bookstack-app-1 Starting \n Container bookstack-db-1 Starting \n Container bookstack-db-1 Started \n Container bookstack-app-1 Started \nmysql: [Warning] Using a password on the command line interface can be insecure.\n"
+        }
+      ],
+      "reset_retry_used": false,
+      "reset_digest": "6246d6dbf78bf96557b59bdae5d4293ebf1236e6d61868139ee30ced0424257a",
+      "pre_oracle": {
+        "application": "bookstack",
+        "oracle": "persisted-state",
+        "title": "PSS Phase2 Page",
+        "book_slug": "book",
+        "fault_marker": "PSS Persisted Content Corrupted",
+        "matches": 0,
+        "candidate_count": 0,
+        "clean_matches": 0,
+        "fault_matches": 0,
+        "observed_verdict": "unknown",
+        "expected_verdict": "clean",
+        "passed": false,
+        "evaluated_at": "2026-09-13T03:01:12.215Z"
+      },
+      "fault_applied": false,
+      "execution_exit_code": 1,
+      "agent_status": "test-failure",
+      "emitted_verdict": "unknown",
+      "independent_oracle": {
+        "application": "bookstack",
+        "oracle": "persisted-state",
+        "title": "PSS Phase2 Page",
+        "book_slug": "book",
+        "fault_marker": "PSS Persisted Content Corrupted",
+        "matches": 0,
+        "candidate_count": 0,
+        "clean_matches": 0,
+        "fault_matches": 0,
+        "observed_verdict": "unknown",
+        "expected_verdict": "clean",
+        "passed": false,
+        "evaluated_at": "2026-09-13T03:01:31.587Z"
+      },
+      "protocol_completed": false,
+      "cell_passed": false,
+      "run_id": "bookstack-hybrid-1789268472799",
+      "timing": {
+        "tokens": null,
+        "cost_usd": null,
+        "wall_time_ms": 17459,
+        "actions": 4,
+        "retries": 0
+      },
+      "failure_category": "provider-format",
+      "failure_message": "title textbox requires CTRL+A before typing at target_id=c11"
+    },
+    {
+      "repetition": 1,
+      "arm": "playwright",
+      "randomization_block": "bookstack-create-page-clean-stable-phase2-t1-bookstack-deepseek-create-clean-title-recovery-v1-r01-hybrid-playwright-visual",
+      "reset_ok": true,
+      "reset_attempts": [
+        {
+          "attempt": 1,
+          "exit_code": 0,
+          "status": "seeded",
+          "reset_digest": "6246d6dbf78bf96557b59bdae5d4293ebf1236e6d61868139ee30ced0424257a",
+          "stderr": "Volume bookstack_db Created \n Volume bookstack_db Created \n Network bookstack_default Created \n Network bookstack_default Created \n Container bookstack-db-1 Creating \n Container bookstack-app-1 Creating \n Container bookstack-app-1 Created \n Container bookstack-db-1 Created \n Container bookstack-db-1 Starting \n Container bookstack-app-1 Starting \n Container bookstack-db-1 Started \n Container bookstack-app-1 Started \nmysql: [Warning] Using a password on the command line interface can be insecure.\n"
+        }
+      ],
+      "reset_retry_used": false,
+      "reset_digest": "6246d6dbf78bf96557b59bdae5d4293ebf1236e6d61868139ee30ced0424257a",
+      "pre_oracle": {
+        "application": "bookstack",
+        "oracle": "persisted-state",
+        "title": "PSS Phase2 Page",
+        "book_slug": "book",
+        "fault_marker": "PSS Persisted Content Corrupted",
+        "matches": 0,
+        "candidate_count": 0,
+        "clean_matches": 0,
+        "fault_matches": 0,
+        "observed_verdict": "unknown",
+        "expected_verdict": "clean",
+        "passed": false,
+        "evaluated_at": "2026-09-13T03:01:43.661Z"
+      },
+      "fault_applied": false,
+      "execution_exit_code": 0,
+      "agent_status": "completed",
+      "emitted_verdict": "clean",
+      "independent_oracle": {
+        "application": "bookstack",
+        "oracle": "persisted-state",
+        "title": "PSS Phase2 Page",
+        "book_slug": "book",
+        "fault_marker": "PSS Persisted Content Corrupted",
+        "matches": 1,
+        "candidate_count": 1,
+        "clean_matches": 1,
+        "fault_matches": 0,
+        "observed_verdict": "clean",
+        "expected_verdict": "clean",
+        "passed": true,
+        "evaluated_at": "2026-09-13T03:01:46.802Z"
+      },
+      "protocol_completed": true,
+      "cell_passed": true,
+      "run_id": "bookstack-playwright-1789268503826",
+      "timing": {
+        "tokens": null,
+        "cost_usd": null,
+        "wall_time_ms": 2980,
+        "actions": 10,
+        "retries": 0
+      },
+      "failure_category": null,
+      "failure_message": null
+    },
+    {
+      "repetition": 1,
+      "arm": "visual",
+      "randomization_block": "bookstack-create-page-clean-stable-phase2-t1-bookstack-deepseek-create-clean-title-recovery-v1-r01-hybrid-playwright-visual",
+      "reset_ok": true,
+      "reset_attempts": [
+        {
+          "attempt": 1,
+          "exit_code": 0,
+          "status": "seeded",
+          "reset_digest": "6246d6dbf78bf96557b59bdae5d4293ebf1236e6d61868139ee30ced0424257a",
+          "stderr": "Volume bookstack_db Created \n Volume bookstack_db Created \n Network bookstack_default Created \n Network bookstack_default Created \n Container bookstack-db-1 Creating \n Container bookstack-app-1 Creating \n Container bookstack-app-1 Created \n Container bookstack-db-1 Created \n Container bookstack-db-1 Starting \n Container bookstack-app-1 Starting \n Container bookstack-db-1 Started \n Container bookstack-app-1 Started \nmysql: [Warning] Using a password on the command line interface can be insecure.\n"
+        }
+      ],
+      "reset_retry_used": false,
+      "reset_digest": "6246d6dbf78bf96557b59bdae5d4293ebf1236e6d61868139ee30ced0424257a",
+      "pre_oracle": {
+        "application": "bookstack",
+        "oracle": "persisted-state",
+        "title": "PSS Phase2 Page",
+        "book_slug": "book",
+        "fault_marker": "PSS Persisted Content Corrupted",
+        "matches": 0,
+        "candidate_count": 0,
+        "clean_matches": 0,
+        "fault_matches": 0,
+        "observed_verdict": "unknown",
+        "expected_verdict": "clean",
+        "passed": false,
+        "evaluated_at": "2026-09-13T03:01:59.835Z"
+      },
+      "fault_applied": false,
+      "execution_exit_code": 1,
+      "agent_status": "test-failure",
+      "emitted_verdict": "unknown",
+      "independent_oracle": {
+        "application": "bookstack",
+        "oracle": "persisted-state",
+        "title": "PSS Phase2 Page",
+        "book_slug": "book",
+        "fault_marker": "PSS Persisted Content Corrupted",
+        "matches": 0,
+        "candidate_count": 0,
+        "clean_matches": 0,
+        "fault_matches": 0,
+        "observed_verdict": "unknown",
+        "expected_verdict": "clean",
+        "passed": false,
+        "evaluated_at": "2026-09-13T03:03:51.543Z"
+      },
+      "protocol_completed": false,
+      "cell_passed": false,
+      "run_id": "bookstack-visual-1789268520169",
+      "timing": {
+        "tokens": null,
+        "cost_usd": null,
+        "wall_time_ms": 110153,
+        "actions": 5,
+        "retries": 0
+      },
+      "failure_category": "grounding-loop",
+      "failure_message": "repeated non-progressing click at x=480 y=208"
+    }
+  ],
+  "passed_cells": 1,
+  "total_cells": 3,
+  "confirmatory": false
+}

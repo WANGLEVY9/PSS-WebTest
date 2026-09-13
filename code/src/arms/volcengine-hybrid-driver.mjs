@@ -154,6 +154,9 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       const typingGuardInstruction = actionHistory.at(-1)?.type === 'type'
         ? 'The previous action typed text. Do not issue another type action into the same field; first click a different visible field or use a navigation key.'
         : '';
+      const titleRecoveryInstruction = env.PSS_HYBRID_TITLE_RECOVERY === '1' && actionHistory.at(-1)?.reason === 'title-clear'
+        ? 'The harness rejected the previous action because the Page Title textbox still contains default text. Your next action MUST be exactly one keypress with key CTRL+A. Do not click any target and do not type yet.'
+        : '';
       const recentClicks = actionHistory.slice(-2);
       const clickIdentity = (action) => pointerIdentity(action);
       const repeatedClickInstruction = recentClicks.length === 2 && recentClicks.every((action) => action.type === 'click' && clickIdentity(action) === clickIdentity(recentClicks[0]))
@@ -178,12 +181,13 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
         const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action. In a new-page editor, if the Page Title textbox already contains default text, click it, press CTRL+A, and only then type the exact requested title; never append to the default. After the title is correct, click the Page content editor once and on the very next action type the requested content, not another click.\n${editorFollowupInstruction}\n${titleClearInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.`;
+        const instructionTextWithRecovery = titleRecoveryInstruction ? `${instructionText}\n${titleRecoveryInstruction}` : instructionText;
         const requestBody = responsesMode
           ? {
               model: config.model,
               max_output_tokens: maxOutputTokens,
               input: [{ type: 'message', role: 'user', content: [
-                { type: 'input_text', text: instructionText },
+                { type: 'input_text', text: instructionTextWithRecovery },
                 { type: 'input_image', image_url: asDataUrl(observation.screenshot) }
               ] }]
             }
@@ -192,7 +196,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
               temperature: 0,
               ...generationOptions,
               messages: [{ role: 'user', content: [
-                { type: 'text', text: instructionText },
+                { type: 'text', text: instructionTextWithRecovery },
                 { type: 'image_url', image_url: { url: asDataUrl(observation.screenshot) } }
               ] }]
             };
@@ -259,7 +263,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
             const target = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
               ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
               : null;
-            actionHistory.push({ ...decision.action, type: 'rejected_click', interaction: target?.interaction ?? null });
+            actionHistory.push({ ...decision.action, type: 'rejected_click', interaction: target?.interaction ?? null, reason: error.message.startsWith('title textbox requires CTRL+A') ? 'title-clear' : null });
           }
           if (decisionAttempt >= maxDecisionRetries) throw error;
           retryCount += 1;

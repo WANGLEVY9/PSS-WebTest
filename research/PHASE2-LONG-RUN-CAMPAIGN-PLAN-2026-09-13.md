@@ -30,7 +30,7 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Confirmatory admissions | 0 applications, 0 workflow slots | Confirmatory collection remains frozen |
 | Invoice Ninja | 84 diagnostic records after a fresh 18-record matched block across 3 conditions and six arm/model strata; Qwen Hybrid 3/3, DeepSeek visual+Hybrid 6/6, Playwright 3/3, Qwen visual 1/3, Doubao Hybrid 0/3 provider-blocked | Useful pilot evidence; two workflows now have independent oracles, but the complete eight-workflow application subset is still not admitted |
 | PrestaShop | clean/fault/evolution canaries plus medium and complex search workflows across Qwen/DeepSeek; complex Qwen Hybrid passed while visual had coordinate-format failure, DeepSeek agents exposed revisit grounding loops | Mutation gate passed; multi-complexity evidence remains pilot-only, application remains not admitted |
-| BookStack | Qwen navigation schema retry passed 3/3; create-page matched gate passed Playwright 3/3 but Hybrid 0/3 and visual 0/3 across clean/fault/evolution; DeepSeek navigation passed 6/6 and search/open-book2 passed 4/6; DeepSeek create-page clean/fault/evolution each passed Playwright 1/1, Hybrid 0/1 provider-format, visual 0/1 grounding-loop | Reset, fault injection, and independent oracle are reachable; complete workflow subset and agent stabilization remain required, so application admission remains blocked |
+| BookStack | Qwen navigation schema retry passed 3/3; create-page matched gate passed Playwright 3/3 but Hybrid 0/3 and visual 0/3 across clean/fault/evolution; DeepSeek navigation passed 6/6 and search/open-book2 passed 4/6; DeepSeek create-page clean/fault/evolution each passed Playwright 1/1, Hybrid 0/1 provider-format, visual 0/1 grounding-loop; a separate title-recovery prompt ablation also remained Hybrid 0/1 provider-format and visual 0/1 grounding-loop | Reset, fault injection, and independent oracle are reachable; prompt-only title recovery did not stabilize the workflow; complete workflow subset and agent stabilization remain required, so application admission remains blocked |
 | Juice Shop | Clean product-search Qwen pilot: Playwright 1/1, Hybrid 0/1, visual 0/1; DeepSeek provider-profile repair plus two-repeat extension: Playwright 3/3, Hybrid 3/3, visual 0/3 (grounding-loop) | Pre-repair 404 cells are invalidated configuration evidence; post-repair DeepSeek is a valid pilot stratum; application remains not admitted |
 | Indico | Qwen clean create-event: Playwright 1/1; visual and scope-corrected Hybrid 0/1 each with grounding-loop; DeepSeek provider-profile repair plus two-repeat extension: Playwright 3/3, Hybrid 0/3 (oracle), visual 0/3 (grounding-loop) | Pre-repair 404 cells are invalidated configuration evidence; post-repair DeepSeek is a valid pilot stratum; application remains not admitted |
 | Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
@@ -179,8 +179,9 @@ stratified rule; do not collect an underpowered universal leaderboard.
 3. Re-run PrestaShop and BookStack with the same run-record/replay contract and
    explicitly separate framework/model strata. PrestaShop's first workflow
    clean/fault/evolution canaries are now complete; BookStack DeepSeek
-   navigation/search pilots are now recorded, while create-page fault/evolution
-   coverage and complete workflow admission remain open.
+   navigation/search pilots are now recorded. The create-page title-recovery
+   ablation did not pass, so this workflow remains a diagnostic boundary and
+   must not be used to inflate admission or variance estimates.
 4. Admit the first application only after its complete eight-slot subset is
    machine-checkable; otherwise keep it pilot-only.
 5. Expand to the next candidate wave while maintaining the same admission gate.

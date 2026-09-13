@@ -8,9 +8,10 @@ test('configuration registry records legacy configurations separately across all
   assert.deepEqual(new Set(registry.configurations.map((item) => item.family)), new Set(['visual', 'hybrid', 'scripted']));
   assert.equal(findConfiguration(registry, 'legacy-scripted-playwright-accessibility-human').test_implementation.authoring_source, 'human');
   assert.equal(registry.configurations.filter((item) => item.status === 'legacy-pilot').length, 5);
-  assert.equal(registry.configurations.filter((item) => item.status === 'implemented').length, 9);
+  assert.equal(registry.configurations.filter((item) => item.status === 'implemented').length, 10);
   assert.equal(findConfiguration(registry, 'visual-pss-native-deepseek-flash-v1').runtime.model_id, 'deepseek-v4-flash-vision-exp');
   assert.equal(findConfiguration(registry, 'hybrid-pss-native-deepseek-flash-v1').runtime.provider_id, 'deepseek-api');
+  assert.equal(findConfiguration(registry, 'hybrid-pss-native-deepseek-title-recovery-v1').runtime.model_id, 'deepseek-v4-flash-vision-exp');
 });
 
 test('configuration registry rejects a visual configuration with structured observation or code provenance', () => {

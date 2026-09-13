@@ -21,6 +21,7 @@ const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const runTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
+const hybridTitleRecovery = process.env.PSS_HYBRID_TITLE_RECOVERY === '1';
 
 function readEnvFile(name) {
   const envPath = `${root}/${name}`;
@@ -35,7 +36,7 @@ const providerEnv = (() => {
   return env;
 })();
 
-const plan = createBookStackCreatePagePilotPlan({ condition, repetitions, randomizationSeed, runTag, provider, model });
+const plan = createBookStackCreatePagePilotPlan({ condition, repetitions, randomizationSeed, runTag, provider, model, hybridTitleRecovery });
 const conditionSpec = plan.conditionSpec;
 const slug = (value, fallback) => String(value ?? '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || fallback;
 const conditionSlug = slug(condition, 'condition');
@@ -150,6 +151,7 @@ for (const scheduledCell of plan.cells) {
           CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? (optimizationByArm[arm].hybrid_action_mode ?? 'coordinate'),
           CUA_SCREENSHOT_QUALITY: process.env.CUA_SCREENSHOT_QUALITY ?? String(optimizationByArm[arm].screenshot_quality),
           PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimizationByArm[arm].post_action_settle_ms),
+          PSS_HYBRID_TITLE_RECOVERY: hybridTitleRecovery ? '1' : '0',
           PSS_CONFIGURATION_ID: configurationId
         });
       }

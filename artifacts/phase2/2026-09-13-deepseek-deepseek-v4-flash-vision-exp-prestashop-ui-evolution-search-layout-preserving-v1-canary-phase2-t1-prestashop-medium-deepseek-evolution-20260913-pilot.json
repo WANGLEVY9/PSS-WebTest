@@ -1,0 +1,176 @@
+{
+  "application": "prestashop",
+  "task_id": "prestashop-search-open-product",
+  "complexity": "medium",
+  "condition": "ui-evolution:search-layout-preserving-v1",
+  "mutation": "search-layout-preserving-v1",
+  "run_tag": "phase2-t1-prestashop-medium-deepseek-evolution-20260913",
+  "provider_id": "deepseek",
+  "model_id": "deepseek-v4-flash-vision-exp",
+  "profile_id": "deepseek-v4-flash-vision-tool-v1",
+  "optimization_profile": "deepseek-flash-grounded-v1",
+  "repetitions": 1,
+  "arms": [
+    "playwright",
+    "visual",
+    "hybrid"
+  ],
+  "records": [
+    {
+      "repetition": 1,
+      "arm": "playwright",
+      "run_id": "prestashop-deepseek-deepseek-v4-flash-vision-exp-playwright-ui-evolution-search-layout-preserving-v1-phase2-t1-prestashop-medium-deepseek-evolution-20260913-r01",
+      "provider_id": "deepseek",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "profile_id": "deepseek-v4-flash-vision-tool-v1",
+      "randomization_block": "prestashop-ui-evolution-search-layout-preserving-v1-deepseek-deepseek-v4-flash-vision-exp-r01-playwright-hybrid-visual",
+      "reset_ok": true,
+      "reset_seed_counts": [
+        3,
+        19,
+        5,
+        6
+      ],
+      "reset_attempts": [
+        {
+          "attempt": 1,
+          "exit_code": 0,
+          "status": "seed-verified",
+          "seed_counts": [
+            3,
+            19,
+            5,
+            6
+          ],
+          "reset_digest": null,
+          "stderr_tail": " prestashop-db-1 Starting \n Container prestashop-db-1 Started \n Container prestashop-app-1 Starting \n Container prestashop-app-1 Started \nmysql: [Warning] Using a password on the command line interface can be insecure.\nmysql: [Warning] Using a password on the command line interface can be insecure.\n"
+        }
+      ],
+      "reset_retry_used": false,
+      "reset_policy": "per-arm",
+      "reset_reused_from_block": false,
+      "clean_state_verified": true,
+      "execution_exit_code": 0,
+      "status": "completed",
+      "emitted_verdict": "clean",
+      "ground_truth_verdict": "clean",
+      "checkpoint_reached": true,
+      "oracle_passed": true,
+      "oracle_only_success": false,
+      "cell_passed": true,
+      "action_mode": null,
+      "api_mode": null,
+      "provider_profile_id": null,
+      "actions": 4,
+      "wall_time_ms": 2431,
+      "failure_category": null,
+      "failure_message": null
+    },
+    {
+      "repetition": 1,
+      "arm": "hybrid",
+      "run_id": "prestashop-deepseek-deepseek-v4-flash-vision-exp-hybrid-ui-evolution-search-layout-preserving-v1-phase2-t1-prestashop-medium-deepseek-evolution-20260913-r01",
+      "provider_id": "deepseek",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "profile_id": "deepseek-v4-flash-vision-tool-v1",
+      "randomization_block": "prestashop-ui-evolution-search-layout-preserving-v1-deepseek-deepseek-v4-flash-vision-exp-r01-playwright-hybrid-visual",
+      "reset_ok": true,
+      "reset_seed_counts": [
+        3,
+        19,
+        5,
+        6
+      ],
+      "reset_attempts": [
+        {
+          "attempt": 1,
+          "exit_code": 0,
+          "status": "seed-verified",
+          "seed_counts": [
+            3,
+            19,
+            5,
+            6
+          ],
+          "reset_digest": null,
+          "stderr_tail": " prestashop-db-1 Starting \n Container prestashop-db-1 Started \n Container prestashop-app-1 Starting \n Container prestashop-app-1 Started \nmysql: [Warning] Using a password on the command line interface can be insecure.\nmysql: [Warning] Using a password on the command line interface can be insecure.\n"
+        }
+      ],
+      "reset_retry_used": false,
+      "reset_policy": "per-arm",
+      "reset_reused_from_block": false,
+      "clean_state_verified": true,
+      "execution_exit_code": 0,
+      "status": "completed",
+      "emitted_verdict": "clean",
+      "ground_truth_verdict": "clean",
+      "checkpoint_reached": true,
+      "oracle_passed": true,
+      "oracle_only_success": false,
+      "cell_passed": true,
+      "action_mode": "tool",
+      "api_mode": "chat",
+      "provider_profile_id": "deepseek-v4-flash-vision-tool-v1",
+      "actions": 5,
+      "wall_time_ms": 10636,
+      "failure_category": null,
+      "failure_message": null
+    },
+    {
+      "repetition": 1,
+      "arm": "visual",
+      "run_id": "prestashop-deepseek-deepseek-v4-flash-vision-exp-visual-ui-evolution-search-layout-preserving-v1-phase2-t1-prestashop-medium-deepseek-evolution-20260913-r01",
+      "provider_id": "deepseek",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "profile_id": "deepseek-v4-flash-vision-tool-v1",
+      "randomization_block": "prestashop-ui-evolution-search-layout-preserving-v1-deepseek-deepseek-v4-flash-vision-exp-r01-playwright-hybrid-visual",
+      "reset_ok": true,
+      "reset_seed_counts": [
+        3,
+        19,
+        5,
+        6
+      ],
+      "reset_attempts": [
+        {
+          "attempt": 1,
+          "exit_code": 0,
+          "status": "seed-verified",
+          "seed_counts": [
+            3,
+            19,
+            5,
+            6
+          ],
+          "reset_digest": null,
+          "stderr_tail": " prestashop-db-1 Starting \n Container prestashop-db-1 Started \n Container prestashop-app-1 Starting \n Container prestashop-app-1 Started \nmysql: [Warning] Using a password on the command line interface can be insecure.\nmysql: [Warning] Using a password on the command line interface can be insecure.\n"
+        }
+      ],
+      "reset_retry_used": false,
+      "reset_policy": "per-arm",
+      "reset_reused_from_block": false,
+      "clean_state_verified": true,
+      "execution_exit_code": 1,
+      "status": "test-failure",
+      "emitted_verdict": "not-emitted",
+      "ground_truth_verdict": "clean",
+      "checkpoint_reached": false,
+      "oracle_passed": true,
+      "oracle_only_success": false,
+      "cell_passed": false,
+      "action_mode": "tool",
+      "api_mode": "chat",
+      "provider_profile_id": "deepseek-v4-flash-vision-tool-v1",
+      "actions": 2,
+      "wall_time_ms": 6820,
+      "failure_category": "grounding-loop",
+      "failure_message": "repeated non-progressing click at x=831 y=124",
+      "cell_stdout_tail": "-v4-flash-vision-exp\",\"seed\":null,\"runner_version\":\"prestashop-visual-agent-v0.1\",\"observation_contract\":\"screenshot-only\",\"provider_profile_id\":\"deepseek-v4-flash-vision-tool-v1\",\"action_mode\":\"tool\",\"api_mode\":\"chat\",\"action_mode_source\":\"env-override\",\"hybrid_action_mode\":null,\"trace_hash\":\"41c847ec23aa6d1f48cfac5c0bf772f4cc8a44c58b99c8f056298ef10b045aa9\"},\"failure_category\":\"grounding-loop\"}}\n",
+      "cell_stderr_tail": ""
+    }
+  ],
+  "passed_cells": 2,
+  "total_cells": 3,
+  "confirmatory": false,
+  "evidence_boundary": "admission/pilot evidence only; not a strategy comparison and not confirmatory"
+}

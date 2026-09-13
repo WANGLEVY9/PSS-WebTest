@@ -72,7 +72,15 @@ function validateCommonRunRecord(record) {
 }
 
 function validateRunRecordV01(record) {
-  assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category']));
+  assertAllowedKeys(record, new Set(['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'reset_digest', 'reset_contract', 'randomization_block']));
+  // v0.1 remains the historical compatibility format, but newly repaired
+  // runners may attach cryptographic reset evidence without pretending that
+  // they satisfy the complete v0.2 provenance contract. This lets the pilot
+  // ledger distinguish a verified reset from an old record while keeping the
+  // confirmatory gate closed until the remaining v0.2 fields are present.
+  if ('reset_digest' in record && !/^[a-f0-9]{64}$/.test(record.reset_digest ?? '')) throw new Error('v0.1 reset_digest must be a SHA-256 hex digest when present');
+  if ('reset_contract' in record && (typeof record.reset_contract !== 'string' || !record.reset_contract.trim())) throw new Error('v0.1 reset_contract must be a non-empty string when present');
+  if ('randomization_block' in record && (typeof record.randomization_block !== 'string' || !record.randomization_block.trim())) throw new Error('v0.1 randomization_block must be a non-empty string when present');
   // v0.1 remains readable for historical pilots, but agent records must still
   // retain the provider/model stratum.  provider_id is optional for legacy
   // records and required by the newer runner paths when a provider is used.
@@ -166,7 +174,7 @@ export function createRunRecord(input) {
   // Explicitly whitelist the immutable schema; traces and arbitrary provider metadata never leave this function.
   const allowed = schemaVersion === '0.2'
     ? ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'configuration_id', 'strategy_family', 'protocol_version', 'run_manifest_digest', 'sut_image_digest', 'reset_digest', 'randomization_block']
-    : ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category'];
+    : ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'reset_digest', 'reset_contract', 'randomization_block'];
   const output = Object.fromEntries(allowed.filter((key) => record[key] !== undefined).map((key) => [key, record[key]]));
   if (!('failure_category' in output)) output.failure_category = null;
   return validateRunRecord(output);

@@ -20,6 +20,9 @@ export function createTraditionalRunRecord({
   expected_verdict = 'clean',
   runner_version = 'playwright-traditional-cell-v0.1',
   phase2Fields = null,
+  reset_digest = null,
+  reset_contract = null,
+  randomization_block = null,
   trace = []
 }) {
   if (!['clean', 'fault'].includes(expected_verdict)) throw new Error('expected_verdict must be clean or fault');
@@ -27,6 +30,9 @@ export function createTraditionalRunRecord({
   const phase2 = phase2Fields ?? {};
   return createRunRecord({
     ...phase2,
+    ...(reset_digest ? { reset_digest } : {}),
+    ...(reset_contract ? { reset_contract } : {}),
+    ...(randomization_block ? { randomization_block } : {}),
     run_id,
     application_id,
     application_version,

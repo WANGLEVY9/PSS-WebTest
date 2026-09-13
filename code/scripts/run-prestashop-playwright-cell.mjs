@@ -153,6 +153,9 @@ const runRecord = createTraditionalRunRecord({
   condition,
   expected_verdict: expectedVerdict,
   runner_version: 'prestashop-playwright-cell-v0.1',
+  reset_digest: process.env.PSS_RESET_DIGEST || null,
+  reset_contract: process.env.PSS_RESET_CONTRACT || null,
+  randomization_block: process.env.PSS_RANDOMIZATION_BLOCK || null,
   trace: [{ kind: 'scripted-sequence', action_count: actions, replay_steps: trace.length, page_state: pageState, independent_oracle: oracle }]
 });
 replay.finalize({ status: runRecord.status, checkpointReached: runRecord.checkpoint_reached, emittedVerdict: runRecord.emitted_verdict, groundTruthVerdict: expectedVerdict, failureCategory: runRecord.failure_category, error: failure, oraclePassed: oracle?.passed ?? null });

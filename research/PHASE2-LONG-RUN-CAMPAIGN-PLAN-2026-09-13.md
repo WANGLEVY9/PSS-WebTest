@@ -1,6 +1,6 @@
 # PSS-WebTest Phase 2 long-run campaign plan
 
-Date: 2026-09-13
+Date: 2026-09-13; last updated 2026-09-14
 Status: execution plan; **not** authorization for confirmatory collection.
 
 The machine-readable execution contract for the long run is
@@ -54,19 +54,23 @@ applications in the experimental denominator.
 
 ### Cross-application audit snapshot (2026-09-13)
 
-The new fail-closed audit scans both historical ledger roots and validates
-1,431 records (159 invalid records retained as blocked evidence). Juice Shop is
+The new fail-closed audit recursively scans both historical ledger roots,
+including migrated `run-records` directories, de-duplicates 140 repeated
+`run_id` copies, and validates 4,264 records (158 invalid records retained as
+blocked evidence). Juice Shop is
 the only current `pilot-admission-candidate`: 8/8 workflows, 72/72 pooled
 task×condition×arm cells, and live provider strata meet the three-repetition
 pilot threshold. BookStack (3/8), Indico (2/8), Invoice Ninja (2/8), and
 PrestaShop (3/8) remain breadth-blocked; their gate failures are recorded
 separately. This snapshot is not a confirmatory authorization.
 
-The normalized pilot input now yields 89 three-arm matched blocks, of which 51
+The normalized pilot input now yields 115 three-arm matched blocks, of which 51
 are eligible for planning: BookStack 1, Indico 4, and Juice Shop 46. Invoice
-Ninja and PrestaShop currently contribute no eligible blocks because their
-legacy v0.1 ledgers do not carry the reset-digest-bearing record contract. That
-is a ledger/admission deficiency to repair, not a capability failure.
+Ninja and PrestaShop still contribute no eligible blocks because their existing
+cells do not yet meet the reset-digest and minimum-repetition rule; a new
+PrestaShop 3/3 sentinel now carries a shared seeded-state digest, but remains a
+single-repetition pilot record. This is a ledger/admission deficiency to repair,
+not a capability failure.
 
 The durable batch strategy is therefore:
 
@@ -232,7 +236,7 @@ stratified rule; do not collect an underpowered universal leaderboard.
 3. Re-run PrestaShop and BookStack with the same run-record/replay contract and
    explicitly separate framework/model strata. PrestaShop's first workflow
    clean/fault/evolution canaries are now complete across Qwen and DeepSeek
-   (18 new records; report `results/phase2/2026-09-13-prestashop-longrun-matched-block.md`); BookStack DeepSeek
+   (18 new records; report `results/phase2/2026-09-13-prestashop-longrun-matched-block.md`), and the reset-digest sentinel is now propagated into all three child ledger records; BookStack DeepSeek
    navigation/search pilots are now recorded. The create-page title-recovery
    ablation did not pass, so this workflow remains a diagnostic boundary and
    must not be used to inflate admission or variance estimates.

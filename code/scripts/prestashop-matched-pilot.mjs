@@ -117,13 +117,11 @@ async function resetWithRetry(env) {
       exit_code: result.code,
       status: seedVerified?.status ?? ready?.status ?? null,
       seed_counts: seedVerified?.counts ?? null,
-      // PrestaShop does not emit a cryptographic reset digest yet (unlike
-      // BookStack). The verified seed counts are the determinism evidence
-      // available today; this gap is recorded, not papered over.
-      reset_digest: null,
+      reset_digest: seedVerified?.reset_digest ?? null,
+      reset_contract: seedVerified?.reset_contract ?? null,
       stderr_tail: result.stderr.slice(-300)
     });
-    if (ok) return { ok: true, attempts, seedCounts: seedVerified.counts ?? null };
+    if (ok && typeof seedVerified.reset_digest === 'string') return { ok: true, attempts, seedCounts: seedVerified.counts ?? null, resetDigest: seedVerified.reset_digest, resetContract: seedVerified.reset_contract ?? null };
   }
   return { ok: false, attempts, seedCounts: null };
 }
@@ -211,7 +209,7 @@ if (profiles.length === 0) {
         const base = {
           repetition, arm, run_id: runId, provider_id: profile.provider_id, model_id: profile.model_id, profile_id: profile.profile_id,
           randomization_block: `prestashop-${conditionSlug}-${providerSlug}-r${String(repetition).padStart(2, '0')}-${orderedArms.join('-')}`,
-          reset_ok: reset?.ok === true, reset_seed_counts: reset?.seedCounts ?? null, reset_attempts: reset?.attempts ?? [],
+          reset_ok: reset?.ok === true, reset_seed_counts: reset?.seedCounts ?? null, reset_digest: reset?.resetDigest ?? null, reset_contract: reset?.resetContract ?? null, reset_attempts: reset?.attempts ?? [],
           reset_retry_used: (reset?.attempts?.length ?? 0) > 1, reset_policy: resetPolicy,
           reset_reused_from_block: !resetPerArm && !blockBoundary
         };
@@ -246,7 +244,10 @@ if (profiles.length === 0) {
           PSS_EXPECTED_VERDICT: expectedVerdict,
           PSS_RUN_ID: runId,
           PSS_RUN_RECORD_OUT: ledgerPath,
-          PSS_PRESTASHOP_QUERY: query
+          PSS_PRESTASHOP_QUERY: query,
+          PSS_RESET_DIGEST: reset.resetDigest ?? '',
+          PSS_RESET_CONTRACT: reset.resetContract ?? '',
+          PSS_RANDOMIZATION_BLOCK: base.randomization_block
         };
         if (expectedProduct) cellEnv.PSS_PRESTASHOP_EXPECTED_PRODUCT = expectedProduct;
         if (mutation) cellEnv.PSS_UI_MUTATION = mutation;

@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
+import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
 
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
@@ -24,22 +25,19 @@ const strictPass = (record) => record.status === 'completed'
   && record.checkpoint_reached === true
   && record.emitted_verdict === record.ground_truth_verdict;
 
-const files = roots.flatMap((root) => fs.existsSync(root)
-  ? fs.readdirSync(root).filter((name) => name.endsWith('.jsonl')).map((name) => path.join(root, name))
-  : []);
+const ledgerInput = readDeduplicatedJsonl(roots, { repoRoot });
+const files = ledgerInput.files;
 const valid = [];
-const invalid = [];
-for (const file of files) {
-  for (const [lineIndex, line] of fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).entries()) {
+const invalid = [...ledgerInput.invalid];
+for (const entry of ledgerInput.entries) {
     let raw = null;
     try {
-      raw = JSON.parse(line);
+      raw = entry.raw;
       const record = validateRunRecordAgainstRegistry(raw, registry);
-      if (!applicationFilter || record.application_id === applicationFilter) valid.push({ file: path.relative(repoRoot, file), record });
+      if (!applicationFilter || record.application_id === applicationFilter) valid.push({ file: entry.file, record });
     } catch (error) {
-      invalid.push({ file: path.relative(repoRoot, file), line: lineIndex + 1, application_id: raw?.application_id ?? null, error: error.message });
+      invalid.push({ file: entry.file, line: entry.line, application_id: raw?.application_id ?? null, error: error.message });
     }
-  }
 }
 
 const grouped = new Map();
@@ -99,7 +97,8 @@ const summary = {
   confirmatory_authorized: false,
   application_filter: applicationFilter,
   ledger_roots: roots.map((root) => path.relative(repoRoot, root)),
-  files_scanned: files.map((file) => path.relative(repoRoot, file)),
+  files_scanned: files,
+  duplicate_run_ids_excluded: ledgerInput.duplicates.length,
   valid_records: valid.length,
   invalid_records: scopedInvalid.length,
   invalid_records_scanned: invalid.length,

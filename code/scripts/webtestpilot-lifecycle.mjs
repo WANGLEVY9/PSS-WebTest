@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 
 const app = process.argv[2];
@@ -122,7 +123,15 @@ async function seedAndSnapshot() {
   const snapshot = await run('docker', definition.snapshotCommand(env), { capture: true });
   const counts = snapshot.stdout.trim().split(/\s+/).map(Number);
   if (!counts.length || counts.some((value) => !Number.isInteger(value))) throw new Error(`${app} seed snapshot was not numeric`);
-  console.log(JSON.stringify({ application: app, status: 'seed-verified', counts }));
+  // Counts alone are useful diagnostics but are not a reset identity. Bind the
+  // normalized seed, reset contract, and post-seed snapshot into a digest so
+  // future v0.2 runners can carry the same reset evidence as BookStack,
+  // Indico, and Juice Shop. No credentials or raw database contents are
+  // persisted.
+  const resetContract = `${app}-seeded-state-digest-v1`;
+  const seedDigest = crypto.createHash('sha256').update(seed).digest('hex');
+  const resetDigest = crypto.createHash('sha256').update(JSON.stringify({ application: app, reset_contract: resetContract, seed_digest: seedDigest, counts })).digest('hex');
+  console.log(JSON.stringify({ application: app, status: 'seed-verified', counts, reset_contract: resetContract, reset_digest: resetDigest }));
 }
 
 if (action === 'status') {

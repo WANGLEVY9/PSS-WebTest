@@ -247,6 +247,9 @@ const visiblePassed = complexity === 'simple'
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: visiblePassed && oracle.passed === true, expectedVerdict });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
 const runRecord = createRunRecord({
+  ...(process.env.PSS_RESET_DIGEST ? { reset_digest: process.env.PSS_RESET_DIGEST } : {}),
+  ...(process.env.PSS_RESET_CONTRACT ? { reset_contract: process.env.PSS_RESET_CONTRACT } : {}),
+  ...(process.env.PSS_RANDOMIZATION_BLOCK ? { randomization_block: process.env.PSS_RANDOMIZATION_BLOCK } : {}),
   run_id: runId, application_id: 'prestashop', application_version: '8-local-arm-unpinned', task_id: taskId, condition: process.env.PSS_PILOT_CONDITION ?? 'clean-stable', arm,
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (cellPassed ? 'completed' : 'test-failure')),
   checkpoint_reached: taskStateReached, emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'), ground_truth_verdict: expectedVerdict,

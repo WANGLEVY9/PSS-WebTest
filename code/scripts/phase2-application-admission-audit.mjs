@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
+import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
 
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
@@ -17,21 +18,18 @@ const outputIndex = process.argv.indexOf('--output');
 const outputPath = outputIndex >= 0 ? process.argv[outputIndex + 1] : null;
 const { planned_workflows_per_application: plannedWorkflows, conditions, primary_arms: arms, minimum_primary_repetitions: minRepetitions, minimum_live_provider_repetitions: minProviderRepetitions } = manifest.target;
 const legacyModels = new Set(manifest.legacy_models_quarantined ?? []);
-const files = artifactRoots.flatMap((artifactRoot) => fs.existsSync(artifactRoot)
-  ? fs.readdirSync(artifactRoot).filter((name) => name.endsWith('.jsonl')).map((name) => path.join(artifactRoot, name))
-  : []);
+const ledgerInput = readDeduplicatedJsonl(artifactRoots, { repoRoot });
+const files = ledgerInput.files;
 const registry = loadConfigurationRegistry();
 const records = [];
-const invalid = [];
-for (const file of files) {
-  for (const [lineIndex, line] of fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).entries()) {
+const invalid = [...ledgerInput.invalid];
+for (const entry of ledgerInput.entries) {
     try {
-      const record = validateRunRecordAgainstRegistry(JSON.parse(line), registry);
-      records.push({ file: path.relative(repoRoot, file), record });
+      const record = validateRunRecordAgainstRegistry(entry.raw, registry);
+      records.push({ file: entry.file, record });
     } catch (error) {
-      invalid.push({ file: path.relative(repoRoot, file), line: lineIndex + 1, error: error.message });
+      invalid.push({ file: entry.file, line: entry.line, error: error.message });
     }
-  }
 }
 const strict = (record) => record.status === 'completed' && record.checkpoint_reached === true && record.emitted_verdict === record.ground_truth_verdict;
 const conditionFamily = (condition) => {
@@ -92,7 +90,7 @@ for (const app of manifest.applications) {
 const summary = {
   schema_version: '0.1', manifest_id: manifest.id, status: result.every((row) => row.status === 'pilot-admission-candidate') ? 'all-pilot-admission-candidates' : 'one-or-more-applications-blocked',
   confirmatory_authorized: false, confirmatory_note: 'This audit is fail-closed and never authorizes confirmatory collection.',
-  target: manifest.target, legacy_models_quarantined: [...legacyModels], files_scanned: files.map((file) => path.relative(repoRoot, file)), valid_records: records.length, invalid_records: invalid.length, invalid_record_examples: invalid.slice(0, 25), applications: result,
+  target: manifest.target, legacy_models_quarantined: [...legacyModels], files_scanned: files, duplicate_run_ids_excluded: ledgerInput.duplicates.length, valid_records: records.length, invalid_records: invalid.length, invalid_record_examples: invalid.slice(0, 25), applications: result,
   next_branch: result.some((row) => row.status === 'pilot-admission-candidate') ? 'Review pilot-admission candidates, freeze variance inputs, and keep confirmatory collection blocked until preregistration.' : 'Repair the first blocking gate in each application, then rerun this audit.'
 };
 if (outputPath) { fs.mkdirSync(path.dirname(outputPath), { recursive: true }); fs.writeFileSync(outputPath, `${JSON.stringify(summary, null, 2)}\n`, { mode: 0o600 }); }

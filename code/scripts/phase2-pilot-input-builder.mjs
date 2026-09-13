@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
+import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
 
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
@@ -27,17 +28,16 @@ const conditionFamily = (condition) => {
 };
 const legacyModels = new Set(['qwen3-vl-flash']);
 const roots = [path.join(repoRoot, 'artifacts/phase2'), path.join(codeRoot, 'artifacts/phase2')];
-const files = roots.flatMap((root) => fs.existsSync(root)
-  ? fs.readdirSync(root).filter((name) => name.endsWith('.jsonl')).map((name) => path.join(root, name))
-  : []);
+const ledgerInput = readDeduplicatedJsonl(roots, { repoRoot });
+const files = ledgerInput.files;
 const registry = loadConfigurationRegistry();
 const records = [];
-const invalid = [];
-for (const file of files) {
-  for (const [lineIndex, line] of fs.readFileSync(file, 'utf8').split(/\r?\n/).filter(Boolean).entries()) {
+const invalid = [...ledgerInput.invalid];
+for (const entry of ledgerInput.entries) {
+    const file = path.resolve(repoRoot, entry.file);
     let raw = null;
     try {
-      raw = JSON.parse(line);
+      raw = entry.raw;
       const record = validateRunRecordAgainstRegistry(raw, registry);
       if (applicationFilter && record.application_id !== applicationFilter) continue;
       records.push({
@@ -56,9 +56,8 @@ for (const file of files) {
         wall_time_ms: Number.isFinite(record.timing?.wall_time_ms) ? record.timing.wall_time_ms : null
       });
     } catch (error) {
-      if (!applicationFilter || raw?.application_id === applicationFilter) invalid.push({ file: path.relative(repoRoot, file), line: lineIndex + 1, application_id: raw?.application_id ?? null, error: error.message });
+      if (!applicationFilter || raw?.application_id === applicationFilter) invalid.push({ file: entry.file, line: entry.line, application_id: raw?.application_id ?? null, error: error.message });
     }
-  }
 }
 
 const cellKey = (row) => [row.application_id, row.task_id, row.condition_family, row.arm, row.provider_id ?? 'scripted', row.model_id ?? 'scripted'].join('|');
@@ -148,7 +147,8 @@ const summary = {
   minimum_repetitions: minimumRepetitions,
   legacy_models_quarantined: [...legacyModels],
   ledger_roots: roots.map((root) => path.relative(repoRoot, root)),
-  files_scanned: files.map((file) => path.relative(repoRoot, file)),
+  files_scanned: files,
+  duplicate_run_ids_excluded: ledgerInput.duplicates.length,
   valid_records: records.length,
   invalid_records: invalid.length,
   invalid_examples: invalid.slice(0, 25),

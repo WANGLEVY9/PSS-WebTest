@@ -16,3 +16,23 @@ test('Juice Shop basket lane uses the cross-page-state budget and task-specific 
   assert.match(hybridRunner, /taskId === 'juice-shop-add-to-basket' \? 'cross-page-state'/);
   assert.match(matchedRunner, /taskId === 'juice-shop-add-to-basket' \? 'cross-page-state'/);
 });
+
+test('Juice Shop pagination lane uses a dedicated task family, manifest, and oracle', () => {
+  assert.match(visualRunner, /isPaginationTask\s*\? 'pagination-filter'/);
+  assert.match(hybridRunner, /isPaginationTask\s*\? 'pagination-filter'/);
+  assert.match(matchedRunner, /juice-shop-pagination-run-manifest\.v0\.1\.json/);
+  assert.match(matchedRunner, /evaluate-juice-shop-pagination\.mjs/);
+});
+
+test('Juice Shop last-item pagination variant remains a separate mapped workflow', () => {
+  assert.match(visualRunner, /taskId === 'juice-shop-pagination-last-item'/);
+  assert.match(hybridRunner, /taskId === 'juice-shop-pagination-last-item'/);
+  assert.match(matchedRunner, /juice-shop-pagination-last-item-run-manifest\.v0\.1\.json/);
+  assert.match(matchedRunner, /RUN_JUICE_SHOP_PAGINATION_LAST_ITEM/);
+  assert.match(matchedRunner, /OWASP Juice Shop Sticker Page/);
+});
+
+test('Juice Shop pagination hybrid runner exposes a page-progress token and rejects disabled targets early', () => {
+  assert.match(hybridRunner, /progressToken: `\$\{page\.url\(\)\}::\$\{paginator\}`/);
+  assert.match(hybridRunner, /target\.isEnabled\(\)\.catch\(\(\) => false\)/);
+});

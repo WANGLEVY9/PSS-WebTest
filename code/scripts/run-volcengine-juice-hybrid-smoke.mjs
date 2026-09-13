@@ -15,15 +15,19 @@ import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
 import { evaluateJuiceShopCondition } from '../src/oracles/juice-shop-condition.mjs';
 import { evaluateJuiceShopProductDetail } from '../src/oracles/juice-shop-product-detail.mjs';
 import { evaluateJuiceShopBasket } from '../src/oracles/juice-shop-basket.mjs';
+import { evaluateJuiceShopPagination } from '../src/oracles/juice-shop-pagination.mjs';
 import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission, installJuiceShopProductOmission } from '../src/mutations/juice-shop.mjs';
+import { installJuiceShopPaginationOmission } from '../src/mutations/juice-shop-pagination.mjs';
 
 dotenv.config();
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const experimentCondition = resolveExperimentCondition();
 const expectedVerdict = experimentCondition.expectedVerdict;
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
-const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : taskMode === 'add-to-basket' ? 'juice-shop-add-to-basket' : 'juice-shop-product-search');
-const taskFamily = taskId === 'juice-shop-add-to-basket' ? 'cross-page-state' : 'search-navigation';
+const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : taskMode === 'add-to-basket' ? 'juice-shop-add-to-basket' : taskMode === 'pagination-last-item' ? 'juice-shop-pagination-last-item' : taskMode === 'pagination' ? 'juice-shop-pagination' : 'juice-shop-product-search');
+const isPaginationTask = taskId === 'juice-shop-pagination' || taskId === 'juice-shop-pagination-last-item';
+const paginationTarget = process.env.PSS_JUICE_PAGINATION_TARGET ?? (taskId === 'juice-shop-pagination-last-item' ? 'OWASP Juice Shop Sticker Page' : 'Lemon Juice (500ml)');
+const taskFamily = taskId === 'juice-shop-add-to-basket' ? 'cross-page-state' : isPaginationTask ? 'pagination-filter' : 'search-navigation';
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? process.env.CUA_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'hybrid', taskFamily });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
@@ -36,7 +40,7 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination-last-item' ? 'juice-shop-pagination-last-item-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination' ? 'juice-shop-pagination-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
@@ -48,10 +52,10 @@ const trace = [];
 const runId = `juice-shop-hybrid-${Date.now()}`;
 const replay = createLocalReplayRecorder({ runId, applicationId: 'juice-shop', taskId, arm: 'hybrid' });
 let pendingProviderEventIds = [];
-const replayState = async () => ({ milestone: page.url().includes('/search') ? 'search-results' : 'catalog', url_path: new URL(page.url()).pathname, save_clicked: false, saved_page_visible: false, authenticated: true, request_state: 'not-submitted', title_visible: false, title_filled: false, editor_visible: false, editor_focused: false });
+const replayState = async () => ({ milestone: isPaginationTask ? 'catalog-page' : page.url().includes('/search') ? 'search-results' : 'catalog', url_path: new URL(page.url()).pathname, save_clicked: false, saved_page_visible: false, authenticated: true, request_state: 'not-submitted', title_visible: false, title_filled: false, editor_visible: false, editor_focused: false });
 
 const hybridPageStructure = async () => {
-  const controls = await page.locator('a,button,input:not([type="hidden"]),textarea,[role="button"]').evaluateAll((elements, activeTaskId) => {
+  const controls = await page.locator(isPaginationTask ? 'a,button,input:not([type="hidden"]),textarea,[role="button"],mat-card-title' : 'a,button,input:not([type="hidden"]),textarea,[role="button"]').evaluateAll((elements, activeTaskId) => {
     const roleFor = (element) => {
       if (element.tagName === 'A') return 'link';
       if (element.tagName === 'BUTTON') return 'button';
@@ -69,10 +73,15 @@ const hybridPageStructure = async () => {
           || '';
         name = `Add to Basket: ${title}`;
       }
-      return { element, role: roleFor(element), name, interaction: roleFor(element) === 'textbox' ? 'type' : 'click', center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
+      const landmark = (activeTaskId === 'juice-shop-pagination' || activeTaskId === 'juice-shop-pagination-last-item') && element.tagName === 'MAT-CARD-TITLE';
+      return { element, role: landmark ? 'text' : roleFor(element), name, interaction: landmark ? 'observe' : (roleFor(element) === 'textbox' ? 'type' : 'click'), center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
     }).filter(Boolean).slice(0, 120);
-    visible.forEach((item, index) => { item.element.dataset.pssTargetId = `c${index}`; });
-    return visible.map((item, index) => ({ ...item, target_id: `c${index}`, element: undefined }));
+    // Reserve bounded semantic IDs for the paginator controls.  They remain
+    // stable when card landmarks enter/leave the structure, while preserving
+    // the common c0..c999 action schema used by the provider contract.
+    const targetIdFor = (item, index) => item.name === 'Next page' ? 'c998' : item.name === 'Previous page' ? 'c997' : `c${index}`;
+    visible.forEach((item, index) => { item.element.dataset.pssTargetId = targetIdFor(item, index); });
+    return visible.map((item, index) => ({ ...item, target_id: targetIdFor(item, index), element: undefined }));
   }, taskId);
   return { controls };
 };
@@ -83,7 +92,8 @@ const driver = createVolcengineHybridDriver({
   observeHybrid: async ({ step } = {}) => {
     const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' });
     await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
-    return { screenshot: image.toString('base64'), pageStructure: await hybridPageStructure(), viewport };
+    const paginator = await page.locator('mat-paginator').innerText().catch(() => '');
+    return { screenshot: image.toString('base64'), pageStructure: await hybridPageStructure(), viewport, progressToken: `${page.url()}::${paginator}` };
   },
   onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   hybridActionMode,
@@ -96,6 +106,14 @@ const driver = createVolcengineHybridDriver({
     if (action.target_id && ['click', 'double_click'].includes(action.type)) {
       const target = page.locator(`[data-pss-target-id="${action.target_id}"]`).first();
       if (!await target.isVisible().catch(() => false)) throw new Error(`hybrid target is not visible: ${action.target_id}`);
+      const targetMetadata = (await hybridPageStructure()).controls.find((candidate) => candidate.target_id === action.target_id);
+      if (targetMetadata?.interaction === 'observe') return page.waitForTimeout(50);
+      // A semantic target can become disabled after the previous action (for
+      // example, the paginator's Next page control after entering page 2).
+      // Treat this as a bounded rejected action so the driver can observe the
+      // unchanged page and re-plan, instead of waiting for Playwright's full
+      // actionability timeout and misclassifying the cell as SUT execution.
+      if (!await target.isEnabled().catch(() => false)) return page.waitForTimeout(50);
       if (action.type === 'double_click') await target.dblclick(); else await target.click();
       return page.waitForTimeout(postActionSettleMs);
     }
@@ -128,6 +146,7 @@ let failure;
 const agentStartedAt = Date.now();
 try {
   if ((taskId === 'juice-shop-product-detail' || taskId === 'juice-shop-add-to-basket') && experimentCondition.isFault) await installJuiceShopProductOmission(page);
+  if (isPaginationTask && experimentCondition.isFault) await installJuiceShopPaginationOmission(page, { omitName: paginationTarget });
   if (taskId === 'juice-shop-product-search' && experimentCondition.isFault) await installJuiceShopSearchOmission(page);
   if (experimentCondition.isEvolution) await installJuiceShopLayoutEvolution(page);
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
@@ -154,7 +173,11 @@ try {
   }
   const adapter = createAgentAdapter({ arm: 'hybrid', driver, maxSteps });
   result = await adapter.run({
-    intent: taskId === 'juice-shop-add-to-basket'
+    intent: isPaginationTask
+      ? (experimentCondition.isFault
+        ? `In the Juice Shop catalog, go to the second catalog page using the visible Next page control. The declared functional fault means ${paginationTarget} may be absent; if the second page is visible and that target is absent, finish with verdict fault. Otherwise finish with verdict clean.`
+        : `In the Juice Shop catalog, click the visible Next page control exactly once. After that click, the paginator and product-title landmarks describe the new page even if the target card is offscreen; do not click Next page again. Finish only when the paginator shows the second page and ${paginationTarget} is present in the screenshot or declared landmarks, then return done with verdict clean.`)
+      : taskId === 'juice-shop-add-to-basket'
       ? (experimentCondition.isFault
         ? 'In the Juice Shop catalog, inspect the product cards. The declared functional fault means Apple Juice (1000ml) may be absent; if it is absent, finish with verdict fault. If it is visible, add it to the basket, open the shopping cart, and finish with verdict clean.'
         : 'In the Juice Shop catalog, locate the card whose title is exactly Apple Juice (1000ml). Click the Add to Basket control whose visible label includes that same product, then click the top-right shopping-cart control. Finish only when the basket visibly shows Apple Juice (1000ml) and 1.99 price; then return done with verdict clean.')
@@ -176,14 +199,18 @@ try {
 }
 
 const oracleDeadline = Date.now() + oraclePollMs;
-let uiOracle = taskId === 'juice-shop-product-detail'
+let uiOracle = isPaginationTask
+  ? await evaluateJuiceShopPagination(page, { condition: experimentCondition.condition, targetName: paginationTarget })
+  : taskId === 'juice-shop-product-detail'
   ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
   : taskId === 'juice-shop-add-to-basket'
     ? await evaluateJuiceShopBasket(page, { condition: experimentCondition.condition })
     : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
   await page.waitForTimeout(250);
-  uiOracle = taskId === 'juice-shop-product-detail'
+  uiOracle = isPaginationTask
+    ? await evaluateJuiceShopPagination(page, { condition: experimentCondition.condition, targetName: paginationTarget })
+    : taskId === 'juice-shop-product-detail'
     ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
     : taskId === 'juice-shop-add-to-basket'
       ? await evaluateJuiceShopBasket(page, { condition: experimentCondition.condition })

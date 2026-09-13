@@ -212,6 +212,40 @@
             "artifact": "results/phase2/2026-09-13-juice-shop-basket-matched-pilot.md"
           },
           "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "juice-shop-pagination",
+          "intent": "Navigate from the initial catalog to the second page and finish only when the paginator shows the second page and Lemon Juice (500ml) is visibly present.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks the second-page paginator state and exact Lemon Juice (500ml) visibility; under the functional-fault condition it requires the second page with that target omitted. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["pagination-target-omission", "page-boundary-mismatch"],
+          "evolution_slots": ["paginator-layout-change", "card-layout-change"],
+          "phase2_evidence": {
+            "status": "new pilot-only workflow; no repetition or application admission claim",
+            "runner": "shared matched runner with browser-scoped omission, replay, and independent visible-state oracle",
+            "target": "Lemon Juice (500ml) on the 16–30 page of the seeded 46-product catalog"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "juice-shop-pagination-last-item",
+          "intent": "Navigate from the initial catalog to the second page and finish only when the paginator shows the second page and OWASP Juice Shop Sticker Page is visibly present.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks the second-page paginator state and exact OWASP Juice Shop Sticker Page visibility; under the functional-fault condition it requires the second page with that target omitted. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["pagination-target-omission", "page-boundary-mismatch"],
+          "evolution_slots": ["paginator-layout-change", "card-layout-change"],
+          "phase2_evidence": {
+            "status": "new diagnostic workflow; separate from Lemon Juice pagination because target visibility differs after page transition",
+            "runner": "shared matched runner with browser-scoped omission, replay, and independent visible-state oracle",
+            "target": "OWASP Juice Shop Sticker Page on the 16–30 page of the seeded 46-product catalog"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
         }
       ]
     }

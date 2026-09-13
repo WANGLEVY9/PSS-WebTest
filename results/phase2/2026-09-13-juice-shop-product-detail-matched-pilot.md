@@ -9,20 +9,20 @@ Status: **pilot / diagnostic only**. This block is not confirmatory evidence and
 - Arms: screenshot-only pure visual, screenshot + declared page structure hybrid, accessibility-locator Playwright.
 - Providers: Alibaba `qwen3.7-flash` and DeepSeek `deepseek-v4-flash-vision-exp`.
 - Conditions: clean-stable, browser-scoped functional fault (omit Apple Juice from the product response), behavior-preserving UI evolution.
-- One repetition per provider × condition; every block was reset and randomized before the three arms.
+- Qwen: three repetitions per condition; DeepSeek: one repetition per condition. Every block was reset and randomized before the three arms.
 
 ## Strict outcomes
 
 | Provider/model | Condition | Pure visual | Hybrid | Playwright |
 |---|---|---:|---:|---:|
-| Alibaba/qwen3.7-flash | clean-stable | 1/1 | 1/1 | 1/1 |
-| Alibaba/qwen3.7-flash | functional-fault | 0/1 | 0/1 | 1/1 |
-| Alibaba/qwen3.7-flash | UI evolution | 1/1 | 1/1 | 1/1 |
+| Alibaba/qwen3.7-flash | clean-stable | 2/3 | 3/3 | 3/3 |
+| Alibaba/qwen3.7-flash | functional-fault | 0/3 | 0/3 | 3/3 |
+| Alibaba/qwen3.7-flash | UI evolution | 2/3 | 3/3 | 3/3 |
 | DeepSeek/deepseek-v4-flash-vision-exp | clean-stable | 1/1 | 1/1 | 1/1 |
 | DeepSeek/deepseek-v4-flash-vision-exp | functional-fault | 0/1 | 0/1 | 1/1 |
 | DeepSeek/deepseek-v4-flash-vision-exp | UI evolution | 1/1 | 1/1 | 1/1 |
 
-Overall: pure visual 4/6, hybrid 4/6, Playwright 6/6. The two agent-arm fault failures reached the independent omission oracle (`oracle_only_success=true`) but exhausted the step budget without emitting the required `fault` verdict; they are strict failures, not infrastructure failures.
+Across the expanded pilot: pure visual 6/12, hybrid 8/12, Playwright 12/12. Four agent-arm fault failures reached the independent omission oracle (`oracle_only_success=true`) but exhausted the step budget without emitting the required `fault` verdict; two additional Qwen clean/evolution visual failures were provider-format boundaries before the oracle. All are strict failures, not infrastructure failures.
 
 ## Engineering changes validated
 

@@ -47,6 +47,14 @@ test('parses a bounded Alibaba function-call decision', () => {
   });
 });
 
+test('parses a bounded direct-action tool alias emitted by DeepSeek', () => {
+  assert.deepEqual(parseToolDecision({ function: { name: 'type', arguments: '{"text":"Mug"}' } }), {
+    type: 'action',
+    action: { type: 'type', text: 'Mug' }
+  });
+  assert.throws(() => parseToolDecision({ function: { name: 'arbitrary_tool', arguments: '{"text":"Mug"}' } }), /unsupported tool call/);
+});
+
 test('driver sends screenshot-only input and parses provider response', async () => {
   let request;
   const driver = createVolcengineCuaDriver({

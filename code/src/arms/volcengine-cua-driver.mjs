@@ -181,9 +181,22 @@ function parseDecision(text, { coordinateMode = 'normalized_1000', allowTargetId
 }
 
 function parseToolDecision(toolCall, options = {}) {
-  if (toolCall?.function?.name !== 'ui_action') throw new Error('CUA model returned an unsupported tool call');
+  const toolName = typeof toolCall?.function?.name === 'string' ? toolCall.function.name : 'missing';
+  const directActionAlias = TOOL_ACTION_TYPES.has(toolName) ? toolName : null;
+  if (toolName !== 'ui_action' && !directActionAlias) {
+    // Preserve the provider boundary without accepting an unknown tool:
+    // arguments and hidden provider content remain excluded from the error.
+    throw new Error(`CUA model returned an unsupported tool call: ${toolName}`);
+  }
   let args;
   try { args = JSON.parse(toolCall.function.arguments || ''); } catch { throw new Error('CUA model tool call did not contain valid JSON arguments'); }
+  // DeepSeek V4.1-Flash may emit the common action type as the function name
+  // (`type`, `click`, or `keypress`) even though the request advertises the
+  // single `ui_action` function. Accept only those seven bounded aliases and
+  // inject the name as action_type before applying the normal validator.
+  if (directActionAlias && args && typeof args === 'object' && !Array.isArray(args) && args.action_type === undefined && args.type === undefined && args.kind === undefined) {
+    args = { ...args, action_type: directActionAlias };
+  }
   // Some OpenAI-compatible providers wrap function arguments in the textual
   // action schema despite the tool declaration. Accept only these equivalent
   // shapes, then pass them through the same strict common-schema validator.

@@ -88,7 +88,7 @@ const executeAction = async (action) => {
   if (action.type === 'click') { await page.mouse.click(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
   if (action.type === 'double_click') { await page.mouse.dblclick(action.x, action.y); return page.waitForTimeout(postActionSettleMs); }
   if (action.type === 'type') { await page.keyboard.type(action.text); return page.waitForTimeout(Math.min(postActionSettleMs, 350)); }
-  if (action.type === 'keypress') { const aliases = { ENTER: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' }; await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(postActionSettleMs); }
+  if (action.type === 'keypress') { const aliases = { ENTER: 'Enter', RETURN: 'Enter', ESC: 'Escape', ESCAPE: 'Escape', TAB: 'Tab', SPACE: 'Space', BACKSPACE: 'Backspace' }; await page.keyboard.press(aliases[action.key.toUpperCase()] ?? action.key); return page.waitForTimeout(postActionSettleMs); }
   if (action.type === 'scroll') return page.mouse.wheel(0, action.delta_y);
   if (action.type === 'wait') return page.waitForTimeout(Math.min(Math.max(action.ms ?? 500, 100), 3000));
   throw new Error(`Unsupported action: ${action.type}`);

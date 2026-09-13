@@ -194,6 +194,24 @@
             "artifact": "results/phase2/2026-09-13-juice-shop-product-detail-matched-pilot.md"
           },
           "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "juice-shop-add-to-basket",
+          "intent": "Add Apple Juice (1000ml) to the basket, open the shopping cart, and finish only when the basket visibly shows the exact product and price.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks the basket route, basket heading, target item, quantity, and price; under the functional-fault condition it requires the declared target omission. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["product-card-omission", "basket-state-mismatch"],
+          "evolution_slots": ["card-layout-change", "basket-layout-change"],
+          "phase2_evidence": {
+            "status": "pilot-only; no confirmatory inference",
+            "runner": "shared matched runner with browser-scoped mutation, replay, and independent oracle",
+            "matched_pilot": "Qwen and DeepSeek, one repetition per condition: overall visual 1/6, hybrid 4/6, Playwright 6/6; agent fault cells reached the omission oracle but often failed to emit fault",
+            "artifact": "results/phase2/2026-09-13-juice-shop-basket-matched-pilot.md"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
         }
       ]
     }

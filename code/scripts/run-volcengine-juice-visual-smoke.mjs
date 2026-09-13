@@ -14,6 +14,7 @@ import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
 import { evaluateJuiceShopCondition } from '../src/oracles/juice-shop-condition.mjs';
 import { evaluateJuiceShopProductDetail } from '../src/oracles/juice-shop-product-detail.mjs';
+import { evaluateJuiceShopBasket } from '../src/oracles/juice-shop-basket.mjs';
 import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission, installJuiceShopProductOmission } from '../src/mutations/juice-shop.mjs';
 
 dotenv.config();
@@ -21,12 +22,13 @@ console.error('[cua-smoke] starting');
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const experimentCondition = resolveExperimentCondition();
 const expectedVerdict = experimentCondition.expectedVerdict;
-const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'visual', taskFamily: 'search-navigation' });
+const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
+const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : taskMode === 'add-to-basket' ? 'juice-shop-add-to-basket' : 'juice-shop-product-search');
+const taskFamily = taskId === 'juice-shop-add-to-basket' ? 'cross-page-state' : 'search-navigation';
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'visual', taskFamily });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const dismissOverlaysOnly = process.env.CUA_DISMISS_OVERLAYS === '1';
-const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
-const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : 'juice-shop-product-search');
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const viewport = { width: 1280, height: 720 };
@@ -35,7 +37,7 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
@@ -49,7 +51,7 @@ const runId = `juice-shop-visual-${Date.now()}`;
 const replay = createLocalReplayRecorder({ runId, applicationId: 'juice-shop', taskId, arm: 'visual' });
 let pendingProviderEventIds = [];
 const replayState = async () => ({
-  milestone: taskId === 'juice-shop-product-detail' ? 'catalog-or-dialog' : (page.url().includes('/search') ? 'search-results' : 'catalog'),
+  milestone: taskId === 'juice-shop-product-detail' ? 'catalog-or-dialog' : taskId === 'juice-shop-add-to-basket' ? (page.url().includes('/basket') ? 'basket' : 'catalog') : (page.url().includes('/search') ? 'search-results' : 'catalog'),
   url_path: new URL(page.url()).pathname,
   save_clicked: false,
   saved_page_visible: false,
@@ -95,8 +97,8 @@ let result;
 let failure;
 const agentStartedAt = Date.now();
 try {
-  if (taskId === 'juice-shop-product-detail' && experimentCondition.isFault) await installJuiceShopProductOmission(page);
-  if (taskId !== 'juice-shop-product-detail' && experimentCondition.isFault) await installJuiceShopSearchOmission(page);
+  if ((taskId === 'juice-shop-product-detail' || taskId === 'juice-shop-add-to-basket') && experimentCondition.isFault) await installJuiceShopProductOmission(page);
+  if (taskId === 'juice-shop-product-search' && experimentCondition.isFault) await installJuiceShopSearchOmission(page);
   if (experimentCondition.isEvolution) await installJuiceShopLayoutEvolution(page);
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
   // The catalog is API-backed and briefly renders a 0-of-0 shell after
@@ -124,7 +126,11 @@ try {
   console.error('[cua-smoke] page-ready');
   const adapter = createAgentAdapter({ arm: 'visual', driver, maxSteps });
   result = await adapter.run({
-    intent: taskId === 'juice-shop-product-detail'
+    intent: taskId === 'juice-shop-add-to-basket'
+      ? (experimentCondition.isFault
+        ? 'In the Juice Shop catalog, inspect the product cards. The declared functional fault means Apple Juice (1000ml) may be absent; if it is absent, finish with verdict fault. If it is visible, add it to the basket, open the shopping cart, and finish with verdict clean.'
+        : 'In the Juice Shop catalog, locate the card whose title is exactly Apple Juice (1000ml). Click the Add to Basket button inside that same card (not the card image or title), then click the top-right shopping-cart control. Finish only when the basket visibly shows Apple Juice (1000ml) and 1.99 price; then return done with verdict clean.')
+      : taskId === 'juice-shop-product-detail'
       ? (experimentCondition.isFault
         ? 'In the Juice Shop catalog, inspect the product cards. The declared functional fault means Apple Juice (1000ml) may be absent; if it is absent, finish with verdict fault. If it is visible, open its product details dialog and finish with verdict clean.'
         : 'In the Juice Shop catalog, open the product details for Apple Juice (1000ml). Finish only when the dialog visibly shows that exact product and its 1.99 price; then return done with verdict clean.')
@@ -145,12 +151,16 @@ try {
 const oracleDeadline = Date.now() + oraclePollMs;
 let uiOracle = taskId === 'juice-shop-product-detail'
   ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
-  : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
+  : taskId === 'juice-shop-add-to-basket'
+    ? await evaluateJuiceShopBasket(page, { condition: experimentCondition.condition })
+    : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
   await page.waitForTimeout(250);
   uiOracle = taskId === 'juice-shop-product-detail'
     ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
-    : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
+    : taskId === 'juice-shop-add-to-basket'
+      ? await evaluateJuiceShopBasket(page, { condition: experimentCondition.condition })
+      : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 }
 const visibleProducts = await page.locator('body').innerText().catch(() => '');
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true, expectedVerdict });

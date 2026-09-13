@@ -10,8 +10,10 @@ test.skip(!enabled || !username || !password, 'Set RUN_INDICO_FAULT_WORKFLOW=1 a
 
 test('fault workflow exposes the independent event-title mismatch', async ({ page }) => {
   await page.goto('/login/');
-  await page.getByRole('textbox', { name: 'Username or email' }).fill(username);
-  await page.getByRole('textbox', { name: 'Password' }).fill(password);
+  // Indico 3.3.6 exposes placeholders but no accessible label for these
+  // inputs; the placeholder locator is the stable, visible contract.
+  await page.getByPlaceholder('Username or email').fill(username);
+  await page.getByPlaceholder('Password').fill(password);
   await page.getByRole('button', { name: 'Login with Indico' }).click();
   await expect(page.getByRole('button', { name: 'Create event' })).toBeVisible();
 

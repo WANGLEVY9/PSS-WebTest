@@ -10,8 +10,11 @@ test.skip(!enabled || !username || !password, 'Set RUN_INDICO_VERTICAL_SLICE=1 a
 
 test('create a public event with accessibility-first locators', async ({ page }) => {
   await page.goto('/login/');
-  await page.getByRole('textbox', { name: 'Username or email' }).fill(username);
-  await page.getByRole('textbox', { name: 'Password' }).fill(password);
+  // Indico 3.3.6 exposes placeholders but no accessible label for these
+  // inputs.  Using the real DOM contract avoids a false green from a skipped
+  // or pre-login timeout and keeps the scripted arm reproducible.
+  await page.getByPlaceholder('Username or email').fill(username);
+  await page.getByPlaceholder('Password').fill(password);
   await page.getByRole('button', { name: 'Login with Indico' }).click();
   await expect(page.getByRole('button', { name: 'Create event' })).toBeVisible();
 

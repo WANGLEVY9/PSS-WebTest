@@ -34,7 +34,9 @@ if (apply.code !== 0) throw new Error(`fault apply failed: ${apply.stderr}`);
 evidence.trigger_applied = true;
 try {
   const browser = await run('npx', ['playwright', 'test', 'tests/traditional/indico-create-event-fault.spec.js', '--project=chromium'], {
-    RUN_INDICO_FAULT_WORKFLOW: '1'
+    RUN_INDICO_FAULT_WORKFLOW: '1',
+    SUT_BASE_URL: process.env.INDICO_BASE_URL ?? 'http://localhost:8080',
+    INDICO_BASE_URL: process.env.INDICO_BASE_URL ?? 'http://localhost:8080'
   });
   evidence.browser_exit_code = browser.code;
   evidence.browser_fault_visible = browser.code === 0;

@@ -45,6 +45,8 @@ success only when the protocol completed and the oracle passed.
 |---|---:|---:|---:|---|---|
 | Indico / Aliyun Qwen3.7-Flash | 1/1 | 0/1 | 0/1 | completed + verdict, independent oracle false (`oracle`) | `provider-format` |
 | OWASP Juice Shop / Aliyun Qwen3.7-Flash | 1/1 | 0/1 | 0/1 | completed + verdict, independent oracle false (`oracle`) | `grounding-loop` |
+| Indico / DeepSeek V4.1-Flash | 1/1 | 0/1 | 0/1 | completed + verdict, independent oracle false (`oracle`) | `grounding-loop` |
+| OWASP Juice Shop / DeepSeek V4.1-Flash | 1/1 | 1/1 | 0/1 | strict success | `agent-step-budget` |
 
 Both blocks produced unique run IDs and were written to the standard JSONL
 ledger. Their hybrid run records report
@@ -53,6 +55,18 @@ ledger. Their hybrid run records report
 runner. The Indico hybrid replay reached `/event/19/manage/`, and the Juice
 Shop hybrid replay remained on the catalog route after four actions. These are
 not successes because the independent task oracle did not pass.
+
+The two DeepSeek blocks were independently audited as three-record ledgers
+with three unique run IDs each. DeepSeek Juice Shop hybrid reached the search
+oracle in seven actions with one retry; DeepSeek Indico hybrid emitted a
+completed verdict but did not satisfy the event oracle. The provider/model
+strata remain separate and are not pooled into the earlier clean-only summary.
+
+In the same tranche, the Indico fault apply/remove/isolation gate passed after
+fixing its child `SUT_BASE_URL` propagation and the login locator contract. The
+gate evidence is recorded separately in
+`2026-09-13-indico-fault-gate.md`; it does not admit the application because the
+evolution invariant and three-arm fault/evolution cells are still missing.
 
 ## Interpretation
 
@@ -70,11 +84,10 @@ lanes remain blocked under the long-run campaign manifest.
 
 ## Next bounded branch
 
-1. Repeat the same one-repetition profile-corrected block with DeepSeek on
-   Indico and Juice Shop.
-2. Inspect the bounded replay actions and independent-oracle deltas for the
+1. Inspect the bounded replay actions and independent-oracle deltas for the
    two repaired hybrid runs; do not infer capability from provider-format
    counts alone.
+2. Run the corresponding fault and UI-evolution cells with the repaired
+   profile, keeping clean/fault/evolution ledgers separate.
 3. Only after the clean, fault, and evolution windows are all complete should
    the application-level admission board be recomputed.
-

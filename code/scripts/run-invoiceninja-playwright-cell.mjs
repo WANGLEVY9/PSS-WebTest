@@ -104,6 +104,9 @@ const runRecord = createRunRecord({
   ground_truth_verdict: expectedVerdict,
   timing: { wall_time_ms: Date.now() - startedAt, actions, retries: 0 },
   provenance: { runner_version: 'invoiceninja-playwright-cell-v0.2', observation_contract: 'scripted-locator' },
+  reset_digest: process.env.PSS_RESET_DIGEST || null,
+  reset_contract: process.env.PSS_RESET_CONTRACT || null,
+  randomization_block: process.env.PSS_RANDOMIZATION_BLOCK || null,
   failure_category: failure ? 'execution' : (checkpointReached ? null : 'oracle'),
   trace: [{ kind: 'scripted-sequence', action_count: actions, replay_steps: trace.length, independent_oracle: oracle }]
 });

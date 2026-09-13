@@ -18,11 +18,11 @@ if (!Number.isInteger(repetitionOffset) || repetitionOffset < 0 || repetitionOff
 }
 const campaignTag = (process.env.PSS_PILOT_TAG ?? 'round').replace(/[^a-z0-9_-]+/gi, '-');
 
-const conditions = ['clean-stable', 'functional-fault', 'ui-evolution'];
+const allConditions = ['clean-stable', 'functional-fault', 'ui-evolution'];
 const qwenEnv = path.join(codeDir, '.env');
 const deepseekEnv = path.join(codeDir, '.env.deepseek');
 const doubaoEnv = path.join(codeDir, '.env.volcengine-cua');
-const arms = [
+const allArms = [
   { id: 'playwright', npmScript: 'pilot:invoiceninja:playwright', envFile: null },
   { id: 'visual-qwen', npmScript: 'pilot:invoiceninja:visual', envFile: qwenEnv },
   { id: 'hybrid-qwen', npmScript: 'pilot:invoiceninja:hybrid', envFile: qwenEnv },
@@ -30,6 +30,13 @@ const arms = [
   { id: 'hybrid-deepseek', npmScript: 'pilot:invoiceninja:hybrid', envFile: deepseekEnv },
   { id: 'hybrid-doubao', npmScript: 'pilot:invoiceninja:hybrid', envFile: doubaoEnv }
 ];
+const conditions = (process.env.PSS_PILOT_CONDITIONS ?? allConditions.join(',')).split(',').map((value) => value.trim()).filter(Boolean);
+const requestedArmIds = (process.env.PSS_PILOT_ARMS ?? allArms.map((arm) => arm.id).join(',')).split(',').map((value) => value.trim()).filter(Boolean);
+const unknownArmIds = requestedArmIds.filter((id) => !allArms.some((arm) => arm.id === id));
+if (unknownArmIds.length) throw new Error(`PSS_PILOT_ARMS contains unknown ids: ${unknownArmIds.join(',')}`);
+const arms = requestedArmIds.map((id) => allArms.find((arm) => arm.id === id));
+if (conditions.length === 0 || conditions.some((condition) => !allConditions.includes(condition))) throw new Error(`PSS_PILOT_CONDITIONS must be a subset of ${allConditions.join(',')}`);
+if (arms.length < 3 || !arms.some((arm) => arm.id === 'playwright') || !arms.some((arm) => arm.id.startsWith('visual-')) || !arms.some((arm) => arm.id.startsWith('hybrid-'))) throw new Error('PSS_PILOT_ARMS must include Playwright, at least one visual provider, and at least one hybrid provider');
 
 const now = new Date().toISOString();
 const stamp = now.slice(0, 10);
@@ -89,9 +96,14 @@ async function resetSut() {
   if (result.exitCode !== 0) {
     throw new Error(`Invoice Ninja reset failed: ${result.stderr.slice(-500)}`);
   }
+  const seedVerified = result.stdout.split(/\r?\n/).map((line) => {
+    try { return JSON.parse(line); } catch { return null; }
+  }).find((entry) => entry?.status === 'seed-verified');
+  if (!seedVerified?.reset_digest) throw new Error('Invoice Ninja reset did not emit reset_digest');
+  return { resetDigest: seedVerified.reset_digest, resetContract: seedVerified.reset_contract ?? null, counts: seedVerified.counts ?? null };
 }
 
-function armEnv(arm, condition, runId, outputPath) {
+function armEnv(arm, condition, runId, outputPath, reset, randomizationBlock) {
   const conditionVars = condition === 'clean-stable'
     ? { PSS_EXPECTED_VERDICT: 'clean' }
     : condition === 'functional-fault'
@@ -103,6 +115,9 @@ function armEnv(arm, condition, runId, outputPath) {
     PSS_PILOT_CONDITION: condition,
     PSS_RUN_ID: runId,
     PSS_RUN_RECORD_OUT: outputPath,
+    PSS_RESET_DIGEST: reset.resetDigest,
+    PSS_RESET_CONTRACT: reset.resetContract ?? '',
+    PSS_RANDOMIZATION_BLOCK: randomizationBlock,
     ...conditionVars
   };
 }
@@ -113,9 +128,10 @@ for (const condition of conditions) {
   for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     blockIndex += 1;
     const order = blockOrder(blockIndex);
-    await resetSut();
+    const reset = await resetSut();
     const repetitionLabel = repetitionOffset + repetition;
-    const block = { condition, repetition: repetitionLabel, block_index: blockIndex, arm_order: order.map((arm) => arm.id), runs: [] };
+    const randomizationBlock = `invoiceninja-${condition}-r${String(repetitionLabel).padStart(2, '0')}-${order.map((arm) => arm.id).join('-')}`;
+    const block = { condition, repetition: repetitionLabel, block_index: blockIndex, randomization_block: randomizationBlock, reset_digest: reset.resetDigest, reset_contract: reset.resetContract, reset_counts: reset.counts, arm_order: order.map((arm) => arm.id), runs: [] };
     for (const arm of order) {
       // Include the campaign tag in both the append-only ledger filename and
       // run id. Reusing the old arm-only path made a later campaign collide
@@ -123,7 +139,7 @@ for (const condition of conditions) {
       // when each child execution itself was valid.
       const outputPath = aggregateOutputPath;
       const runId = `invoiceninja-matched-${campaignTag}-${condition}-${arm.id}-r${repetitionLabel}`;
-      const result = await runCommand('npm', ['run', arm.npmScript], armEnv(arm, condition, runId, outputPath));
+      const result = await runCommand('npm', ['run', arm.npmScript], armEnv(arm, condition, runId, outputPath, reset, randomizationBlock));
       const parsed = parseRunRecord(result.stdout);
       const record = parsed?.run_record ?? parsed ?? null;
       const runSummary = {

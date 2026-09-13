@@ -79,6 +79,13 @@ repetitions × 3 arms, all strict passes). This block is a valid planning input,
 not application admission: the default all-history audit remains the authority
 for breadth and gate status.
 
+The same migration was applied to Invoice Ninja's first workflow. Its fresh
+Qwen block is reset-complete with Playwright 3/3, Hybrid 3/3, and pure visual
+0/3 because all three visual runs stopped at a provider-format boundary despite
+the independent database oracle passing. This is a provider/runner diagnostic,
+not a universal CUA capability claim; the application remains breadth- and
+image/license-blocked.
+
 The durable batch strategy is therefore:
 
 1. Keep one append-only ledger and one audit output per tranche.

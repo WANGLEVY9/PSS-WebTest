@@ -33,3 +33,15 @@ test('pilot v0.1 records may carry reset evidence without becoming v0.2', () => 
   assert.equal(record.reset_digest, 'a'.repeat(64));
   assert.equal(record.reset_contract, 'prestashop-seeded-state-digest-v1');
 });
+
+test('Invoice Ninja controller propagates reset evidence to every arm', () => {
+  const controller = fs.readFileSync(new URL('../../scripts/invoiceninja-matched-pilot.mjs', import.meta.url), 'utf8');
+  const agent = fs.readFileSync(new URL('../../scripts/run-invoiceninja-agent-cell.mjs', import.meta.url), 'utf8');
+  const scripted = fs.readFileSync(new URL('../../scripts/run-invoiceninja-playwright-cell.mjs', import.meta.url), 'utf8');
+  assert.match(controller, /reset_digest/);
+  assert.match(controller, /PSS_RANDOMIZATION_BLOCK/);
+  assert.match(agent, /PSS_RESET_DIGEST/);
+  assert.match(scripted, /PSS_RESET_DIGEST/);
+  assert.match(controller, /PSS_PILOT_CONDITIONS/);
+  assert.match(controller, /PSS_PILOT_ARMS/);
+});

@@ -216,6 +216,9 @@ const emittedVerdict = result?.emitted_verdict === 'pass'
   ? 'clean'
   : (['clean', 'fault', 'unknown', 'not-emitted'].includes(result?.emitted_verdict) ? result.emitted_verdict : 'unknown');
 const record = createRunRecord({
+  ...(process.env.PSS_RESET_DIGEST ? { reset_digest: process.env.PSS_RESET_DIGEST } : {}),
+  ...(process.env.PSS_RESET_CONTRACT ? { reset_contract: process.env.PSS_RESET_CONTRACT } : {}),
+  ...(process.env.PSS_RANDOMIZATION_BLOCK ? { randomization_block: process.env.PSS_RANDOMIZATION_BLOCK } : {}),
   run_id: runId, application_id: applicationId, application_version: applicationVersion, task_id: taskId, condition, arm,
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (cellPassed ? 'completed' : 'test-failure')),
   checkpoint_reached: taskStateReached, emitted_verdict: emittedVerdict, ground_truth_verdict: expectedVerdict,

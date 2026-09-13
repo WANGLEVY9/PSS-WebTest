@@ -1,6 +1,6 @@
 # Phase 2 experiment data ledger — 2026-09-04
 
-**Generated:** 2026-09-13T03:20:23.209Z  
+**Generated:** 2026-09-13T03:32:22.517Z  
 **Scope:** BookStack feasibility/admission pilot. This ledger does not contain confirmatory estimates.
 
 ## Evidence classification
@@ -100,6 +100,7 @@ These files are intentionally not pooled with the table above. In particular, le
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3-vl-flash-webtestpilot-search-stabilized-r1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-exploratory-500-0003-records.jsonl | 1 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-opt-search-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-phase2-t1-bookstack-search-qwen-rep2-20260913-records.jsonl | 6 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-qwen37-admission-v1-0003-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-qwen37-admission-v3-0003-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-deepseek-deepseek-flash-deepseek-search-book2-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |

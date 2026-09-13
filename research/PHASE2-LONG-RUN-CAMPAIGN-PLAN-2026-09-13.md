@@ -89,6 +89,10 @@ image/license-blocked.
 The pilot-input key now includes an execution variant. The strict provider
 format path and the opt-in bounded-JSON-repair diagnostic are separate strata,
 so a runner repair cannot improve the strict estimate by accidental pooling.
+The three-repetition Invoice Ninja bounded-repair ablation passed 3/3 in all
+three arms, compared with strict visual 0/3 and Hybrid/Playwright 3/3; this is
+strong evidence for a provider-format engineering boundary in this task, while
+remaining a diagnostic ablation rather than a confirmatory result.
 
 The durable batch strategy is therefore:
 

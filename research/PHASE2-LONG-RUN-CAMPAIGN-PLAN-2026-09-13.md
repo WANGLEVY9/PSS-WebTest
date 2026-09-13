@@ -97,6 +97,8 @@ Strict functional-fault coverage preserved the same pattern (visual 0/3,
 Hybrid/Playwright 3/3), while UI evolution produced visual 1/3 with two
 provider-format and one grounding-loop boundary. All independent database
 oracles passed; these condition results remain pilot evidence.
+The ledger summary and application audit now use the same execution-variant key,
+so the dashboard and admission reports cannot re-pool these paths.
 
 The durable batch strategy is therefore:
 

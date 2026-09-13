@@ -7,6 +7,7 @@ import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
+import { executionVariant } from '../src/execution-variant.mjs';
 
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
@@ -47,7 +48,8 @@ const keyOf = (record) => [
   record.condition,
   record.arm,
   record.provenance?.provider_id ?? 'scripted',
-  record.provenance?.model_id ?? 'scripted'
+  record.provenance?.model_id ?? 'scripted',
+  executionVariant(record)
 ].join('|');
 for (const entry of valid) {
   const key = keyOf(entry.record);
@@ -57,13 +59,14 @@ for (const entry of valid) {
     ['condition', entry.record.condition],
     ['arm', entry.record.arm],
     ['provider_id', entry.record.provenance?.provider_id ?? null],
-    ['model_id', entry.record.provenance?.model_id ?? null]
+    ['model_id', entry.record.provenance?.model_id ?? null],
+    ['execution_variant', executionVariant(entry.record)]
   ]) };
   group.records.push(entry.record);
   grouped.set(key, group);
 }
 
-const groups = [...grouped.values()].sort((left, right) => keyOf({ ...left, provenance: { provider_id: left.provider_id, model_id: left.model_id } }).localeCompare(keyOf({ ...right, provenance: { provider_id: right.provider_id, model_id: right.model_id } })));
+const groups = [...grouped.values()].sort((left, right) => keyOf({ ...left, provenance: { provider_id: left.provider_id, model_id: left.model_id }, arm: left.arm }).localeCompare(keyOf({ ...right, provenance: { provider_id: right.provider_id, model_id: right.model_id }, arm: right.arm })));
 const summaries = groups.map((group) => {
   const rows = group.records;
   const failureCategories = {};
@@ -76,6 +79,7 @@ const summaries = groups.map((group) => {
     arm: group.arm,
     provider_id: group.provider_id,
     model_id: group.model_id,
+    execution_variant: group.execution_variant,
     legacy_quarantined: legacyModels.has(group.model_id),
     n: rows.length,
     strict_passes: rows.filter(strictPass).length,

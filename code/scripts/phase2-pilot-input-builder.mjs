@@ -7,6 +7,7 @@ import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
+import { executionVariant } from '../src/execution-variant.mjs';
 
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
@@ -28,14 +29,6 @@ const conditionFamily = (condition) => {
   return String(condition);
 };
 const legacyModels = new Set(['qwen3-vl-flash']);
-const executionVariant = (record) => {
-  const runner = String(record.provenance?.runner_version ?? 'unknown');
-  if (record.arm === 'playwright') return record.provenance?.framework_id ?? 'playwright';
-  const framework = record.provenance?.framework_id
-    ?? (runner.includes('stagehand') ? 'stagehand' : runner.includes('browser-use') ? 'browser-use' : 'pss-native');
-  const protocolVariant = runner.includes('bounded-json-repair') ? 'bounded-json-repair' : 'strict-provider-format';
-  return `${framework}:${protocolVariant}`;
-};
 const roots = [path.join(repoRoot, 'artifacts/phase2'), path.join(codeRoot, 'artifacts/phase2')];
 const ledgerInput = readDeduplicatedJsonl(roots, { repoRoot });
 const files = ledgerInput.files;

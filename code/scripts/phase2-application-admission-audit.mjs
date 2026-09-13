@@ -4,6 +4,7 @@ import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
+import { executionVariant } from '../src/execution-variant.mjs';
 
 const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
@@ -58,8 +59,9 @@ for (const app of manifest.applications) {
     const provider = record.provenance?.provider_id ?? 'scripted';
     const model = record.provenance?.model_id ?? 'scripted';
     const family = conditionFamily(record.condition);
-    const key = `${record.task_id}|${family}|${record.arm}|${provider}|${model}`;
-    const row = providerStrata.get(key) ?? { task_id: record.task_id, condition: family, observed_conditions: new Set(), arm: record.arm, provider_id: record.provenance?.provider_id ?? null, model_id: record.provenance?.model_id ?? null, n: 0, strict_passes: 0 };
+    const variant = executionVariant(record);
+    const key = `${record.task_id}|${family}|${record.arm}|${provider}|${model}|${variant}`;
+    const row = providerStrata.get(key) ?? { task_id: record.task_id, condition: family, observed_conditions: new Set(), arm: record.arm, provider_id: record.provenance?.provider_id ?? null, model_id: record.provenance?.model_id ?? null, execution_variant: variant, n: 0, strict_passes: 0 };
     row.observed_conditions.add(record.condition);
     row.n += 1;
     if (strict(record)) row.strict_passes += 1;

@@ -13,4 +13,6 @@ test('cross-application admission audit remains fail-closed and preserves the fi
   assert.match(source, /conditionFamily/);
   assert.match(source, /functional-fault/);
   assert.match(source, /observed_conditions/);
+  assert.match(source, /executionVariant/);
+  assert.match(source, /execution_variant/);
 });

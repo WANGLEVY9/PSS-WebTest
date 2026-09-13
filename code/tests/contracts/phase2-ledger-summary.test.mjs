@@ -10,4 +10,6 @@ test('phase2 ledger summary stays descriptive and strata-aware', () => {
   assert.match(source, /provider_id/);
   assert.match(source, /model_id/);
   assert.match(source, /failure_categories/);
+  assert.match(source, /executionVariant/);
+  assert.match(source, /execution_variant/);
 });

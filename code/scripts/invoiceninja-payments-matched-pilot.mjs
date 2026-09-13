@@ -18,6 +18,7 @@ const arms = [
   { id: 'hybrid-doubao', script: 'pilot:invoiceninja:payments:hybrid', envFile: path.join(codeDir, '.env.volcengine-cua') }
 ];
 const rawDir = path.join(codeDir, 'artifacts', 'phase2'); fs.mkdirSync(rawDir, { recursive: true, mode: 0o700 });
+const aggregateOutputPath = path.join(rawDir, `invoiceninja-payments-matched-${tag}-aggregate.jsonl`);
 function envFile(file) { return file && fs.existsSync(file) ? dotenv.parse(fs.readFileSync(file, 'utf8')) : {}; }
 function order(block) { const values = arms.map((_, i) => i); let s = (0x9e3779b9 ^ block) >>> 0; for (let i = values.length - 1; i > 0; i -= 1) { s = Math.imul(s ^ (s >>> 16), 0x85ebca6b) >>> 0; const j = s % (i + 1); [values[i], values[j]] = [values[j], values[i]]; } return values.map((i) => arms[i]); }
 function run(args, env) { return new Promise((resolve) => { const child = spawn('npm', args, { cwd: codeDir, env, stdio: ['ignore', 'pipe', 'pipe'] }); let stdout = ''; let stderr = ''; child.stdout.on('data', (x) => { stdout += x; }); child.stderr.on('data', (x) => { stderr += x; }); child.on('close', (exitCode) => resolve({ exitCode, stdout, stderr })); }); }
@@ -31,8 +32,8 @@ for (const condition of conditions) for (let repetition = 1; repetition <= repet
   block += 1; const reset = await run(['run', 'sut:invoiceninja:reset'], process.env); if (reset.exitCode !== 0) throw new Error(`Invoice Ninja reset failed before ${condition}/r${offset + repetition}: ${reset.stderr.slice(-400)}`);
   const label = offset + repetition; const blockRows = [];
   for (const arm of order(block)) {
-    const out = path.join(rawDir, 'invoiceninja-payments-matched-runs.jsonl'); const runId = `invoiceninja-payments-matched-${condition}-${arm.id}-r${label}`;
-    const result = await run(['run', arm.script], armEnvironment(arm, condition, runId, out)); const record = parse(result.stdout);
+    const runId = `invoiceninja-payments-matched-${tag}-${condition}-${arm.id}-r${label}`;
+    const result = await run(['run', arm.script], armEnvironment(arm, condition, runId, aggregateOutputPath)); const record = parse(result.stdout);
     const row = { condition, repetition: label, arm: arm.id, run_id: record?.run_id ?? runId, exit_code: result.exitCode, status: record?.status ?? 'no-record', checkpoint_reached: record?.checkpoint_reached ?? false, independent_oracle_passed: record?.independent_oracle_passed ?? false, emitted_verdict: record?.emitted_verdict ?? 'not-emitted', failure_category: record?.failure_category ?? null, provider_id: record?.provenance?.provider_id ?? null, model_id: record?.provenance?.model_id ?? null, wall_time_ms: record?.timing?.wall_time_ms ?? null };
     if (!record && result.stderr) row.error_tail = result.stderr.slice(-300); blockRows.push(row); outcomes.push(row);
   }
@@ -41,5 +42,5 @@ for (const condition of conditions) for (let repetition = 1; repetition <= repet
 const strict = (x) => x.status === 'completed' && x.checkpoint_reached === true && x.independent_oracle_passed === true;
 const lines = [`# Invoice Ninja recent-payments matched pilot — ${new Date().toISOString().slice(0, 10)}`, '', 'Evidence boundary: T1 diagnostic pilot only; no admission, repetition freeze, power, or confirmatory claim.', '', `Design: ${repetitions} repetition(s) × 3 conditions × ${arms.length} arm/model strata; each block reset the SUT before a deterministic pseudo-random arm order.`, '', '| Condition | Arm/model | n | Strict pass | State reached | Oracle pass | Failure boundaries |', '|---|---|---:|---:|---:|---:|---|'];
 for (const condition of conditions) for (const arm of arms) { const rows = outcomes.filter((x) => x.condition === condition && x.arm === arm.id); const boundaries = [...new Set(rows.map((x) => x.failure_category).filter(Boolean))]; lines.push(`| ${condition} | ${arm.id} | ${rows.length} | ${rows.filter(strict).length}/${rows.length} | ${rows.filter((x) => x.checkpoint_reached).length}/${rows.length} | ${rows.filter((x) => x.independent_oracle_passed).length}/${rows.length} | ${boundaries.length ? boundaries.map((x) => `\`${x}\``).join(', ') : 'none'} |`); }
-lines.push('', 'Raw screenshots/replays and JSONL stay under ignored code/artifacts/phase2. Missing records remain failures and are never imputed.', '');
+lines.push('', `Aggregate ledger: \`${path.relative(repoDir, aggregateOutputPath)}\`. Raw screenshots/replays stay under ignored code/artifacts/phase2. Missing records remain failures and are never imputed.`, '');
 const report = path.join(repoDir, 'results', 'phase2', `${new Date().toISOString().slice(0, 10)}-invoiceninja-payments-matched-pilot-${tag}.md`); fs.mkdirSync(path.dirname(report), { recursive: true }); fs.writeFileSync(report, `${lines.join('\n')}\n`); console.log(JSON.stringify({ pilot: 'invoiceninja-recent-payments', report, records: outcomes.length, strict_passes: outcomes.filter(strict).length }));

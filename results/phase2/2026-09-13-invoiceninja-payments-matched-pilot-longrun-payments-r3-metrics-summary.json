@@ -1,0 +1,24 @@
+{
+  "evidence_boundary": "pilot-diagnostic-not-confirmatory",
+  "application": "invoiceninja",
+  "task_id": "invoiceninja-recent-payments",
+  "conditions": ["clean-stable", "functional-fault", "ui-evolution"],
+  "repetitions_per_condition": 3,
+  "records": 54,
+  "ledger": "code/artifacts/phase2/invoiceninja-payments-matched-longrun-payments-r3-aggregate.jsonl",
+  "ledger_audit": {"status": "ok", "records": 54, "unique_run_ids": 54, "errors": 0},
+  "strata": [
+    {"arm": "playwright", "provider_id": null, "model_id": null, "n": 9, "strict_pass": 9, "state_reached": 9, "independent_oracle_pass": 9, "failure_categories": {}},
+    {"arm": "visual", "provider_id": "aliyun", "model_id": "qwen3.7-flash", "n": 9, "strict_pass": 6, "state_reached": 6, "independent_oracle_pass": 9, "failure_categories": {"grounding-loop": 2, "provider-format": 1}},
+    {"arm": "hybrid", "provider_id": "aliyun", "model_id": "qwen3.7-flash", "n": 9, "strict_pass": 9, "state_reached": 9, "independent_oracle_pass": 9, "failure_categories": {}},
+    {"arm": "visual", "provider_id": "deepseek", "model_id": "deepseek-v4-flash-vision-exp", "n": 9, "strict_pass": 8, "state_reached": 8, "independent_oracle_pass": 9, "failure_categories": {"agent-step-budget": 1}},
+    {"arm": "hybrid", "provider_id": "deepseek", "model_id": "deepseek-v4-flash-vision-exp", "n": 9, "strict_pass": 9, "state_reached": 9, "independent_oracle_pass": 9, "failure_categories": {}},
+    {"arm": "hybrid", "provider_id": "volcengine", "model_id": "doubao-seed-2-1-pro-260628", "n": 9, "strict_pass": 0, "state_reached": 0, "independent_oracle_pass": 9, "failure_categories": {"provider-api": 9}}
+  ],
+  "interpretation": [
+    "All records used the independent persisted payment oracle; oracle pass does not imply protocol completion.",
+    "Qwen Hybrid and DeepSeek Hybrid completed all nine cells; Qwen visual had two grounding-loop and one provider-format boundary, while DeepSeek visual had one agent-step-budget boundary.",
+    "Doubao Hybrid was provider-api blocked in all nine executions and is excluded from capability pooling.",
+    "This workflow is pilot evidence only; it does not admit Invoice Ninja or freeze repetitions."
+  ]
+}

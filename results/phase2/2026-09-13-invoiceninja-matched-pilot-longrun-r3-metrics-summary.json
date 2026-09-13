@@ -1,0 +1,78 @@
+{
+  "evidence_boundary": "pilot-diagnostic-not-confirmatory",
+  "application": "invoiceninja",
+  "task_id": "invoiceninja-view-invoice-details",
+  "conditions": ["clean-stable", "functional-fault", "ui-evolution"],
+  "repetitions_per_condition": 3,
+  "records": 54,
+  "ledger": "code/artifacts/phase2/invoiceninja-matched-longrun-r3-aggregate.jsonl",
+  "ledger_audit": {"status": "ok", "records": 54, "unique_run_ids": 54, "errors": 0},
+  "strata": [
+    {
+      "arm": "playwright",
+      "provider_id": null,
+      "model_id": null,
+      "n": 9,
+      "strict_pass": 9,
+      "state_reached": 9,
+      "independent_oracle_pass": 9,
+      "failure_categories": {}
+    },
+    {
+      "arm": "visual",
+      "provider_id": "aliyun",
+      "model_id": "qwen3.7-flash",
+      "n": 9,
+      "strict_pass": 3,
+      "state_reached": 3,
+      "independent_oracle_pass": 9,
+      "failure_categories": {"provider-format": 4, "grounding-loop": 2}
+    },
+    {
+      "arm": "hybrid",
+      "provider_id": "aliyun",
+      "model_id": "qwen3.7-flash",
+      "n": 9,
+      "strict_pass": 9,
+      "state_reached": 9,
+      "independent_oracle_pass": 9,
+      "failure_categories": {}
+    },
+    {
+      "arm": "visual",
+      "provider_id": "deepseek",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 9,
+      "strict_pass": 9,
+      "state_reached": 9,
+      "independent_oracle_pass": 9,
+      "failure_categories": {}
+    },
+    {
+      "arm": "hybrid",
+      "provider_id": "deepseek",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 9,
+      "strict_pass": 9,
+      "state_reached": 9,
+      "independent_oracle_pass": 9,
+      "failure_categories": {}
+    },
+    {
+      "arm": "hybrid",
+      "provider_id": "volcengine",
+      "model_id": "doubao-seed-2-1-pro-260628",
+      "n": 9,
+      "strict_pass": 0,
+      "state_reached": 0,
+      "independent_oracle_pass": 9,
+      "failure_categories": {"provider-api": 9}
+    }
+  ],
+  "interpretation": [
+    "All 54 records passed the independent oracle or reached a provider boundary after the matched reset; the oracle is not a success surrogate.",
+    "Qwen visual failures are model/protocol boundaries in this stratum, while Qwen hybrid and both DeepSeek arms completed all nine cells.",
+    "Doubao hybrid is quota/provider blocked in this batch and is excluded from capability comparisons.",
+    "No application admission, repetition freeze, power decision, or confirmatory claim follows from this pilot."
+  ]
+}

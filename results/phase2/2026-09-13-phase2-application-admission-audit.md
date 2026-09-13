@@ -77,4 +77,5 @@ and incomplete workflow breadth remain separate from capability outcomes.
    nested framework/model replication wave begin.
 
 Machine-readable evidence: [`2026-09-13-phase2-application-admission-audit.json`](2026-09-13-phase2-application-admission-audit.json).  
+Stratified ledger input for dashboard/variance planning: [`2026-09-13-phase2-ledger-summary.json`](2026-09-13-phase2-ledger-summary.json).  
 Execution contract: [`phase2-application-admission-manifest.v0.1.json`](../../code/config/phase2-application-admission-manifest.v0.1.json).

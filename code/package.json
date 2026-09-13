@@ -66,6 +66,7 @@
     "pilot:juice-shop:matched": "node scripts/juice-shop-matched-pilot.mjs",
     "audit:juice-shop:admission": "node scripts/juice-shop-admission-audit.mjs",
     "audit:phase2:admission": "node scripts/phase2-application-admission-audit.mjs",
+    "report:phase2:ledger-summary": "node scripts/phase2-ledger-summary.mjs",
     "batch:indico-juice:conditions": "node scripts/run-indico-juice-condition-batch.mjs",
     "validate:condition-batch": "node scripts/validate-condition-batch.mjs",
     "power:simulate": "node scripts/power-simulation.mjs",

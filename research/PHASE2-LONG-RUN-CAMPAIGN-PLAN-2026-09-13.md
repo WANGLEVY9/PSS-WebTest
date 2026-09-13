@@ -178,9 +178,9 @@ stratified rule; do not collect an underpowered universal leaderboard.
    variance. (Completed on 2026-09-13; evidence remains pilot-only.)
 3. Re-run PrestaShop and BookStack with the same run-record/replay contract and
    explicitly separate framework/model strata. PrestaShop's first workflow
-   clean/fault/evolution canaries are now complete; BookStack's schema-constrained
-   clean diagnostic passed 3/3, while fault/evolution and repetition expansion
-   remain gated by pilot variance.
+   clean/fault/evolution canaries are now complete; BookStack DeepSeek
+   navigation/search pilots are now recorded, while create-page fault/evolution
+   coverage and complete workflow admission remain open.
 4. Admit the first application only after its complete eight-slot subset is
    machine-checkable; otherwise keep it pilot-only.
 5. Expand to the next candidate wave while maintaining the same admission gate.

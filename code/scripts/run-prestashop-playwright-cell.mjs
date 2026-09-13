@@ -102,16 +102,31 @@ try {
   if (complexity === 'medium' || complexity === 'complex') {
     const product = page.locator('#js-product-list .product-title').filter({ hasText: expectedNamePattern }).first();
     await product.waitFor({ state: 'visible' });
-    await click(product, 'open-product');
+    // Click the product's actual anchor and wait for the route transition. The
+    // previous cell clicked the heading container and then waited for an exact
+    // h1 text match; under a style-only mutation that made a valid navigation
+    // look like a runner timeout. Keep the locator-based arm deterministic but
+    // make its navigation contract explicit.
+    const productLink = product.locator('a').first();
+    await productLink.waitFor({ state: 'visible' });
+    await click(productLink, 'open-product');
+    await page.waitForURL((url) => new URL(url).pathname.endsWith('.html'), { timeout: 30000 });
     await page.waitForLoadState('domcontentloaded');
-    await page.locator('h1').filter({ hasText: expectedNamePattern }).first().waitFor({ state: 'visible' });
+    await page.locator('h1').first().waitFor({ state: 'visible' });
+    if (!(await page.locator('h1').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false))) {
+      throw new Error(`product detail heading did not preserve expected product text: ${await page.locator('h1').first().textContent().catch(() => '')}`);
+    }
     if (complexity === 'complex') {
       await page.goBack({ waitUntil: 'domcontentloaded' });
       await page.getByRole('heading', { name: 'Search results', exact: true }).waitFor({ state: 'visible' });
       await product.waitFor({ state: 'visible' });
-      await click(product, 'reopen-product');
+      await click(product.locator('a').first(), 'reopen-product');
+      await page.waitForURL((url) => new URL(url).pathname.endsWith('.html'), { timeout: 30000 });
       await page.waitForLoadState('domcontentloaded');
-      await page.locator('h1').filter({ hasText: expectedNamePattern }).first().waitFor({ state: 'visible' });
+      await page.locator('h1').first().waitFor({ state: 'visible' });
+      if (!(await page.locator('h1').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false))) {
+        throw new Error(`reopened product detail heading did not preserve expected product text: ${await page.locator('h1').first().textContent().catch(() => '')}`);
+      }
     }
   }
   oracle = await independentOracle();

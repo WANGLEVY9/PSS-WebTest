@@ -162,7 +162,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       const editorFollowupInstruction = lastTwo.length === 2 && lastTwo[0].type === 'type' && lastTwo[1].type === 'click'
         ? 'The previous action typed the page title and the latest action clicked the content editor. Your next action MUST be a type action with the requested page content; do not click again.'
         : '';
-      const titleClearInstruction = lastAcceptedPointer?.interaction === 'type'
+      const titleClearInstruction = /page title|bookstack/i.test(intent)
+        && lastAcceptedPointer?.interaction === 'type'
         && /title/i.test(lastAcceptedPointer.targetName ?? '')
         && ['click', 'rejected_click'].includes(actionHistory.at(-1)?.type)
         ? 'The Page Title textbox is focused and may contain default text. Your next action MUST be keypress with key CTRL+A; do not click another control and do not type until the field is selected.'
@@ -239,7 +240,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
             }
             throw new Error(`repeated non-progressing click at ${decisionIdentity}`);
           }
-          const titleNeedsClear = lastAcceptedPointer?.interaction === 'type'
+          const titleNeedsClear = /page title|bookstack/i.test(intent)
+            && lastAcceptedPointer?.interaction === 'type'
             && /title/i.test(lastAcceptedPointer.targetName ?? '')
             && ['click', 'rejected_click'].includes(actionHistory.at(-1)?.type);
           const isCtrlA = decision.type === 'action'

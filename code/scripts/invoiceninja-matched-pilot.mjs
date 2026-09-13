@@ -35,6 +35,7 @@ const now = new Date().toISOString();
 const stamp = now.slice(0, 10);
 const rawDir = path.join(codeDir, 'artifacts', 'phase2');
 fs.mkdirSync(rawDir, { recursive: true, mode: 0o700 });
+const aggregateOutputPath = path.join(rawDir, `invoiceninja-matched-${campaignTag}-aggregate.jsonl`);
 
 function parseEnvFile(file) {
   return file ? dotenv.parse(fs.readFileSync(file, 'utf8')) : {};
@@ -116,8 +117,12 @@ for (const condition of conditions) {
     const repetitionLabel = repetitionOffset + repetition;
     const block = { condition, repetition: repetitionLabel, block_index: blockIndex, arm_order: order.map((arm) => arm.id), runs: [] };
     for (const arm of order) {
-      const outputPath = path.join(rawDir, `invoiceninja-matched-${arm.id}.jsonl`);
-      const runId = `invoiceninja-matched-${condition}-${arm.id}-r${repetitionLabel}`;
+      // Include the campaign tag in both the append-only ledger filename and
+      // run id. Reusing the old arm-only path made a later campaign collide
+      // with historical repetitions and fail the duplicate-run audit even
+      // when each child execution itself was valid.
+      const outputPath = aggregateOutputPath;
+      const runId = `invoiceninja-matched-${campaignTag}-${condition}-${arm.id}-r${repetitionLabel}`;
       const result = await runCommand('npm', ['run', arm.npmScript], armEnv(arm, condition, runId, outputPath));
       const parsed = parseRunRecord(result.stdout);
       const record = parsed?.run_record ?? parsed ?? null;
@@ -160,7 +165,7 @@ for (const condition of conditions) {
     lines.push(`| ${condition} | ${arm.id} | ${rows.length} | ${rows.filter(strictPass).length}/${rows.length} | ${rows.filter((row) => row.checkpoint_reached).length}/${rows.length} | ${rows.filter((row) => row.independent_oracle_passed).length}/${rows.length} | ${boundaries.length ? boundaries.map((value) => `\`${value}\``).join(', ') : 'none'} |`);
   }
 }
-lines.push('', '## Run-level audit notes', '', '- A missing or malformed run record remains `no-record` and is not converted into a success.', '- Provider/model strata are reported separately; no model pooling is performed.', '- Raw screenshots, provider summaries, and JSONL records remain local under ignored `code/artifacts/phase2/`.', '');
+lines.push('', '## Run-level audit notes', '', '- A missing or malformed run record remains `no-record` and is not converted into a success.', '- Provider/model strata are reported separately; no model pooling is performed.', `- The aggregate ledger is \`${path.relative(repoDir, aggregateOutputPath)}\`; audit it as one matched file before analysis.`, '- Raw screenshots, provider summaries, and JSONL records remain local under ignored `code/artifacts/phase2/`.', '');
 const reportPath = path.join(repoDir, 'results', 'phase2', `${stamp}-invoiceninja-matched-pilot-${campaignTag}.md`);
 fs.mkdirSync(path.dirname(reportPath), { recursive: true });
 fs.writeFileSync(reportPath, `${lines.join('\n')}\n`);

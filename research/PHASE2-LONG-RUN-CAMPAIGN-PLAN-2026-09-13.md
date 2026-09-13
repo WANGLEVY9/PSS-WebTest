@@ -31,8 +31,8 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Invoice Ninja | 66 diagnostic records across 2 workflows, 3 conditions, and multiple model strata | Useful pilot evidence; two workflows now have independent oracles, still not admitted |
 | PrestaShop | clean/fault/evolution canaries plus medium and complex search workflows across Qwen/DeepSeek; complex Qwen Hybrid passed while visual had coordinate-format failure, DeepSeek agents exposed revisit grounding loops | Mutation gate passed; multi-complexity evidence remains pilot-only, application remains not admitted |
 | BookStack | Qwen navigation schema retry passed 3/3; create-page matched gate passed Playwright 3/3 but Hybrid 0/3 and visual 0/3 across clean/fault/evolution | Reset, fault injection, and independent oracle are reachable; create-page agent failures are classified and application admission remains blocked |
-| Juice Shop | Clean product-search Qwen pilot: Playwright 1/1, Hybrid 0/1, visual 0/1; DeepSeek agent cells blocked by provider HTTP 404 model-not-exist | Reset/oracle reachable; provider model-id mapping must be repaired before DeepSeek evidence, application not admitted |
-| Indico | Qwen clean create-event: Playwright 1/1; visual and scope-corrected Hybrid 0/1 each with grounding-loop; DeepSeek agents blocked by HTTP 404 model-not-exist | Reset/account/relational oracle reachable; application remains not admitted |
+| Juice Shop | Clean product-search Qwen pilot: Playwright 1/1, Hybrid 0/1, visual 0/1; DeepSeek provider-profile repair rerun: Playwright 1/1, Hybrid 1/1, visual 0/1 (grounding-loop) | Pre-repair 404 cells are invalidated configuration evidence; post-repair DeepSeek is a valid pilot stratum, application remains not admitted |
+| Indico | Qwen clean create-event: Playwright 1/1; visual and scope-corrected Hybrid 0/1 each with grounding-loop; DeepSeek provider-profile repair rerun: Playwright 1/1, Hybrid 0/1 (oracle), visual 0/1 (grounding-loop) | Pre-repair 404 cells are invalidated configuration evidence; post-repair DeepSeek is a valid pilot stratum, application remains not admitted |
 | Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
 | DeepSeek Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/fault/evolution mixed but mostly passing | Model-stratum pilot evidence |
 | Doubao Hybrid | 0/3 because Ark returned HTTP 429 | External blocked stratum; excluded from capability pooling |
@@ -158,6 +158,10 @@ stratified rule; do not collect an underpowered universal leaderboard.
 - One immutable run record per execution; append-only JSONL.
 - Persist per-step screenshot digest, URL, action, provider summary, milestone,
   timing, and oracle linkage.
+- Treat child-process provider-profile injection as part of the validity contract:
+  a matched run is invalid until the selected provider, model, base URL, and key
+  profile are coherent in the child process. Configuration failures are retained
+  as blocked evidence and never pooled with capability failures.
 - Keep `task_state_reached`, `protocol_completed`, `oracle_only_success`, and
   `cell_passed` separate.
 - Preserve failures and retries; no best-of-N reporting.

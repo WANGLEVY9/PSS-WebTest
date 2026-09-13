@@ -7,16 +7,35 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
+const explicitEnv = { ...process.env };
 dotenv.config();
 
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
 const maxSteps = process.env.CUA_MAX_STEPS ?? '16';
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '20000';
 const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
-const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
+const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const readEnvFile = (name) => {
+  const file = `${root}/${name}`;
+  if (!fs.existsSync(file)) return {};
+  return dotenv.parse(fs.readFileSync(file));
+};
+// Resolve the provider profile before spawning any arm.  This prevents
+// provider/model/key mismatches when a matched pilot is selected via CLI.
+const providerEnv = (() => {
+  const base = { ...readEnvFile('.env'), ...process.env };
+  const profileFile = provider === 'deepseek' ? '.env.deepseek'
+    : provider === 'volcengine' ? '.env.volcengine-cua' : null;
+  if (profileFile) Object.assign(base, readEnvFile(profileFile));
+  for (const key of ['CUA_PROVIDER', 'CUA_MODEL', 'CUA_BASE_URL', 'PSS_AGENT_PROFILE']) {
+    if (explicitEnv[key]) base[key] = explicitEnv[key];
+  }
+  base.PSS_REQUIRE_FROZEN_PROFILE = '1';
+  return base;
+})();
+const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
@@ -30,7 +49,7 @@ const artifact = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-pi
 const recordsPath = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-records.jsonl`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
-  const child = spawn(command, args, { cwd: root, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(command, args, { cwd: root, env: { ...providerEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = ''; let stderr = '';
   child.stdout.on('data', (chunk) => { stdout += chunk; });
   child.stderr.on('data', (chunk) => { stderr += chunk; });

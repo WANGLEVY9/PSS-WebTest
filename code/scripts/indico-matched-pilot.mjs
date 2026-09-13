@@ -7,6 +7,7 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
+const explicitEnv = { ...process.env };
 dotenv.config();
 
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
@@ -18,6 +19,26 @@ const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const readEnvFile = (name) => {
+  const file = `${root}/${name}`;
+  if (!fs.existsSync(file)) return {};
+  return dotenv.parse(fs.readFileSync(file));
+};
+// Matched pilots are launched as child processes.  Resolve the selected
+// provider profile once and pass it to every arm so a DeepSeek run cannot
+// accidentally inherit the default Aliyun key from .env.
+const providerEnv = (() => {
+  const base = { ...readEnvFile('.env'), ...process.env };
+  const profileFile = provider === 'deepseek' ? '.env.deepseek'
+    : provider === 'volcengine' ? '.env.volcengine-cua' : null;
+  if (profileFile) Object.assign(base, readEnvFile(profileFile));
+  // Explicit command-line values always win over profile files.
+  for (const key of ['CUA_PROVIDER', 'CUA_MODEL', 'CUA_BASE_URL', 'PSS_AGENT_PROFILE']) {
+    if (explicitEnv[key]) base[key] = explicitEnv[key];
+  }
+  base.PSS_REQUIRE_FROZEN_PROFILE = '1';
+  return base;
+})();
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
 const phase2Protocol = protocolVersion === '2.0-draft';
 const codeRoot = root;
@@ -30,7 +51,7 @@ const artifact = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-pilot.
 const recordsPath = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-records.jsonl`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
-  const child = spawn(command, args, { cwd: root, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+  const child = spawn(command, args, { cwd: root, env: { ...providerEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
   let stdout = ''; let stderr = '';
   child.stdout.on('data', (chunk) => { stdout += chunk; }); child.stderr.on('data', (chunk) => { stderr += chunk; });
   child.on('error', reject); child.on('close', (code) => resolve({ code, stdout, stderr }));

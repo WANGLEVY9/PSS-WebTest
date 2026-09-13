@@ -65,6 +65,7 @@ Tracked implementation:
 - `code/tests/traditional/juice-shop-basket-feedback.spec.js`
 - `code/config/juice-shop-basket-feedback-run-manifest.v0.1.json`
 - `code/scripts/juice-shop-matched-pilot.mjs`
+- `results/phase2/2026-09-13-juice-shop-basket-feedback-metrics-summary.json`
 
 Raw replay and JSONL files remain local under `artifacts/phase2/` and are
 ignored. The six controller summaries are named with the `basket-feedback`

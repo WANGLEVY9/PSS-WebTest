@@ -1,0 +1,250 @@
+{
+  "schema_version": "phase2-matched-power-planning-v0.1",
+  "generated_at": "2026-09-13T16:24:29.943Z",
+  "status": "planning-only-not-frozen",
+  "confirmatory_authorized": false,
+  "input_path": "/Users/laurantwang/PSS-WebTest/results/phase2/2026-09-14-prestashop-reset-complete-pilot-input-v1.json",
+  "application_filter": null,
+  "draws": 1000,
+  "seed": 20260914,
+  "eligible_blocks": 58,
+  "model_strata": [
+    {
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "application_filter": null,
+      "eligible_blocks": 30,
+      "applications": [
+        "bookstack",
+        "indico",
+        "juice-shop"
+      ],
+      "pilot_rates_by_arm": {
+        "playwright": {
+          "n": 202,
+          "successes": 200,
+          "rate": 0.9900990099009901
+        },
+        "visual": {
+          "n": 160,
+          "successes": 29,
+          "rate": 0.18125
+        },
+        "hybrid": {
+          "n": 164,
+          "successes": 58,
+          "rate": 0.35365853658536583
+        }
+      },
+      "power": [
+        {
+          "per_cell_repetitions": 4,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.325
+          }
+        },
+        {
+          "per_cell_repetitions": 6,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.468
+          }
+        },
+        {
+          "per_cell_repetitions": 8,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.661
+          }
+        },
+        {
+          "per_cell_repetitions": 10,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.678
+          }
+        },
+        {
+          "per_cell_repetitions": 14,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.83
+          }
+        },
+        {
+          "per_cell_repetitions": 20,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.904
+          }
+        }
+      ]
+    },
+    {
+      "provider_id": "aliyun",
+      "model_id": "qwen3.7-flash",
+      "application_filter": null,
+      "eligible_blocks": 1,
+      "applications": [
+        "prestashop"
+      ],
+      "pilot_rates_by_arm": {
+        "playwright": {
+          "n": 4,
+          "successes": 4,
+          "rate": 1
+        },
+        "visual": {
+          "n": 4,
+          "successes": 4,
+          "rate": 1
+        },
+        "hybrid": {
+          "n": 4,
+          "successes": 4,
+          "rate": 1
+        }
+      },
+      "power": [
+        {
+          "per_cell_repetitions": 4,
+          "contrasts": {
+            "playwright-visual": 0.013,
+            "playwright-hybrid": 0.01,
+            "hybrid-visual": 0.009
+          }
+        },
+        {
+          "per_cell_repetitions": 6,
+          "contrasts": {
+            "playwright-visual": 0.01,
+            "playwright-hybrid": 0.009,
+            "hybrid-visual": 0.018
+          }
+        },
+        {
+          "per_cell_repetitions": 8,
+          "contrasts": {
+            "playwright-visual": 0.048,
+            "playwright-hybrid": 0.046,
+            "hybrid-visual": 0.053
+          }
+        },
+        {
+          "per_cell_repetitions": 10,
+          "contrasts": {
+            "playwright-visual": 0.065,
+            "playwright-hybrid": 0.073,
+            "hybrid-visual": 0.051
+          }
+        },
+        {
+          "per_cell_repetitions": 14,
+          "contrasts": {
+            "playwright-visual": 0.1,
+            "playwright-hybrid": 0.085,
+            "hybrid-visual": 0.073
+          }
+        },
+        {
+          "per_cell_repetitions": 20,
+          "contrasts": {
+            "playwright-visual": 0.176,
+            "playwright-hybrid": 0.149,
+            "hybrid-visual": 0.149
+          }
+        }
+      ]
+    },
+    {
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "application_filter": null,
+      "eligible_blocks": 27,
+      "applications": [
+        "indico",
+        "juice-shop"
+      ],
+      "pilot_rates_by_arm": {
+        "playwright": {
+          "n": 189,
+          "successes": 187,
+          "rate": 0.9894179894179894
+        },
+        "visual": {
+          "n": 94,
+          "successes": 25,
+          "rate": 0.26595744680851063
+        },
+        "hybrid": {
+          "n": 93,
+          "successes": 49,
+          "rate": 0.5268817204301075
+        }
+      },
+      "power": [
+        {
+          "per_cell_repetitions": 4,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 0.998,
+            "hybrid-visual": 0.45
+          }
+        },
+        {
+          "per_cell_repetitions": 6,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.635
+          }
+        },
+        {
+          "per_cell_repetitions": 8,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.732
+          }
+        },
+        {
+          "per_cell_repetitions": 10,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.825
+          }
+        },
+        {
+          "per_cell_repetitions": 14,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.903
+          }
+        },
+        {
+          "per_cell_repetitions": 20,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.957
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Each model is simulated separately; provider/model/framework strata are not silently pooled.",
+    "Each matched block samples independent beta posteriors from its pilot counts, then generates equal repetitions for all three arms.",
+    "The grid is a sensitivity analysis. It does not select or freeze the final repetition count.",
+    "A final power freeze requires preregistration, complete application gates, and a reviewed analysis script hash."
+  ]
+}

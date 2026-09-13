@@ -17,6 +17,7 @@ const arg = (flag, fallback = null) => {
 };
 const applicationFilter = arg('--application');
 const outputPath = arg('--output');
+const resetCompleteOnly = args.includes('--reset-complete-only');
 const minimumRepetitions = Number.parseInt(arg('--minimum-repetitions', '3'), 10);
 if (!Number.isInteger(minimumRepetitions) || minimumRepetitions < 1) throw new Error('minimum repetitions must be a positive integer');
 
@@ -40,6 +41,7 @@ for (const entry of ledgerInput.entries) {
       raw = entry.raw;
       const record = validateRunRecordAgainstRegistry(raw, registry);
       if (applicationFilter && record.application_id !== applicationFilter) continue;
+      if (resetCompleteOnly && !(typeof record.reset_digest === 'string' && record.reset_digest.length > 0)) continue;
       records.push({
         application_id: record.application_id,
         task_id: record.task_id,
@@ -144,6 +146,7 @@ const summary = {
   status: 'pilot-input-planning-only',
   confirmatory_authorized: false,
   application_filter: applicationFilter,
+  reset_complete_only: resetCompleteOnly,
   minimum_repetitions: minimumRepetitions,
   legacy_models_quarantined: [...legacyModels],
   ledger_roots: roots.map((root) => path.relative(repoRoot, root)),
@@ -160,6 +163,7 @@ const summary = {
   notes: [
     'A cell is application × workflow × condition-family × arm × provider/model.',
     'A cell is eligible only when it has the minimum repetitions, complete reset evidence, and no quarantined legacy model.',
+    resetCompleteOnly ? 'This input was explicitly filtered to records carrying reset_digest; historical records without reset evidence were excluded rather than backfilled.' : 'Historical records without reset evidence remain visible and keep mixed cells ineligible.',
     'The input preserves provider/model/framework strata and does not pool them into a universal arm effect.',
     'Power candidates are matched blocks with one eligible Playwright, visual, and hybrid cell for the same application, workflow, condition-family, and live model.',
     'This artifact is a planning input. It does not freeze repetition counts or authorize confirmatory collection.'

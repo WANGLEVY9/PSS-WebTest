@@ -72,6 +72,13 @@ PrestaShop 3/3 sentinel now carries a shared seeded-state digest, but remains a
 single-repetition pilot record. This is a ledger/admission deficiency to repair,
 not a capability failure.
 
+A separate explicit `reset-complete-only` input was then built from the same
+deduplicated ledger. It excludes, rather than repairs, historical records with
+no reset digest and yields one fresh PrestaShop Qwen matched block (3
+repetitions × 3 arms, all strict passes). This block is a valid planning input,
+not application admission: the default all-history audit remains the authority
+for breadth and gate status.
+
 The durable batch strategy is therefore:
 
 1. Keep one append-only ledger and one audit output per tranche.

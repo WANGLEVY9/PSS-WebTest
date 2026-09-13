@@ -6,12 +6,16 @@ import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+import { findProviderProfile } from '../src/provider-profile.mjs';
 
 const explicitEnv = { ...process.env };
 dotenv.config();
 
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
-const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily: 'multi-step' })]));
+const providerOptimizationProfile = process.env.PSS_AGENT_PROFILE?.trim()
+  || findProviderProfile({ provider: process.env.CUA_PROVIDER, model: process.env.CUA_MODEL })?.optimization_profile
+  || 'baseline-v0';
+const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerOptimizationProfile }, arm, taskFamily: 'multi-step' })]));
 const maxSteps = process.env.CUA_MAX_STEPS ?? String(Math.max(optimizationByArm.visual.max_steps, optimizationByArm.hybrid.max_steps));
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? String(Math.max(optimizationByArm.visual.timeout_ms, optimizationByArm.hybrid.timeout_ms));
 const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
@@ -34,8 +38,13 @@ const providerEnv = (() => {
   if (profileFile) Object.assign(base, readEnvFile(profileFile));
   // Explicit command-line values always win over profile files.
   for (const key of ['CUA_PROVIDER', 'CUA_MODEL', 'CUA_BASE_URL', 'PSS_AGENT_PROFILE']) {
-    if (explicitEnv[key]) base[key] = explicitEnv[key];
+  if (explicitEnv[key]) base[key] = explicitEnv[key];
   }
+  // The child runner must receive the same provider-specific optimization
+  // profile that was used to derive the matched-cell budgets.  Without this
+  // propagation it silently falls back to baseline-v0 (coordinate hybrid),
+  // making a protocol mismatch look like a model failure.
+  base.PSS_AGENT_PROFILE = explicitEnv.PSS_AGENT_PROFILE ?? providerOptimizationProfile;
   base.PSS_REQUIRE_FROZEN_PROFILE = '1';
   return base;
 })();
@@ -112,6 +121,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         CUA_MAX_OUTPUT_TOKENS: process.env.CUA_MAX_OUTPUT_TOKENS ?? String(optimizationByArm[arm].max_output_tokens),
         CUA_COORDINATE_MODE: process.env.CUA_COORDINATE_MODE ?? optimizationByArm[arm].coordinate_mode,
         CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? (optimizationByArm[arm].hybrid_action_mode ?? 'coordinate'),
+        PSS_AGENT_PROFILE: optimizationByArm[arm].profile_id,
         CUA_SCREENSHOT_QUALITY: process.env.CUA_SCREENSHOT_QUALITY ?? String(optimizationByArm[arm].screenshot_quality),
         PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimizationByArm[arm].post_action_settle_ms),
         PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD,

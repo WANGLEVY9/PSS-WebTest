@@ -20,3 +20,10 @@ test('baseline profile remains explicitly selectable for matched ablation', () =
   assert.equal(baseline.max_steps, 8);
   assert.equal(baseline.prompt_profile, 'legacy-v0');
 });
+
+test('child-process CUA_AGENT_PROFILE alias resolves the same frozen optimization profile', () => {
+  const hybrid = resolveAgentOptimization({ env: { CUA_AGENT_PROFILE: 'aliyun-qwen-grounded-v1' }, arm: 'hybrid', taskFamily: 'search-navigation' });
+  assert.equal(hybrid.profile_id, 'aliyun-qwen-grounded-v1');
+  assert.equal(hybrid.hybrid_action_mode, 'semantic');
+  assert.equal(hybrid.max_steps, 12);
+});

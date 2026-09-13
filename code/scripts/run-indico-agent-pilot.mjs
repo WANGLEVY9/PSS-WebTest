@@ -26,7 +26,7 @@ const date = process.env.PSS_INDICO_EVENT_DATE ?? '15/01/2030';
 const taskId = process.env.PSS_INDICO_TASK_ID ?? 'indico-create-event';
 if (!['indico-create-event', 'indico-search-events'].includes(taskId)) throw new Error('PSS_INDICO_TASK_ID must be indico-create-event or indico-search-events');
 const taskFamily = taskId === 'indico-search-events' ? 'search-navigation' : 'multi-step';
-const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily });
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? process.env.CUA_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily });
 const query = process.env.PSS_INDICO_SEARCH_QUERY ?? 'test';
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const viewport = { width: 1280, height: 720 };

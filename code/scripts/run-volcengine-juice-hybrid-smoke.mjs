@@ -14,7 +14,7 @@ import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 
 dotenv.config();
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
-const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'hybrid', taskFamily: 'search-navigation' });
+const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? process.env.CUA_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'hybrid', taskFamily: 'search-navigation' });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const dismissOverlaysOnly = process.env.CUA_DISMISS_OVERLAYS === '1';

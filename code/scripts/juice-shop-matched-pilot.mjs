@@ -6,6 +6,7 @@ import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+import { findProviderProfile } from '../src/provider-profile.mjs';
 
 const explicitEnv = { ...process.env };
 dotenv.config();
@@ -30,8 +31,12 @@ const providerEnv = (() => {
     : provider === 'volcengine' ? '.env.volcengine-cua' : null;
   if (profileFile) Object.assign(base, readEnvFile(profileFile));
   for (const key of ['CUA_PROVIDER', 'CUA_MODEL', 'CUA_BASE_URL', 'PSS_AGENT_PROFILE']) {
-    if (explicitEnv[key]) base[key] = explicitEnv[key];
+  if (explicitEnv[key]) base[key] = explicitEnv[key];
   }
+  base.PSS_AGENT_PROFILE = explicitEnv.PSS_AGENT_PROFILE
+    ?? findProviderProfile({ provider, model })?.optimization_profile
+    ?? base.PSS_AGENT_PROFILE
+    ?? 'baseline-v0';
   base.PSS_REQUIRE_FROZEN_PROFILE = '1';
   return base;
 })();
@@ -41,7 +46,7 @@ const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
 const phase2Protocol = protocolVersion === '2.0-draft';
 const registry = phase2Protocol ? loadConfigurationRegistry() : null;
-const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm, taskFamily: 'search-navigation' })]));
+const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerEnv.PSS_AGENT_PROFILE }, arm, taskFamily: 'search-navigation' })]));
 const taskManifestPath = `${root}/manifests/task-manifest.v0.1.json`;
 const runManifestPath = `${root}/config/juice-shop-product-search-run-manifest.v0.2.json`;
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
@@ -105,7 +110,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', [arm === 'visual' ? 'scripts/run-volcengine-juice-visual-smoke.mjs' : 'scripts/run-volcengine-juice-hybrid-smoke.mjs'], {
-        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), CUA_DISMISS_OVERLAYS: process.env.CUA_DISMISS_OVERLAYS ?? '0', CUA_PREPARE_SEARCH: process.env.CUA_PREPARE_SEARCH ?? '0', CUA_TASK_MODE: process.env.CUA_TASK_MODE ?? 'full-search',
+        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), CUA_DISMISS_OVERLAYS: process.env.CUA_DISMISS_OVERLAYS ?? '0', CUA_PREPARE_SEARCH: process.env.CUA_PREPARE_SEARCH ?? '0', CUA_TASK_MODE: process.env.CUA_TASK_MODE ?? 'full-search',
         JUICE_SHOP_BASE_URL: baseURL, PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations[arm],
         PSS_RESET_DIGEST: resetDigest ?? '', PSS_RANDOMIZATION_BLOCK: block,
         PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath,

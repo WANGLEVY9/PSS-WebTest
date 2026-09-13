@@ -15,7 +15,12 @@ export function loadAgentOptimizationProfiles() {
 export function resolveAgentOptimization({ env = process.env, arm, taskFamily = 'multi-step' } = {}) {
   if (!['visual', 'hybrid'].includes(arm)) throw new Error(`Unsupported optimization arm: ${arm}`);
   const document = readProfiles();
-  const profileId = env.PSS_AGENT_PROFILE?.trim() || document.default_profile;
+  // CUA_AGENT_PROFILE is accepted as a child-process alias.  Matched
+  // orchestrators use PSS_AGENT_PROFILE as the canonical provenance field,
+  // while framework adapters historically emitted the CUA_* spelling.  The
+  // alias prevents an adapter boundary from silently reverting to a legacy
+  // baseline profile.
+  const profileId = env.PSS_AGENT_PROFILE?.trim() || env.CUA_AGENT_PROFILE?.trim() || document.default_profile;
   const profile = document.profiles.find((candidate) => candidate.id === profileId);
   if (!profile) throw new Error(`Unknown PSS_AGENT_PROFILE: ${profileId}`);
   const armProfile = profile.arms[arm];

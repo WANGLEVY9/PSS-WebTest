@@ -16,12 +16,20 @@ const expectedName = process.env.PSS_PRESTASHOP_EXPECTED_PRODUCT ?? 'Mug The adv
 const expectedNamePattern = new RegExp(expectedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
 const runId = process.env.PSS_RUN_ID ?? `prestashop-playwright-${Date.now()}`;
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
-const taskId = 'prestashop-buyer-search-product';
+const complexity = process.env.PSS_AGENT_COMPLEXITY ?? 'simple';
+const taskIdByComplexity = {
+  simple: 'prestashop-buyer-search-product',
+  medium: 'prestashop-search-open-product',
+  complex: 'prestashop-search-revisit-product'
+};
+const taskId = taskIdByComplexity[complexity];
+if (!taskId) throw new Error(`PSS_AGENT_COMPLEXITY must be simple, medium, or complex (got ${complexity})`);
 const mutationId = process.env.PSS_UI_MUTATION ?? null;
 const expectedVerdict = process.env.PSS_EXPECTED_VERDICT ?? (mutationId === 'search-result-label-omission' ? 'fault' : 'clean');
 if (!['clean', 'fault'].includes(expectedVerdict)) throw new Error('PSS_EXPECTED_VERDICT must be clean or fault');
 if (expectedVerdict === 'fault' && mutationId !== 'search-result-label-omission') throw new Error('fault verdict requires the isolated search-result-label-omission mutation');
 if (expectedVerdict === 'clean' && mutationId === 'search-result-label-omission') throw new Error('functional fault mutation requires expected verdict fault');
+if (complexity !== 'simple' && expectedVerdict !== 'clean') throw new Error('medium and complex PrestaShop workflows currently support clean conditions only');
 if (!username || !password) throw new Error('PrestaShop credentials are missing; set PSS_PRESTASHOP_USERNAME/PSS_PRESTASHOP_PASSWORD locally.');
 
 const startedAt = Date.now();
@@ -35,12 +43,15 @@ const page = await context.newPage();
 const replay = createLocalReplayRecorder({ runId, applicationId: 'prestashop', taskId, arm: 'playwright' });
 
 async function state() {
+  const pathname = new URL(page.url()).pathname;
+  const productDetailVisible = await page.locator('h1').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false);
   return {
-    milestone: page.url().includes('/login') ? 'login' : page.url().includes('/search') ? 'search-results' : 'other',
-    url_path: new URL(page.url()).pathname,
+    milestone: page.url().includes('/login') ? 'login' : productDetailVisible || pathname.includes('.html') ? 'product-detail' : page.url().includes('/search') ? 'search-results' : 'other',
+    url_path: pathname,
     authenticated: await page.locator('body#authentication').count() === 0 && page.url().includes('/search'),
     search_results_heading_visible: await page.getByRole('heading', { name: 'Search results', exact: true }).isVisible().catch(() => false),
     target_product_visible: await page.locator('#js-product-list .product-title').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false),
+    product_detail_visible: productDetailVisible,
     replacement_visible: await page.locator('#js-product-list .product-title').filter({ hasText: /Framed Poster/i }).first().isVisible().catch(() => false),
     product_count: await page.locator('#js-product-list .js-product').count().catch(() => 0)
   };
@@ -88,15 +99,32 @@ try {
   await page.goto(`${baseURL}/search?s=${encodeURIComponent(query)}`, { waitUntil: 'domcontentloaded' });
   await page.getByRole('heading', { name: 'Search results', exact: true }).waitFor({ state: 'visible' });
   if (mutationId) await applyPrestashopMutation(page, mutationId);
+  if (complexity === 'medium' || complexity === 'complex') {
+    const product = page.locator('#js-product-list .product-title').filter({ hasText: expectedNamePattern }).first();
+    await product.waitFor({ state: 'visible' });
+    await click(product, 'open-product');
+    await page.waitForLoadState('domcontentloaded');
+    await page.locator('h1').filter({ hasText: expectedNamePattern }).first().waitFor({ state: 'visible' });
+    if (complexity === 'complex') {
+      await page.goBack({ waitUntil: 'domcontentloaded' });
+      await page.getByRole('heading', { name: 'Search results', exact: true }).waitFor({ state: 'visible' });
+      await product.waitFor({ state: 'visible' });
+      await click(product, 'reopen-product');
+      await page.waitForLoadState('domcontentloaded');
+      await page.locator('h1').filter({ hasText: expectedNamePattern }).first().waitFor({ state: 'visible' });
+    }
+  }
   oracle = await independentOracle();
 } catch (error) {
   failure = { name: error.name, message: error.message };
 }
 
 const pageState = await state().catch(() => ({}));
-const visiblePassed = expectedVerdict === 'fault'
+const visiblePassed = complexity === 'simple' && expectedVerdict === 'fault'
   ? pageState.search_results_heading_visible === true && pageState.target_product_visible === false && pageState.replacement_visible === true && pageState.product_count > 0
-  : pageState.search_results_heading_visible === true && pageState.target_product_visible === true && pageState.product_count > 0;
+  : complexity === 'simple'
+    ? pageState.search_results_heading_visible === true && pageState.target_product_visible === true && pageState.product_count > 0
+    : pageState.product_detail_visible === true && pageState.milestone === 'product-detail';
 const executionExitCode = failure ? 1 : 0;
 const runRecord = createTraditionalRunRecord({
   run_id: runId,

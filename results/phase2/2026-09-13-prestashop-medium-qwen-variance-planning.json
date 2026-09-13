@@ -1,0 +1,66 @@
+{
+  "schema_version": "0.1",
+  "application": "prestashop",
+  "task_id": "prestashop-search-open-product",
+  "condition": "clean-stable",
+  "mutation": null,
+  "repetitions": [
+    "phase2-t1-prestashop-medium-qwen-rep2-rerun-20260913:r1",
+    "phase2-t1-prestashop-medium-qwen-rep2-rerun-20260913:r2"
+  ],
+  "matched_successful_repetitions": [
+    "phase2-t1-prestashop-medium-qwen-rep2-rerun-20260913:r1",
+    "phase2-t1-prestashop-medium-qwen-rep2-rerun-20260913:r2"
+  ],
+  "matched_success_rate": 1,
+  "arms": {
+    "playwright": {
+      "n": 2,
+      "successes": 2,
+      "success_rate": {
+        "estimate": 1,
+        "lower": 0.34238022750665303,
+        "upper": 1
+      },
+      "reset_failures": 0,
+      "reset_retry_used": 2,
+      "reset_retry_rate": 1,
+      "failure_categories": {}
+    },
+    "visual": {
+      "n": 2,
+      "successes": 2,
+      "success_rate": {
+        "estimate": 1,
+        "lower": 0.34238022750665303,
+        "upper": 1
+      },
+      "reset_failures": 0,
+      "reset_retry_used": 0,
+      "reset_retry_rate": 0,
+      "failure_categories": {}
+    },
+    "hybrid": {
+      "n": 2,
+      "successes": 2,
+      "success_rate": {
+        "estimate": 1,
+        "lower": 0.34238022750665303,
+        "upper": 1
+      },
+      "reset_failures": 0,
+      "reset_retry_used": 0,
+      "reset_retry_rate": 0,
+      "failure_categories": {}
+    }
+  },
+  "confirmatory": false,
+  "planning_only": true,
+  "note": "Wilson intervals and rates are descriptive pilot estimates. Do not freeze repetition counts or claim arm superiority from this report.",
+  "input_files": [
+    "../artifacts/phase2/2026-09-13-aliyun-qwen3.7-flash-prestashop-clean-stable-canary-phase2-t1-prestashop-medium-qwen-rep2-rerun-20260913-pilot.json"
+  ],
+  "source_run_tags": [
+    "phase2-t1-prestashop-medium-qwen-rep2-rerun-20260913"
+  ]
+}

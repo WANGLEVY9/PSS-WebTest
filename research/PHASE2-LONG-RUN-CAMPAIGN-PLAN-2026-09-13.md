@@ -36,6 +36,8 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
 | DeepSeek Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/fault/evolution mixed but mostly passing | Model-stratum pilot evidence |
 | Doubao Hybrid | 0/3 because Ark returned HTTP 429 | External blocked stratum; excluded from capability pooling |
+| Browser Use Hybrid | BookStack open-book Qwen sentinel 1/1 strict pass after relative-interpreter path repair; six replay frames/events | Framework-replication pilot only; not pooled with native Hybrid and not an application admission result |
+| Stagehand Hybrid | BookStack open-book Qwen sentinel reached visible oracle but required one bounded locator fallback (model-only 0/1) | Fallback-assisted evidence; retained as framework boundary, not a model success |
 
 The queue/matrix discrepancy must be resolved by adding or rejecting candidates
 with version, license, reset, and oracle evidence. Names in a blueprint are not

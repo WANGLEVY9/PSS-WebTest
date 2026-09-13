@@ -11,8 +11,14 @@ import path from 'node:path';
 
 dotenv.config();
 const codeRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const python = process.env.PSS_BROWSER_USE_PYTHON || process.env.PSS_BROWSER_USE_BIN;
-if (!python) throw new Error('PSS_BROWSER_USE_PYTHON must point to the isolated Browser Use interpreter');
+const configuredPython = process.env.PSS_BROWSER_USE_PYTHON || process.env.PSS_BROWSER_USE_BIN;
+if (!configuredPython) throw new Error('PSS_BROWSER_USE_PYTHON must point to the isolated Browser Use interpreter');
+// The environment manifest stores paths relative to the repository root, while
+// this runner executes with `code/` as its cwd. Resolve relative paths against
+// the repository so a valid manifest entry cannot fail with a misleading ENOENT.
+const python = path.isAbsolute(configuredPython)
+  ? configuredPython
+  : path.resolve(codeRoot, '..', configuredPython);
 for (const key of ['PSS_CONFIGURATION_ID', 'PSS_RESET_DIGEST', 'PSS_RANDOMIZATION_BLOCK', 'PSS_PROTOCOL_VERSION']) {
   if (!process.env[key]) throw new Error(`${key} is required for a v0.2 Browser Use run`);
 }

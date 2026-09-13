@@ -1,8 +1,11 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
 import { BOOKSTACK_CREATE_PAGE_ARMS, createBookStackCreatePagePilotPlan } from '../src/bookstack-create-page-pilot-plan.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+
+const explicitEnv = { ...process.env };
+dotenv.config();
 
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repositoryRoot = `${root}/..`;
@@ -19,6 +22,19 @@ const runTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 
+function readEnvFile(name) {
+  const envPath = `${root}/${name}`;
+  return fs.existsSync(envPath) ? dotenv.parse(fs.readFileSync(envPath)) : {};
+}
+const providerEnv = (() => {
+  const env = { ...readEnvFile('.env'), ...process.env };
+  const profileFile = provider === 'deepseek' ? '.env.deepseek' : provider === 'volcengine' ? '.env.volcengine-cua' : null;
+  if (profileFile) Object.assign(env, readEnvFile(profileFile));
+  for (const key of ['CUA_PROVIDER', 'CUA_MODEL', 'CUA_BASE_URL', 'PSS_AGENT_PROFILE']) if (explicitEnv[key]) env[key] = explicitEnv[key];
+  env.PSS_REQUIRE_FROZEN_PROFILE = '1';
+  return env;
+})();
+
 const plan = createBookStackCreatePagePilotPlan({ condition, repetitions, randomizationSeed, runTag, provider, model });
 const conditionSpec = plan.conditionSpec;
 const slug = (value, fallback) => String(value ?? '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || fallback;
@@ -31,7 +47,7 @@ const recordsPath = `${repositoryRoot}/artifacts/phase2/bookstack-create-page-${
 
 function run(command, args, env = {}) {
   return new Promise((resolve) => {
-    const child = spawn(command, args, { cwd: root, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(command, args, { cwd: root, env: { ...providerEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = ''; let stderr = '';
     child.stdout.on('data', (chunk) => { stdout += chunk; });
     child.stderr.on('data', (chunk) => { stderr += chunk; });

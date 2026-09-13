@@ -1,8 +1,11 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+
+const explicitEnv = { ...process.env };
+dotenv.config();
 
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
 const repositoryRoot = `${root}/..`;
@@ -35,6 +38,19 @@ const artifactName = `${taskSlug}-${runSlug}-pilot.json`;
 const recordsName = `${taskSlug}-${runSlug}-records.jsonl`;
 const artifact = `${repositoryRoot}/artifacts/phase2/${artifactName}`;
 const recordsPath = `${repositoryRoot}/artifacts/phase2/${recordsName}`;
+
+function readEnvFile(name) {
+  const envPath = `${root}/${name}`;
+  return fs.existsSync(envPath) ? dotenv.parse(fs.readFileSync(envPath)) : {};
+}
+const providerEnv = (() => {
+  const env = { ...readEnvFile('.env'), ...process.env };
+  const profileFile = provider === 'deepseek' ? '.env.deepseek' : provider === 'volcengine' ? '.env.volcengine-cua' : null;
+  if (profileFile) Object.assign(env, readEnvFile(profileFile));
+  for (const key of ['CUA_PROVIDER', 'CUA_MODEL', 'CUA_BASE_URL', 'PSS_AGENT_PROFILE']) if (explicitEnv[key]) env[key] = explicitEnv[key];
+  env.PSS_REQUIRE_FROZEN_PROFILE = '1';
+  return env;
+})();
 const targetBook = isSearchTask ? 'Book2' : 'Book';
 const runManifestPath = `${root}/config/${isSearchTask ? 'bookstack-search-open-book2' : 'bookstack-navigation'}-run-manifest.v0.2.json`;
 const arms = ['playwright', 'visual', 'hybrid'];
@@ -50,7 +66,7 @@ function randomizationBlock(repetition, orderedArms) {
 
 function run(command, args, env = {}) {
   return new Promise((resolve) => {
-    const child = spawn(command, args, { cwd: root, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn(command, args, { cwd: root, env: { ...providerEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
     let stdout = ''; let stderr = '';
     child.stdout.on('data', (chunk) => { stdout += chunk; });
     child.stderr.on('data', (chunk) => { stderr += chunk; });

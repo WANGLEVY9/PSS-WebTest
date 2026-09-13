@@ -34,6 +34,8 @@ pilots.
 |---|---:|---:|---:|---|
 | Indico create-event / DeepSeek | 3/3 | 0/3, grounding-loop | 0/3, oracle failure after pass verdict | valid pilot stratum |
 | Juice Shop product-search / DeepSeek | 3/3 | 0/3, grounding-loop | 3/3 | valid pilot stratum |
+| BookStack open-book / DeepSeek | 2/2 | 2/2 | 2/2 | valid pilot stratum |
+| BookStack search/open-book2 / DeepSeek | 2/2 | 0/2, grounding-loop | 2/2 | valid pilot stratum |
 
 The pre-fix 404 records remain in the append-only artifact history but are
 labelled invalid configuration evidence and are excluded from capability
@@ -46,6 +48,8 @@ Artifacts:
 - `artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-clean-deepseek-provider-profile-fix2-pilot.json`
 - `artifacts/phase2/indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-deepseek-rep2-pilot.json`
 - `artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-deepseek-rep2-pilot.json`
+- `artifacts/phase2/bookstack-navigation-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-nav-profile-fix-pilot.json`
+- `artifacts/phase2/bookstack-search-open-book2-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-search-profile-fix-pilot.json`
 
 Descriptive variance and planning outputs (not frozen sample-size decisions):
 
@@ -53,6 +57,8 @@ Descriptive variance and planning outputs (not frozen sample-size decisions):
 - `results/phase2/2026-09-13-juice-deepseek-clean-variance.json`
 - `results/phase2/2026-09-13-indico-deepseek-power-planning.json`
 - `results/phase2/2026-09-13-juice-deepseek-power-planning.json`
+- `results/phase2/2026-09-13-bookstack-deepseek-navigation-variance.json`
+- `results/phase2/2026-09-13-bookstack-deepseek-search-variance.json`
 
 ## Interpretation boundary
 

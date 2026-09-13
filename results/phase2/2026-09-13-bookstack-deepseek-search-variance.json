@@ -1,0 +1,65 @@
+{
+  "schema_version": "0.1",
+  "application": "bookstack",
+  "task_id": "bookstack-search-and-open-book2",
+  "condition": "clean-stable",
+  "mutation": null,
+  "repetitions": [
+    "phase2-t1-bookstack-deepseek-search-profile-fix:r1",
+    "phase2-t1-bookstack-deepseek-search-profile-fix:r2"
+  ],
+  "matched_successful_repetitions": [],
+  "matched_success_rate": 0,
+  "arms": {
+    "playwright": {
+      "n": 2,
+      "successes": 2,
+      "success_rate": {
+        "estimate": 1,
+        "lower": 0.34238022750665303,
+        "upper": 1
+      },
+      "reset_failures": 0,
+      "reset_retry_used": 0,
+      "reset_retry_rate": 0,
+      "failure_categories": {}
+    },
+    "visual": {
+      "n": 2,
+      "successes": 0,
+      "success_rate": {
+        "estimate": 0,
+        "lower": 0,
+        "upper": 0.6576197724933469
+      },
+      "reset_failures": 0,
+      "reset_retry_used": 0,
+      "reset_retry_rate": 0,
+      "failure_categories": {
+        "grounding-loop": 2
+      }
+    },
+    "hybrid": {
+      "n": 2,
+      "successes": 2,
+      "success_rate": {
+        "estimate": 1,
+        "lower": 0.34238022750665303,
+        "upper": 1
+      },
+      "reset_failures": 0,
+      "reset_retry_used": 0,
+      "reset_retry_rate": 0,
+      "failure_categories": {}
+    }
+  },
+  "confirmatory": false,
+  "planning_only": true,
+  "note": "Wilson intervals and rates are descriptive pilot estimates. Do not freeze repetition counts or claim arm superiority from this report.",
+  "input_files": [
+    "../artifacts/phase2/bookstack-search-open-book2-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-search-profile-fix-pilot.json"
+  ],
+  "source_run_tags": [
+    "phase2-t1-bookstack-deepseek-search-profile-fix"
+  ]
+}

@@ -64,6 +64,8 @@
     "pilot:indico:agent": "node scripts/run-indico-agent-pilot.mjs",
     "pilot:indico:matched": "node scripts/indico-matched-pilot.mjs",
     "pilot:juice-shop:matched": "node scripts/juice-shop-matched-pilot.mjs",
+    "batch:indico-juice:conditions": "node scripts/run-indico-juice-condition-batch.mjs",
+    "validate:condition-batch": "node scripts/validate-condition-batch.mjs",
     "power:simulate": "node scripts/power-simulation.mjs",
     "pilot:indico:fault": "node scripts/run-indico-fault-workflow.mjs",
     "pilot:indico:fault-evolution": "node scripts/run-indico-fault-evolution-gate.mjs",

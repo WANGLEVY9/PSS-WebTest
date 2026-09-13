@@ -1,6 +1,6 @@
 # Phase 2 experiment data ledger — 2026-09-04
 
-**Generated:** 2026-09-13T02:30:00.050Z  
+**Generated:** 2026-09-13T02:45:02.736Z  
 **Scope:** BookStack feasibility/admission pilot. This ledger does not contain confirmatory estimates.
 
 ## Evidence classification
@@ -63,9 +63,12 @@ These files are intentionally not pooled with the table above. In particular, le
 | bookstack-create-page-clean-stable-aliyun-qwen3.7-flash-qwen37-controller-debug-v3-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-create-page-clean-stable-deepseek-deepseek-flash-deepseek-create-page-tool-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-create-page-clean-stable-deepseek-deepseek-flash-deepseek-create-page-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-create-page-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-create-clean-profile-fix-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-create-page-functional-fault-persistence-mismatch-aliyun-qwen3.7-flash-phase2-t1-bookstack-create-fault-qwen-schema-records.jsonl | 3 | 0.2 | functional-fault:persistence-mismatch | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-create-page-functional-fault-persistence-mismatch-deepseek-deepseek-flash-deepseek-create-page-fault-v1-records.jsonl | 3 | 0.2 | functional-fault:persistence-mismatch | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-create-page-functional-fault-persistence-mismatch-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-create-fault-profile-fix-records.jsonl | 3 | 0.2 | functional-fault:persistence-mismatch | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-create-page-ui-evolution-bookstack-layout-v1-aliyun-qwen3.7-flash-phase2-t1-bookstack-create-evolution-qwen-schema-records.jsonl | 3 | 0.2 | ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-create-page-ui-evolution-bookstack-layout-v1-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-create-evolution-profile-fix-records.jsonl | 3 | 0.2 | ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-hybrid-title-clear-records.jsonl | 1 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-hybrid-title-clear-retry-records.jsonl | 1 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-hybrid-title-clear-retry3-records.jsonl | 1 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |

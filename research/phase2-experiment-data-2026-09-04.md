@@ -1,6 +1,6 @@
 # Phase 2 experiment data ledger — 2026-09-04
 
-**Generated:** 2026-09-13T02:02:19.423Z  
+**Generated:** 2026-09-13T02:30:00.050Z  
 **Scope:** BookStack feasibility/admission pilot. This ledger does not contain confirmatory estimates.
 
 ## Evidence classification
@@ -84,6 +84,7 @@ These files are intentionally not pooled with the table above. In particular, le
 | bookstack-navigation-clean-stable-aliyun-qwen3.7-flash-qwen37-admission-v1-0002-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-clean-stable-aliyun-qwen3.7-flash-qwen37-admission-v3-0002-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-clean-stable-deepseek-deepseek-flash-deepseek-open-book-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-navigation-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-nav-profile-fix-records.jsonl | 6 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-clean-stable-volcengine-doubao-seed-2-0-pro-260215-records.jsonl | 3 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-records.jsonl | 47 | 0.1 | clean-stable, ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-ui-evolution-bookstack-layout-v1-deepseek-deepseek-flash-deepseek-open-book-evolution-v1-records.jsonl | 3 | 0.2 | ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
@@ -97,6 +98,7 @@ These files are intentionally not pooled with the table above. In particular, le
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-qwen37-admission-v1-0003-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-aliyun-qwen3.7-flash-qwen37-admission-v3-0003-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-deepseek-deepseek-flash-deepseek-search-book2-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-search-open-book2-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-search-profile-fix-records.jsonl | 6 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-manual-ledger-r1-records.jsonl | 1 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-search-open-book2-clean-stable-manual-ledger-r2-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-three-arm-clean-stable-aliyun-qwen3-vl-flash-outcome-v02-records.jsonl | 9 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
@@ -143,6 +145,7 @@ These files are intentionally not pooled with the table above. In particular, le
 | indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-clean-deepseek-provider-profile-fix-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-clean-deepseek-provider-profile-fix2-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-clean-deepseek-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-deepseek-rep2-records.jsonl | 6 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | indico-three-arm-ledger.jsonl | 4 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | indico-three-arm-records.jsonl | 4 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | indico-three-arm-volcengine-doubao-seed-2-0-pro-260215-clean-v02-records.jsonl | 3 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
@@ -165,6 +168,7 @@ These files are intentionally not pooled with the table above. In particular, le
 | juice-shop-three-arm-deepseek-deepseek-flash-deepseek-juice-search-v1-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-clean-deepseek-provider-profile-fix2-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-clean-deepseek-records.jsonl | 3 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-deepseek-rep2-records.jsonl | 6 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | juice-shop-three-arm-ledger.jsonl | 4 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | juice-shop-three-arm-records.jsonl | 4 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | juice-shop-three-arm-volcengine-doubao-seed-2-0-pro-260215-clean-v02-records.jsonl | 3 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |

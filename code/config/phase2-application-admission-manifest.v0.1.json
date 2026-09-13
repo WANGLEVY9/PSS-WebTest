@@ -1,0 +1,55 @@
+{
+  "schema_version": "0.1",
+  "id": "pss-phase2-application-admission-2026-09-13",
+  "status": "planning-only",
+  "confirmatory_authorized": false,
+  "target": {
+    "planned_workflows_per_application": 8,
+    "conditions": ["clean-stable", "functional-fault", "ui-evolution"],
+    "primary_arms": ["visual", "hybrid", "playwright"],
+    "minimum_primary_repetitions": 3,
+    "minimum_live_provider_repetitions": 3
+  },
+  "legacy_models_quarantined": ["qwen3-vl-flash"],
+  "applications": [
+    {
+      "id": "bookstack",
+      "planned_workflows": 8,
+      "implemented_tasks": ["bookstack-create-page", "bookstack-open-book", "bookstack-search-and-open-book2"],
+      "gates": {"reset": true, "oracle": false, "fault_evolution": false, "provenance": true, "image_license": true},
+      "note": "Create-page persistence and complete three-condition task coverage remain unresolved."
+    },
+    {
+      "id": "indico",
+      "planned_workflows": 8,
+      "implemented_tasks": ["indico-create-event", "indico-search-events"],
+      "gates": {"reset": true, "oracle": false, "fault_evolution": true, "provenance": true, "image_license": true},
+      "note": "Search workflow is exercised, but the authenticated create-event independent-oracle workflow is incomplete."
+    },
+    {
+      "id": "juice-shop",
+      "planned_workflows": 8,
+      "implemented_tasks": [
+        "juice-shop-product-search", "juice-shop-product-detail", "juice-shop-add-to-basket",
+        "juice-shop-basket-feedback", "juice-shop-basket-quantity", "juice-shop-authorization-guard",
+        "juice-shop-pagination", "juice-shop-pagination-last-item"
+      ],
+      "gates": {"reset": true, "oracle": true, "fault_evolution": true, "provenance": true, "image_license": true},
+      "note": "All eight slots have pilot evidence; legacy qwen3-vl-flash records remain quarantined."
+    },
+    {
+      "id": "invoiceninja",
+      "planned_workflows": 8,
+      "implemented_tasks": ["invoiceninja-view-invoice-details", "invoiceninja-recent-payments"],
+      "gates": {"reset": true, "oracle": true, "fault_evolution": true, "provenance": true, "image_license": false},
+      "note": "Two workflows have independent database oracles; public image digest/license admission is unresolved."
+    },
+    {
+      "id": "prestashop",
+      "planned_workflows": 8,
+      "implemented_tasks": ["prestashop-buyer-search-product", "prestashop-search-open-product", "prestashop-search-revisit-product"],
+      "gates": {"reset": true, "oracle": true, "fault_evolution": true, "provenance": true, "image_license": false},
+      "note": "Three complexity lanes are exercised; complete eight-slot breadth and image/license provenance remain open."
+    }
+  ]
+}

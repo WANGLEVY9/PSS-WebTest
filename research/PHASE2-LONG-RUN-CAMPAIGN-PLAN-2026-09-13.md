@@ -52,6 +52,34 @@ applications in the experimental denominator.
 
 ## 3. Campaign tranches
 
+### Cross-application audit snapshot (2026-09-13)
+
+The new fail-closed audit scans both historical ledger roots and validates
+1,431 records (159 invalid records retained as blocked evidence). Juice Shop is
+the only current `pilot-admission-candidate`: 8/8 workflows, 72/72 pooled
+task×condition×arm cells, and live provider strata meet the three-repetition
+pilot threshold. BookStack (3/8), Indico (2/8), Invoice Ninja (2/8), and
+PrestaShop (3/8) remain breadth-blocked; their gate failures are recorded
+separately. This snapshot is not a confirmatory authorization.
+
+The durable batch strategy is therefore:
+
+1. Keep one append-only ledger and one audit output per tranche.
+2. Run independent application lanes in parallel only when their SUT reset
+   locks are disjoint; serialize repetitions within one SUT.
+3. Fill missing workflow breadth before adding repetitions to an already
+   covered workflow.
+4. Freeze the Juice Shop pilot variance input while breadth lanes repair the
+   other four applications.
+5. Start nested model/framework replication only after at least three
+   applications are admitted-pilot; start confirmatory collection only after
+   the preregistered power gate is green.
+
+The machine-readable snapshot is
+[`2026-09-13-phase2-application-admission-audit.json`](../results/phase2/2026-09-13-phase2-application-admission-audit.json), with the human-readable
+interpretation in
+[`2026-09-13-phase2-application-admission-audit.md`](../results/phase2/2026-09-13-phase2-application-admission-audit.md).
+
 The operational order is deliberately a long-lived queue rather than a single
 large burst: L0 readiness/ledger, L1 local-SUT admission, L2 breadth waves, L3
 model/framework replication, L4 cross-application workflows, and finally L5

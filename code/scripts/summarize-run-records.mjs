@@ -7,8 +7,13 @@ export function summarizeRecords(records) {
   const groups = new Map();
   for (const input of records) {
     const record = validateRunRecord(input);
-    const key = `${record.application_id}/${record.task_id}/${record.condition}/${record.arm}`;
-    const group = groups.get(key) ?? { key, records: [] };
+    // Provider/model are replication strata, not interchangeable observations.
+    // Keep them in the summary key so a batch report cannot silently pool
+    // Qwen, DeepSeek, or another provider into a single arm estimate.
+    const providerId = record.provenance?.provider_id ?? null;
+    const modelId = record.provenance?.model_id ?? null;
+    const key = `${record.application_id}/${record.task_id}/${record.condition}/${record.arm}/${providerId ?? 'scripted'}/${modelId ?? 'scripted'}`;
+    const group = groups.get(key) ?? { key, provider_id: providerId, model_id: modelId, records: [] };
     group.records.push(record);
     groups.set(key, group);
   }
@@ -19,7 +24,7 @@ export function summarizeRecords(records) {
     return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2;
   };
   const mean = (values) => values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null;
-  return [...groups.values()].map(({ key, records: group }) => {
+  return [...groups.values()].map(({ key, provider_id, model_id, records: group }) => {
     const valid = group.filter((record) => record.status === 'completed' && record.checkpoint_reached);
     // Only clean/fault truth labels are scorable. `unknown` and `not-scored`
     // represent intentionally unavailable truth, not a correct/incorrect verdict.
@@ -35,6 +40,8 @@ export function summarizeRecords(records) {
     const truthLabels = new Set(group.map((record) => record.ground_truth_verdict).filter((verdict) => verdict === 'clean' || verdict === 'fault'));
     return {
       cell: key,
+      provider_id,
+      model_id,
       n: group.length,
       valid_completion_rate: valid.length / group.length,
       joint_end_to_end_correctness_rate: valid.filter((record) => verdictCorrect.includes(record)).length / group.length,

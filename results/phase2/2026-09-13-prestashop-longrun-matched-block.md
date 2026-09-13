@@ -38,6 +38,12 @@ fault executions are retained as false-negative/termination boundaries, not
 converted to oracle successes. Provider, model, arm, workflow, condition, and
 repetition strata remain separate.
 
+The standard metrics summary is generated with provider/model in the grouping
+key (15 strata, rather than a pooled visual or hybrid estimate):
+`results/phase2/2026-09-13-prestashop-longrun-metrics-summary.json`.
+It is descriptive pilot output only; it does not estimate between-application
+variance or freeze repetitions.
+
 ## Interpretation and next action
 
 This block strengthens the conditional picture: both agents are currently

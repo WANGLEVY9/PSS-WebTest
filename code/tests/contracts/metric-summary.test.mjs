@@ -30,3 +30,14 @@ test('metric summary excludes unknown and not-scored truth from verdict accuracy
   ]);
   assert.equal(summary[0].verdict_correct_rate, 1);
 });
+
+test('metric summary keeps provider and model replication strata separate', () => {
+  const qwen = base({ run_id: 'qwen', provenance: { runner_version: 'test', observation_contract: 'screenshot-only', provider_id: 'aliyun', model_id: 'qwen3.7-flash', trace_hash: 'b'.repeat(64) } });
+  const deepseek = base({ run_id: 'deepseek', provenance: { runner_version: 'test', observation_contract: 'screenshot-only', provider_id: 'deepseek', model_id: 'deepseek-v4-flash-vision-exp', trace_hash: 'c'.repeat(64) } });
+  const summary = summarizeRecords([qwen, deepseek]);
+  assert.equal(summary.length, 2);
+  assert.deepEqual(summary.map((row) => `${row.provider_id}/${row.model_id}`).sort(), [
+    'aliyun/qwen3.7-flash',
+    'deepseek/deepseek-v4-flash-vision-exp'
+  ]);
+});

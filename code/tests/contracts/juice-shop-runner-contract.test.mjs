@@ -32,6 +32,14 @@ test('Juice Shop last-item pagination variant remains a separate mapped workflow
   assert.match(matchedRunner, /OWASP Juice Shop Sticker Page/);
 });
 
+test('Juice Shop delayed basket feedback lane maps mutation, oracle, and task mode', () => {
+  assert.match(visualRunner, /juice-shop-basket-feedback/);
+  assert.match(hybridRunner, /juice-shop-basket-feedback/);
+  assert.match(matchedRunner, /juice-shop-basket-feedback-run-manifest\.v0\.1\.json/);
+  assert.match(matchedRunner, /RUN_JUICE_SHOP_BASKET_FEEDBACK/);
+  assert.match(matchedRunner, /evaluate-juice-shop-basket-feedback\.mjs/);
+});
+
 test('Juice Shop pagination hybrid runner exposes a page-progress token and rejects disabled targets early', () => {
   assert.match(hybridRunner, /progressToken: `\$\{page\.url\(\)\}::\$\{paginator\}`/);
   assert.match(hybridRunner, /target\.isEnabled\(\)\.catch\(\(\) => false\)/);

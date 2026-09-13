@@ -62,3 +62,26 @@ export async function installJuiceShopLayoutEvolution(page) {
   });
   return { mutation: 'juice-layout-v1', semantics_preserved: true };
 }
+
+/** Hold the basket confirmation snackbar for a bounded interval.  The delay
+ * is page-scoped and visual-only: it never changes basket state or the SUT
+ * database, and it is removed with the browser context. */
+export async function installJuiceShopFeedbackDelay(page, { delayMs = 1200 } = {}) {
+  await page.addInitScript(({ delay }) => {
+    const selector = '.mat-mdc-snack-bar-container, .mat-snack-bar-container';
+    const hold = (candidate) => {
+      const snackbar = candidate.matches?.(selector) ? candidate : candidate.closest?.(selector);
+      if (!snackbar || snackbar.dataset.pssFeedbackDelay) return;
+      snackbar.dataset.pssFeedbackDelay = 'held';
+      snackbar.style.visibility = 'hidden';
+      window.setTimeout(() => {
+        snackbar.style.visibility = 'visible';
+        snackbar.dataset.pssFeedbackDelay = 'released';
+      }, delay);
+    };
+    const scan = () => document.querySelectorAll(selector).forEach(hold);
+    if (document.documentElement) new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true });
+    scan();
+  }, { delay: delayMs });
+  return { mutation: 'juice-basket-feedback-delay', delay_ms: delayMs, semantics_preserved: true };
+}

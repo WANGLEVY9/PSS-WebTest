@@ -214,6 +214,23 @@
           "arms": ["visual", "hybrid", "playwright"]
         },
         {
+          "id": "juice-shop-basket-feedback",
+          "intent": "Add Apple Juice (1000ml) to the basket and finish only after the delayed confirmation message 'Placed Apple Juice (1000ml) into basket.' becomes visible.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks the exact product and delayed confirmation snackbar; under the functional-fault condition it requires the target and confirmation to be absent. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["product-card-omission", "missing-feedback"],
+          "evolution_slots": ["snackbar-layout-change", "feedback-timing-change"],
+          "phase2_evidence": {
+            "status": "new diagnostic workflow; pilot-only",
+            "runner": "shared matched runner with browser-scoped feedback delay, replay, and independent visible-state oracle",
+            "feedback_delay_ms": 1200
+          },
+          "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
           "id": "juice-shop-pagination",
           "intent": "Navigate from the initial catalog to the second page and finish only when the paginator shows the second page and Lemon Juice (500ml) is visibly present.",
           "oracle": {

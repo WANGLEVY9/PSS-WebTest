@@ -189,7 +189,22 @@ function parseToolDecision(toolCall, options = {}) {
     throw new Error(`CUA model returned an unsupported tool call: ${toolName}`);
   }
   let args;
-  try { args = JSON.parse(toolCall.function.arguments || ''); } catch { throw new Error('CUA model tool call did not contain valid JSON arguments'); }
+  const rawArguments = toolCall.function.arguments || '';
+  try {
+    args = JSON.parse(rawArguments);
+  } catch {
+    // Optional diagnostic-only compatibility path for providers that wrap a
+    // valid JSON object in a fenced/textual tool argument. It is disabled by
+    // default so malformed provider output remains a provider-format failure.
+    // The repair is deliberately bounded to the first complete outer object;
+    // it never guesses missing fields, quotes, or action values.
+    if (!options.allowBoundedJsonRepair) throw new Error('CUA model tool call did not contain valid JSON arguments');
+    const start = rawArguments.indexOf('{');
+    const end = rawArguments.lastIndexOf('}');
+    if (start < 0 || end <= start) throw new Error('CUA model tool call did not contain valid JSON arguments');
+    try { args = JSON.parse(rawArguments.slice(start, end + 1)); }
+    catch { throw new Error('CUA model tool call did not contain valid JSON arguments'); }
+  }
   // DeepSeek V4.1-Flash may emit the common action type as the function name
   // (`type`, `click`, or `keypress`) even though the request advertises the
   // single `ui_action` function. Accept only those seven bounded aliases and
@@ -386,7 +401,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           }, timeoutMs, maxRetries, () => { retryCount += 1; });
           payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
-          decision = parseProviderDecision(payload, { coordinateMode });
+          decision = parseProviderDecision(payload, { coordinateMode, allowBoundedJsonRepair: process.env.CUA_ALLOW_BOUNDED_JSON_REPAIR === '1' });
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
             && decision.action.x === lastAcceptedPointer.x && decision.action.y === lastAcceptedPointer.y;
           // A repeated coordinate is evidence of non-progress only when the

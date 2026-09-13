@@ -224,7 +224,7 @@ const record = createRunRecord({
   checkpoint_reached: taskStateReached, emitted_verdict: emittedVerdict, ground_truth_verdict: expectedVerdict,
   independent_oracle_passed: oracle.passed === true,
   timing: { wall_time_ms: result?.wall_time_ms ?? Date.now() - startedAt, actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: `invoiceninja-${arm}-agent-v0.1`, observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', provider_id: process.env.CUA_PROVIDER ?? null, model_id: process.env.CUA_MODEL ?? null, provider_profile_id: profile.profile_id ?? null, action_mode: profile.action_mode ?? null, api_mode: profile.api_mode ?? null, action_mode_source: profile.action_mode_source ?? null, hybrid_action_mode: arm === 'hybrid' ? hybridActionMode : null },
+  provenance: { runner_version: `invoiceninja-${arm}-agent-v0.1${process.env.CUA_ALLOW_BOUNDED_JSON_REPAIR === '1' ? '-bounded-json-repair' : ''}`, observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', provider_id: process.env.CUA_PROVIDER ?? null, model_id: process.env.CUA_MODEL ?? null, provider_profile_id: profile.profile_id ?? null, action_mode: profile.action_mode ?? null, api_mode: profile.api_mode ?? null, action_mode_source: profile.action_mode_source ?? null, hybrid_action_mode: arm === 'hybrid' ? hybridActionMode : null },
   failure_category: failureCategory, trace
 });
 replay.finalize({ status: record.status, checkpointReached: taskStateReached, emittedVerdict: record.emitted_verdict, groundTruthVerdict: record.ground_truth_verdict, failureCategory, error: failure, oraclePassed: oracle.passed === true });

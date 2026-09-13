@@ -225,7 +225,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           }, timeoutMs, maxRetries, () => { retryCount += 1; });
           payload = await response.json();
           if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
-          decision = parseProviderDecision(payload, { coordinateMode, allowTargetId: hybridActionMode === 'semantic' });
+          decision = parseProviderDecision(payload, { coordinateMode, allowTargetId: hybridActionMode === 'semantic', allowBoundedJsonRepair: process.env.CUA_ALLOW_BOUNDED_JSON_REPAIR === '1' });
           const decisionIdentity = pointerIdentity(decision?.action);
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
             && decisionIdentity !== null && decisionIdentity === lastAcceptedPointer.identity;

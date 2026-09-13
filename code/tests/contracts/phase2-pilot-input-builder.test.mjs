@@ -17,6 +17,8 @@ test('pilot input builder is strata-aware and fail-closed', () => {
   assert.match(source, /model_id/);
   assert.match(source, /reset-complete-only/);
   assert.match(source, /resetCompleteOnly/);
+  assert.match(source, /executionVariant/);
+  assert.match(source, /execution_variant/);
 });
 
 test('ledger reader includes nested run-record ledgers and excludes duplicate run ids', () => {

@@ -9,4 +9,5 @@ test('matched power planner remains planning-only and preserves model strata', (
   assert.match(source, /model_strata/);
   assert.match(source, /matched_blocks/);
   assert.match(source, /per_cell_repetitions/);
+  assert.match(source, /execution_variant/);
 });

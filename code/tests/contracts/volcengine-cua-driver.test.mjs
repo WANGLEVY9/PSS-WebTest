@@ -47,6 +47,15 @@ test('parses a bounded Alibaba function-call decision', () => {
   });
 });
 
+test('bounded JSON repair is opt-in and never guesses malformed fields', () => {
+  const fenced = '```json\n{"action_type":"click","x":12,"y":34}\n```';
+  assert.throws(() => parseToolDecision({ function: { name: 'ui_action', arguments: fenced } }), /valid JSON arguments/);
+  assert.deepEqual(parseToolDecision({ function: { name: 'ui_action', arguments: fenced } }, { allowBoundedJsonRepair: true }), {
+    type: 'action', action: { type: 'click', x: 12, y: 34 }
+  });
+  assert.throws(() => parseToolDecision({ function: { name: 'ui_action', arguments: '{"action_type":"click","x":12' } }, { allowBoundedJsonRepair: true }), /valid JSON arguments/);
+});
+
 test('parses a bounded direct-action tool alias emitted by DeepSeek', () => {
   assert.deepEqual(parseToolDecision({ function: { name: 'type', arguments: '{"text":"Mug"}' } }), {
     type: 'action',

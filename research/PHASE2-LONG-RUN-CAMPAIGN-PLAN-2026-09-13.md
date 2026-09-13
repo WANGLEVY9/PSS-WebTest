@@ -86,6 +86,10 @@ the independent database oracle passing. This is a provider/runner diagnostic,
 not a universal CUA capability claim; the application remains breadth- and
 image/license-blocked.
 
+The pilot-input key now includes an execution variant. The strict provider
+format path and the opt-in bounded-JSON-repair diagnostic are separate strata,
+so a runner repair cannot improve the strict estimate by accidental pooling.
+
 The durable batch strategy is therefore:
 
 1. Keep one append-only ledger and one audit output per tranche.

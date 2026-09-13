@@ -28,6 +28,14 @@ const conditionFamily = (condition) => {
   return String(condition);
 };
 const legacyModels = new Set(['qwen3-vl-flash']);
+const executionVariant = (record) => {
+  const runner = String(record.provenance?.runner_version ?? 'unknown');
+  if (record.arm === 'playwright') return record.provenance?.framework_id ?? 'playwright';
+  const framework = record.provenance?.framework_id
+    ?? (runner.includes('stagehand') ? 'stagehand' : runner.includes('browser-use') ? 'browser-use' : 'pss-native');
+  const protocolVariant = runner.includes('bounded-json-repair') ? 'bounded-json-repair' : 'strict-provider-format';
+  return `${framework}:${protocolVariant}`;
+};
 const roots = [path.join(repoRoot, 'artifacts/phase2'), path.join(codeRoot, 'artifacts/phase2')];
 const ledgerInput = readDeduplicatedJsonl(roots, { repoRoot });
 const files = ledgerInput.files;
@@ -51,6 +59,7 @@ for (const entry of ledgerInput.entries) {
         provider_id: record.provenance?.provider_id ?? null,
         model_id: record.provenance?.model_id ?? null,
         framework_id: record.provenance?.framework_id ?? record.provenance?.framework ?? null,
+        execution_variant: executionVariant(record),
         run_id: record.run_id,
         strict_pass: record.status === 'completed' && record.checkpoint_reached === true && record.emitted_verdict === record.ground_truth_verdict,
         reset_verified: typeof record.reset_digest === 'string' && record.reset_digest.length > 0,
@@ -62,11 +71,11 @@ for (const entry of ledgerInput.entries) {
     }
 }
 
-const cellKey = (row) => [row.application_id, row.task_id, row.condition_family, row.arm, row.provider_id ?? 'scripted', row.model_id ?? 'scripted'].join('|');
+const cellKey = (row) => [row.application_id, row.task_id, row.condition_family, row.arm, row.provider_id ?? 'scripted', row.model_id ?? 'scripted', row.execution_variant].join('|');
 const cellMap = new Map();
 for (const row of records) {
   const key = cellKey(row);
-  const cell = cellMap.get(key) ?? { key, application_id: row.application_id, task_id: row.task_id, condition_family: row.condition_family, observed_conditions: new Set(), arm: row.arm, provider_id: row.provider_id, model_id: row.model_id, framework_ids: new Set(), records: [], failure_categories: {} };
+  const cell = cellMap.get(key) ?? { key, application_id: row.application_id, task_id: row.task_id, condition_family: row.condition_family, observed_conditions: new Set(), arm: row.arm, provider_id: row.provider_id, model_id: row.model_id, execution_variant: row.execution_variant, framework_ids: new Set(), records: [], failure_categories: {} };
   cell.observed_conditions.add(row.condition);
   if (row.framework_id) cell.framework_ids.add(row.framework_id);
   cell.records.push(row);
@@ -87,6 +96,7 @@ const cells = [...cellMap.values()].map((cell) => {
     arm: cell.arm,
     provider_id: cell.provider_id,
     model_id: cell.model_id,
+    execution_variant: cell.execution_variant,
     framework_ids: [...cell.framework_ids].sort(),
     legacy_quarantined: legacyQuarantined,
     n,
@@ -106,23 +116,24 @@ const eligibleCells = cells.filter((cell) => cell.repetition_eligible);
 // arms is required before the block can enter power planning.
 const liveModels = [...new Set(cells
   .filter((cell) => ['visual', 'hybrid'].includes(cell.arm) && cell.provider_id && cell.model_id && !cell.legacy_quarantined)
-  .map((cell) => `${cell.provider_id}|${cell.model_id}`))].sort();
+  .map((cell) => `${cell.provider_id}|${cell.model_id}|${cell.execution_variant}`))].sort();
 const matchedBlocks = [];
 for (const modelKey of liveModels) {
-  const [provider_id, model_id] = modelKey.split('|');
+  const [provider_id, model_id, ...variantParts] = modelKey.split('|');
+  const execution_variant = variantParts.join('|');
   const anchors = [...new Set(cells
-    .filter((cell) => cell.provider_id === provider_id && cell.model_id === model_id && ['visual', 'hybrid'].includes(cell.arm))
+    .filter((cell) => cell.provider_id === provider_id && cell.model_id === model_id && cell.execution_variant === execution_variant && ['visual', 'hybrid'].includes(cell.arm))
     .map((cell) => `${cell.application_id}|${cell.task_id}|${cell.condition_family}`))].sort();
   for (const anchor of anchors) {
     const [application_id, task_id, condition_family] = anchor.split('|');
-    const visual = cells.find((cell) => cell.application_id === application_id && cell.task_id === task_id && cell.condition_family === condition_family && cell.arm === 'visual' && cell.provider_id === provider_id && cell.model_id === model_id);
-    const hybrid = cells.find((cell) => cell.application_id === application_id && cell.task_id === task_id && cell.condition_family === condition_family && cell.arm === 'hybrid' && cell.provider_id === provider_id && cell.model_id === model_id);
+    const visual = cells.find((cell) => cell.application_id === application_id && cell.task_id === task_id && cell.condition_family === condition_family && cell.arm === 'visual' && cell.provider_id === provider_id && cell.model_id === model_id && cell.execution_variant === execution_variant);
+    const hybrid = cells.find((cell) => cell.application_id === application_id && cell.task_id === task_id && cell.condition_family === condition_family && cell.arm === 'hybrid' && cell.provider_id === provider_id && cell.model_id === model_id && cell.execution_variant === execution_variant);
     const playwright = cells.find((cell) => cell.application_id === application_id && cell.task_id === task_id && cell.condition_family === condition_family && cell.arm === 'playwright' && cell.provider_id === null && cell.model_id === null);
     const arms = { playwright: playwright ?? null, visual: visual ?? null, hybrid: hybrid ?? null };
     const missingArms = Object.entries(arms).filter(([, cell]) => !cell || !cell.repetition_eligible).map(([arm]) => arm);
     matchedBlocks.push({
       key: `${anchor}|${modelKey}`,
-      application_id, task_id, condition_family, provider_id, model_id,
+      application_id, task_id, condition_family, provider_id, model_id, execution_variant,
       eligible: missingArms.length === 0,
       missing_arms: missingArms,
       arms: Object.fromEntries(Object.entries(arms).map(([arm, cell]) => [arm, cell ? { n: cell.n, strict_passes: cell.strict_passes, reset_complete: cell.reset_complete, repetition_eligible: cell.repetition_eligible } : null]))
@@ -165,6 +176,7 @@ const summary = {
     'A cell is eligible only when it has the minimum repetitions, complete reset evidence, and no quarantined legacy model.',
     resetCompleteOnly ? 'This input was explicitly filtered to records carrying reset_digest; historical records without reset evidence were excluded rather than backfilled.' : 'Historical records without reset evidence remain visible and keep mixed cells ineligible.',
     'The input preserves provider/model/framework strata and does not pool them into a universal arm effect.',
+    'Execution variants separate framework and provider-protocol repairs (for example bounded-json-repair) from strict provider-format runs; Playwright remains the scripted anchor for each variant.',
     'Power candidates are matched blocks with one eligible Playwright, visual, and hybrid cell for the same application, workflow, condition-family, and live model.',
     'This artifact is a planning input. It does not freeze repetition counts or authorize confirmatory collection.'
   ]

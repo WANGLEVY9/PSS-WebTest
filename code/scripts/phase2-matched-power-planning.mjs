@@ -50,8 +50,8 @@ if (input.status !== 'pilot-input-planning-only' || input.confirmatory_authorize
 const eligible = (input.matched_blocks ?? []).filter((block) => block.eligible && (!applicationFilter || block.application_id === applicationFilter));
 const modelGroups = new Map();
 for (const block of eligible) {
-  const key = `${block.provider_id}|${block.model_id}`;
-  const group = modelGroups.get(key) ?? { provider_id: block.provider_id, model_id: block.model_id, blocks: [] };
+  const key = `${block.provider_id}|${block.model_id}|${block.execution_variant ?? 'unknown'}`;
+  const group = modelGroups.get(key) ?? { provider_id: block.provider_id, model_id: block.model_id, execution_variant: block.execution_variant ?? 'unknown', blocks: [] };
   group.blocks.push(block);
   modelGroups.set(key, group);
 }
@@ -91,10 +91,11 @@ function simulateContrast(blocks, reference, comparator, repetitions) {
   return rejects / draws;
 }
 
-const groups = [...modelGroups.values()].sort((left, right) => `${left.provider_id}|${left.model_id}`.localeCompare(`${right.provider_id}|${right.model_id}`));
+const groups = [...modelGroups.values()].sort((left, right) => `${left.provider_id}|${left.model_id}|${left.execution_variant}`.localeCompare(`${right.provider_id}|${right.model_id}|${right.execution_variant}`));
 const modelResults = groups.map((group) => ({
   provider_id: group.provider_id,
   model_id: group.model_id,
+  execution_variant: group.execution_variant,
   application_filter: applicationFilter,
   eligible_blocks: group.blocks.length,
   applications: [...new Set(group.blocks.map((block) => block.application_id))].sort(),

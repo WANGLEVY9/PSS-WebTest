@@ -1,0 +1,174 @@
+{
+  "schema_version": "phase2-matched-power-planning-v0.1",
+  "generated_at": "2026-09-13T15:58:20.383Z",
+  "status": "planning-only-not-frozen",
+  "confirmatory_authorized": false,
+  "input_path": "/Users/laurantwang/PSS-WebTest/results/phase2/2026-09-13-phase2-pilot-input.json",
+  "application_filter": null,
+  "draws": 1000,
+  "seed": 20260913,
+  "eligible_blocks": 51,
+  "model_strata": [
+    {
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "application_filter": null,
+      "eligible_blocks": 26,
+      "applications": [
+        "bookstack",
+        "indico",
+        "juice-shop"
+      ],
+      "pilot_rates_by_arm": {
+        "playwright": {
+          "n": 166,
+          "successes": 164,
+          "rate": 0.9879518072289156
+        },
+        "visual": {
+          "n": 90,
+          "successes": 12,
+          "rate": 0.13333333333333333
+        },
+        "hybrid": {
+          "n": 88,
+          "successes": 31,
+          "rate": 0.3522727272727273
+        }
+      },
+      "power": [
+        {
+          "per_cell_repetitions": 4,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.381
+          }
+        },
+        {
+          "per_cell_repetitions": 6,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.549
+          }
+        },
+        {
+          "per_cell_repetitions": 8,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.663
+          }
+        },
+        {
+          "per_cell_repetitions": 10,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.729
+          }
+        },
+        {
+          "per_cell_repetitions": 14,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.82
+          }
+        },
+        {
+          "per_cell_repetitions": 20,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.915
+          }
+        }
+      ]
+    },
+    {
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "application_filter": null,
+      "eligible_blocks": 25,
+      "applications": [
+        "indico",
+        "juice-shop"
+      ],
+      "pilot_rates_by_arm": {
+        "playwright": {
+          "n": 162,
+          "successes": 160,
+          "rate": 0.9876543209876543
+        },
+        "visual": {
+          "n": 77,
+          "successes": 25,
+          "rate": 0.3246753246753247
+        },
+        "hybrid": {
+          "n": 76,
+          "successes": 45,
+          "rate": 0.5921052631578947
+        }
+      },
+      "power": [
+        {
+          "per_cell_repetitions": 4,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 0.991,
+            "hybrid-visual": 0.377
+          }
+        },
+        {
+          "per_cell_repetitions": 6,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.552
+          }
+        },
+        {
+          "per_cell_repetitions": 8,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.662
+          }
+        },
+        {
+          "per_cell_repetitions": 10,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.762
+          }
+        },
+        {
+          "per_cell_repetitions": 14,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.848
+          }
+        },
+        {
+          "per_cell_repetitions": 20,
+          "contrasts": {
+            "playwright-visual": 1,
+            "playwright-hybrid": 1,
+            "hybrid-visual": 0.927
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Each model is simulated separately; provider/model/framework strata are not silently pooled.",
+    "Each matched block samples independent beta posteriors from its pilot counts, then generates equal repetitions for all three arms.",
+    "The grid is a sensitivity analysis. It does not select or freeze the final repetition count.",
+    "A final power freeze requires preregistration, complete application gates, and a reviewed analysis script hash."
+  ]
+}

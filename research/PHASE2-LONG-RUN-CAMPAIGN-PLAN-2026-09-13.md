@@ -62,6 +62,12 @@ pilot threshold. BookStack (3/8), Indico (2/8), Invoice Ninja (2/8), and
 PrestaShop (3/8) remain breadth-blocked; their gate failures are recorded
 separately. This snapshot is not a confirmatory authorization.
 
+The normalized pilot input now yields 89 three-arm matched blocks, of which 51
+are eligible for planning: BookStack 1, Indico 4, and Juice Shop 46. Invoice
+Ninja and PrestaShop currently contribute no eligible blocks because their
+legacy v0.1 ledgers do not carry the reset-digest-bearing record contract. That
+is a ledger/admission deficiency to repair, not a capability failure.
+
 The durable batch strategy is therefore:
 
 1. Keep one append-only ledger and one audit output per tranche.

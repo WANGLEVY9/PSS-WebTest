@@ -132,8 +132,9 @@
           "fault_slots": ["search-result-mismatch", "query-routing-mismatch"],
           "evolution_slots": ["search-layout", "access-name-preserving-layout-change"],
           "phase2_evidence": {
-            "status": "workflow-pilot-only; functional-fault and ui-evolution lanes are not yet defined",
+            "status": "workflow-pilot-only; application admission remains blocked",
             "post_fix_clean_pilot": "Qwen 1 repetition: Playwright 1/1, Hybrid 1/1, Pure visual 0/1 step-budget; DeepSeek 1 repetition: Playwright 1/1, Hybrid 1/1, Pure visual 0/1 grounding-loop",
+            "condition_pilot": "Qwen clean/fault/evolution: Playwright 3/3, Hybrid 3/3, visual 0/3; DeepSeek clean/fault/evolution: Playwright 3/3, Hybrid 2/3 with one oracle-only timeout, visual 0/3",
             "runner_repair": "mapped provider keypress return to Playwright Enter before the post-fix pilot",
             "artifact": "results/phase2/2026-09-13-indico-search-pilot.md"
           },

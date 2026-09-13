@@ -119,6 +119,7 @@
     "isolated_version_pinned_sut_max_parallel_instances": 3,
     "matched_cell_arm_order": "randomized-within-cell-but-serialized-on-a-shared-instance",
     "provider_request_policy": "per-profile bounded concurrency with exponential backoff; no retry after terminal schema or auth failure",
+    "pilot_agent_wall_timeout_ms": 120000,
     "reset_boundary": "every repetition starts from a fresh deterministic reset digest",
     "cross_app_policy": "no cross-app execution until both endpoint applications are admitted",
     "confirmatory_policy": "concurrency is frozen only after pilot variance and power simulation"

@@ -23,3 +23,21 @@ export async function evaluateIndicoSearch(page, query = 'test') {
     evaluated_at: new Date().toISOString()
   };
 }
+
+const FAULT_SENTINEL = 'Test Infrastructure Cost Optimization Meeting';
+
+/** Condition-aware oracle for the search workflow. */
+export async function evaluateIndicoSearchCondition(page, query = 'test', condition = 'clean-stable') {
+  const clean = await evaluateIndicoSearch(page, query);
+  const sentinelVisible = clean.result_titles.includes(FAULT_SENTINEL);
+  if (condition !== 'functional-fault') return { ...clean, expected_verdict: 'clean', sentinel_visible: sentinelVisible };
+  const faultDetected = clean.query_matches && clean.heading_count > 0 && clean.result_count > 0 && !sentinelVisible;
+  return {
+    ...clean,
+    oracle: 'visible-ui-indico-search-fault-v1',
+    expected_verdict: 'fault',
+    sentinel_visible: sentinelVisible,
+    fault_detected: faultDetected,
+    passed: faultDetected
+  };
+}

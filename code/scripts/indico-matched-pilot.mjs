@@ -17,7 +17,6 @@ const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 
 const taskId = process.env.PSS_INDICO_TASK_ID ?? 'indico-create-event';
 if (!['indico-create-event', 'indico-search-events'].includes(taskId)) throw new Error('PSS_INDICO_TASK_ID must be indico-create-event or indico-search-events');
 const experimentCondition = resolveExperimentCondition();
-if (taskId === 'indico-search-events' && experimentCondition.condition !== 'clean-stable') throw new Error('Indico search condition pilot currently supports clean-stable only');
 const expectedVerdict = experimentCondition.expectedVerdict;
 const taskFamily = taskId === 'indico-search-events' ? 'search-navigation' : 'multi-step';
 const providerOptimizationProfile = process.env.PSS_AGENT_PROFILE?.trim()
@@ -26,7 +25,7 @@ const providerOptimizationProfile = process.env.PSS_AGENT_PROFILE?.trim()
 const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerOptimizationProfile }, arm, taskFamily })]));
 const maxSteps = process.env.CUA_MAX_STEPS ?? String(Math.max(optimizationByArm.visual.max_steps, optimizationByArm.hybrid.max_steps));
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? String(Math.max(optimizationByArm.visual.timeout_ms, optimizationByArm.hybrid.timeout_ms));
-const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
+const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '120000';
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
@@ -53,6 +52,7 @@ const providerEnv = (() => {
   // propagation it silently falls back to baseline-v0 (coordinate hybrid),
   // making a protocol mismatch look like a model failure.
   base.PSS_AGENT_PROFILE = explicitEnv.PSS_AGENT_PROFILE ?? providerOptimizationProfile;
+  base.CUA_AGENT_WALL_TIMEOUT_MS = explicitEnv.CUA_AGENT_WALL_TIMEOUT_MS ?? '120000';
   base.PSS_REQUIRE_FROZEN_PROFILE = '1';
   return base;
 })();
@@ -120,7 +120,8 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       records.push({ repetition, arm, reset_ok: reset.code === 0, clean_state_verified: false, execution_exit_code: null, oracle_passed: false, oracle_matches: preOracle?.matches ?? null });
       writeSummary(); console.log(JSON.stringify(records.at(-1))); continue;
     }
-    const faultApply = experimentCondition.isFault ? await run('node', ['scripts/indico-fault.mjs', 'apply']) : { code: 0 };
+    const databaseFault = experimentCondition.isFault && taskId === 'indico-create-event';
+    const faultApply = databaseFault ? await run('node', ['scripts/indico-fault.mjs', 'apply']) : { code: 0 };
     if (faultApply.code !== 0) {
       records.push({ repetition, arm, condition: experimentCondition.condition, reset_digest: resetDigest, reset_ok: true, clean_state_verified: true, execution_exit_code: faultApply.code, oracle_passed: false, cell_passed: false, failure_category: 'execution' });
       writeSummary(); console.log(JSON.stringify(records.at(-1))); continue;
@@ -131,6 +132,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       execution = taskId === 'indico-search-events'
         ? await run('node', ['scripts/run-indico-search-playwright.mjs'], {
           PSS_INDICO_SEARCH_QUERY: process.env.PSS_INDICO_SEARCH_QUERY ?? 'test', INDICO_BASE_URL: 'http://localhost:8080',
+          PSS_PILOT_CONDITION: experimentCondition.condition,
           PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations.playwright, PSS_RESET_DIGEST: resetDigest ?? '', PSS_RANDOMIZATION_BLOCK: block,
           PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath, PSS_RUN_RECORD_OUT: recordsPath,
           PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD
@@ -177,7 +179,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         appendRunRecord(cellRunRecord, recordsPath);
       }
     }
-    const faultRemove = experimentCondition.isFault ? await run('node', ['scripts/indico-fault.mjs', 'remove']) : { code: 0 };
+    const faultRemove = databaseFault ? await run('node', ['scripts/indico-fault.mjs', 'remove']) : { code: 0 };
     const agentCompleted = arm === 'playwright' ? execution.code === 0 : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;
     records.push({ repetition, arm, task_id: taskId, condition: experimentCondition.condition, expected_verdict: expectedVerdict, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, mutation_removed: faultRemove.code === 0, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? expectedVerdict : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed && faultRemove.code === 0, oracle_matches: oracle?.matches ?? null, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });

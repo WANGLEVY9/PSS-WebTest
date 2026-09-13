@@ -10,11 +10,11 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
-import { evaluateIndicoSearch } from '../src/oracles/indico-visible-search.mjs';
+import { evaluateIndicoSearchCondition } from '../src/oracles/indico-visible-search.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
-import { installIndicoLayoutEvolution } from '../src/mutations/indico.mjs';
+import { installIndicoLayoutEvolution, installIndicoSearchOmission } from '../src/mutations/indico.mjs';
 
 dotenv.config();
 const arm = process.env.INDICO_ARM;
@@ -126,7 +126,7 @@ const evaluateCreateEventOracle = () => new Promise((resolve, reject) => {
 });
 
 const evaluateOracle = async () => taskId === 'indico-search-events'
-  ? { code: 0, value: await evaluateIndicoSearch(page, query) }
+  ? { code: 0, value: await evaluateIndicoSearchCondition(page, query, experimentCondition.condition) }
   : evaluateCreateEventOracle();
 
 let result;
@@ -135,6 +135,7 @@ let replayEligible = false;
 const agentStartedAt = Date.now();
 try {
   if (experimentCondition.isEvolution) await installIndicoLayoutEvolution(page);
+  if (experimentCondition.isFault && taskId === 'indico-search-events') await installIndicoSearchOmission(page);
   await page.goto(`${baseURL}/login/`);
   await page.getByRole('textbox', { name: 'Username or email' }).fill(username);
   await page.getByRole('textbox', { name: 'Password' }).fill(password);
@@ -150,7 +151,7 @@ try {
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   const intent = taskId === 'indico-search-events'
-    ? `Starting from the authenticated Indico home page, use only visible browser controls to search for the exact query "${query}". Click the visible global search textbox, type exactly "${query}", press Enter, and wait for the Search heading and results to render. Finish with done verdict pass only when the visible Search page shows one or more event-result titles and every visible event-result title contains the query "${query}" case-insensitively. Do not use DOM selectors, hidden state, or any oracle signal.`
+    ? `Starting from the authenticated Indico home page, use only visible browser controls to search for the exact query "${query}". Click the visible global search textbox, type exactly "${query}", press Enter or Return, and wait for the Search heading and results to render. ${experimentCondition.isFault ? `The declared functional-fault condition omits one known result; finish with done verdict fault only when the Search page remains valid but the expected "Test Infrastructure Cost Optimization Meeting" result is absent.` : 'Finish with done verdict clean only when the visible Search page shows one or more event-result titles and every visible event-result title contains the query "test" case-insensitively.'} Do not use DOM selectors, hidden state, or any oracle signal.`
     : `Starting from the authenticated Indico home page, create one public Lecture event. Follow this visible sequence exactly: (1) click the Create event link on the home page, (2) in the event-type chooser click the link named exactly Lecture, (3) wait for the page heading Create new lecture, (4) click the Title textbox, then the very next action MUST be a type action containing exactly "${title}", (5) click the date textbox with placeholder DD/MM/YYYY, then the very next action MUST be a type action containing exactly "${date}", (6) click the Create event button on the form. In the declared controls, textboxes use interaction=type and links/buttons use interaction=click. Keep title and date in separate fields; never type twice into the same field. Finish only after the resulting event page visibly shows the expected title ${experimentCondition.isFault ? `${title} [FAULT]` : title} and formatted date 15 January 2030. Return done with verdict ${expectedVerdict} only then.`;
   result = await adapter.run({
     intent,

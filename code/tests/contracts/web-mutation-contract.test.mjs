@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { installJuiceShopSearchOmission, installJuiceShopLayoutEvolution } from '../../src/mutations/juice-shop.mjs';
-import { installIndicoLayoutEvolution } from '../../src/mutations/indico.mjs';
+import { installIndicoLayoutEvolution, installIndicoSearchOmission } from '../../src/mutations/indico.mjs';
 
 test('Juice Shop omission mutation preserves response schema and removes exactly one product', async () => {
   let handler;
@@ -33,3 +33,12 @@ for (const [name, installer, marker] of [
   });
 }
 
+test('Indico search omission mutation is browser-scoped and targets the declared sentinel', async () => {
+  let script;
+  const page = { addInitScript: async (fn) => { script = fn.toString(); } };
+  const result = await installIndicoSearchOmission(page);
+  assert.equal(result.mutation, 'indico-search-omission-v1');
+  assert.equal(result.semantics_preserved, false);
+  assert.match(script, /Test Infrastructure Cost Optimization Meeting/);
+  assert.match(script, /MutationObserver/);
+});

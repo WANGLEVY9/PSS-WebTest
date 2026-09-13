@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateIndicoSearch } from '../../src/oracles/indico-visible-search.mjs';
+import { evaluateIndicoSearch, evaluateIndicoSearchCondition } from '../../src/oracles/indico-visible-search.mjs';
 
 function fakePage({
   url = 'http://localhost:8080/search/?q=test',
@@ -34,4 +34,18 @@ test('Indico visible-search oracle rejects nonmatching or empty visible results'
   const empty = await evaluateIndicoSearch(fakePage({ titles: [] }), 'test');
   assert.equal(mismatch.passed, false);
   assert.equal(empty.passed, false);
+});
+
+test('Indico condition oracle detects omission of the known search sentinel', async () => {
+  const result = await evaluateIndicoSearchCondition(fakePage({ titles: ['Web Automation & E2E Testing Summit'] }), 'test', 'functional-fault');
+  assert.equal(result.expected_verdict, 'fault');
+  assert.equal(result.fault_detected, true);
+  assert.equal(result.passed, true);
+});
+
+test('Indico condition oracle does not label a clean sentinel as a fault', async () => {
+  const result = await evaluateIndicoSearchCondition(fakePage(), 'test', 'functional-fault');
+  assert.equal(result.sentinel_visible, true);
+  assert.equal(result.fault_detected, false);
+  assert.equal(result.passed, false);
 });

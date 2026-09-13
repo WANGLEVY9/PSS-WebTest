@@ -33,8 +33,8 @@ cells, checks reset evidence, and checks live provider/model strata. Legacy
 
 | Application | Implemented workflows | Valid records | Strict passes | Status | Blocking reason |
 |---|---:|---:|---:|---|---|
-| BookStack | 3/8 | 429 | 255 | blocked-workflow-breadth | five workflow slots missing; independent oracle and fault/evolution gates remain open |
-| Indico | 2/8 | 139 | 40 | blocked-workflow-breadth | six workflow slots missing; independent oracle gate remains open |
+| BookStack | 3/8 | 429 | 281 | blocked-workflow-breadth | five workflow slots missing; 9 condition-family cells are absent and independent oracle/fault gates remain open |
+| Indico | 2/8 | 139 | 40 | blocked-workflow-breadth | six workflow slots missing; six cells remain below the 3-run pilot threshold and the independent oracle gate remains open |
 | Juice Shop | 8/8 | 541 | 280 | pilot-admission-candidate | all 72 pooled cells and live provider strata meet the 3-record pilot threshold; still requires variance/power freeze |
 | Invoice Ninja | 2/8 | 300 | 216 | blocked-workflow-breadth | six workflow slots missing; image/license provenance gate is unresolved |
 | PrestaShop | 3/8 | 22 | 3 | blocked-workflow-breadth | five workflow slots missing; image/license provenance gate is unresolved |
@@ -45,6 +45,12 @@ ledger filename and therefore reported 530 parseable records; this is a
 ledger-view difference, not a new experimental success. The unified audit is
 the authoritative cross-application view, while the Juice-specific report is
 retained for historical provenance.
+
+The audit normalizes condition-family labels such as
+`functional-fault:persistence-mismatch` and `ui-evolution:bookstack-layout-v1`
+to the declared `functional-fault` and `ui-evolution` strata while retaining
+the concrete mutation in `observed_conditions`. This prevents a naming
+convention from being mistaken for missing evidence.
 
 ## Interpretation boundary
 

@@ -10,4 +10,7 @@ test('cross-application admission audit remains fail-closed and preserves the fi
   assert.match(source, /confirmatory_authorized: false/);
   assert.match(source, /blocked-workflow-breadth/);
   assert.match(source, /live_provider_strata_below_min/);
+  assert.match(source, /conditionFamily/);
+  assert.match(source, /functional-fault/);
+  assert.match(source, /observed_conditions/);
 });

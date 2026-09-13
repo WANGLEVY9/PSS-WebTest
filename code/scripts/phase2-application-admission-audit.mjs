@@ -34,15 +34,22 @@ for (const file of files) {
   }
 }
 const strict = (record) => record.status === 'completed' && record.checkpoint_reached === true && record.emitted_verdict === record.ground_truth_verdict;
+const conditionFamily = (condition) => {
+  if (condition === 'clean-stable') return 'clean-stable';
+  if (String(condition).startsWith('functional-fault')) return 'functional-fault';
+  if (String(condition).startsWith('ui-evolution')) return 'ui-evolution';
+  return String(condition);
+};
+const conditionMatches = (recordCondition, expectedCondition) => conditionFamily(recordCondition) === expectedCondition;
 const cellKey = (task, condition, arm) => `${task}|${condition}|${arm}`;
 const result = [];
 for (const app of manifest.applications) {
   const appRecords = records.filter(({ record }) => record.application_id === app.id).map(({ record }) => record);
   const expectedCells = app.implemented_tasks.flatMap((task) => conditions.flatMap((condition) => arms.map((arm) => ({ task, condition, arm }))));
   const cells = expectedCells.map(({ task, condition, arm }) => {
-    const rows = appRecords.filter((record) => record.task_id === task && record.condition === condition && record.arm === arm);
+    const rows = appRecords.filter((record) => record.task_id === task && conditionMatches(record.condition, condition) && record.arm === arm);
     return {
-      task_id: task, condition, arm, n: rows.length,
+      task_id: task, condition, arm, observed_conditions: [...new Set(rows.map((record) => record.condition))].sort(), n: rows.length,
       reset_verified: rows.filter((record) => typeof record.reset_digest === 'string' && record.reset_digest.length > 0).length,
       strict_passes: rows.filter(strict).length,
       failure_categories: Object.fromEntries([...new Set(rows.map((record) => record.failure_category).filter(Boolean))].map((category) => [category, rows.filter((record) => record.failure_category === category).length]))
@@ -52,12 +59,15 @@ for (const app of manifest.applications) {
   for (const record of appRecords) {
     const provider = record.provenance?.provider_id ?? 'scripted';
     const model = record.provenance?.model_id ?? 'scripted';
-    const key = `${record.task_id}|${record.condition}|${record.arm}|${provider}|${model}`;
-    const row = providerStrata.get(key) ?? { task_id: record.task_id, condition: record.condition, arm: record.arm, provider_id: record.provenance?.provider_id ?? null, model_id: record.provenance?.model_id ?? null, n: 0, strict_passes: 0 };
+    const family = conditionFamily(record.condition);
+    const key = `${record.task_id}|${family}|${record.arm}|${provider}|${model}`;
+    const row = providerStrata.get(key) ?? { task_id: record.task_id, condition: family, observed_conditions: new Set(), arm: record.arm, provider_id: record.provenance?.provider_id ?? null, model_id: record.provenance?.model_id ?? null, n: 0, strict_passes: 0 };
+    row.observed_conditions.add(record.condition);
     row.n += 1;
     if (strict(record)) row.strict_passes += 1;
     providerStrata.set(key, row);
   }
+  for (const row of providerStrata.values()) row.observed_conditions = [...row.observed_conditions].sort();
   const liveProviderStrataBelowMin = [...providerStrata.values()].filter((row) => row.provider_id !== null && !legacyModels.has(row.model_id) && row.n < minProviderRepetitions);
   const missingCells = cells.filter((cell) => cell.n === 0);
   const belowCells = cells.filter((cell) => cell.n < minRepetitions);

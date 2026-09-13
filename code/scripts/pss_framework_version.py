@@ -30,6 +30,36 @@ from pathlib import Path
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 
 
+def _load_local_env() -> None:
+    """Load ignored project credentials for standalone Python adapters.
+
+    Node runners call dotenv.config() explicitly.  The Python framework
+    adapters are also invoked directly by the campaign, so they need the same
+    local-only configuration boundary.  Values already exported by the caller
+    always win; parsed values are never returned in a run record or printed.
+    """
+    env_file = REPOSITORY_ROOT / "code" / ".env"
+    if not env_file.exists():
+        return
+    try:
+        for raw_line in env_file.read_text(encoding="utf-8").splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            if key and value and key not in os.environ:
+                os.environ[key] = value
+    except OSError:
+        # A standalone smoke should report the missing variable clearly; a
+        # filesystem read problem must not cause credentials to leak.
+        return
+
+
+_load_local_env()
+
+
 def installed_version(distribution: str) -> str | None:
     """Return the installed version of a distribution, or None if absent."""
     try:

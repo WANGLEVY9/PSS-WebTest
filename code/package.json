@@ -105,6 +105,7 @@
     "pilot:invoiceninja:payments:matched": "node scripts/invoiceninja-payments-matched-pilot.mjs",
     "pilot:invoiceninja:matched": "node scripts/invoiceninja-matched-pilot.mjs",
     "validate:phase2-campaign": "node scripts/validate-phase2-campaign-tranches.mjs",
+    "validate:long-run-manifest": "node scripts/validate-long-run-execution-manifest.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",
     "gate:invoiceninja:payments:fault-evolution": "node scripts/invoiceninja-payments-fault-evolution-gate.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",

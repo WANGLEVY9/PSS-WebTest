@@ -3,6 +3,13 @@
 Date: 2026-09-13
 Status: execution plan; **not** authorization for confirmatory collection.
 
+The machine-readable execution contract for the long run is
+[`code/config/phase2-long-run-execution-manifest.v0.1.json`](../code/config/phase2-long-run-execution-manifest.v0.1.json).
+It fixes the lane order, branch actions, shared-SUT concurrency, storage
+fields, and fail-closed conditions used by the campaign controller. The
+manifest is intentionally still `planning-not-authorized` while application
+admission and pilot variance are incomplete.
+
 ## 1. Objective and evidence boundary
 
 The long-run objective is to build a conditional benchmark of Web UI testing
@@ -44,6 +51,13 @@ with version, license, reset, and oracle evidence. Names in a blueprint are not
 applications in the experimental denominator.
 
 ## 3. Campaign tranches
+
+The operational order is deliberately a long-lived queue rather than a single
+large burst: L0 readiness/ledger, L1 local-SUT admission, L2 breadth waves, L3
+model/framework replication, L4 cross-application workflows, and finally L5
+power/confirmatory freeze. The queue may run independent provider lanes in
+parallel, but a shared SUT instance is serialized at one active repetition at
+a time. This prevents reset races from being mistaken for arm failures.
 
 ### Tranche T0 — protocol and provider stability
 

@@ -40,6 +40,18 @@ test('Juice Shop delayed basket feedback lane maps mutation, oracle, and task mo
   assert.match(matchedRunner, /evaluate-juice-shop-basket-feedback\.mjs/);
 });
 
+test('Juice Shop anonymous authorization lane maps guard task and independent oracle', () => {
+  assert.match(visualRunner, /juice-shop-authorization-guard/);
+  assert.match(hybridRunner, /juice-shop-authorization-guard/);
+  assert.match(matchedRunner, /juice-shop-authorization-run-manifest\.v0\.1\.json/);
+  assert.match(matchedRunner, /RUN_JUICE_SHOP_AUTHORIZATION/);
+  assert.match(matchedRunner, /evaluate-juice-shop-authorization\.mjs/);
+  assert.match(visualRunner, /isAuthorizationTask \? `\$\{baseURL\}\/\#\/administration`/);
+  assert.match(hybridRunner, /isAuthorizationTask \? `\$\{baseURL\}\/\#\/administration`/);
+  assert.match(visualRunner, /if \(isAuthorizationTask\) await page\.locator\('body'\)\.waitFor\(\{ state: 'attached'/);
+  assert.match(hybridRunner, /if \(isAuthorizationTask\) await page\.locator\('body'\)\.waitFor\(\{ state: 'attached'/);
+});
+
 test('Juice Shop pagination hybrid runner exposes a page-progress token and rejects disabled targets early', () => {
   assert.match(hybridRunner, /progressToken: `\$\{page\.url\(\)\}::\$\{paginator\}`/);
   assert.match(hybridRunner, /target\.isEnabled\(\)\.catch\(\(\) => false\)/);

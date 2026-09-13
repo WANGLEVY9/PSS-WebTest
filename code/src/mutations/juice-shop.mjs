@@ -85,3 +85,20 @@ export async function installJuiceShopFeedbackDelay(page, { delayMs = 1200 } = {
   }, { delay: delayMs });
   return { mutation: 'juice-basket-feedback-delay', delay_ms: delayMs, semantics_preserved: true };
 }
+
+/** Remove the anonymous-access denial card from the administration route.
+ * This browser-scoped mutation models a client-side authorization regression;
+ * it never changes the server permission or persisted data. */
+export async function installJuiceShopAuthorizationFault(page) {
+  await page.addInitScript(() => {
+    const removeDenial = () => {
+      for (const card of document.querySelectorAll('mat-card')) {
+        if ((card.textContent || '').includes('You are not allowed to access this page!')) card.remove();
+      }
+    };
+    if (document.documentElement) new MutationObserver(removeDenial).observe(document.documentElement, { childList: true, subtree: true });
+    removeDenial();
+    window.setInterval(removeDenial, 50);
+  });
+  return { mutation: 'juice-authorization-denial-omission', semantics_preserved: false };
+}

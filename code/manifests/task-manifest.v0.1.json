@@ -231,6 +231,23 @@
           "arms": ["visual", "hybrid", "playwright"]
         },
         {
+          "id": "juice-shop-authorization-guard",
+          "intent": "Starting from the already-open anonymous administration route, finish only when the visible 403 denial says You are not allowed to access this page!.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks the administration route and exact anonymous-access denial. Under the functional-fault condition it requires the denial semantics to be absent. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["authorization-denial-omission", "route-guard-regression"],
+          "evolution_slots": ["denial-card-layout-change", "navigation-layout-change"],
+          "phase2_evidence": {
+            "status": "new diagnostic workflow; pilot-only",
+            "runner": "shared matched runner with browser-scoped authorization fault, replay, and independent visible-state oracle",
+            "credentials": "not required; anonymous access guard"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
           "id": "juice-shop-pagination",
           "intent": "Navigate from the initial catalog to the second page and finish only when the paginator shows the second page and Lemon Juice (500ml) is visibly present.",
           "oracle": {

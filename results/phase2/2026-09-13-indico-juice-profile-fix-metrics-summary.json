@@ -1,0 +1,202 @@
+{
+  "schema_version": "0.1",
+  "metric_dictionary": "metric-dictionary.v0.1",
+  "evidence_boundary": "t1-profile-propagation-diagnostic-clean-only",
+  "confirmatory_authorized": false,
+  "admission_authorized": false,
+  "note": "Four reset-isolated clean matched blocks after provider-specific optimization-profile propagation; SUT fault/evolution gates are reported separately.",
+  "input_files": [
+    "../artifacts/phase2/indico-three-arm-aliyun-qwen3.7-flash-phase2-profile-fix-indico-qwen-20260913-records.jsonl",
+    "../artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-phase2-profile-fix-juice-qwen-20260913-records.jsonl",
+    "../artifacts/phase2/indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-profile-fix-indico-deepseek-20260913-records.jsonl",
+    "../artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-profile-fix-juice-deepseek-20260913-records.jsonl"
+  ],
+  "records": 12,
+  "groups": [
+    {
+      "cell": "indico/indico-create-event/clean-stable/hybrid/aliyun-compatible/qwen3.7-flash",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 18469,
+      "median_wall_time_ms": 18469,
+      "mean_action_count": 9,
+      "mean_retry_count": 1,
+      "failure_categories": {
+        "oracle": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "indico/indico-create-event/clean-stable/playwright/scripted/scripted",
+      "provider_id": null,
+      "model_id": null,
+      "n": 2,
+      "valid_completion_rate": 1,
+      "joint_end_to_end_correctness_rate": 1,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 3589,
+      "median_wall_time_ms": 3589,
+      "mean_action_count": 10,
+      "mean_retry_count": 0,
+      "failure_categories": {},
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "indico/indico-create-event/clean-stable/visual/aliyun-compatible/qwen3.7-flash",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": null,
+      "mean_wall_time_ms": 20496,
+      "median_wall_time_ms": 20496,
+      "mean_action_count": 5,
+      "mean_retry_count": 0,
+      "failure_categories": {
+        "provider-format": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/clean-stable/playwright/scripted/scripted",
+      "provider_id": null,
+      "model_id": null,
+      "n": 2,
+      "valid_completion_rate": 1,
+      "joint_end_to_end_correctness_rate": 1,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 1651.5,
+      "median_wall_time_ms": 1651.5,
+      "mean_action_count": 5,
+      "mean_retry_count": 0,
+      "failure_categories": {},
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/clean-stable/hybrid/aliyun-compatible/qwen3.7-flash",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 7487,
+      "median_wall_time_ms": 7487,
+      "mean_action_count": 4,
+      "mean_retry_count": 0,
+      "failure_categories": {
+        "oracle": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/clean-stable/visual/aliyun-compatible/qwen3.7-flash",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": null,
+      "mean_wall_time_ms": 28957,
+      "median_wall_time_ms": 28957,
+      "mean_action_count": 7,
+      "mean_retry_count": 0,
+      "failure_categories": {
+        "grounding-loop": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "indico/indico-create-event/clean-stable/hybrid/deepseek-api/deepseek-v4-flash-vision-exp",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 16646,
+      "median_wall_time_ms": 16646,
+      "mean_action_count": 8,
+      "mean_retry_count": 1,
+      "failure_categories": {
+        "oracle": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "indico/indico-create-event/clean-stable/visual/deepseek-api/deepseek-v4-flash-vision-exp",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": null,
+      "mean_wall_time_ms": 16732,
+      "median_wall_time_ms": 16732,
+      "mean_action_count": 4,
+      "mean_retry_count": 0,
+      "failure_categories": {
+        "grounding-loop": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/clean-stable/hybrid/deepseek-api/deepseek-v4-flash-vision-exp",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 1,
+      "valid_completion_rate": 1,
+      "joint_end_to_end_correctness_rate": 1,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 13969,
+      "median_wall_time_ms": 13969,
+      "mean_action_count": 7,
+      "mean_retry_count": 1,
+      "failure_categories": {},
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/clean-stable/visual/deepseek-api/deepseek-v4-flash-vision-exp",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 1,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": null,
+      "mean_wall_time_ms": 24509,
+      "median_wall_time_ms": 24509,
+      "mean_action_count": 12,
+      "mean_retry_count": 2,
+      "failure_categories": {
+        "agent-step-budget": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    }
+  ],
+  "generated_at": "2026-09-13T07:10:34.669Z"
+}

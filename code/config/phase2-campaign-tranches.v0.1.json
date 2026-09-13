@@ -11,7 +11,7 @@
     "execution_units": 30240
   },
   "current_inventory": {
-    "triage_queue_candidates": 22,
+    "triage_queue_candidates": 27,
     "matrix_workflow_bearing_applications": 5,
     "confirmatory_admitted_applications": 0,
     "confirmatory_admitted_workflows": 0

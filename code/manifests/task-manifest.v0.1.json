@@ -231,6 +231,23 @@
           "arms": ["visual", "hybrid", "playwright"]
         },
         {
+          "id": "juice-shop-basket-quantity",
+          "intent": "Add Apple Juice (1000ml) to the basket twice, open the shopping cart, and finish only when the exact product has quantity 2 and total price 3.98¤.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks the basket route, heading, exact target, quantity 2, and total price 3.98¤; under the functional-fault condition it requires the declared target omission. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["product-card-omission", "basket-quantity-mismatch"],
+          "evolution_slots": ["card-layout-change", "basket-layout-change"],
+          "phase2_evidence": {
+            "status": "new diagnostic workflow; pilot-only",
+            "runner": "shared matched runner with browser-scoped omission, replay, and independent visible-state oracle",
+            "state_transition": "two identical add actions produce quantity 2 and total 3.98¤"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
           "id": "juice-shop-authorization-guard",
           "intent": "Starting from the already-open anonymous administration route, finish only when the visible 403 denial says You are not allowed to access this page!.",
           "oracle": {

@@ -12,9 +12,17 @@ test('Juice Shop hybrid runner forwards the resolved semantic action mode to the
 });
 
 test('Juice Shop basket lane uses the cross-page-state budget and task-specific run mode', () => {
-  assert.match(visualRunner, /taskId === 'juice-shop-add-to-basket' \? 'cross-page-state'/);
-  assert.match(hybridRunner, /taskId === 'juice-shop-add-to-basket' \? 'cross-page-state'/);
-  assert.match(matchedRunner, /taskId === 'juice-shop-add-to-basket' \? 'cross-page-state'/);
+  assert.match(visualRunner, /taskId === 'juice-shop-add-to-basket' \|\| isBasketQuantityTask/);
+  assert.match(hybridRunner, /taskId === 'juice-shop-add-to-basket' \|\| isBasketQuantityTask/);
+  assert.match(matchedRunner, /taskId === 'juice-shop-add-to-basket' \|\| isBasketQuantityTask/);
+});
+
+test('Juice Shop repeated-add basket lane maps quantity oracle and task mode', () => {
+  assert.match(visualRunner, /juice-shop-basket-quantity/);
+  assert.match(hybridRunner, /juice-shop-basket-quantity/);
+  assert.match(matchedRunner, /juice-shop-basket-quantity-run-manifest\.v0\.1\.json/);
+  assert.match(matchedRunner, /RUN_JUICE_SHOP_BASKET_QUANTITY/);
+  assert.match(matchedRunner, /evaluate-juice-shop-basket-quantity\.mjs/);
 });
 
 test('Juice Shop pagination lane uses a dedicated task family, manifest, and oracle', () => {

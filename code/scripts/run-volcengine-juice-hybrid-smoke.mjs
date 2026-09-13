@@ -15,6 +15,7 @@ import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
 import { evaluateJuiceShopCondition } from '../src/oracles/juice-shop-condition.mjs';
 import { evaluateJuiceShopProductDetail } from '../src/oracles/juice-shop-product-detail.mjs';
 import { evaluateJuiceShopBasket } from '../src/oracles/juice-shop-basket.mjs';
+import { evaluateJuiceShopBasketQuantity } from '../src/oracles/juice-shop-basket-quantity.mjs';
 import { evaluateJuiceShopBasketFeedback } from '../src/oracles/juice-shop-basket-feedback.mjs';
 import { evaluateJuiceShopAuthorization } from '../src/oracles/juice-shop-authorization.mjs';
 import { evaluateJuiceShopPagination } from '../src/oracles/juice-shop-pagination.mjs';
@@ -26,12 +27,13 @@ const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const experimentCondition = resolveExperimentCondition();
 const expectedVerdict = experimentCondition.expectedVerdict;
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
-const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : taskMode === 'add-to-basket' ? 'juice-shop-add-to-basket' : taskMode === 'basket-feedback' ? 'juice-shop-basket-feedback' : taskMode === 'authorization' ? 'juice-shop-authorization-guard' : taskMode === 'pagination-last-item' ? 'juice-shop-pagination-last-item' : taskMode === 'pagination' ? 'juice-shop-pagination' : 'juice-shop-product-search');
+const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : taskMode === 'add-to-basket' ? 'juice-shop-add-to-basket' : taskMode === 'basket-quantity' ? 'juice-shop-basket-quantity' : taskMode === 'basket-feedback' ? 'juice-shop-basket-feedback' : taskMode === 'authorization' ? 'juice-shop-authorization-guard' : taskMode === 'pagination-last-item' ? 'juice-shop-pagination-last-item' : taskMode === 'pagination' ? 'juice-shop-pagination' : 'juice-shop-product-search');
 const isPaginationTask = taskId === 'juice-shop-pagination' || taskId === 'juice-shop-pagination-last-item';
 const isBasketFeedbackTask = taskId === 'juice-shop-basket-feedback';
+const isBasketQuantityTask = taskId === 'juice-shop-basket-quantity';
 const isAuthorizationTask = taskId === 'juice-shop-authorization-guard';
 const paginationTarget = process.env.PSS_JUICE_PAGINATION_TARGET ?? (taskId === 'juice-shop-pagination-last-item' ? 'OWASP Juice Shop Sticker Page' : 'Lemon Juice (500ml)');
-const taskFamily = isAuthorizationTask ? 'authorization' : taskId === 'juice-shop-add-to-basket' ? 'cross-page-state' : isBasketFeedbackTask ? 'runtime' : isPaginationTask ? 'pagination-filter' : 'search-navigation';
+const taskFamily = isAuthorizationTask ? 'authorization' : (taskId === 'juice-shop-add-to-basket' || isBasketQuantityTask) ? 'cross-page-state' : isBasketFeedbackTask ? 'runtime' : isPaginationTask ? 'pagination-filter' : 'search-navigation';
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? process.env.CUA_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'hybrid', taskFamily });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
@@ -44,7 +46,7 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : taskId === 'juice-shop-basket-feedback' ? 'juice-shop-basket-feedback-run-manifest.v0.1.json' : taskId === 'juice-shop-authorization-guard' ? 'juice-shop-authorization-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination-last-item' ? 'juice-shop-pagination-last-item-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination' ? 'juice-shop-pagination-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : isBasketQuantityTask ? 'juice-shop-basket-quantity-run-manifest.v0.1.json' : taskId === 'juice-shop-basket-feedback' ? 'juice-shop-basket-feedback-run-manifest.v0.1.json' : taskId === 'juice-shop-authorization-guard' ? 'juice-shop-authorization-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination-last-item' ? 'juice-shop-pagination-last-item-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination' ? 'juice-shop-pagination-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
@@ -151,7 +153,7 @@ const agentStartedAt = Date.now();
 try {
   if (isBasketFeedbackTask) await installJuiceShopFeedbackDelay(page);
   if (isAuthorizationTask && experimentCondition.isFault) await installJuiceShopAuthorizationFault(page);
-  if ((taskId === 'juice-shop-product-detail' || taskId === 'juice-shop-add-to-basket' || isBasketFeedbackTask) && experimentCondition.isFault) await installJuiceShopProductOmission(page);
+  if ((taskId === 'juice-shop-product-detail' || taskId === 'juice-shop-add-to-basket' || isBasketQuantityTask || isBasketFeedbackTask) && experimentCondition.isFault) await installJuiceShopProductOmission(page);
   if (isPaginationTask && experimentCondition.isFault) await installJuiceShopPaginationOmission(page, { omitName: paginationTarget });
   if (taskId === 'juice-shop-product-search' && experimentCondition.isFault) await installJuiceShopSearchOmission(page);
   if (experimentCondition.isEvolution) await installJuiceShopLayoutEvolution(page);
@@ -184,6 +186,10 @@ try {
       ? (experimentCondition.isFault
         ? 'The anonymous administration page is already open. If it lacks the visible 403 denial and the exact "You are not allowed to access this page!" message, finish with verdict fault; otherwise finish with verdict clean.'
         : 'The anonymous administration page is already open. Finish only when the visible 403 denial and exact "You are not allowed to access this page!" message are present, then return done with verdict clean.')
+      : isBasketQuantityTask
+      ? (experimentCondition.isFault
+        ? 'In the Juice Shop catalog, inspect the product cards. The declared functional fault means Apple Juice (1000ml) may be absent; if it is absent, finish with verdict fault. Otherwise add it twice, open the shopping cart, and finish with verdict clean.'
+        : 'In the Juice Shop catalog, locate the card whose title is exactly Apple Juice (1000ml). Click its Add to Basket control exactly twice, then click the top-right shopping-cart control. Finish only when the basket visibly shows Apple Juice (1000ml), quantity 2, and total price 3.98¤; then return done with verdict clean.')
       : isBasketFeedbackTask
       ? (experimentCondition.isFault
         ? 'In the Juice Shop catalog, inspect the product cards. The declared functional fault means Apple Juice (1000ml) may be absent; if it is absent and no confirmation appears, finish with verdict fault. Otherwise return verdict clean.'
@@ -216,6 +222,8 @@ try {
 const oracleDeadline = Date.now() + oraclePollMs;
 let uiOracle = isAuthorizationTask
   ? await evaluateJuiceShopAuthorization(page, { condition: experimentCondition.condition })
+  : isBasketQuantityTask
+  ? await evaluateJuiceShopBasketQuantity(page, { condition: experimentCondition.condition })
   : isBasketFeedbackTask
   ? await evaluateJuiceShopBasketFeedback(page, { condition: experimentCondition.condition })
   : isPaginationTask
@@ -233,6 +241,8 @@ while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
     ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
     : isAuthorizationTask
       ? await evaluateJuiceShopAuthorization(page, { condition: experimentCondition.condition })
+      : isBasketQuantityTask
+      ? await evaluateJuiceShopBasketQuantity(page, { condition: experimentCondition.condition })
       : isBasketFeedbackTask
       ? await evaluateJuiceShopBasketFeedback(page, { condition: experimentCondition.condition })
       : taskId === 'juice-shop-add-to-basket'

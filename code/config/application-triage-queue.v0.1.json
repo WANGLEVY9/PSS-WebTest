@@ -1,7 +1,7 @@
 {
   "schema_version": "0.1",
   "status": "triage-only-not-admitted",
-  "purpose": "Order the 22 countable candidate applications for feasibility work without converting candidate names into empirical denominators.",
+  "purpose": "Order the 27 countable candidate applications for feasibility work without converting candidate names into empirical denominators.",
   "ordering_policy": [
     "prefer an existing local compose, seed, or benchmark asset",
     "prefer a deterministic self-hosted deployment with a narrow independent oracle surface",
@@ -27,7 +27,12 @@
     {
       "id": "wave-3-heavy-or-external-dependencies",
       "purpose": "Defer high-cost or multi-service systems until the harness has stable diagnostics and a repeatable reset budget.",
-      "application_ids": ["gitlab", "odoo", "erpnext", "penpot", "openproject", "calcom"]
+      "application_ids": ["gitlab", "odoo", "erpnext", "penpot", "openproject", "calcom", "moodle"]
+    },
+    {
+      "id": "wave-2b-collaborative-and-observability",
+      "purpose": "Add bounded collaboration, task, and dashboard surfaces while preserving a separate feasibility wave.",
+      "application_ids": ["grafana", "hedgedoc", "vikunja", "zulip"]
     }
   ],
   "candidate_status": [
@@ -53,6 +58,11 @@
     {"application_id":"penpot","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"database/assets and collaboration oracle","risk":"multi-service plus asset state"},
     {"application_id":"openproject","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"version-pinned deployment and work-package oracle","risk":"heavy Rails deployment"},
     {"application_id":"calcom","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"calendar fixture and availability oracle","risk":"timezone/email/calendar semantics"}
+    ,{"application_id":"moodle","wave":"wave-3-heavy-or-external-dependencies","local_asset":"official source only","next_gate":"course fixture and submission oracle","risk":"large deployment and role/permission semantics"}
+    ,{"application_id":"grafana","wave":"wave-2b-collaborative-and-observability","local_asset":"official source only","next_gate":"version-pinned dashboard/alert feasibility","risk":"time-series and alert evaluation state"}
+    ,{"application_id":"hedgedoc","wave":"wave-2b-collaborative-and-observability","local_asset":"official source only","next_gate":"database/asset reset and revision oracle","risk":"collaborative editor timing"}
+    ,{"application_id":"vikunja","wave":"wave-2b-collaborative-and-observability","local_asset":"official source only","next_gate":"task/reminder fixture and oracle","risk":"timezone and notification coupling"}
+    ,{"application_id":"zulip","wave":"wave-2b-collaborative-and-observability","local_asset":"official source only","next_gate":"stream/topic fixture and message oracle","risk":"multi-user websocket timing"}
   ],
   "admission_rule": [
     "The queue is not evidence and does not authorize execution.",

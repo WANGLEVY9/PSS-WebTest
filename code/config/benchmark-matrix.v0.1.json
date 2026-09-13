@@ -97,7 +97,12 @@
     {"id":"openproject","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
     {"id":"calcom","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
     {"id":"owncloud","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
-    {"id":"outline","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]}
+    {"id":"outline","status":"candidate","candidate_only_reason":"No local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"grafana","status":"candidate","candidate_only_reason":"Candidate added to the breadth plan; no local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"hedgedoc","status":"candidate","candidate_only_reason":"Candidate added to the breadth plan; no local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"vikunja","status":"candidate","candidate_only_reason":"Candidate added to the breadth plan; no local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"zulip","status":"candidate","candidate_only_reason":"Candidate added to the breadth plan; no local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]},
+    {"id":"moodle","status":"candidate","candidate_only_reason":"Candidate added to the breadth plan; no local version pin, reset, or independent oracle yet.","workflow_plan_ref":"application-workflow-blueprints.v0.1.json","workflows":[]}
   ],
   "arms": [
     {"id":"visual","observation_contract":"screenshot-only","status":"implemented-provider","confirmatory_status":"blocked-by-pilot"},

@@ -93,7 +93,14 @@ const driverEnv = {
 
 async function pageState(page) {
   const pathname = new URL(page.url()).pathname;
-  const searchResultsVisible = await page.getByRole('heading', { name: /Search results/i }).isVisible().catch(() => false);
+  const searchHeadingVisible = await page.locator('h1,h2,h3,h4').filter({ hasText: /Search results/i }).first().isVisible().catch(() => false);
+  const breadcrumbSearchVisible = await page.locator('.breadcrumb').filter({ hasText: /Search results/i }).first().isVisible().catch(() => false);
+  const resultCards = await page.locator('#js-product-list .js-product').count().catch(() => 0);
+  // PrestaShop performs search through an AJAX transition and commonly keeps
+  // the pathname at `/`. Do not make the observation milestone depend on the
+  // URL or one accessibility-role implementation; use the visible result
+  // heading/breadcrumb together with the result-card container.
+  const searchResultsVisible = searchHeadingVisible || breadcrumbSearchVisible || (resultCards > 0 && await page.locator('#js-product-list').isVisible().catch(() => false));
   const targetProductVisible = await page.locator('#js-product-list .product-title').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false);
   const productDetailVisible = await page.locator('h1').filter({ hasText: expectedNamePattern }).first().isVisible().catch(() => false);
   const milestone = productDetailVisible || pathname.includes('.html')
@@ -111,7 +118,7 @@ async function pageState(page) {
     target_product_visible: targetProductVisible,
     replacement_visible: await page.locator('#js-product-list .product-title').filter({ hasText: /Framed Poster/i }).first().isVisible().catch(() => false),
     product_detail_visible: productDetailVisible,
-    product_count: await page.locator('#js-product-list .js-product').count().catch(() => 0)
+    product_count: resultCards
   };
 }
 

@@ -13,9 +13,9 @@ export function classifyAgentFailure({ failure = null, result = null, oraclePass
     if (/locator\.|waiting for locator|element is not receiving|intercepts pointer|page\./.test(message)) return 'execution';
     if (/agent wall-time budget|wall-time budget/.test(message)) return 'agent-step-budget';
     if (name.includes('abort') || /\b(aborted|provider timeout|fetch timeout|timed out)\b/.test(message)) return 'provider-timeout';
-    if (/repeated non-progressing click/.test(message)) return 'grounding-loop';
+    if (/repeated non-progressing (?:textbox )?click/.test(message)) return 'grounding-loop';
     if (/api request failed/.test(message)) return 'provider-api';
-    if (/valid json|tool call|unsupported decision|unsupported action|empty or invalid|pointer action coordinates|hybrid pointer action requires|title textbox requires ctrl\+a/.test(message)) return 'provider-format';
+    if (/valid json|tool call|unsupported decision|unsupported action|empty or invalid|pointer action coordinates|pointer action outside viewport|hybrid pointer action requires|title textbox requires ctrl\+a/.test(message)) return 'provider-format';
     return 'execution';
   }
   if (result?.status === 'timeout') return 'agent-step-budget';

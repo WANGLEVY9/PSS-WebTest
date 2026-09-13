@@ -29,7 +29,7 @@ records remain visible in the ledger but outside the confirmatory denominator.
 | Triage queue | 22 candidate application IDs | Five workflow-bearing matrix applications plus candidate-only rows; coverage gap is open |
 | Confirmatory admissions | 0 applications, 0 workflow slots | Confirmatory collection remains frozen |
 | Invoice Ninja | 66 diagnostic records across 2 workflows, 3 conditions, and multiple model strata | Useful pilot evidence; two workflows now have independent oracles, still not admitted |
-| PrestaShop | clean/fault/evolution canaries plus a medium search-and-open cross-model repetition; Qwen visual selected the wrong product, Qwen Hybrid and both DeepSeek agents passed | Mutation gate passed; medium task is pilot-only, application remains not admitted |
+| PrestaShop | clean/fault/evolution canaries plus medium and complex search workflows across Qwen/DeepSeek; complex Qwen Hybrid passed while visual had coordinate-format failure, DeepSeek agents exposed revisit grounding loops | Mutation gate passed; multi-complexity evidence remains pilot-only, application remains not admitted |
 | BookStack | Qwen navigation schema retry passed 3/3; create-page matched gate passed Playwright 3/3 but Hybrid 0/3 and visual 0/3 across clean/fault/evolution | Reset, fault injection, and independent oracle are reachable; create-page agent failures are classified and application admission remains blocked |
 | Qwen Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/evolution pass with one fault termination failure | Model-stratum pilot evidence |
 | DeepSeek Hybrid | 9/9 strict in the first Invoice Ninja block; recent-payments clean/fault/evolution mixed but mostly passing | Model-stratum pilot evidence |

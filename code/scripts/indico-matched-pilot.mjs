@@ -7,11 +7,14 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { findProviderProfile } from '../src/provider-profile.mjs';
+import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
 
 const explicitEnv = { ...process.env };
 dotenv.config();
 
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
+const experimentCondition = resolveExperimentCondition();
+const expectedVerdict = experimentCondition.expectedVerdict;
 const providerOptimizationProfile = process.env.PSS_AGENT_PROFILE?.trim()
   || findProviderProfile({ provider: process.env.CUA_PROVIDER, model: process.env.CUA_MODEL })?.optimization_profile
   || 'baseline-v0';
@@ -56,7 +59,7 @@ const taskManifestPath = `${codeRoot}/manifests/task-manifest.v0.1.json`;
 const runManifestPath = `${codeRoot}/config/indico-create-event-run-manifest.v0.2.json`;
 const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '');
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
-const artifact = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-pilot.json`;
+const artifact = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
 const recordsPath = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-records.jsonl`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
@@ -75,11 +78,11 @@ const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((l
   crypto.createHash('sha256').update(`indico-create-event|${pilotRunTag ?? 'untagged'}|${repetition}|${left}`).digest('hex')
     .localeCompare(crypto.createHash('sha256').update(`indico-create-event|${pilotRunTag ?? 'untagged'}|${repetition}|${right}`).digest('hex'))
 );
-const randomizationBlock = (repetition, arms) => `indico-create-event-clean-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
+const randomizationBlock = (repetition, arms) => `indico-create-event-${experimentCondition.condition}-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: 'indico-create-event', condition: 'clean-stable', provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: 'indico-create-event', condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
@@ -95,21 +98,27 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
       registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'indico',
       resetDigest, randomizationBlock: block,
-      environment: { runner: arm === 'playwright' ? 'indico-playwright-cell-v0.3' : 'indico-agent-pilot-v0.4', base_url: 'http://localhost:8080', browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), action_output_mode: arm === 'playwright' ? null : process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimizationByArm.hybrid.hybrid_action_mode ?? 'coordinate') : null, optimization_profile: arm === 'playwright' ? null : optimizationByArm[arm].profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+      environment: { runner: arm === 'playwright' ? 'indico-playwright-cell-v0.3' : 'indico-agent-pilot-v0.4', base_url: 'http://localhost:8080', browser: 'chromium', viewport: '1280x720', arm, max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), condition: experimentCondition.condition, action_output_mode: arm === 'playwright' ? null : process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimizationByArm.hybrid.hybrid_action_mode ?? 'coordinate') : null, optimization_profile: arm === 'playwright' ? null : optimizationByArm[arm].profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
     }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {
       records.push({ repetition, arm, reset_ok: reset.code === 0, clean_state_verified: false, execution_exit_code: null, oracle_passed: false, oracle_matches: preOracle?.matches ?? null });
       writeSummary(); console.log(JSON.stringify(records.at(-1))); continue;
     }
+    const faultApply = experimentCondition.isFault ? await run('node', ['scripts/indico-fault.mjs', 'apply']) : { code: 0 };
+    if (faultApply.code !== 0) {
+      records.push({ repetition, arm, condition: experimentCondition.condition, reset_digest: resetDigest, reset_ok: true, clean_state_verified: true, execution_exit_code: faultApply.code, oracle_passed: false, cell_passed: false, failure_category: 'execution' });
+      writeSummary(); console.log(JSON.stringify(records.at(-1))); continue;
+    }
     if (arm === 'playwright') {
       const startedAt = Date.now();
-      execution = await run('npx', ['playwright', 'test', 'tests/traditional/indico-create-event.spec.js', '--project=chromium'], {
-        RUN_INDICO_VERTICAL_SLICE: '1', INDICO_BASE_URL: 'http://localhost:8080', SUT_BASE_URL: 'http://localhost:8080',
+      const spec = experimentCondition.isFault ? 'tests/traditional/indico-create-event-fault.spec.js' : 'tests/traditional/indico-create-event.spec.js';
+      execution = await run('npx', ['playwright', 'test', spec, '--project=chromium'], {
+        RUN_INDICO_VERTICAL_SLICE: experimentCondition.isFault ? '0' : '1', RUN_INDICO_FAULT_WORKFLOW: experimentCondition.isFault ? '1' : '0', RUN_INDICO_EVOLUTION_WORKFLOW: experimentCondition.isEvolution ? '1' : '0', INDICO_BASE_URL: 'http://localhost:8080', SUT_BASE_URL: 'http://localhost:8080',
         PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD
       });
-      const oracleRun = await run('node', ['scripts/evaluate-indico-event.mjs']); oracle = lastJson(oracleRun.stdout);
-      cellRunRecord = createTraditionalRunRecord({ application_id: 'indico', application_version: process.env.INDICO_VERSION ?? '3.3.6', task_id: 'indico-create-event', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 10, runner_version: 'indico-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 10 }] });
+      const oracleRun = await run('node', ['scripts/evaluate-indico-event.mjs'], { PSS_INDICO_EXPECT_FAULT: experimentCondition.isFault ? '1' : '0' }); oracle = lastJson(oracleRun.stdout);
+      cellRunRecord = createTraditionalRunRecord({ application_id: 'indico', application_version: process.env.INDICO_VERSION ?? '3.3.6', task_id: 'indico-create-event', execution_exit_code: execution.code, oracle, expected_verdict: expectedVerdict, condition: experimentCondition.condition, wall_time_ms: Date.now() - startedAt, actions: 10, runner_version: 'indico-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 10 }] });
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', ['scripts/run-indico-agent-pilot.mjs'], {
@@ -122,6 +131,8 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
         CUA_COORDINATE_MODE: process.env.CUA_COORDINATE_MODE ?? optimizationByArm[arm].coordinate_mode,
         CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? (optimizationByArm[arm].hybrid_action_mode ?? 'coordinate'),
         PSS_AGENT_PROFILE: optimizationByArm[arm].profile_id,
+        PSS_PILOT_CONDITION: experimentCondition.condition,
+        PSS_INDICO_EXPECT_FAULT: experimentCondition.isFault ? '1' : '0',
         CUA_SCREENSHOT_QUALITY: process.env.CUA_SCREENSHOT_QUALITY ?? String(optimizationByArm[arm].screenshot_quality),
         PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimizationByArm[arm].post_action_settle_ms),
         PSS_INDICO_USERNAME: process.env.PSS_INDICO_USERNAME, PSS_INDICO_PASSWORD: process.env.PSS_INDICO_PASSWORD,
@@ -131,9 +142,10 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
       });
       result = lastJson(execution.stdout); oracle = result?.oracle?.value ?? null; cellRunRecord = result?.run_record ?? null;
     }
+    const faultRemove = experimentCondition.isFault ? await run('node', ['scripts/indico-fault.mjs', 'remove']) : { code: 0 };
     const agentCompleted = arm === 'playwright' ? execution.code === 0 : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;
-    records.push({ repetition, arm, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oracle?.matches ?? null, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
+    records.push({ repetition, arm, condition: experimentCondition.condition, expected_verdict: expectedVerdict, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, mutation_removed: faultRemove.code === 0, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? expectedVerdict : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed && faultRemove.code === 0, oracle_matches: oracle?.matches ?? null, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
     writeSummary(); console.log(JSON.stringify(records.at(-1)));
   }
 }

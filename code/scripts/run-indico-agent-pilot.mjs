@@ -13,6 +13,8 @@ import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { evaluateIndicoSearch } from '../src/oracles/indico-visible-search.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
+import { installIndicoLayoutEvolution } from '../src/mutations/indico.mjs';
 
 dotenv.config();
 const arm = process.env.INDICO_ARM;
@@ -21,6 +23,8 @@ const username = process.env.PSS_INDICO_USERNAME;
 const password = process.env.PSS_INDICO_PASSWORD;
 if (!username || !password) throw new Error('Indico credentials must be configured in the local environment');
 const baseURL = process.env.INDICO_BASE_URL ?? 'http://localhost:8080';
+const experimentCondition = resolveExperimentCondition();
+const expectedVerdict = experimentCondition.expectedVerdict;
 const title = process.env.PSS_INDICO_EVENT_TITLE ?? 'PSS Phase2 Event';
 const date = process.env.PSS_INDICO_EVENT_DATE ?? '15/01/2030';
 const taskId = process.env.PSS_INDICO_TASK_ID ?? 'indico-create-event';
@@ -49,7 +53,7 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'indico', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_id: taskId, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate', optimization_profile: optimization.profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'indico-agent-pilot-v0.4', base_url: baseURL, arm, browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_id: taskId, condition: experimentCondition.condition, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, hybrid_action_mode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate', optimization_profile: optimization.profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 
 const screenshot = async ({ step } = {}) => {
@@ -130,6 +134,7 @@ let failure;
 let replayEligible = false;
 const agentStartedAt = Date.now();
 try {
+  if (experimentCondition.isEvolution) await installIndicoLayoutEvolution(page);
   await page.goto(`${baseURL}/login/`);
   await page.getByRole('textbox', { name: 'Username or email' }).fill(username);
   await page.getByRole('textbox', { name: 'Password' }).fill(password);
@@ -139,14 +144,14 @@ try {
   // Never archive a login frame.  Replay capture starts only after shared
   // fixture authentication has completed and the arm's task begins.
   replayEligible = true;
-  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), maxRetries: Number.parseInt(process.env.CUA_MAX_RETRIES ?? String(optimization.max_retries), 10), maxDecisionRetries: Number.parseInt(process.env.CUA_MAX_DECISION_RETRIES ?? String(optimization.max_decision_retries), 10), coordinateMode: process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode, hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? (optimization.hybrid_action_mode ?? 'coordinate'), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), onProviderResponse: (summary) => { const id = replayRecorder.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); } };
+  const driverOptions = { executeAction, timeoutMs: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), maxRetries: Number.parseInt(process.env.CUA_MAX_RETRIES ?? String(optimization.max_retries), 10), maxDecisionRetries: Number.parseInt(process.env.CUA_MAX_DECISION_RETRIES ?? String(optimization.max_decision_retries), 10), coordinateMode: process.env.CUA_COORDINATE_MODE ?? optimization.coordinate_mode, hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? (optimization.hybrid_action_mode ?? 'coordinate'), wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts: [expectedVerdict], onProviderResponse: (summary) => { const id = replayRecorder.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); } };
   if (arm === 'visual') driverOptions.observeScreenshot = screenshot;
   else driverOptions.observeHybrid = async (context) => ({ screenshot: await screenshot(context), pageStructure: { controls: await hybridStructure() }, viewport });
   const driver = arm === 'visual' ? createVolcengineCuaDriver(driverOptions) : createVolcengineHybridDriver(driverOptions);
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   const intent = taskId === 'indico-search-events'
     ? `Starting from the authenticated Indico home page, use only visible browser controls to search for the exact query "${query}". Click the visible global search textbox, type exactly "${query}", press Enter, and wait for the Search heading and results to render. Finish with done verdict pass only when the visible Search page shows one or more event-result titles and every visible event-result title contains the query "${query}" case-insensitively. Do not use DOM selectors, hidden state, or any oracle signal.`
-    : `Starting from the authenticated Indico home page, create one public Lecture event. Follow this visible sequence exactly: (1) click the Create event link on the home page, (2) in the event-type chooser click the link named exactly Lecture, (3) wait for the page heading Create new lecture, (4) click the Title textbox, then the very next action MUST be a type action containing exactly "${title}", (5) click the date textbox with placeholder DD/MM/YYYY, then the very next action MUST be a type action containing exactly "${date}", (6) click the Create event button on the form. In the declared controls, textboxes use interaction=type and links/buttons use interaction=click. Keep title and date in separate fields; never type twice into the same field. Finish only after the resulting event page visibly shows the exact title and formatted date 15 January 2030. Return done with verdict pass only then.`;
+    : `Starting from the authenticated Indico home page, create one public Lecture event. Follow this visible sequence exactly: (1) click the Create event link on the home page, (2) in the event-type chooser click the link named exactly Lecture, (3) wait for the page heading Create new lecture, (4) click the Title textbox, then the very next action MUST be a type action containing exactly "${title}", (5) click the date textbox with placeholder DD/MM/YYYY, then the very next action MUST be a type action containing exactly "${date}", (6) click the Create event button on the form. In the declared controls, textboxes use interaction=type and links/buttons use interaction=click. Keep title and date in separate fields; never type twice into the same field. Finish only after the resulting event page visibly shows the expected title ${experimentCondition.isFault ? `${title} [FAULT]` : title} and formatted date 15 January 2030. Return done with verdict ${expectedVerdict} only then.`;
   result = await adapter.run({
     intent,
     onStep: async ({ step, action }) => {
@@ -164,8 +169,8 @@ while (oracle.value?.passed !== true && Date.now() < deadline) {
   await new Promise((resolve) => setTimeout(resolve, 250));
   oracle = await evaluateOracle();
 }
-const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true });
-const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed: passed } = deriveAgentOutcome({ failure, result, oraclePassed: oracle.value?.passed === true, expectedVerdict });
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached, expectedVerdict });
 if (replayEligible) await replayRecorder.capture({ page, phase: 'final' });
 const recordProvenance = {
   ...(phase2Fields?.provenance ?? {}),
@@ -184,11 +189,11 @@ if (phase2Protocol) {
 const runRecord = createRunRecord({
   ...(phase2Fields ?? {}),
   run_id: runId,
-  application_id: 'indico', application_version: '3.3.6', task_id: taskId, condition: 'clean-stable', arm,
+  application_id: 'indico', application_version: '3.3.6', task_id: taskId, condition: experimentCondition.condition, arm,
   status: failure ? 'test-failure' : (passed ? 'completed' : (result?.status === 'timeout' ? 'timeout' : 'test-failure')),
   checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
-  ground_truth_verdict: 'clean',
+  ground_truth_verdict: expectedVerdict,
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
   provenance: recordProvenance,
   failure_category: passed ? null : failureCategory, trace

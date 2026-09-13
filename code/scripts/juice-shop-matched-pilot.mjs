@@ -7,11 +7,14 @@ import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { findProviderProfile } from '../src/provider-profile.mjs';
+import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
 
 const explicitEnv = { ...process.env };
 dotenv.config();
 
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
+const experimentCondition = resolveExperimentCondition();
+const expectedVerdict = experimentCondition.expectedVerdict;
 const maxSteps = process.env.CUA_MAX_STEPS ?? '16';
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '20000';
 const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
@@ -50,7 +53,7 @@ const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [
 const taskManifestPath = `${root}/manifests/task-manifest.v0.1.json`;
 const runManifestPath = `${root}/config/juice-shop-product-search-run-manifest.v0.2.json`;
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
-const artifact = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-pilot.json`;
+const artifact = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
 const recordsPath = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-records.jsonl`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
@@ -70,11 +73,11 @@ const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((l
   crypto.createHash('sha256').update(`juice-shop-product-search|${pilotRunTag ?? 'untagged'}|${repetition}|${left}`).digest('hex')
     .localeCompare(crypto.createHash('sha256').update(`juice-shop-product-search|${pilotRunTag ?? 'untagged'}|${repetition}|${right}`).digest('hex'))
 );
-const randomizationBlock = (repetition, arms) => `juice-shop-product-search-clean-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
+const randomizationBlock = (repetition, arms) => `juice-shop-product-search-${experimentCondition.condition}-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'juice-shop', task_id: 'juice-shop-product-search', condition: 'clean-stable', provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'juice-shop', task_id: 'juice-shop-product-search', condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {
@@ -93,7 +96,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     const phase2Fields = phase2Protocol && cleanStateVerified ? createPhase2Provenance({
       registry, configurationId: configurations[arm], runManifestPath, taskManifestPath, applicationId: 'juice-shop',
       resetDigest, randomizationBlock: block,
-      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: armMaxSteps, timeout_ms: armTimeoutMs, action_output_mode: arm === 'playwright' ? null : process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization?.profile_id ?? null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+      environment: { runner: arm === 'playwright' ? 'juice-shop-playwright-cell-v0.3' : `juice-shop-${arm}-agent-v0.3`, base_url: baseURL, browser: 'chromium', viewport: '1280x720', arm, max_steps: armMaxSteps, timeout_ms: armTimeoutMs, condition: experimentCondition.condition, action_output_mode: arm === 'playwright' ? null : process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization?.profile_id ?? null, hybrid_action_mode: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? 'coordinate') : null, scheduling: 'parallel-feasibility-or-sequential-pilot' }
     }) : null;
     let execution; let oracle; let result = null; let cellRunRecord = null;
     if (!cleanStateVerified) {
@@ -103,14 +106,14 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     if (arm === 'playwright') {
       const startedAt = Date.now();
       execution = await run('npx', ['playwright', 'test', 'tests/traditional/juice-shop-product-search.spec.js', '--project=chromium'], {
-        RUN_JUICE_SHOP_VERTICAL_SLICE: '1', SUT_BASE_URL: baseURL
+        RUN_JUICE_SHOP_VERTICAL_SLICE: '1', SUT_BASE_URL: baseURL, PSS_PILOT_CONDITION: experimentCondition.condition
       });
-      const oracleRun = await run('node', ['scripts/evaluate-juice-shop-search.mjs']); oracle = lastJson(oracleRun.stdout);
-      cellRunRecord = createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search', execution_exit_code: execution.code, oracle, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: 'juice-shop-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 5 }] });
+      const oracleRun = await run('node', ['scripts/evaluate-juice-shop-condition.mjs'], { PSS_PILOT_CONDITION: experimentCondition.condition, JUICE_SHOP_BASE_URL: baseURL }); oracle = lastJson(oracleRun.stdout);
+      cellRunRecord = createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search', execution_exit_code: execution.code, oracle, expected_verdict: expectedVerdict, condition: experimentCondition.condition, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: 'juice-shop-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 5 }] });
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', [arm === 'visual' ? 'scripts/run-volcengine-juice-visual-smoke.mjs' : 'scripts/run-volcengine-juice-hybrid-smoke.mjs'], {
-        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), CUA_DISMISS_OVERLAYS: process.env.CUA_DISMISS_OVERLAYS ?? '0', CUA_PREPARE_SEARCH: process.env.CUA_PREPARE_SEARCH ?? '0', CUA_TASK_MODE: process.env.CUA_TASK_MODE ?? 'full-search',
+        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_PROFILE: optimization.profile_id, PSS_PILOT_CONDITION: experimentCondition.condition, PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), CUA_DISMISS_OVERLAYS: process.env.CUA_DISMISS_OVERLAYS ?? '0', CUA_PREPARE_SEARCH: process.env.CUA_PREPARE_SEARCH ?? '0', CUA_TASK_MODE: process.env.CUA_TASK_MODE ?? 'full-search',
         JUICE_SHOP_BASE_URL: baseURL, PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations[arm],
         PSS_RESET_DIGEST: resetDigest ?? '', PSS_RANDOMIZATION_BLOCK: block,
         PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath,
@@ -120,7 +123,7 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     }
     const agentCompleted = arm === 'playwright' ? execution.code === 0 : result?.protocol_completed === true;
     const oraclePassed = oracle?.passed === true;
-    records.push({ repetition, arm, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? 'clean' : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oraclePassed ? 1 : 0, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
+    records.push({ repetition, arm, condition: experimentCondition.condition, expected_verdict: expectedVerdict, randomization_block: block, reset_digest: resetDigest, provider, model, reset_ok: reset.code === 0, clean_state_verified: true, execution_exit_code: execution.code, agent_status: result?.result?.status ?? result?.run_record?.status ?? null, emitted_verdict: result?.result?.emitted_verdict ?? result?.run_record?.emitted_verdict ?? (arm === 'playwright' && agentCompleted ? expectedVerdict : null), agent_completed: agentCompleted, task_state_reached: oraclePassed, oracle_passed: oraclePassed, oracle_only_success: result?.oracle_only_success === true, cell_passed: agentCompleted && oraclePassed, oracle_matches: oraclePassed ? 1 : 0, run_id: cellRunRecord?.run_id ?? null, timing: cellRunRecord?.timing ?? null, failure_category: cellRunRecord?.failure_category ?? null });
     writeSummary(); console.log(JSON.stringify(records.at(-1)));
   }
 }

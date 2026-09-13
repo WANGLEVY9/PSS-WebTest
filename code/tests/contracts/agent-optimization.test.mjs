@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { resolveAgentOptimization } from '../../src/agent-optimization.mjs';
+import { resolveExperimentCondition } from '../../src/experiment-condition.mjs';
 
 test('optimization profile raises reliability budgets without changing observation arms', () => {
   const visual = resolveAgentOptimization({ env: { PSS_AGENT_PROFILE: 'aliyun-qwen-grounded-v1' }, arm: 'visual', taskFamily: 'navigation' });
@@ -26,4 +27,11 @@ test('child-process CUA_AGENT_PROFILE alias resolves the same frozen optimizatio
   assert.equal(hybrid.profile_id, 'aliyun-qwen-grounded-v1');
   assert.equal(hybrid.hybrid_action_mode, 'semantic');
   assert.equal(hybrid.max_steps, 12);
+});
+
+test('condition resolver keeps fault truth separate from clean and evolution', () => {
+  assert.deepEqual(resolveExperimentCondition('clean-stable'), { condition: 'clean-stable', expectedVerdict: 'clean', isFault: false, isEvolution: false });
+  assert.deepEqual(resolveExperimentCondition('functional-fault'), { condition: 'functional-fault', expectedVerdict: 'fault', isFault: true, isEvolution: false });
+  assert.deepEqual(resolveExperimentCondition('ui-evolution'), { condition: 'ui-evolution', expectedVerdict: 'clean', isFault: false, isEvolution: true });
+  assert.throws(() => resolveExperimentCondition('unknown'), /Unsupported PSS_PILOT_CONDITION/);
 });

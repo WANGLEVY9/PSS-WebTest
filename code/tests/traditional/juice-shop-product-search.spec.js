@@ -1,11 +1,15 @@
 import { expect, test } from '@playwright/test';
+import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission } from '../../src/mutations/juice-shop.mjs';
 
 const enabled = process.env.RUN_JUICE_SHOP_VERTICAL_SLICE === '1';
 const query = process.env.PSS_JUICE_SHOP_QUERY ?? 'apple';
+const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 
 test.skip(!enabled, 'Set RUN_JUICE_SHOP_VERTICAL_SLICE=1 after the Juice Shop reset gate passes.');
 
 test('search the product catalog with accessibility-first locators', async ({ page }) => {
+  if (condition === 'functional-fault') await installJuiceShopSearchOmission(page);
+  if (condition === 'ui-evolution') await installJuiceShopLayoutEvolution(page);
   await page.goto('/');
   const dismiss = page.getByText('Dismiss', { exact: true });
   await dismiss.waitFor({ state: 'visible', timeout: 5000 }).then(() => dismiss.click({ force: true })).catch(() => {});
@@ -20,7 +24,8 @@ test('search the product catalog with accessibility-first locators', async ({ pa
   await searchBox.fill(query);
   await searchBox.press('Enter');
   await expect(page.getByText('Apple Juice (1000ml)', { exact: true })).toBeVisible();
-  await expect(page.getByText('Apple Pomace', { exact: true })).toBeVisible();
+  if (condition === 'functional-fault') await expect(page.getByText('Apple Pomace', { exact: true })).toHaveCount(0);
+  else await expect(page.getByText('Apple Pomace', { exact: true })).toBeVisible();
   await expect(page.getByText('Pineapple Juice (1000ml)', { exact: true })).toBeVisible();
   await expect(page.getByText('Banana Juice (1000ml)', { exact: true })).toHaveCount(0);
 });

@@ -11,10 +11,15 @@ import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
+import { evaluateJuiceShopCondition } from '../src/oracles/juice-shop-condition.mjs';
+import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission } from '../src/mutations/juice-shop.mjs';
 
 dotenv.config();
 console.error('[cua-smoke] starting');
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
+const experimentCondition = resolveExperimentCondition();
+const expectedVerdict = experimentCondition.expectedVerdict;
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: process.env.PSS_AGENT_PROFILE ?? 'baseline-v0' }, arm: 'visual', taskFamily: 'search-navigation' });
 const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimization.max_steps), 10);
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
@@ -32,7 +37,7 @@ const phase2Fields = phase2Protocol ? createPhase2Provenance({
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'juice-shop-visual-agent-v0.3', base_url: baseURL, arm: 'visual', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_mode: taskMode, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization.profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
+  environment: { runner: 'juice-shop-visual-agent-v0.3', base_url: baseURL, arm: 'visual', browser: 'chromium', viewport: '1280x720', max_steps: maxSteps, timeout_ms: Number.parseInt(process.env.CUA_TIMEOUT_MS ?? String(optimization.timeout_ms), 10), task_mode: taskMode, condition: experimentCondition.condition, action_output_mode: process.env.CUA_PROVIDER === 'aliyun' ? (process.env.CUA_ALIYUN_ACTION_MODE ?? 'tool') : process.env.CUA_PROVIDER === 'deepseek' ? (process.env.CUA_DEEPSEEK_ACTION_MODE ?? 'tool') : null, optimization_profile: optimization.profile_id, scheduling: 'parallel-feasibility-or-sequential-pilot' }
 }) : null;
 const browser = await chromium.launch({ headless: true });
 console.error('[cua-smoke] browser-launched');
@@ -58,6 +63,7 @@ const driver = createVolcengineCuaDriver({
   observeScreenshot: async ({ step } = {}) => { const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' }); await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); return `data:image/jpeg;base64,${image.toString('base64')}`; },
   onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   wallTimeoutMs: Number.parseInt(process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10),
+  doneVerdicts: [expectedVerdict],
   executeAction: async (action) => {
     if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {
       throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);
@@ -87,6 +93,8 @@ let result;
 let failure;
 const agentStartedAt = Date.now();
 try {
+  if (experimentCondition.isFault) await installJuiceShopSearchOmission(page);
+  if (experimentCondition.isEvolution) await installJuiceShopLayoutEvolution(page);
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
   // The catalog is API-backed and briefly renders a 0-of-0 shell after
   // domcontentloaded. Do not spend the first visual action on a stale frame.
@@ -117,7 +125,9 @@ try {
       ? 'The product search box is already open and already contains apple. Press the Enter key exactly once, wait for the results, then return done with verdict pass.'
       : prepareSearch
       ? 'The product search box is already open. Type apple into it and press Enter. Finish only after the search results for apple are visible; then return done with verdict pass.'
-      : 'In the Juice Shop product catalog, search for apple. Handle any welcome or cookie overlays. Finish only after the search results for apple are visible; then return done with verdict pass.',
+      : experimentCondition.isFault
+      ? 'In the Juice Shop product catalog, search for apple and inspect the expected results. The declared test condition is a functional fault: if Apple Pomace is missing while the other expected results remain visible, return done with verdict fault; otherwise return done with verdict clean.'
+      : 'In the Juice Shop product catalog, search for apple. Handle any welcome or cookie overlays. Finish only after the search results for apple are visible; then return done with verdict clean.',
     onStep: async ({ step, action }) => { trace.push({ step, action, url: page.url() }); await replay.capture({ page, phase: 'after-action', step, action, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) }); }
   });
   console.error('[cua-smoke] agent-finished');
@@ -126,26 +136,26 @@ try {
   console.error(`[cua-smoke] failed: ${error.message}`);
 }
 const oracleDeadline = Date.now() + oraclePollMs;
-let uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
+let uiOracle = await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
   await page.waitForTimeout(250);
-  uiOracle = await evaluateJuiceShopUiSearch(page, { query: 'apple' });
+  uiOracle = await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 }
 const visibleProducts = await page.locator('body').innerText().catch(() => '');
-const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true });
-const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached });
+const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true, expectedVerdict });
+const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached, expectedVerdict });
 const runRecord = createRunRecord({
   ...(phase2Fields ?? {}),
   run_id: runId,
   application_id: 'juice-shop',
   application_version: '20.0.0',
   task_id: 'juice-shop-product-search',
-  condition: 'clean-stable',
+  condition: experimentCondition.condition,
   arm: 'visual',
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (uiOracle?.passed ? 'completed' : 'test-failure')),
   checkpoint_reached: taskStateReached,
   emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'),
-  ground_truth_verdict: 'clean',
+  ground_truth_verdict: expectedVerdict,
   timing: { wall_time_ms: result?.wall_time_ms ?? (Date.now() - agentStartedAt), actions: trace.length, retries: result?.retries ?? 0 },
   provenance: runnerProvenance,
   failure_category: cellPassed ? null : failureCategory,

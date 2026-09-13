@@ -1,0 +1,128 @@
+{
+  "schema_version": "0.1",
+  "metric_dictionary": "metric-dictionary.v0.1",
+  "evidence_boundary": "t1-condition-pilot-only",
+  "confirmatory_authorized": false,
+  "admission_authorized": false,
+  "planned_records": 12,
+  "observed_records": 12,
+  "completeness_status": "complete-repetition-level-coverage",
+  "note": "Two fresh two-repetition Juice Shop backfill blocks were run after the earlier batch exposed missing Hybrid records. The earlier incomplete batch remains immutable and is not silently merged into this backfill summary.",
+  "input_files": [
+    "artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-phase2-backfill-juice-qwen-evolution-20260913-records.jsonl",
+    "artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-backfill-juice-deepseek-fault-20260913-records.jsonl"
+  ],
+  "records": 12,
+  "groups": [
+    {
+      "cell": "juice-shop/juice-shop-product-search/ui-evolution/hybrid/aliyun-compatible/qwen3.7-flash",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 2,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 11113.5,
+      "median_wall_time_ms": 11113.5,
+      "mean_action_count": 4,
+      "mean_retry_count": 0,
+      "failure_categories": {
+        "oracle": 2
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/ui-evolution/visual/aliyun-compatible/qwen3.7-flash",
+      "provider_id": "aliyun-compatible",
+      "model_id": "qwen3.7-flash",
+      "n": 2,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": null,
+      "mean_wall_time_ms": 15726.5,
+      "median_wall_time_ms": 15726.5,
+      "mean_action_count": 3.5,
+      "mean_retry_count": 0,
+      "failure_categories": {
+        "grounding-loop": 2
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/ui-evolution/playwright/scripted/scripted",
+      "provider_id": null,
+      "model_id": null,
+      "n": 2,
+      "valid_completion_rate": 1,
+      "joint_end_to_end_correctness_rate": 1,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 2639,
+      "median_wall_time_ms": 2639,
+      "mean_action_count": 5,
+      "mean_retry_count": 0,
+      "failure_categories": {},
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for clean-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/functional-fault/playwright/scripted/scripted",
+      "provider_id": null,
+      "model_id": null,
+      "n": 2,
+      "valid_completion_rate": 1,
+      "joint_end_to_end_correctness_rate": 1,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 2595,
+      "median_wall_time_ms": 2595,
+      "mean_action_count": 5,
+      "mean_retry_count": 0,
+      "failure_categories": {},
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for fault-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/functional-fault/hybrid/deepseek-api/deepseek-v4-flash-vision-exp",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 2,
+      "valid_completion_rate": 1,
+      "joint_end_to_end_correctness_rate": 1,
+      "verdict_correct_rate": 1,
+      "mean_wall_time_ms": 13200,
+      "median_wall_time_ms": 13200,
+      "mean_action_count": 6,
+      "mean_retry_count": 1,
+      "failure_categories": {},
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for fault-only input."
+    },
+    {
+      "cell": "juice-shop/juice-shop-product-search/functional-fault/visual/deepseek-api/deepseek-v4-flash-vision-exp",
+      "provider_id": "deepseek-api",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "n": 2,
+      "valid_completion_rate": 0,
+      "joint_end_to_end_correctness_rate": 0,
+      "verdict_correct_rate": null,
+      "mean_wall_time_ms": 20943.5,
+      "median_wall_time_ms": 20943.5,
+      "mean_action_count": 9,
+      "mean_retry_count": 0.5,
+      "failure_categories": {
+        "agent-step-budget": 1,
+        "grounding-loop": 1
+      },
+      "false_positive_rate": null,
+      "false_negative_rate": null,
+      "note": "FPR/FNR require matched clean and fault records for the same workflow; null is intentional for fault-only input."
+    }
+  ],
+  "generated_at": "2026-09-13T08:57:02.826Z"
+}

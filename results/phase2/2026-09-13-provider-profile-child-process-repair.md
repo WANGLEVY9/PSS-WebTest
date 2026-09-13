@@ -25,13 +25,15 @@ paired with the Aliyun base URL/key inherited from `.env`.
 
 ## Validity evidence
 
-The post-fix controllers were executed with one matched repetition per
-application and the same reset/oracle contract as the preceding pilots.
+The post-fix controllers were first executed with one matched repetition per
+application and then extended with two additional matched repetitions for each
+application. All runs used the same reset/oracle contract as the preceding
+pilots.
 
 | Application/task | Playwright | Pure visual | Hybrid | Validity |
 |---|---:|---:|---:|---|
-| Indico create-event / DeepSeek | 1/1 | 0/1, grounding-loop | 0/1, oracle failure after pass verdict | valid pilot stratum |
-| Juice Shop product-search / DeepSeek | 1/1 | 0/1, grounding-loop | 1/1 | valid pilot stratum |
+| Indico create-event / DeepSeek | 3/3 | 0/3, grounding-loop | 0/3, oracle failure after pass verdict | valid pilot stratum |
+| Juice Shop product-search / DeepSeek | 3/3 | 0/3, grounding-loop | 3/3 | valid pilot stratum |
 
 The pre-fix 404 records remain in the append-only artifact history but are
 labelled invalid configuration evidence and are excluded from capability
@@ -42,6 +44,15 @@ Artifacts:
 
 - `artifacts/phase2/indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-clean-deepseek-provider-profile-fix2-pilot.json`
 - `artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-clean-deepseek-provider-profile-fix2-pilot.json`
+- `artifacts/phase2/indico-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-indico-deepseek-rep2-pilot.json`
+- `artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-deepseek-rep2-pilot.json`
+
+Descriptive variance and planning outputs (not frozen sample-size decisions):
+
+- `results/phase2/2026-09-13-indico-deepseek-clean-variance.json`
+- `results/phase2/2026-09-13-juice-deepseek-clean-variance.json`
+- `results/phase2/2026-09-13-indico-deepseek-power-planning.json`
+- `results/phase2/2026-09-13-juice-deepseek-power-planning.json`
 
 ## Interpretation boundary
 

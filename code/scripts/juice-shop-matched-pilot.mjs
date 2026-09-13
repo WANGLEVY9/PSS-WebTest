@@ -18,7 +18,7 @@ const experimentCondition = resolveExperimentCondition();
 const expectedVerdict = experimentCondition.expectedVerdict;
 const maxSteps = process.env.CUA_MAX_STEPS ?? '16';
 const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '20000';
-const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0';
+const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '120000';
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
@@ -41,6 +41,7 @@ const providerEnv = (() => {
     ?? findProviderProfile({ provider, model })?.optimization_profile
     ?? base.PSS_AGENT_PROFILE
     ?? 'baseline-v0';
+  base.CUA_AGENT_WALL_TIMEOUT_MS = explicitEnv.CUA_AGENT_WALL_TIMEOUT_MS ?? '120000';
   base.PSS_REQUIRE_FROZEN_PROFILE = '1';
   return base;
 })();

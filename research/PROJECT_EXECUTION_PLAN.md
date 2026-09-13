@@ -207,7 +207,7 @@ code/
 artifacts/
   raw/ derived/ figures/ logs/
 paper/
-  main.tex references.bib
+  main.tex main.bib
 ```
 
 Raw outputs are append-only. Derived datasets and figures must be reproducible from scripts. API keys and participant/account data never enter the repository.

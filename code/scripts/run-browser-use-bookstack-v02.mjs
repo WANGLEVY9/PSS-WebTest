@@ -1,9 +1,11 @@
 import dotenv from 'dotenv';
+import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { appendRunRecord } from '../src/traditional-run-record.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { createPhase2Provenance } from '../src/phase2-provenance.mjs';
+import { assertFrameworkVersion, assertRegistryAgreesWithManifest } from '../src/framework-version.mjs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -17,7 +19,9 @@ for (const key of ['PSS_CONFIGURATION_ID', 'PSS_RESET_DIGEST', 'PSS_RANDOMIZATIO
 if (process.env.PSS_CONFIGURATION_ID !== 'hybrid-browser-use-grounded-candidate') throw new Error('Browser Use adapter requires hybrid-browser-use-grounded-candidate');
 if (process.env.PSS_BOOKSTACK_TASK_ID && process.env.PSS_BOOKSTACK_TASK_ID !== 'bookstack-open-book') throw new Error('v0.2 Browser Use adapter currently supports bookstack-open-book only');
 
-const runId = process.env.PSS_RUN_ID || `bookstack-browser-use-${Date.now()}`;
+// The run id used to be `${Date.now()}` only, so two runs starting in the same
+// millisecond collided and overwrote each other's replay directory.
+const runId = process.env.PSS_RUN_ID || `bookstack-browser-use-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`;
 const child = spawn(python, ['scripts/framework-browser-use-runner.py'], { cwd: codeRoot, env: { ...process.env, PSS_RUN_ID: runId }, stdio: ['ignore', 'pipe', 'pipe'] });
 let stdout = '';
 let stderr = '';
@@ -28,6 +32,32 @@ const marker = stdout.trim().split('\n').find((line) => line.startsWith('PSS_FRA
 if (!marker) throw new Error(`Browser Use runner returned no redacted result (exit ${exitCode}): ${stderr.slice(-500)}`);
 const summary = JSON.parse(marker.slice('PSS_FRAMEWORK_RESULT:'.length));
 const registry = loadConfigurationRegistry();
+const track = process.env.PSS_FRAMEWORK_TRACK ?? 'historical';
+// Version truth. The Python adapter reports the version it actually imported;
+// this validates it against the frozen manifest and against the registry. The
+// old code wrote the literal '0.13.10' in three places, so the registry
+// cross-check could never fail and a rebuilt environment would have silently
+// reported the old version.
+const frameworkVersion = assertFrameworkVersion({
+  frameworkId: 'browser-use-grounded',
+  track,
+  installed: summary.framework_version,
+  installedFrom: 'framework-browser-use-runner.py:importlib.metadata'
+});
+const configuration = registry.configurations.find((entry) => entry.configuration_id === process.env.PSS_CONFIGURATION_ID);
+if (configuration) {
+  assertRegistryAgreesWithManifest({
+    registryFrameworkId: configuration.framework.id,
+    registryVersion: configuration.framework.version,
+    frameworkId: 'browser-use-grounded',
+    track
+  });
+  // The record's model_id comes from the registry. If the environment points at
+  // a different model, the record would claim a model that never ran.
+  if (process.env.CUA_MODEL && configuration.runtime?.model_id && process.env.CUA_MODEL !== configuration.runtime.model_id) {
+    throw new Error(`CUA_MODEL=${process.env.CUA_MODEL} does not match the registry model_id=${configuration.runtime.model_id} for ${process.env.PSS_CONFIGURATION_ID}`);
+  }
+}
 const phase2 = createPhase2Provenance({
   registry,
   configurationId: process.env.PSS_CONFIGURATION_ID,
@@ -36,7 +66,15 @@ const phase2 = createPhase2Provenance({
   applicationId: 'bookstack',
   resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
-  environment: { runner: 'browser-use-bookstack-v0.2', base_url: process.env.BOOKSTACK_BASE_URL || 'http://127.0.0.1:8081', framework_version: '0.13.10', use_vision: true, max_steps: Number.parseInt(process.env.CUA_MAX_STEPS || '10', 10) }
+  environment: {
+    runner: 'browser-use-bookstack-v0.2',
+    base_url: process.env.BOOKSTACK_BASE_URL || 'http://127.0.0.1:8081',
+    framework_version: frameworkVersion.installed_version,
+    framework_environment_id: frameworkVersion.environment_id,
+    framework_track: frameworkVersion.track,
+    use_vision: true,
+    max_steps: Number.parseInt(process.env.CUA_MAX_STEPS || '10', 10)
+  }
 });
 const runRecord = createRunRecord({
   ...phase2,
@@ -48,7 +86,13 @@ const runRecord = createRunRecord({
   emitted_verdict: summary.agent_success ? 'clean' : 'not-emitted',
   ground_truth_verdict: 'clean',
   timing: { wall_time_ms: summary.wall_time_ms, actions: summary.actions, retries: summary.retries },
-  provenance: { ...phase2.provenance, runner_version: 'browser-use-bookstack-v0.2', observation_contract: 'screenshot-plus-structure' },
+  provenance: {
+    ...phase2.provenance,
+    runner_version: 'browser-use-bookstack-v0.2',
+    observation_contract: 'screenshot-plus-structure',
+    framework_environment_id: frameworkVersion.environment_id,
+    framework_track: frameworkVersion.track
+  },
   failure_category: summary.failure_category,
   trace: summary.trace
 });

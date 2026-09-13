@@ -1,16 +1,16 @@
 {
   "schema_version": "framework-task-smoke.v1",
-  "generated_at": "2026-09-09T07:10:02.925Z",
+  "generated_at": "2026-09-09T08:18:10.326Z",
   "sut": "BookStack",
   "task": "bookstack-open-book",
   "evidence_scope": "exploratory framework smoke only; not a matched three-arm run and not confirmatory evidence",
   "variants": {
     "stagehand": {
       "framework": "stagehand",
-      "status": "blocked",
+      "status": "implemented-custom-client",
       "strict_pass": false,
-      "task_adapter": "pending",
-      "reason": "configured model is rejected by Stagehand at execute-time (outside its supported model registry)"
+      "task_adapter": "stagehand-qwen-custom-v0.1",
+      "reason": "Qwen custom LLMClient is available; run framework:stagehand:qwen:v02 for a real task record"
     },
     "browser_use": {
       "framework": "browser-use",
@@ -20,15 +20,15 @@
       "scope": "exploratory local authenticated navigation smoke; not matched evidence",
       "status": "completed",
       "strict_pass": true,
-      "steps": 4,
-      "elapsed_ms": 26665,
+      "steps": 5,
+      "elapsed_ms": 31898,
       "failure_category": null
     },
     "agentlab_browsergym": {
-      "status": "blocked",
+      "status": "adapter-ready",
       "strict_pass": false,
-      "task_adapter": "pending",
-      "reason": "BrowserGym task adapter not implemented for this PSS task"
+      "task_adapter": "pss-bookstack-open-book",
+      "reason": "setup/observation/oracle adapter is implemented; model-backed AgentLab policy remains a separate adapter"
     }
   },
   "fail_closed": true

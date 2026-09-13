@@ -13,24 +13,32 @@ from pathlib import Path
 
 from browser_use import Agent, Browser, ChatOpenAI
 
+from pss_framework_version import require_env, require_installed, run_scoped_profile_dir
+
+# Read from the installed distribution, never from a literal.
+FRAMEWORK_VERSION = require_installed("browser-use")
+
 
 async def main() -> None:
     started = time.time()
     base_url = os.environ.get("BOOKSTACK_BASE_URL", "http://127.0.0.1:8081")
+    run_id = os.environ.get("PSS_RUN_ID", f"browser-use-smoke-{int(started * 1000)}")
     output_path = Path(os.environ.get(
         "PSS_FRAMEWORK_TASK_SMOKE_OUT",
         str(Path(__file__).resolve().parents[2] / "research" / "framework-task-smoke-2026-09-09.json"),
     ))
     browser = Browser(
         headless=True,
-        user_data_dir="/private/tmp/pss-browser-use-task-profile",
+        user_data_dir=str(run_scoped_profile_dir(run_id, "browser-use-smoke")),
         allowed_domains=["127.0.0.1", "localhost"],
         enable_default_extensions=False,
     )
+    provider = require_env(["CUA_MODEL", "CUA_API_KEY", "CUA_BASE_URL"])
+    credentials = require_env(["PSS_BOOKSTACK_USERNAME", "PSS_BOOKSTACK_PASSWORD"])
     llm = ChatOpenAI(
-        model=os.environ["CUA_MODEL"],
-        api_key=os.environ["CUA_API_KEY"],
-        base_url=os.environ["CUA_BASE_URL"],
+        model=provider["CUA_MODEL"],
+        api_key=provider["CUA_API_KEY"],
+        base_url=provider["CUA_BASE_URL"],
         timeout=30,
         max_retries=1,
     )
@@ -45,8 +53,8 @@ async def main() -> None:
         llm=llm,
         browser=browser,
         sensitive_data={
-            "email": os.environ["PSS_BOOKSTACK_USERNAME"],
-            "password": os.environ["PSS_BOOKSTACK_PASSWORD"],
+            "email": credentials["PSS_BOOKSTACK_USERNAME"],
+            "password": credentials["PSS_BOOKSTACK_PASSWORD"],
         },
         use_vision=True,
         max_failures=2,
@@ -59,8 +67,9 @@ async def main() -> None:
     )
     summary = {
         "framework": "browser-use",
-        "framework_version": "0.13.10",
-        "provider_model": "configured-model",
+        "framework_version": FRAMEWORK_VERSION,
+        "provider_model": provider["CUA_MODEL"],
+        "run_id": run_id,
         "task": "bookstack-open-book",
         "scope": "exploratory local authenticated navigation smoke; not matched evidence",
         "status": "error",

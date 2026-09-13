@@ -1,0 +1,188 @@
+{
+  "schema_version": "0.1",
+  "audited_at": "2026-09-12",
+  "scope": [
+    "pss-native",
+    "stagehand",
+    "browser-use",
+    "agentlab-browsergym"
+  ],
+  "method": "read-only code audit of every framework adapter, config and test, cross-checked against the installed packages and the run-record contract",
+  "defects": [
+    {
+      "id": "F-01",
+      "level": "P0",
+      "title": "Framework version hardcoded in five places; registry cross-check compared a value with itself",
+      "location": "framework-browser-use-runner.py:198, framework-browser-use-smoke.py:62, run-browser-use-bookstack-v02.mjs:39, run-stagehand-bookstack-v02.mjs:113, run-agentlab-bookstack-adapter.py:26",
+      "status": "fixed"
+    },
+    {
+      "id": "F-02",
+      "level": "P0",
+      "title": "Stagehand passed ignored fallbackCount, so a locator-fallback run was recorded as completed",
+      "location": "run-stagehand-bookstack-v02.mjs:67-75,92,110",
+      "status": "fixed"
+    },
+    {
+      "id": "F-03",
+      "level": "P0",
+      "title": "Stagehand adapter never asserted the observation boundary at runtime",
+      "location": "run-stagehand-bookstack-v02.mjs:1-8",
+      "status": "fixed"
+    },
+    {
+      "id": "F-04",
+      "level": "P1",
+      "title": "Custom Qwen client forwarded AI-SDK tool-result parts untouched",
+      "location": "stagehand-qwen-client.mjs:32",
+      "status": "open"
+    },
+    {
+      "id": "F-05",
+      "level": "P1",
+      "title": "Malformed provider responses silently coerced (fail-open)",
+      "location": "stagehand-qwen-client.mjs:78-80",
+      "status": "open"
+    },
+    {
+      "id": "F-06",
+      "level": "P0",
+      "title": "Recorded model could differ from the model actually called",
+      "location": "run-browser-use-bookstack-v02.mjs, run-stagehand-bookstack-v02.mjs",
+      "status": "fixed"
+    },
+    {
+      "id": "F-07",
+      "level": "P1",
+      "title": "Driver default timeoutMs=15000 disagreed with manifest timeout_ms=30000",
+      "location": "volcengine-cua-driver.mjs:195, volcengine-hybrid-driver.mjs:63",
+      "status": "open"
+    },
+    {
+      "id": "F-08",
+      "level": "P1",
+      "title": "Most native runners did not set PSS_REQUIRE_FROZEN_PROFILE=1",
+      "location": "run-bookstack-agent-pilot.mjs, run-indico-agent-pilot.mjs, juice-shop-matched-pilot.mjs and others",
+      "status": "open"
+    },
+    {
+      "id": "F-09",
+      "level": "P1",
+      "title": "failure-taxonomy produced 9 of the 15 declared categories",
+      "location": "failure-taxonomy.mjs vs run-records.mjs",
+      "status": "open"
+    },
+    {
+      "id": "F-10",
+      "level": "P2",
+      "title": "FRAMEWORK_VARIANTS ids and registry framework.id had no cross-check",
+      "location": "framework-variants.mjs vs configuration-registry.v0.2.json",
+      "status": "partly-fixed"
+    },
+    {
+      "id": "F-11",
+      "level": "P1",
+      "title": "provider_raw_content_persisted was prose only",
+      "location": "research/phase2-replay-audit-smoke-2026-09-09.json",
+      "status": "open"
+    },
+    {
+      "id": "F-12",
+      "level": "P1",
+      "title": "AgentLab version was the composite string 0.4.2/0.14.2",
+      "location": "run-agentlab-bookstack-adapter.py:26",
+      "status": "fixed"
+    },
+    {
+      "id": "F-13",
+      "level": "P1",
+      "title": "AgentLab and Stagehand smoke markers had no ledger consumer",
+      "location": "package.json, run-agentlab-bookstack-adapter.py:38",
+      "status": "open"
+    },
+    {
+      "id": "F-14",
+      "level": "P1",
+      "title": "The three adapters used three different oracle implementations",
+      "location": "framework-browser-use-runner.py:162, run-stagehand-bookstack-v02.mjs:84, pss_bookstack.py:58",
+      "status": "open"
+    },
+    {
+      "id": "F-15",
+      "level": "P1",
+      "title": "Browser Use browser lifecycle had no try/finally",
+      "location": "framework-browser-use-runner.py:116-220",
+      "status": "fixed"
+    },
+    {
+      "id": "F-16",
+      "level": "P1",
+      "title": "Several exceptions silently swallowed",
+      "location": "framework-browser-use-runner.py:80-81,109-110,163-164, replay-artifacts.mjs:148-152",
+      "status": "open"
+    },
+    {
+      "id": "F-17",
+      "level": "P2",
+      "title": "Fallback XPath too wide and could click the wrong book",
+      "location": "run-stagehand-bookstack-v02.mjs:68",
+      "status": "fixed"
+    },
+    {
+      "id": "F-18",
+      "level": "P2",
+      "title": "Hardcoded macOS Chrome path and /private/tmp browser profiles",
+      "location": "pss_bookstack.py:68, run-agentlab-bookstack-adapter.py:24, framework-browser-use-runner.py:118, framework-browser-use-smoke.py:26",
+      "status": "fixed"
+    },
+    {
+      "id": "F-19",
+      "level": "P2",
+      "title": "run_id used Date.now() only, so same-millisecond runs collided",
+      "location": "run-browser-use-bookstack-v02.mjs:20, run-stagehand-bookstack-v02.mjs:17, framework-browser-use-runner.py:63",
+      "status": "fixed"
+    },
+    {
+      "id": "F-20",
+      "level": "P2",
+      "title": "prompt_digest and action_schema_version were unverified declarations",
+      "location": "configuration-registry.v0.2.json:217,232",
+      "status": "open"
+    },
+    {
+      "id": "F-21",
+      "level": "P2",
+      "title": "A null decision was silently treated as done",
+      "location": "agent-adapter.mjs:44-47",
+      "status": "open"
+    },
+    {
+      "id": "F-22",
+      "level": "P2",
+      "title": "check-framework-readiness spawned commands without a timeout",
+      "location": "check-framework-readiness.mjs:5,9,13",
+      "status": "fixed"
+    },
+    {
+      "id": "F-23",
+      "level": "P2",
+      "title": "Missing provider env raised a bare KeyError",
+      "location": "framework-browser-use-runner.py:123-125,139",
+      "status": "fixed"
+    },
+    {
+      "id": "F-24",
+      "level": "P2",
+      "title": "Dead viewport/slow_mo/timeout fields on the AgentLab task",
+      "location": "pss_bookstack.py:30-32",
+      "status": "fixed"
+    },
+    {
+      "id": "F-25",
+      "level": "P0",
+      "title": "The scripted comparator arm declared Playwright 1.55 while 1.62.1 was installed and locked, so every scripted run record mis-declared the browser automation version",
+      "location": "configuration-registry.v0.2.json scripted configs (both statuses)",
+      "status": "fixed"
+    }
+  ]
+}

@@ -27,9 +27,10 @@ class PssBookStackOpenBookTask(AbstractBrowserTask):
         self.username = username
         self.password = password
         self.target_book = target_book
-        self.viewport = {"width": 1280, "height": 720}
-        self.slow_mo = 0
-        self.timeout = 15000
+        # The effective viewport, slow-mo and timeout are owned by BrowserEnv
+        # (see make_bookstack_env). Earlier versions also carried
+        # self.viewport/self.slow_mo/self.timeout here, which were never read and
+        # misleadingly suggested the task controlled them.
 
     @classmethod
     def get_task_id(cls) -> str:
@@ -65,12 +66,22 @@ def make_bookstack_env(
     base_url: str,
     username: str,
     password: str,
-    executable_path: str = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    executable_path: str | None = None,
     headless: bool = True,
 ) -> BrowserEnv:
-    """Construct a BrowserGym environment suitable for AgentLab's loop."""
+    """Construct a BrowserGym environment suitable for AgentLab's loop.
+
+    ``executable_path`` used to default to a hardcoded macOS Chrome path, which
+    failed outright on Linux and bypassed the Playwright-managed Chromium the
+    other arms use. Passing None (the default) lets BrowserGym launch its bundled
+    Chromium, so all arms share one frozen browser build. Set
+    PSS_CHROME_EXECUTABLE only for a declared browser-build ablation.
+    """
 
     action_set = HighLevelActionSet(subsets="webarena", strict=True, multiaction=False)
+    launch_kwargs: dict = {}
+    if executable_path:
+        launch_kwargs["executable_path"] = executable_path
     return BrowserEnv(
         task_entrypoint=PssBookStackOpenBookTask,
         task_kwargs={"base_url": base_url, "username": username, "password": password},
@@ -79,5 +90,5 @@ def make_bookstack_env(
         timeout=15000,
         headless=headless,
         action_mapping=action_set.to_python_code,
-        pw_chromium_kwargs={"executable_path": executable_path},
+        pw_chromium_kwargs=launch_kwargs,
     )

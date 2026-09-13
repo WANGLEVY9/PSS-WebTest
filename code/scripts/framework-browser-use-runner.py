@@ -17,6 +17,13 @@ from urllib.parse import urlparse
 
 from browser_use import Agent, Browser, ChatOpenAI
 
+from pss_framework_version import require_env, require_installed, run_scoped_profile_dir
+
+# Read the version from the actually installed distribution. It used to be the
+# string literal "0.13.10", which meant a rebuilt environment would silently
+# report the old version in every run record.
+FRAMEWORK_VERSION = require_installed("browser-use")
+
 
 def safe_path(url: str) -> str:
     if not url or url.startswith("about:blank"):
@@ -113,16 +120,22 @@ async def main() -> None:
         trace.append({"step": int(step) if isinstance(step, int) else None, "url_path": safe_path(getattr(state, "url", "")), "actions": actions})
         await capture(state=state, step=step, action=actions[0] if actions else None, phase="step", provider_ids=[event_id])
 
+    # A per-run profile directory. The previous hardcoded
+    # /private/tmp/pss-browser-use-pilot-profile persisted cookies and
+    # localStorage across runs and could be wiped by OS cleanup, both of which
+    # break the deterministic reset the study depends on.
+    profile_dir = run_scoped_profile_dir(run_id, "browser-use")
     browser = Browser(
         headless=True,
-        user_data_dir="/private/tmp/pss-browser-use-pilot-profile",
+        user_data_dir=str(profile_dir),
         allowed_domains=["127.0.0.1", "localhost"],
         enable_default_extensions=False,
     )
+    provider = require_env(["CUA_MODEL", "CUA_API_KEY", "CUA_BASE_URL"])
     llm = ChatOpenAI(
-        model=os.environ["CUA_MODEL"],
-        api_key=os.environ["CUA_API_KEY"],
-        base_url=os.environ["CUA_BASE_URL"],
+        model=provider["CUA_MODEL"],
+        api_key=provider["CUA_API_KEY"],
+        base_url=provider["CUA_BASE_URL"],
         timeout=int(os.environ.get("CUA_TIMEOUT_MS", "30000")) / 1000,
         max_retries=1,
     )
@@ -154,70 +167,74 @@ async def main() -> None:
     except Exception as error:  # bounded provider/framework failure
         failure = {"name": type(error).__name__, "message": str(error)[:240]}
 
-    final_url = await browser.get_current_page_url()
-    final_page = await browser.get_current_page()
-    heading_count = 0
-    if final_page is not None:
-        try:
-            heading_count = int(await final_page.evaluate("(target) => Array.from(document.querySelectorAll('h1,h2,h3')).filter((e) => (e.textContent || '').trim() === target).length", "Book"))
-        except Exception:
-            heading_count = 0
-    # Browser Use may tear down its owned session immediately after emitting a
-    # done action. Prefer the last model-visible state for the independent
-    # route/heading oracle when the post-run session is already blank.
-    oracle_url = final_url if safe_path(final_url) != "/blank" else last_state_url
-    oracle_heading_count = heading_count or last_heading_count
-    oracle_passed = safe_path(oracle_url) == "/books/book" and oracle_heading_count > 0
-    if final_page is not None:
-        await capture(state=None, step=len(trace), phase="final", provider_ids=[])
-    agent_success = bool(history and history.is_successful() is True)
-    final_result = str(history.final_result() or "") if history else ""
-    if failure:
-        failure_category = "provider-timeout" if "Timeout" in failure["name"] or "timeout" in failure["message"].lower() else "provider-api"
-        status = "timeout" if failure_category == "provider-timeout" else "test-failure"
-    elif oracle_passed and agent_success:
-        failure_category = None
-        status = "completed"
-    else:
-        failure_category = "agent-verdict" if oracle_passed else "oracle"
-        status = "evaluator-error"
-    replay = {
-        "schema_version": "replay-v1",
-        "run_id": run_id,
-        "application_id": "bookstack",
-        "task_id": "bookstack-open-book",
-        "arm": "hybrid",
-        "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-        "outcome": {"status": status, "checkpoint_reached": oracle_passed, "emitted_verdict": "clean" if agent_success else "not-emitted", "ground_truth_verdict": "clean", "failure_category": failure_category, "oracle_passed": oracle_passed, "error": failure},
-        "frames": frames,
-        "provider_events": provider_events,
-    }
-    (replay_root / f"{run_id}.json").write_text(json.dumps(replay, indent=2) + "\n")
-    summary = {
-        "framework": "browser-use",
-        "framework_version": "0.13.10",
-        "run_id": run_id,
-        "task_id": "bookstack-open-book",
-        "status": status,
-        "strict_pass": status == "completed",
-        "checkpoint_reached": oracle_passed,
-        "agent_success": agent_success,
-        "oracle_passed": oracle_passed,
-        "final_url_path": safe_path(oracle_url),
-        "heading_count": oracle_heading_count,
-        "wall_time_ms": round((time.time() - started) * 1000),
-        "actions": len(trace),
-        "retries": 0,
-        "failure_category": failure_category,
-        "failure": failure,
-        "trace": trace,
-        "replay_manifest": str(replay_root / f"{run_id}.json"),
-        "replay_frame_count": len(frames),
-        "provider_event_count": len(provider_events),
-        "final_result_digest": hashlib.sha256(final_result.encode()).hexdigest() if final_result else None,
-    }
-    print(f"PSS_FRAMEWORK_RESULT:{json.dumps(summary, ensure_ascii=False)}", flush=True)
-    await browser.close()
+    try:
+        final_url = await browser.get_current_page_url()
+        final_page = await browser.get_current_page()
+        heading_count = 0
+        if final_page is not None:
+            try:
+                heading_count = int(await final_page.evaluate("(target) => Array.from(document.querySelectorAll('h1,h2,h3')).filter((e) => (e.textContent || '').trim() === target).length", "Book"))
+            except Exception:
+                heading_count = 0
+        # Browser Use may tear down its owned session immediately after emitting a
+        # done action. Prefer the last model-visible state for the independent
+        # route/heading oracle when the post-run session is already blank.
+        oracle_url = final_url if safe_path(final_url) != "/blank" else last_state_url
+        oracle_heading_count = heading_count or last_heading_count
+        oracle_passed = safe_path(oracle_url) == "/books/book" and oracle_heading_count > 0
+        if final_page is not None:
+            await capture(state=None, step=len(trace), phase="final", provider_ids=[])
+        agent_success = bool(history and history.is_successful() is True)
+        final_result = str(history.final_result() or "") if history else ""
+        if failure:
+            failure_category = "provider-timeout" if "Timeout" in failure["name"] or "timeout" in failure["message"].lower() else "provider-api"
+            status = "timeout" if failure_category == "provider-timeout" else "test-failure"
+        elif oracle_passed and agent_success:
+            failure_category = None
+            status = "completed"
+        else:
+            failure_category = "agent-verdict" if oracle_passed else "oracle"
+            status = "evaluator-error"
+        replay = {
+            "schema_version": "replay-v1",
+            "run_id": run_id,
+            "application_id": "bookstack",
+            "task_id": "bookstack-open-book",
+            "arm": "hybrid",
+            "created_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+            "outcome": {"status": status, "checkpoint_reached": oracle_passed, "emitted_verdict": "clean" if agent_success else "not-emitted", "ground_truth_verdict": "clean", "failure_category": failure_category, "oracle_passed": oracle_passed, "error": failure},
+            "frames": frames,
+            "provider_events": provider_events,
+        }
+        (replay_root / f"{run_id}.json").write_text(json.dumps(replay, indent=2) + "\n")
+        summary = {
+            "framework": "browser-use",
+            "framework_version": FRAMEWORK_VERSION,
+            "run_id": run_id,
+            "task_id": "bookstack-open-book",
+            "status": status,
+            "strict_pass": status == "completed",
+            "checkpoint_reached": oracle_passed,
+            "agent_success": agent_success,
+            "oracle_passed": oracle_passed,
+            "final_url_path": safe_path(oracle_url),
+            "heading_count": oracle_heading_count,
+            "wall_time_ms": round((time.time() - started) * 1000),
+            "actions": len(trace),
+            "retries": 0,
+            "failure_category": failure_category,
+            "failure": failure,
+            "trace": trace,
+            "replay_manifest": str(replay_root / f"{run_id}.json"),
+            "replay_frame_count": len(frames),
+            "provider_event_count": len(provider_events),
+            "final_result_digest": hashlib.sha256(final_result.encode()).hexdigest() if final_result else None,
+        }
+        print(f"PSS_FRAMEWORK_RESULT:{json.dumps(summary, ensure_ascii=False)}", flush=True)
+    finally:
+        # A failure anywhere in the post-run section used to leak the Chromium
+        # process and the per-run profile directory.
+        await browser.close()
 
 
 if __name__ == "__main__":

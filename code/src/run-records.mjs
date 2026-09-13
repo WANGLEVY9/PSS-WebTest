@@ -14,7 +14,11 @@ const AUTHORING_SOURCES = new Set(['human', 'llm-generated', 'llm-repaired']);
 const FAILURE_CATEGORIES = new Set([
   'perception', 'grounding', 'planning', 'execution', 'oracle', 'environment', 'task-defect',
   'provider', 'provider-timeout', 'provider-api', 'provider-format', 'grounding-loop',
-  'agent-step-budget', 'termination-verdict', 'agent-verdict'
+  'agent-step-budget', 'termination-verdict', 'agent-verdict',
+  // Framework-adapter boundaries. These must stay separate from model-capability
+  // categories: a framework fallback, a version mismatch and a missing
+  // environment are engineering facts, not evidence about a model.
+  'framework-fallback', 'framework-version-mismatch', 'framework-env-missing'
 ]);
 
 function assertSafe(value, path = '$') {
@@ -72,7 +76,13 @@ function validateRunRecordV01(record) {
   // v0.1 remains readable for historical pilots, but agent records must still
   // retain the provider/model stratum.  provider_id is optional for legacy
   // records and required by the newer runner paths when a provider is used.
-  assertAllowedKeys(record.provenance, new Set(['runner_version', 'trace_hash', 'observation_contract', 'provider_id', 'model_id', 'seed']), 'run record provenance');
+  // provider_profile_id/action_mode/api_mode are optional so historical
+  // records stay readable, but the matched runners always set them: a protocol
+  // change must never be reportable as a strategy-family effect.
+  assertAllowedKeys(record.provenance, new Set([
+    'runner_version', 'trace_hash', 'observation_contract', 'provider_id', 'model_id', 'seed',
+    'provider_profile_id', 'action_mode', 'api_mode', 'action_mode_source', 'hybrid_action_mode'
+  ]), 'run record provenance');
 }
 
 function validateRunRecordV02(record) {
@@ -90,7 +100,7 @@ function validateRunRecordV02(record) {
 
   const p = record.provenance;
   const requiredProvenanceFields = ['runner_version', 'trace_hash', 'observation_contract', 'model_id', 'seed', 'framework_id', 'framework_version', 'provider_id', 'prompt_digest', 'action_schema_version', 'code_framework', 'authoring_source', 'environment_digest'];
-  const optionalProvenanceFields = ['optimization_profile', 'hybrid_action_mode'];
+  const optionalProvenanceFields = ['optimization_profile', 'hybrid_action_mode', 'provider_profile_id', 'action_mode', 'api_mode', 'action_mode_source', 'framework_environment_id', 'framework_track'];
   for (const field of requiredProvenanceFields) if (!(field in p)) throw new Error(`v0.2 provenance missing required field: ${field}`);
   assertAllowedKeys(p, new Set([...requiredProvenanceFields, ...optionalProvenanceFields]), 'v0.2 run record provenance');
   if (p.observation_contract !== CONTRACT_BY_FAMILY[record.strategy_family]) throw new Error('v0.2 provenance observation_contract conflicts with strategy_family');

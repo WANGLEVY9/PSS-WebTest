@@ -107,10 +107,23 @@ The exact manifest, mutation implementations, and factorial/blocking scheme are 
 
 ## H. Sample size and repetitions
 
-- Planning frame: four applications × six workflows = 24 test intents.
-- Broad tier: at least three independent runs per eligible arm-condition cell.
-- Reliability tier: at least ten additional runs on a stratified preregistered subset.
-- Final sample: TBD by simulation-based power analysis using pilot variance/correlation and a justified minimum effect of practical interest.
+- Planning frame: 30 admitted applications across six domain strata, each with
+  eight matched local workflows; plus 15 preregistered, disjoint application
+  pairs with two directed cross-Web workflows per pair.
+- Local reference panel: 21,600 started executions (30 applications; eight
+  workflows/application; clean, fault, and semantics-validated evolution;
+  three strategy families; ten independently reset repetitions).
+- Cross-Web composition panel: 2,700 started executions (15 application pairs;
+  two directed workflows/pair; three conditions; three strategy families; ten
+  independently reset repetitions).  A joint oracle validates source state,
+  destination state, and their declared mapping.
+- Configuration-replication panel: 5,184 started executions (12 applications,
+  four workflows/application, three conditions, six non-reference
+  configurations, and six independently reset repetitions).  It is analysed
+  separately from the primary reference contrast.
+- Planned total: 29,484 started executions. Final ratification remains subject
+  to simulation-based power analysis using pilot variance/correlation and a
+  justified minimum effect of practical interest.
 - Pilot applications/tasks used to tune prompts, mutations, or scoring are marked and excluded from confirmatory analysis, unless a clean untouched holdout version is defined in advance.
 
 ## I. Frozen intervention details

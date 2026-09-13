@@ -1,0 +1,240 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-09-12",
+  "purpose": "Single source of truth for external framework environments. Before this manifest the framework version was a hardcoded string literal in five places (Python runners, JS runners and the configuration registry), so a rebuilt environment could silently report the old version in every run record. This manifest declares the environment, the version is resolved from the actually installed distribution at runtime, and a mismatch fails closed.",
+  "install_root": "third_party/frameworks",
+  "lock_root": "code/config/frameworks",
+  "tracks": {
+    "historical": {
+      "purpose": "Freeze the versions behind the 2026-09-09 framework smoke evidence so it stays reproducible.",
+      "pooling": "never-pooled"
+    },
+    "latest": {
+      "purpose": "Upstream-latest stratum. Exact versions are resolved at install time and recorded here.",
+      "pooling": "never-pooled"
+    }
+  },
+  "environments": [
+    {
+      "environment_id": "h-browser-use",
+      "track": "historical",
+      "framework_id": "browser-use-grounded",
+      "manager": "uv",
+      "python": "3.12",
+      "venv_path": "third_party/frameworks/h-browser-use",
+      "lock_file": "code/config/frameworks/h-browser-use.lock",
+      "import_module": "browser_use",
+      "distribution": "browser-use",
+      "packages": [
+        "browser-use==0.13.10"
+      ],
+      "registry_configuration_ids": [
+        "hybrid-browser-use-grounded-candidate"
+      ],
+      "role": "external browser-agent hybrid baseline (frozen historical layer)",
+      "install_status": "installed",
+      "resolved": {
+        "distribution": "browser-use",
+        "version": "0.13.10",
+        "interpreter": "3.12.14",
+        "python_path": "third_party/frameworks/h-browser-use/bin/python",
+        "companions": {},
+        "resolved_at": "2026-09-12T09:23:54.399Z"
+      },
+      "install_error": null,
+      "adapter_compatibility": {
+        "status": "compatible",
+        "checked_at": "2026-09-12",
+        "finding": "Browser Use 0.13.10 runner completed the BookStack navigation smoke with a passing independent oracle."
+      }
+    },
+    {
+      "environment_id": "l-browser-use",
+      "track": "latest",
+      "framework_id": "browser-use-grounded",
+      "manager": "uv",
+      "python": "3.12",
+      "venv_path": "third_party/frameworks/l-browser-use",
+      "lock_file": "code/config/frameworks/l-browser-use.lock",
+      "import_module": "browser_use",
+      "distribution": "browser-use",
+      "packages": [
+        "browser-use"
+      ],
+      "registry_configuration_ids": [],
+      "role": "external browser-agent hybrid baseline (upstream-latest layer)",
+      "install_status": "collapsed-to-historical",
+      "resolved": null,
+      "install_error": null,
+      "track_equivalence": {
+        "collapsed": true,
+        "equivalent_to": "historical",
+        "version": "0.13.10",
+        "note": "Upstream latest for this distribution equals the frozen historical version, so the latest track adds no second stratum. Do not report it as an independent stratum."
+      }
+    },
+    {
+      "environment_id": "h-agentlab",
+      "track": "historical",
+      "framework_id": "agentlab-browsergym-grounded",
+      "manager": "uv",
+      "python": "3.12",
+      "venv_path": "third_party/frameworks/h-agentlab",
+      "lock_file": "code/config/frameworks/h-agentlab.lock",
+      "import_module": "agentlab",
+      "distribution": "agentlab",
+      "companion_distributions": [
+        "browsergym"
+      ],
+      "packages": [
+        "agentlab==0.4.2",
+        "browsergym==0.14.2"
+      ],
+      "registry_configuration_ids": [
+        "hybrid-agentlab-browsergym-grounded-candidate"
+      ],
+      "role": "benchmark/reproducibility adapter (frozen historical layer)",
+      "install_status": "installed",
+      "resolved": {
+        "distribution": "agentlab",
+        "version": "0.4.2",
+        "interpreter": "3.12.14",
+        "python_path": "third_party/frameworks/h-agentlab/bin/python",
+        "companions": {
+          "browsergym": "0.14.2"
+        },
+        "resolved_at": "2026-09-12T09:30:54.993Z"
+      },
+      "install_error": null,
+      "adapter_compatibility": {
+        "status": "compatible",
+        "checked_at": "2026-09-12",
+        "finding": "AgentLab 0.4.2 / BrowserGym 0.14.2 adapter smoke passed with the bundled Chromium and a passing task oracle."
+      }
+    },
+    {
+      "environment_id": "l-agentlab",
+      "track": "latest",
+      "framework_id": "agentlab-browsergym-grounded",
+      "manager": "uv",
+      "python": "3.12",
+      "venv_path": "third_party/frameworks/l-agentlab",
+      "lock_file": "code/config/frameworks/l-agentlab.lock",
+      "import_module": "agentlab",
+      "distribution": "agentlab",
+      "companion_distributions": [
+        "browsergym"
+      ],
+      "packages": [
+        "agentlab",
+        "browsergym"
+      ],
+      "registry_configuration_ids": [],
+      "role": "benchmark/reproducibility adapter (upstream-latest layer)",
+      "install_status": "collapsed-to-historical",
+      "resolved": null,
+      "install_error": null,
+      "track_equivalence": {
+        "collapsed": true,
+        "equivalent_to": "historical",
+        "version": "0.4.2",
+        "note": "Upstream latest for this distribution equals the frozen historical version, so the latest track adds no second stratum. Do not report it as an independent stratum."
+      }
+    },
+    {
+      "environment_id": "h-stagehand",
+      "track": "historical",
+      "framework_id": "stagehand-grounded",
+      "manager": "npm",
+      "node_root": "code",
+      "import_module": "@browserbasehq/stagehand",
+      "distribution": "@browserbasehq/stagehand",
+      "packages": [
+        "@browserbasehq/stagehand@3.0.8"
+      ],
+      "lock_file": "code/package-lock.json",
+      "registry_configuration_ids": [
+        "hybrid-stagehand-grounded-candidate"
+      ],
+      "role": "Playwright-native grounded browser-agent comparison (frozen historical layer)",
+      "install_status": "installed",
+      "resolved": {
+        "distribution": "@browserbasehq/stagehand",
+        "version": "3.0.8",
+        "interpreter": "v26.1.0",
+        "node_root": "code",
+        "resolved_at": "2026-09-12T09:30:55.006Z"
+      },
+      "install_error": null,
+      "adapter_compatibility": {
+        "status": "compatible",
+        "checked_at": "2026-09-12",
+        "finding": "Stagehand 3.0.8 exports both Stagehand and LLMClient; the Qwen client runs and reaches the checkpoint."
+      }
+    },
+    {
+      "environment_id": "l-stagehand",
+      "track": "latest",
+      "framework_id": "stagehand-grounded",
+      "manager": "npm",
+      "node_root": "third_party/frameworks/l-stagehand",
+      "import_module": "@browserbasehq/stagehand",
+      "distribution": "@browserbasehq/stagehand",
+      "packages": [
+        "@browserbasehq/stagehand@latest"
+      ],
+      "lock_file": "code/config/frameworks/l-stagehand.lock.json",
+      "registry_configuration_ids": [],
+      "role": "Playwright-native grounded browser-agent comparison (upstream-latest layer)",
+      "install_status": "installed",
+      "resolved": {
+        "distribution": "@browserbasehq/stagehand",
+        "version": "4.1.0",
+        "interpreter": "v26.1.0",
+        "node_root": "third_party/frameworks/l-stagehand",
+        "resolved_at": "2026-09-12T09:31:27.153Z"
+      },
+      "install_error": null,
+      "track_equivalence": {
+        "collapsed": false,
+        "distinct_from": "historical",
+        "historical_version": "3.0.8"
+      },
+      "adapter_compatibility": {
+        "status": "incompatible",
+        "checked_at": "2026-09-12",
+        "method": "import the installed dist entry and compare exports with the adapter contract",
+        "finding": "Stagehand 4.1.0 no longer exports LLMClient, the base class that scripts/stagehand-qwen-client.mjs extends. Export count dropped from 89 (3.0.8) to 30 (4.1.0); the package is ESM-only (exports[\".\"].import = ./dist/index.mjs) and cannot be resolved through require.resolve.",
+        "consequence": "The latest Stagehand track cannot run the existing Qwen client. It must not be reported as a usable stratum until a v4-compatible client is written.",
+        "required_work": "Reimplement the Qwen client against the Stagehand v4 provider interface, then re-run a model-only task smoke."
+      }
+    },
+    {
+      "environment_id": "h-playwright",
+      "track": "historical",
+      "framework_id": "playwright",
+      "manager": "npm",
+      "node_root": "code",
+      "import_module": "playwright",
+      "distribution": "playwright",
+      "packages": [
+        "playwright"
+      ],
+      "lock_file": "code/package-lock.json",
+      "registry_configuration_ids": [
+        "scripted-playwright-accessibility-human-v2",
+        "legacy-scripted-playwright-accessibility-human"
+      ],
+      "role": "accessibility-locator scripted baseline - the primary comparator arm",
+      "install_status": "installed",
+      "resolved": {
+        "distribution": "playwright",
+        "version": "1.62.1",
+        "interpreter": "v26.1.0",
+        "node_root": "code",
+        "resolved_at": "2026-09-12T09:59:52.941Z"
+      },
+      "install_error": null
+    }
+  ]
+}

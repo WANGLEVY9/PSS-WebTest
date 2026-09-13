@@ -49,7 +49,14 @@
         "action_schema_version": { "type": ["string", "null"] },
         "code_framework": { "type": ["string", "null"] },
         "authoring_source": { "enum": ["human", "llm-generated", "llm-repaired", null] },
-        "environment_digest": { "type": "string" }
+        "environment_digest": { "type": "string" },
+        "provider_profile_id": { "type": ["string", "null"] },
+        "action_mode": { "enum": ["tool", "json", null] },
+        "api_mode": { "enum": ["chat", "responses", null] },
+        "action_mode_source": { "enum": ["env-override", "frozen-profile", "legacy-default", null] },
+        "hybrid_action_mode": { "enum": ["coordinate", "semantic", null] },
+        "framework_environment_id": { "type": ["string", "null"] },
+        "framework_track": { "enum": ["historical", "latest", null] }
       },
       "additionalProperties": false
     },
@@ -57,7 +64,8 @@
       "enum": [
         "perception", "grounding", "planning", "execution", "oracle", "environment", "task-defect",
         "provider", "provider-timeout", "provider-api", "provider-format", "grounding-loop",
-        "agent-step-budget", "termination-verdict", "agent-verdict", null
+        "agent-step-budget", "termination-verdict", "agent-verdict",
+        "framework-fallback", "framework-version-mismatch", "framework-env-missing", null
       ]
     },
     "configuration_id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]{2,127}$" },

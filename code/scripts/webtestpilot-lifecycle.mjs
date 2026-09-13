@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises';
+import fsSync from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
@@ -39,6 +40,12 @@ if (!definitions[app] || !['start', 'reset', 'ready', 'stop', 'status'].includes
 const definition = definitions[app];
 const appRoot = path.dirname(definition.composeFile);
 
+// The application's own env file must win over the ambient shell. Without this,
+// a variable leaked from another SUT profile (for example APP_PORT exported by
+// sourcing the Invoice Ninja profile) is interpolated into this application's
+// compose file, and the container fails with "port is already allocated".
+const appEnvFileVars = fsSync.existsSync(definition.envFile) ? parseDotenv(fsSync.readFileSync(definition.envFile, 'utf8')) : {};
+
 function parseDotenv(text) {
   const values = {};
   for (const line of text.split(/\r?\n/)) {
@@ -51,7 +58,7 @@ function parseDotenv(text) {
 
 function run(command, args, { cwd = appRoot, input, allowFailure = false, capture = false } = {}) {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { cwd, stdio: [input === undefined ? 'ignore' : 'pipe', capture ? 'pipe' : 'inherit', capture ? 'pipe' : 'inherit'] });
+    const child = spawn(command, args, { cwd, env: { ...process.env, ...appEnvFileVars }, stdio: [input === undefined ? 'ignore' : 'pipe', capture ? 'pipe' : 'inherit', capture ? 'pipe' : 'inherit'] });
     let stdout = '';
     let stderr = '';
     if (capture) {

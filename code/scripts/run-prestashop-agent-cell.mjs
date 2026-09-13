@@ -12,6 +12,7 @@ import { classifyAgentFailure } from '../src/failure-taxonomy.mjs';
 import { deriveAgentOutcome } from '../src/outcome-admission.mjs';
 import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
+import { assertProtocolMatchesFrozenProfile, resolveProviderProtocol } from '../src/provider-profile.mjs';
 import { applyPrestashopMutation } from '../src/prestashop-mutations.mjs';
 
 dotenv.config();
@@ -50,8 +51,20 @@ const taskDefinitions = {
 };
 if (!taskDefinitions[complexity]) throw new Error(`PSS_AGENT_COMPLEXITY must be simple, medium, or complex (got ${complexity})`);
 const { taskId, intent: baseIntent } = taskDefinitions[complexity];
-const providerProfile = process.env.PSS_AGENT_PROFILE ?? ({ aliyun: 'aliyun-qwen-grounded-v1', deepseek: 'deepseek-flash-grounded-v1', volcengine: 'doubao-seed-2-1-pro-grounded-v1' }[process.env.CUA_PROVIDER] ?? 'baseline-v0');
+// The frozen provider-profile manifest is the single source of truth for the
+// provider/model protocol and for the optimization profile.  A provider/model
+// without a frozen profile is a hard error on this path, so an implicit driver
+// default can never enter a matched cell.
+const { protocol, drift } = assertProtocolMatchesFrozenProfile({
+  env: process.env,
+  provider: process.env.CUA_PROVIDER,
+  model: process.env.CUA_MODEL,
+  arm
+});
+const providerProfile = process.env.PSS_AGENT_PROFILE ?? protocol.optimization_profile;
+if (!providerProfile) throw new Error(`No optimization profile is registered for frozen profile ${protocol.profile_id}`);
 const optimization = resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerProfile }, arm, taskFamily: 'search-navigation' });
+const hybridActionMode = process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate';
 const promptProfile = process.env.PSS_AGENT_PROMPT_PROFILE ?? optimization.prompt_profile;
 const explicitSequence = `Mandatory first three actions: (1) click the visible search input, (2) type the single search term "${query}", (3) press Enter. Do not inspect or solve the product condition before the search results appear.`;
 const explicitFaultTermination = 'When the visible results show a renamed replacement instead of the expected product, immediately call done with verdict fault; do not scroll or click again.';
@@ -70,9 +83,12 @@ const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimizatio
 const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const driverEnv = {
   ...process.env,
+  // Fail closed: the driver must resolve the protocol from the frozen manifest
+  // and must never fall back to a legacy implicit default.
+  PSS_REQUIRE_FROZEN_PROFILE: '1',
   CUA_MAX_OUTPUT_TOKENS: process.env.CUA_MAX_OUTPUT_TOKENS ?? String(optimization.max_output_tokens),
   CUA_COORDINATE_MODE: process.env.CUA_COORDINATE_MODE ?? String(optimization.coordinate_mode),
-  CUA_HYBRID_ACTION_MODE: process.env.CUA_HYBRID_ACTION_MODE ?? String(optimization.hybrid_action_mode ?? 'coordinate')
+  CUA_HYBRID_ACTION_MODE: hybridActionMode
 };
 
 async function pageState(page) {
@@ -178,6 +194,7 @@ const executeAction = async (action) => {
 
 let result = null;
 let failure = null;
+let protocolResolution = null;
 const startedAt = Date.now();
 try {
   // Authentication is a matched preamble and is completed before any arm
@@ -200,7 +217,10 @@ try {
   };
   const driver = arm === 'visual'
     ? createVolcengineCuaDriver({ ...driverOptions, observeScreenshot })
-    : createVolcengineHybridDriver({ ...driverOptions, observeHybrid, hybridActionMode: process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate' });
+    : createVolcengineHybridDriver({ ...driverOptions, observeHybrid, hybridActionMode });
+  protocolResolution = typeof driver.getProtocolResolution === 'function'
+    ? driver.getProtocolResolution()
+    : { profile_id: protocol.profile_id, action_mode: protocol.action_mode, api_mode: protocol.api_mode, action_mode_source: protocol.action_mode_source };
   const adapter = createAgentAdapter({ arm, driver, maxSteps });
   result = await adapter.run({
     intent,
@@ -225,7 +245,19 @@ const runRecord = createRunRecord({
   checkpoint_reached: taskStateReached, emitted_verdict: result?.emitted_verdict === 'pass' ? 'clean' : (result?.emitted_verdict ?? 'not-emitted'), ground_truth_verdict: expectedVerdict,
   independent_oracle_passed: oracle.passed === true,
   timing: { wall_time_ms: result?.wall_time_ms ?? Date.now() - startedAt, actions: trace.length, retries: result?.retries ?? 0 },
-  provenance: { runner_version: `prestashop-${arm}-agent-v0.1`, observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure', provider_id: process.env.CUA_PROVIDER ?? null, model_id: process.env.CUA_MODEL ?? null },
+  provenance: {
+    runner_version: `prestashop-${arm}-agent-v0.1`,
+    observation_contract: arm === 'visual' ? 'screenshot-only' : 'screenshot-plus-structure',
+    provider_id: process.env.CUA_PROVIDER ?? null,
+    model_id: process.env.CUA_MODEL ?? null,
+    // The exact protocol is recorded so a provider-protocol change can never be
+    // reported as a strategy-family effect.
+    provider_profile_id: protocolResolution?.profile_id ?? protocol.profile_id ?? null,
+    action_mode: protocolResolution?.action_mode ?? protocol.action_mode ?? null,
+    api_mode: protocolResolution?.api_mode ?? protocol.api_mode ?? null,
+    action_mode_source: protocolResolution?.action_mode_source ?? protocol.action_mode_source ?? null,
+    hybrid_action_mode: arm === 'hybrid' ? hybridActionMode : null
+  },
   failure_category: cellPassed ? null : failureCategory, trace
 });
 replay.finalize({ status: runRecord.status, checkpointReached: taskStateReached, emittedVerdict: runRecord.emitted_verdict, groundTruthVerdict: runRecord.ground_truth_verdict, failureCategory: runRecord.failure_category, error: failure, oraclePassed: oracle.passed === true });

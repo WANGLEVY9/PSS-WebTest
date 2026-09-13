@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { installJuiceShopSearchOmission, installJuiceShopLayoutEvolution } from '../../src/mutations/juice-shop.mjs';
+import { installJuiceShopSearchOmission, installJuiceShopProductOmission, installJuiceShopLayoutEvolution } from '../../src/mutations/juice-shop.mjs';
 import { installIndicoLayoutEvolution, installIndicoSearchOmission } from '../../src/mutations/indico.mjs';
 
 test('Juice Shop omission mutation preserves response schema and removes exactly one product', async () => {
@@ -16,6 +16,20 @@ test('Juice Shop omission mutation preserves response schema and removes exactly
     fulfill: async (value) => { fulfilled = value; }
   });
   assert.deepEqual(JSON.parse(fulfilled.body), { data: [{ name: 'Apple Juice (1000ml)' }] });
+  assert.equal(fulfilled.contentType, 'application/json; charset=utf-8');
+});
+
+test('Juice Shop product-detail omission preserves the catalog schema and removes the target', async () => {
+  let handler;
+  const page = { route: async (pattern, fn) => { assert.equal(pattern, '**/rest/products**'); handler = fn; } };
+  const result = await installJuiceShopProductOmission(page);
+  assert.deepEqual(result, { mutation: 'juice-product-detail-omission', omit_name: 'Apple Juice (1000ml)' });
+  let fulfilled;
+  await handler({
+    fetch: async () => ({ json: async () => ({ data: [{ name: 'Apple Juice (1000ml)' }, { name: 'Apple Pomace' }] }) }),
+    fulfill: async (value) => { fulfilled = value; }
+  });
+  assert.deepEqual(JSON.parse(fulfilled.body), { data: [{ name: 'Apple Pomace' }] });
   assert.equal(fulfilled.contentType, 'application/json; charset=utf-8');
 });
 

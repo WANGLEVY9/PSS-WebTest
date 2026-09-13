@@ -176,6 +176,24 @@
             "status": "feasibility-only; CUA admission not met"
           },
           "arms": ["visual", "hybrid", "playwright"]
+        },
+        {
+          "id": "juice-shop-product-detail",
+          "intent": "Open the product details for Apple Juice (1000ml) and finish only when its dialog visibly shows the exact product and price.",
+          "oracle": {
+            "authority": "visible-ui",
+            "status": "verified",
+            "assertion": "An independent evaluator checks that the product detail dialog is visible and contains the exact target title and price; under the functional-fault condition it instead requires the target omission to be visible. It does not use the agent verdict or action history."
+          },
+          "fault_slots": ["product-card-omission", "product-detail-mismatch"],
+          "evolution_slots": ["card-layout-change", "dialog-style-change"],
+          "phase2_evidence": {
+            "status": "pilot-only; no confirmatory inference",
+            "runner": "shared matched runner with task-specific replay and independent oracle",
+            "matched_pilot": "Qwen and DeepSeek, one repetition per condition: clean and UI evolution 3/3 for all arms; functional fault Playwright 1/1, visual 0/1 and hybrid 0/1 because both reached omission oracle but exhausted the agent step budget before emitting fault",
+            "artifact": "results/phase2/2026-09-13-juice-shop-product-detail-matched-pilot.md"
+          },
+          "arms": ["visual", "hybrid", "playwright"]
         }
       ]
     }

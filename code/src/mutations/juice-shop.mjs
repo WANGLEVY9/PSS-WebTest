@@ -24,6 +24,26 @@ export async function installJuiceShopSearchOmission(page, {
   return { mutation: 'juice-search-result-omission', omit_name: omitName };
 }
 
+/** Omit the declared product from the initial catalog while preserving the
+ * response schema.  This fault is browser-scoped and is used by the product
+ * detail workflow; it never mutates the SUT container or database. */
+export async function installJuiceShopProductOmission(page, {
+  omitName = 'Apple Juice (1000ml)'
+} = {}) {
+  await page.route('**/rest/products**', async (route) => {
+    const response = await route.fetch();
+    const payload = await response.json();
+    const data = Array.isArray(payload?.data) ? payload.data : [];
+    const filtered = data.filter((product) => product?.name !== omitName);
+    await route.fulfill({
+      response,
+      contentType: 'application/json; charset=utf-8',
+      body: JSON.stringify({ ...payload, data: filtered })
+    });
+  });
+  return { mutation: 'juice-product-detail-omission', omit_name: omitName };
+}
+
 export async function installJuiceShopLayoutEvolution(page) {
   await page.addInitScript(() => {
     const install = () => {
@@ -42,4 +62,3 @@ export async function installJuiceShopLayoutEvolution(page) {
   });
   return { mutation: 'juice-layout-v1', semantics_preserved: true };
 }
-

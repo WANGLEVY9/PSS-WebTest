@@ -13,7 +13,8 @@ import { createLocalReplayRecorder } from '../src/replay-artifacts.mjs';
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { resolveExperimentCondition } from '../src/experiment-condition.mjs';
 import { evaluateJuiceShopCondition } from '../src/oracles/juice-shop-condition.mjs';
-import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission } from '../src/mutations/juice-shop.mjs';
+import { evaluateJuiceShopProductDetail } from '../src/oracles/juice-shop-product-detail.mjs';
+import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission, installJuiceShopProductOmission } from '../src/mutations/juice-shop.mjs';
 
 dotenv.config();
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
@@ -24,6 +25,7 @@ const maxSteps = Number.parseInt(process.env.CUA_MAX_STEPS ?? String(optimizatio
 const prepareSearch = process.env.CUA_PREPARE_SEARCH === '1';
 const dismissOverlaysOnly = process.env.CUA_DISMISS_OVERLAYS === '1';
 const taskMode = process.env.CUA_TASK_MODE ?? 'full-search';
+const taskId = process.env.PSS_JUICE_TASK_ID ?? (taskMode === 'product-detail' ? 'juice-shop-product-detail' : 'juice-shop-product-search');
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const viewport = { width: 1280, height: 720 };
@@ -32,7 +34,7 @@ const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/juice-shop-product-search-run-manifest.v0.2.json`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
   applicationId: 'juice-shop', resetDigest: process.env.PSS_RESET_DIGEST,
   randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
@@ -42,7 +44,7 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport });
 const trace = [];
 const runId = `juice-shop-hybrid-${Date.now()}`;
-const replay = createLocalReplayRecorder({ runId, applicationId: 'juice-shop', taskId: 'juice-shop-product-search', arm: 'hybrid' });
+const replay = createLocalReplayRecorder({ runId, applicationId: 'juice-shop', taskId, arm: 'hybrid' });
 let pendingProviderEventIds = [];
 const replayState = async () => ({ milestone: page.url().includes('/search') ? 'search-results' : 'catalog', url_path: new URL(page.url()).pathname, save_clicked: false, saved_page_visible: false, authenticated: true, request_state: 'not-submitted', title_visible: false, title_filled: false, editor_visible: false, editor_focused: false });
 
@@ -114,7 +116,8 @@ let result;
 let failure;
 const agentStartedAt = Date.now();
 try {
-  if (experimentCondition.isFault) await installJuiceShopSearchOmission(page);
+  if (taskId === 'juice-shop-product-detail' && experimentCondition.isFault) await installJuiceShopProductOmission(page);
+  if (taskId !== 'juice-shop-product-detail' && experimentCondition.isFault) await installJuiceShopSearchOmission(page);
   if (experimentCondition.isEvolution) await installJuiceShopLayoutEvolution(page);
   await page.goto(baseURL, { waitUntil: 'domcontentloaded' });
   // Wait for the API-backed catalog before exposing the first screenshot to
@@ -140,7 +143,11 @@ try {
   }
   const adapter = createAgentAdapter({ arm: 'hybrid', driver, maxSteps });
   result = await adapter.run({
-    intent: taskMode === 'submit-only'
+    intent: taskId === 'juice-shop-product-detail'
+      ? (experimentCondition.isFault
+        ? 'In the Juice Shop catalog, inspect the product cards. The declared functional fault means Apple Juice (1000ml) may be absent; if it is absent, finish with verdict fault. If it is visible, open its product details dialog and finish with verdict clean.'
+        : 'In the Juice Shop catalog, open the product details for Apple Juice (1000ml). Finish only when the dialog visibly shows that exact product and its 1.99 price; then return done with verdict clean.')
+      : taskMode === 'submit-only'
       ? 'The product search box is already open and already contains apple. Press the Enter key exactly once, wait for the results, then return done with verdict pass.'
       : prepareSearch
       ? 'The product search box is already open. Type apple into it and press Enter. Finish only after the search results for apple are visible; then return done with verdict pass.'
@@ -154,10 +161,14 @@ try {
 }
 
 const oracleDeadline = Date.now() + oraclePollMs;
-let uiOracle = await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
+let uiOracle = taskId === 'juice-shop-product-detail'
+  ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
+  : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 while (uiOracle?.passed !== true && Date.now() < oracleDeadline) {
   await page.waitForTimeout(250);
-  uiOracle = await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
+  uiOracle = taskId === 'juice-shop-product-detail'
+    ? await evaluateJuiceShopProductDetail(page, { condition: experimentCondition.condition })
+    : await evaluateJuiceShopCondition(page, { condition: experimentCondition.condition, query: 'apple' });
 }
 const { taskStateReached, protocolCompleted, oracleOnlySuccess, cellPassed } = deriveAgentOutcome({ failure, result, oraclePassed: uiOracle?.passed === true, expectedVerdict });
 const failureCategory = classifyAgentFailure({ failure, result, oraclePassed: taskStateReached, expectedVerdict });
@@ -166,7 +177,7 @@ const runRecord = createRunRecord({
   run_id: runId,
   application_id: 'juice-shop',
   application_version: '20.0.0',
-  task_id: 'juice-shop-product-search',
+  task_id: taskId,
   condition: experimentCondition.condition,
   arm: 'hybrid',
   status: failure ? 'test-failure' : (result?.status === 'timeout' ? 'timeout' : (uiOracle?.passed ? 'completed' : 'test-failure')),

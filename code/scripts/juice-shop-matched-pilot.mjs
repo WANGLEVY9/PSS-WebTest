@@ -47,13 +47,15 @@ const providerEnv = (() => {
 })();
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
+const taskId = process.env.PSS_JUICE_TASK_ID ?? 'juice-shop-product-search';
+if (!['juice-shop-product-search', 'juice-shop-product-detail'].includes(taskId)) throw new Error(`unsupported Juice Shop task: ${taskId}`);
 const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? '2.0-draft';
 const phase2Protocol = protocolVersion === '2.0-draft';
 const registry = phase2Protocol ? loadConfigurationRegistry() : null;
 const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerEnv.PSS_AGENT_PROFILE }, arm, taskFamily: 'search-navigation' })]));
 const taskManifestPath = `${root}/manifests/task-manifest.v0.1.json`;
-const runManifestPath = `${root}/config/juice-shop-product-search-run-manifest.v0.2.json`;
+const runManifestPath = `${root}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`;
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
 const artifact = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
 const recordsPath = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-records.jsonl`;
@@ -72,19 +74,19 @@ const configurations = {
   playwright: 'scripted-playwright-accessibility-human-v2'
 };
 const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((left, right) =>
-  crypto.createHash('sha256').update(`juice-shop-product-search|${pilotRunTag ?? 'untagged'}|${repetition}|${left}`).digest('hex')
-    .localeCompare(crypto.createHash('sha256').update(`juice-shop-product-search|${pilotRunTag ?? 'untagged'}|${repetition}|${right}`).digest('hex'))
+  crypto.createHash('sha256').update(`${taskId}|${pilotRunTag ?? 'untagged'}|${repetition}|${left}`).digest('hex')
+    .localeCompare(crypto.createHash('sha256').update(`${taskId}|${pilotRunTag ?? 'untagged'}|${repetition}|${right}`).digest('hex'))
 );
-const randomizationBlock = (repetition, arms) => `juice-shop-product-search-${experimentCondition.condition}-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
+const randomizationBlock = (repetition, arms) => `${taskId}-${experimentCondition.condition}-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
   fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
-  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'juice-shop', task_id: 'juice-shop-product-search', condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
+  fs.writeFileSync(artifact, `${JSON.stringify({ application: 'juice-shop', task_id: taskId, condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 const createMissingAgentRecord = ({ arm, phase2Fields, executionCode }) => createRunRecord({
   ...(phase2Fields ?? {}),
   run_id: `juice-shop-${arm}-missing-child-${Date.now()}`,
-  application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search',
+  application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: taskId,
   condition: experimentCondition.condition, arm, status: 'infrastructure-error', checkpoint_reached: false,
   emitted_verdict: 'not-emitted', ground_truth_verdict: expectedVerdict,
   timing: { wall_time_ms: 0, actions: 0, retries: 0 },
@@ -117,15 +119,16 @@ for (let repetition = 1; repetition <= repetitions; repetition += 1) {
     }
     if (arm === 'playwright') {
       const startedAt = Date.now();
-      execution = await run('npx', ['playwright', 'test', 'tests/traditional/juice-shop-product-search.spec.js', '--project=chromium'], {
-        RUN_JUICE_SHOP_VERTICAL_SLICE: '1', SUT_BASE_URL: baseURL, PSS_PILOT_CONDITION: experimentCondition.condition
+    execution = await run('npx', ['playwright', 'test', `tests/traditional/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail.spec.js' : 'juice-shop-product-search.spec.js'}`, '--project=chromium'], {
+        ...(taskId === 'juice-shop-product-detail' ? { RUN_JUICE_SHOP_PRODUCT_DETAIL: '1' } : { RUN_JUICE_SHOP_VERTICAL_SLICE: '1' }),
+        SUT_BASE_URL: baseURL, PSS_PILOT_CONDITION: experimentCondition.condition
       });
-      const oracleRun = await run('node', ['scripts/evaluate-juice-shop-condition.mjs'], { PSS_PILOT_CONDITION: experimentCondition.condition, JUICE_SHOP_BASE_URL: baseURL }); oracle = lastJson(oracleRun.stdout);
-      cellRunRecord = createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: 'juice-shop-product-search', execution_exit_code: execution.code, oracle, expected_verdict: expectedVerdict, condition: experimentCondition.condition, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: 'juice-shop-playwright-cell-v0.3', phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 5 }] });
+      const oracleRun = await run('node', [taskId === 'juice-shop-product-detail' ? 'scripts/evaluate-juice-shop-product-detail.mjs' : 'scripts/evaluate-juice-shop-condition.mjs'], { PSS_PILOT_CONDITION: experimentCondition.condition, JUICE_SHOP_BASE_URL: baseURL }); oracle = lastJson(oracleRun.stdout);
+      cellRunRecord = createTraditionalRunRecord({ application_id: 'juice-shop', application_version: process.env.JUICE_SHOP_VERSION ?? '20.0.0', task_id: taskId, execution_exit_code: execution.code, oracle, expected_verdict: expectedVerdict, condition: experimentCondition.condition, wall_time_ms: Date.now() - startedAt, actions: 5, runner_version: `juice-shop-playwright-${taskId}-v0.1`, phase2Fields, trace: [{ kind: 'scripted-sequence', action_count: 5 }] });
       appendRunRecord(cellRunRecord, recordsPath);
     } else {
       execution = await run('node', [arm === 'visual' ? 'scripts/run-volcengine-juice-visual-smoke.mjs' : 'scripts/run-volcengine-juice-hybrid-smoke.mjs'], {
-        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_PROFILE: optimization.profile_id, PSS_PILOT_CONDITION: experimentCondition.condition, PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), CUA_DISMISS_OVERLAYS: process.env.CUA_DISMISS_OVERLAYS ?? '0', CUA_PREPARE_SEARCH: process.env.CUA_PREPARE_SEARCH ?? '0', CUA_TASK_MODE: process.env.CUA_TASK_MODE ?? 'full-search',
+        CUA_MAX_STEPS: String(armMaxSteps), CUA_TIMEOUT_MS: String(armTimeoutMs), CUA_MAX_RETRIES: String(optimization.max_retries), CUA_MAX_DECISION_RETRIES: String(optimization.max_decision_retries), CUA_MAX_OUTPUT_TOKENS: String(optimization.max_output_tokens), CUA_SCREENSHOT_QUALITY: String(optimization.screenshot_quality), CUA_HYBRID_ACTION_MODE: arm === 'hybrid' ? (process.env.CUA_HYBRID_ACTION_MODE ?? optimization.hybrid_action_mode ?? 'coordinate') : '', CUA_AGENT_PROFILE: optimization.profile_id, PSS_AGENT_PROFILE: optimization.profile_id, PSS_PILOT_CONDITION: experimentCondition.condition, PSS_AGENT_POST_ACTION_SETTLE_MS: process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), CUA_DISMISS_OVERLAYS: process.env.CUA_DISMISS_OVERLAYS ?? '1', CUA_PREPARE_SEARCH: process.env.CUA_PREPARE_SEARCH ?? '0', CUA_TASK_MODE: taskId === 'juice-shop-product-detail' ? 'product-detail' : (process.env.CUA_TASK_MODE ?? 'full-search'), PSS_JUICE_TASK_ID: taskId,
         JUICE_SHOP_BASE_URL: baseURL, PSS_PROTOCOL_VERSION: protocolVersion, PSS_CONFIGURATION_ID: configurations[arm],
         PSS_RESET_DIGEST: resetDigest ?? '', PSS_RANDOMIZATION_BLOCK: block,
         PSS_RUN_MANIFEST_PATH: runManifestPath, PSS_TASK_MANIFEST_PATH: taskManifestPath,

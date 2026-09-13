@@ -127,7 +127,8 @@
     "batch:traditional-500": "node scripts/run-traditional-500-batch.mjs",
     "validate:prestashop-mutations": "node scripts/validate-prestashop-mutations.mjs",
     "gate:prestashop:fault-evolution": "node scripts/prestashop-fault-evolution-gate.mjs",
-    "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs"
+    "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs",
+    "oracle:juice-shop:product-detail": "node scripts/evaluate-juice-shop-product-detail.mjs"
   },
   "devDependencies": {
     "@browserbasehq/stagehand": "^3.0.8",

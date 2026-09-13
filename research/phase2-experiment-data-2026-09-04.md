@@ -1,6 +1,6 @@
 # Phase 2 experiment data ledger — 2026-09-04
 
-**Generated:** 2026-09-13T03:05:02.280Z  
+**Generated:** 2026-09-13T03:20:23.209Z  
 **Scope:** BookStack feasibility/admission pilot. This ledger does not contain confirmatory estimates.
 
 ## Evidence classification
@@ -91,6 +91,7 @@ These files are intentionally not pooled with the table above. In particular, le
 | bookstack-navigation-clean-stable-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-bookstack-deepseek-nav-profile-fix-records.jsonl | 6 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-clean-stable-volcengine-doubao-seed-2-0-pro-260215-records.jsonl | 3 | 0.1 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-records.jsonl | 47 | 0.1 | clean-stable, ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
+| bookstack-navigation-ui-evolution-bookstack-layout-v1-aliyun-qwen3.7-flash-phase2-t1-bookstack-open-book-qwen-evolution-20260913-records.jsonl | 3 | 0.2 | ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-ui-evolution-bookstack-layout-v1-deepseek-deepseek-flash-deepseek-open-book-evolution-v1-records.jsonl | 3 | 0.2 | ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-navigation-ui-evolution-bookstack-layout-v1-records.jsonl | 3 | 0.1 | ui-evolution:bookstack-layout-v1 | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |
 | bookstack-replay-audit-live.jsonl | 4 | 0.2 | clean-stable | Different run tag, protocol, task, provider/model, or an incomplete cell; catalogued but not pooled. |

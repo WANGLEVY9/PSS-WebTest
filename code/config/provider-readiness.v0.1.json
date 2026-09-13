@@ -1,0 +1,289 @@
+{
+  "schema_version": "0.1",
+  "generated_at": "2026-09-13T02:31:54.246Z",
+  "gate": "prestashop click-type-keypress conformance",
+  "evidence_boundary": "protocol/plumbing gate only; not a capability or strategy comparison",
+  "profiles": [
+    {
+      "profile_id": "aliyun-qwen3.7-flash-tool-v1",
+      "provider_id": "aliyun",
+      "model_id": "qwen3.7-flash",
+      "optimization_profile": "aliyun-qwen-grounded-v1",
+      "arms": {
+        "visual": {
+          "arm": "visual",
+          "status": "ready",
+          "actions": [
+            {
+              "step": 0,
+              "type": "click",
+              "x": 1059,
+              "y": 75,
+              "coordinate_mode": "pixels"
+            },
+            {
+              "step": 1,
+              "type": "type",
+              "text": "Mug"
+            },
+            {
+              "step": 2,
+              "type": "keypress",
+              "key": "return"
+            }
+          ],
+          "conformance": {
+            "passed": true,
+            "matched": [
+              {
+                "position": 0,
+                "type": "click",
+                "action": {
+                  "step": 0,
+                  "type": "click",
+                  "x": 1059,
+                  "y": 75,
+                  "coordinate_mode": "pixels"
+                }
+              },
+              {
+                "position": 1,
+                "type": "type",
+                "action": {
+                  "step": 1,
+                  "type": "type",
+                  "text": "Mug"
+                }
+              },
+              {
+                "position": 2,
+                "type": "keypress",
+                "action": {
+                  "step": 2,
+                  "type": "keypress",
+                  "key": "return"
+                }
+              }
+            ],
+            "typed_text_non_empty": true
+          },
+          "error": null,
+          "elapsed_ms": 6126,
+          "protocol": {
+            "profile_id": "aliyun-qwen3.7-flash-tool-v1",
+            "profile_status": "frozen-pilot",
+            "frozen": true,
+            "action_mode": "tool",
+            "action_mode_source": "env-override",
+            "api_mode": "chat",
+            "api_mode_source": "frozen-profile",
+            "coordinate_mode": "normalized_1000",
+            "max_output_tokens": 384,
+            "max_decision_retries": 2
+          }
+        },
+        "hybrid": {
+          "arm": "hybrid",
+          "status": "ready",
+          "actions": [
+            {
+              "step": 0,
+              "type": "click",
+              "target_id": "c9"
+            },
+            {
+              "step": 1,
+              "type": "type",
+              "text": "Mug"
+            },
+            {
+              "step": 2,
+              "type": "keypress",
+              "key": "return"
+            }
+          ],
+          "conformance": {
+            "passed": true,
+            "matched": [
+              {
+                "position": 0,
+                "type": "click",
+                "action": {
+                  "step": 0,
+                  "type": "click",
+                  "target_id": "c9"
+                }
+              },
+              {
+                "position": 1,
+                "type": "type",
+                "action": {
+                  "step": 1,
+                  "type": "type",
+                  "text": "Mug"
+                }
+              },
+              {
+                "position": 2,
+                "type": "keypress",
+                "action": {
+                  "step": 2,
+                  "type": "keypress",
+                  "key": "return"
+                }
+              }
+            ],
+            "typed_text_non_empty": true
+          },
+          "error": null,
+          "elapsed_ms": 9480,
+          "protocol": {
+            "profile_id": "aliyun-qwen3.7-flash-tool-v1",
+            "profile_status": "frozen-pilot",
+            "frozen": true,
+            "action_mode": "tool",
+            "action_mode_source": "env-override",
+            "api_mode": "chat",
+            "api_mode_source": "frozen-profile",
+            "coordinate_mode": "normalized_1000",
+            "max_output_tokens": 384,
+            "max_decision_retries": 2
+          }
+        }
+      },
+      "status": "ready",
+      "reason": null
+    },
+    {
+      "profile_id": "deepseek-v4-flash-vision-tool-v1",
+      "provider_id": "deepseek",
+      "model_id": "deepseek-v4-flash-vision-exp",
+      "optimization_profile": "deepseek-flash-grounded-v1",
+      "arms": {
+        "visual": {
+          "arm": "visual",
+          "status": "failed",
+          "actions": [],
+          "conformance": null,
+          "error": {
+            "name": "Error",
+            "message": "CUA model returned an unsupported tool call"
+          },
+          "elapsed_ms": 6722
+        },
+        "hybrid": {
+          "arm": "hybrid",
+          "status": "ready",
+          "actions": [
+            {
+              "step": 0,
+              "type": "click",
+              "target_id": "c9"
+            },
+            {
+              "step": 1,
+              "type": "click",
+              "target_id": "c9"
+            },
+            {
+              "step": 2,
+              "type": "type",
+              "text": "Mug"
+            },
+            {
+              "step": 3,
+              "type": "keypress",
+              "key": "Enter"
+            }
+          ],
+          "conformance": {
+            "passed": true,
+            "matched": [
+              {
+                "position": 0,
+                "type": "click",
+                "action": {
+                  "step": 0,
+                  "type": "click",
+                  "target_id": "c9"
+                }
+              },
+              {
+                "position": 2,
+                "type": "type",
+                "action": {
+                  "step": 2,
+                  "type": "type",
+                  "text": "Mug"
+                }
+              },
+              {
+                "position": 3,
+                "type": "keypress",
+                "action": {
+                  "step": 3,
+                  "type": "keypress",
+                  "key": "Enter"
+                }
+              }
+            ],
+            "typed_text_non_empty": true
+          },
+          "error": null,
+          "elapsed_ms": 8738,
+          "protocol": {
+            "profile_id": "deepseek-v4-flash-vision-tool-v1",
+            "profile_status": "frozen-pilot",
+            "frozen": true,
+            "action_mode": "tool",
+            "action_mode_source": "env-override",
+            "api_mode": "chat",
+            "api_mode_source": "frozen-profile",
+            "coordinate_mode": "normalized_1000",
+            "max_output_tokens": 384,
+            "max_decision_retries": 1
+          }
+        }
+      },
+      "status": "failed",
+      "reason": "CUA model returned an unsupported tool call"
+    },
+    {
+      "profile_id": "volcengine-doubao-2-1-pro-tool-v1",
+      "provider_id": "volcengine",
+      "model_id": "doubao-seed-2-1-pro-260628",
+      "optimization_profile": "doubao-seed-2-1-pro-grounded-v1",
+      "arms": {
+        "visual": {
+          "arm": "visual",
+          "status": "blocked",
+          "actions": [],
+          "conformance": null,
+          "error": {
+            "name": "Error",
+            "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217"
+          },
+          "elapsed_ms": 1296
+        },
+        "hybrid": {
+          "arm": "hybrid",
+          "status": "blocked",
+          "actions": [],
+          "conformance": null,
+          "error": {
+            "name": "Error",
+            "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217"
+          },
+          "elapsed_ms": 901
+        }
+      },
+      "status": "blocked",
+      "reason": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217"
+    }
+  ],
+  "summary": {
+    "ready": 1,
+    "failed": 1,
+    "blocked": 1
+  }
+}

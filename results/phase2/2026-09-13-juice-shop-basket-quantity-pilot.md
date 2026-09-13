@@ -67,11 +67,11 @@ does not prove that CUA or Hybrid is intrinsically incapable of the task.
 The six source JSONL ledgers are retained under `artifacts/phase2/` and pass
 the run-ledger audit with 18 unique run IDs and no missing arm.
 
-The broader Juice Shop audit currently sees 317 parseable historical records,
-but remains `coverage-incomplete`: six task/condition/arm cells are missing,
-33 cells are below the three-repetition variance threshold, and 18 historical
+The broader Juice Shop audit now sees 329 parseable historical records. The
+pagination backfill removed the six missing task/condition/arm cells; 33 cells
+are still below the three-repetition variance threshold, and 18 historical
 records are rejected by the registry as invalid/legacy evidence. The audit
-therefore recommends a breadth-first backfill before variance estimation.
+therefore recommends repetition backfill before variance estimation.
 
 ## Decision
 

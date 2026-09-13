@@ -57,6 +57,8 @@
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-opt-search-v1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-opt-search-v2-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-opt-search-v3-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-pagination-aliyun-functional-fault-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-pagination-aliyun-ui-evolution-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-pagination-last-item-qwen-clean-r2-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-pagination-last-item-qwen-evolution-r1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-aliyun-qwen3.7-flash-pagination-last-item-qwen-fault-r1-records.jsonl",
@@ -102,7 +104,9 @@
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-basket-quantity-deepseek-clean-stable-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-basket-quantity-deepseek-functional-fault-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-basket-quantity-deepseek-ui-evolution-20260913-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-pagination-deepseek-functional-fault-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-pagination-deepseek-r1-records.jsonl",
+    "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-pagination-deepseek-ui-evolution-20260913-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-pagination-last-item-deepseek-clean-r1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-pagination-last-item-deepseek-evolution-r1-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-pagination-last-item-deepseek-fault-r1-records.jsonl",
@@ -124,7 +128,7 @@
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-volcengine-doubao-seed-2-0-pro-260215-oracle-poll-v01-records.jsonl",
     "/Users/laurantwang/PSS-WebTest/artifacts/phase2/juice-shop-three-arm-volcengine-doubao-seed-2-0-pro-260215-watchdog-v01-records.jsonl"
   ],
-  "records": 317,
+  "records": 329,
   "errors": [
     "../artifacts/phase2/juice-shop-three-arm-aliyun-qwen3-vl-flash-exploratory-500-0005-records.jsonl:3: configuration registry framework conflicts with run record",
     "../artifacts/phase2/juice-shop-three-arm-aliyun-qwen3-vl-flash-v02-provenance-fix-r3-records.jsonl:1: configuration registry framework conflicts with run record",
@@ -145,62 +149,7 @@
     "../artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-flash-deepseek-juice-search-v1-records.jsonl:2: configuration registry runtime.model_id conflicts with run record",
     "../artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-flash-deepseek-juice-search-v1-records.jsonl:3: configuration registry runtime.model_id conflicts with run record"
   ],
-  "missing_cells": [
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "visual",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "hybrid",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "functional-fault",
-      "arm": "playwright",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "visual",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "hybrid",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
-    },
-    {
-      "task_id": "juice-shop-pagination",
-      "condition": "ui-evolution",
-      "arm": "playwright",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
-    }
-  ],
+  "missing_cells": [],
   "below_repetition_cells": [
     {
       "task_id": "juice-shop-add-to-basket",
@@ -474,59 +423,69 @@
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "visual",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "agent-step-budget": 1,
+        "grounding-loop": 1
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "hybrid",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "grounding-loop": 2
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "playwright",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
+      "n": 2,
+      "strict_passes": 2,
+      "reset_verified": 2,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "ui-evolution",
       "arm": "visual",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "provider-format": 1,
+        "grounding-loop": 1
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "ui-evolution",
       "arm": "hybrid",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "grounding-loop": 2
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "ui-evolution",
       "arm": "playwright",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
+      "n": 2,
+      "strict_passes": 2,
+      "reset_verified": 2,
       "failure_categories": {}
     }
   ],
   "infrastructure_only_cells": [],
-  "strict_passes": 153,
+  "strict_passes": 157,
   "cells": [
     {
       "task_id": "juice-shop-product-search",
@@ -1131,54 +1090,64 @@
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "visual",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "agent-step-budget": 1,
+        "grounding-loop": 1
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "hybrid",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "grounding-loop": 2
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "functional-fault",
       "arm": "playwright",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
+      "n": 2,
+      "strict_passes": 2,
+      "reset_verified": 2,
       "failure_categories": {}
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "ui-evolution",
       "arm": "visual",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "provider-format": 1,
+        "grounding-loop": 1
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "ui-evolution",
       "arm": "hybrid",
-      "n": 0,
+      "n": 2,
       "strict_passes": 0,
-      "reset_verified": 0,
-      "failure_categories": {}
+      "reset_verified": 2,
+      "failure_categories": {
+        "grounding-loop": 2
+      }
     },
     {
       "task_id": "juice-shop-pagination",
       "condition": "ui-evolution",
       "arm": "playwright",
-      "n": 0,
-      "strict_passes": 0,
-      "reset_verified": 0,
+      "n": 2,
+      "strict_passes": 2,
+      "reset_verified": 2,
       "failure_categories": {}
     },
     {
@@ -1278,5 +1247,5 @@
       "failure_categories": {}
     }
   ],
-  "branch_recommendation": "BREADTH-BLOCKED: complete missing task/condition/arm cells before variance estimation."
+  "branch_recommendation": "REPETITION-BLOCKED: increase matched repetitions without changing task, oracle, provider, or arm definitions."
 }

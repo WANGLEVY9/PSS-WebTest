@@ -66,6 +66,8 @@
     "pilot:juice-shop:matched": "node scripts/juice-shop-matched-pilot.mjs",
     "power:simulate": "node scripts/power-simulation.mjs",
     "pilot:indico:fault": "node scripts/run-indico-fault-workflow.mjs",
+    "pilot:indico:fault-evolution": "node scripts/run-indico-fault-evolution-gate.mjs",
+    "pilot:juice-shop:fault-evolution": "node scripts/run-juice-shop-fault-evolution-gate.mjs",
     "test:contracts": "node --test tests/contracts/*.test.mjs",
     "test:adapter-conformance": "node --test tests/contracts/adapter-conformance.test.mjs",
     "test:phase2-provenance": "node --test tests/contracts/phase2-provenance.test.mjs",

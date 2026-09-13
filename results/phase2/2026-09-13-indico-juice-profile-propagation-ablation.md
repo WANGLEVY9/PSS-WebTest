@@ -68,6 +68,12 @@ gate evidence is recorded separately in
 `2026-09-13-indico-fault-gate.md`; it does not admit the application because the
 evolution invariant and three-arm fault/evolution cells are still missing.
 
+The companion Juice Shop browser-context gate also passes clean baseline,
+search-omission positive control, removal restoration, presentation-only
+evolution, and evolution removal isolation. These gates establish SUT mutation
+validity only; they do not turn the one-workflow agent pilots into admission
+evidence.
+
 ## Interpretation
 
 The prior `provider-format` observations for these applications cannot be
@@ -78,9 +84,11 @@ task-grounding/oracle boundary rather than a malformed-output boundary. Pure
 visual remains blocked by provider-format or grounding-loop behavior and needs
 a separate provider/action-schema ablation.
 
-No application is admitted or frozen by this report. Fault and UI-evolution
-gates remain outstanding, and the power/repetition freeze and confirmatory
-lanes remain blocked under the long-run campaign manifest.
+No application is admitted or frozen by this report. The SUT fault/evolution
+preflight gates pass for these two workflows, but matched three-arm
+fault/evolution cells, the remaining workflow slots, the power/repetition
+freeze, and confirmatory lanes remain blocked under the long-run campaign
+manifest.
 
 ## Next bounded branch
 

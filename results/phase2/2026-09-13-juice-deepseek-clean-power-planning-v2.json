@@ -1,0 +1,1200 @@
+{
+  "type": "stratified-cluster-power-planning",
+  "mode": "stratified",
+  "confirmatory": false,
+  "pilot_input": "../artifacts/phase2/juice-shop-three-arm-deepseek-deepseek-v4-flash-vision-exp-phase2-t1-juice-deepseek-rep2-pilot.json",
+  "pilot_document": {
+    "application": "juice-shop",
+    "provider_id": null,
+    "model_id": null,
+    "profile_id": null,
+    "condition": "clean-stable",
+    "complexity": null,
+    "repetitions": 2,
+    "records": 6,
+    "total_cells_reported": 6,
+    "passed_cells_reported": 4
+  },
+  "pooled_by_arm": {
+    "playwright": {
+      "trials": 2,
+      "successes": 2,
+      "rate": 1
+    },
+    "visual": {
+      "trials": 2,
+      "successes": 0,
+      "rate": 0
+    },
+    "hybrid": {
+      "trials": 2,
+      "successes": 2,
+      "rate": 1
+    }
+  },
+  "between_cell_variance": {
+    "playwright": {
+      "source": "assumed-sensitivity-grid",
+      "value": null,
+      "cells": 1
+    },
+    "visual": {
+      "source": "assumed-sensitivity-grid",
+      "value": null,
+      "cells": 1
+    },
+    "hybrid": {
+      "source": "assumed-sensitivity-grid",
+      "value": null,
+      "cells": 1
+    }
+  },
+  "alpha": 0.05,
+  "draws": 3000,
+  "seed": 20260913,
+  "comparisons": [
+    {
+      "contrast": "playwright-visual",
+      "pilot_rates": {
+        "playwright": 1,
+        "visual": 0
+      },
+      "observed_rate_difference": 1,
+      "between_cell_variance_source": "assumed-sensitivity-grid",
+      "assumptions": [
+        {
+          "between_cell_variance": 0,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.02,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.05,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.1,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "contrast": "playwright-hybrid",
+      "pilot_rates": {
+        "playwright": 1,
+        "hybrid": 1
+      },
+      "observed_rate_difference": 0,
+      "between_cell_variance_source": "assumed-sensitivity-grid",
+      "assumptions": [
+        {
+          "between_cell_variance": 0,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.001
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.002
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.02,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.073
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.136
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.146
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.178
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.229
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.298
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.092
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.114
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.15
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.172
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.216
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.305
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.093
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.11
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.147
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.184
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.231
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.303
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.05,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.124
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.201
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.225
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.245
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.313
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.396
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.132
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.181
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.226
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.238
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.301
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.396
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.121
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.17
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.202
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.255
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.306
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.371
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.1,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.173
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.246
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.279
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.345
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.41
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.468
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.152
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.243
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.265
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.327
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.391
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.474
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 0.171
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 0.218
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 0.277
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 0.314
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 0.393
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 0.473
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "contrast": "hybrid-visual",
+      "pilot_rates": {
+        "hybrid": 1,
+        "visual": 0
+      },
+      "observed_rate_difference": 1,
+      "between_cell_variance_source": "assumed-sensitivity-grid",
+      "assumptions": [
+        {
+          "between_cell_variance": 0,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.02,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.05,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "between_cell_variance": 0.1,
+          "results": [
+            {
+              "cells_per_arm": 8,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 16,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            },
+            {
+              "cells_per_arm": 24,
+              "power": [
+                {
+                  "per_cell_repetitions": 4,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 6,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 8,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 10,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 14,
+                  "estimated_power": 1
+                },
+                {
+                  "per_cell_repetitions": 20,
+                  "estimated_power": 1
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "note": [
+    "Cluster-level Monte Carlo: each application x workflow cell draws its own true rate around the pooled pilot rate.",
+    "A cell-level random intercept is used because the planned design repeats runs inside cells; a plain two-proportion calculation understates the required repetition count.",
+    "The between-cell variance is estimated from the pilot when at least two cells per arm exist, otherwise a declared sensitivity grid is swept. The chosen source is reported per contrast.",
+    "This output is a planning input. It does not freeze the repetition count and must be re-run on the frozen matched pilot before preregistration."
+  ]
+}

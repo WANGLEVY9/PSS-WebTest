@@ -1,6 +1,6 @@
 # Phase 2 experiment data ledger — 2026-09-04
 
-**Generated:** 2026-09-13T02:45:02.736Z  
+**Generated:** 2026-09-13T02:52:53.165Z  
 **Scope:** BookStack feasibility/admission pilot. This ledger does not contain confirmatory estimates.
 
 ## Evidence classification

@@ -93,6 +93,10 @@ The three-repetition Invoice Ninja bounded-repair ablation passed 3/3 in all
 three arms, compared with strict visual 0/3 and Hybrid/Playwright 3/3; this is
 strong evidence for a provider-format engineering boundary in this task, while
 remaining a diagnostic ablation rather than a confirmatory result.
+Strict functional-fault coverage preserved the same pattern (visual 0/3,
+Hybrid/Playwright 3/3), while UI evolution produced visual 1/3 with two
+provider-format and one grounding-loop boundary. All independent database
+oracles passed; these condition results remain pilot evidence.
 
 The durable batch strategy is therefore:
 

@@ -59,12 +59,19 @@ does not prove that CUA or Hybrid is intrinsically incapable of the task.
 ## Reproducibility artifacts
 
 - [run-record metrics summary](/Users/laurantwang/PSS-WebTest/results/phase2/2026-09-13-juice-shop-basket-quantity-metrics-summary.json)
+- [machine-readable eight-slot admission audit](/Users/laurantwang/PSS-WebTest/results/phase2/2026-09-13-juice-shop-admission-audit.json)
 - [task manifest](/Users/laurantwang/PSS-WebTest/code/config/juice-shop-basket-quantity-run-manifest.v0.1.json)
 - [independent quantity oracle](/Users/laurantwang/PSS-WebTest/code/src/oracles/juice-shop-basket-quantity.mjs)
 - [traditional gate](/Users/laurantwang/PSS-WebTest/code/tests/traditional/juice-shop-basket-quantity.spec.js)
 
 The six source JSONL ledgers are retained under `artifacts/phase2/` and pass
 the run-ledger audit with 18 unique run IDs and no missing arm.
+
+The broader Juice Shop audit currently sees 317 parseable historical records,
+but remains `coverage-incomplete`: six task/condition/arm cells are missing,
+33 cells are below the three-repetition variance threshold, and 18 historical
+records are rejected by the registry as invalid/legacy evidence. The audit
+therefore recommends a breadth-first backfill before variance estimation.
 
 ## Decision
 

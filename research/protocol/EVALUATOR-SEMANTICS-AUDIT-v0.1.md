@@ -43,6 +43,13 @@ as a reset, evaluator, or benchmark-admission success. This result establishes
 only that the pinned evaluator source and its offline fixtures are executable
 on the current machine.
 
+The pinned ATA/PinATA source was also installed in an ignored local `uv`
+environment. After installing its declared Chromium runtime, the non-LLM test
+suite completed **51 passed, 4 deselected**. The run used a non-secret dummy
+`OPENAI_API_KEY` only to satisfy client construction; no provider request or
+application task was executed. This verifies source/browser plumbing, but does
+not resolve ATA's agent-coupled assertor or remote-reset oracle limitation.
+
 ## Non-negotiable boundary
 
 For WebArena-Verified and VisualWebArena, evaluator-only material may be

@@ -21,6 +21,8 @@ test('ATA source-license and evaluator uncertainty remain visible rather than si
   assert.equal(ata.license.identifier, 'CC-BY-4.0');
   assert.equal(ata.license.source_repository_license, null);
   assert.equal(ata.evaluator.status, 'requires-independent-semantics-audit');
+  assert.match(ata.evaluator.source_audit_finding, /Actor\/Assertor/);
+  assert.equal(ata.environment.status, 'not-installed-remote-reset-audited');
   assert.equal(ata.published_artifact.local_checksum, ata.published_artifact.declared_checksum);
   assert.match(ata.published_artifact.local_sha256, /^sha256:[a-f0-9]{64}$/);
 });

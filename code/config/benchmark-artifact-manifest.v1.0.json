@@ -100,10 +100,11 @@
         "status": "requires-independent-semantics-audit",
         "evidence_url": "https://raw.githubusercontent.com/Smartesting/pinata/650b9edaa055915cb27d2498f379a66430cc3e02/README.md",
         "declared_mode": "published benchmark uses actor/assertor orchestration; confirm the unchanged official PASS/FAIL source before arm adaptation",
-        "evaluator_digest": "sha256:0f1757dd63ee640df35fd4e26f2ef85b7927db7a4adbadcf503afec27c3ee9c3"
+        "evaluator_digest": "sha256:0f1757dd63ee640df35fd4e26f2ef85b7927db7a4adbadcf503afec27c3ee9c3",
+        "source_audit_finding": "evaluation.py resets a remote public service through GitHub Actions and obtains execution_result.status from the benchmark Actor/Assertor LLM orchestration; it is not yet established as a method-independent shared oracle for the three study arms"
       },
       "environment": {
-        "status": "not-installed",
+        "status": "not-installed-remote-reset-audited",
         "reset_evidence": [],
         "three_reset_gate": "pending"
       }

@@ -31,9 +31,11 @@ environment, evaluator, or benchmark is admitted to confirmatory collection.
 - The source inventories and evaluator source fingerprints are captured in the
   machine manifest. They are **not** eligible task sets: no filtering,
   adaptation, arm execution, or evaluator outcome has been performed.
-- The PinATA README describes actor/assertor orchestration. The study must audit
-  the exact official PASS/FAIL source and its compatibility with the unchanged
-  evaluator requirement before task adaptation.
+- Source-level ATA audit found that `evaluation.py` resets a remote public
+  service through GitHub Actions and takes `execution_result.status` from the
+  benchmark Actor/Assertor orchestration. It therefore remains blocked pending
+  a protocol decision on whether its unchanged endpoint can be a shared,
+  method-independent oracle. See `EVALUATOR-SEMANTICS-AUDIT-v0.1.md`.
 
 ## Next mandatory evidence
 

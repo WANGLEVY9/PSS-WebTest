@@ -1,5 +1,11 @@
 # Phase 2 confirmatory-design gate v0.2
 
+> **Superseded for all future collection.** This application-first draft and
+> its locally created fault/evolution matrix are retained only as historical
+> pilot documentation. The confirmation candidate is
+> [`FINAL-STUDY-DESIGN-v1.0.md`](FINAL-STUDY-DESIGN-v1.0.md); no new run may be
+> admitted under this v0.2 design.
+
 更新时间：2026-08-23。本文是实验设计与执行 gate，不是结果论文；当前所有 agent 结果仍属于 feasibility/pilot，不能进入 confirmatory effect estimates。BookStack clean baseline 已完成 3 repetitions × 3 arms 的 9/9 pilot oracle pass；Indico authenticated baseline passed but its first matched agent pilot was only 1/3 (Playwright 1/1, visual 0/1, hybrid 0/1), so fault/evolution blocks、Juice blocks 和最终 power freeze 仍未完成。
 
 ## 1. 实验单位与比较对象

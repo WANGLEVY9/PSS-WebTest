@@ -1,5 +1,10 @@
 # Project execution plan: Pixels, Page Structure, or Scripts?
 
+> **Historical execution plan.** Future experimental work is paused and routed
+> through [`DESIGN-AUTHORITY.md`](DESIGN-AUTHORITY.md). Application-first or
+> study-created workflow/fault/evolution targets in this file are not
+> confirmatory authorization.
+
 ## Material Passport
 
 - Origin skills: `academic-research-suite` (Stage 1 planning), `experiment-agent` (plan mode), `aer-preregistration`

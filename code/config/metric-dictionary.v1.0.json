@@ -1,0 +1,179 @@
+{
+  "schema_version": "1.0",
+  "scope": "benchmark-first condition-aware comparison of Web UI testing paradigms",
+  "ground_truth_rule": "Only the unchanged official benchmark evaluator or official testing verdict supplies ground truth.",
+  "single_composite_score": "prohibited",
+  "estimands": [
+    {
+      "id": "deployment-effectiveness",
+      "population": "all frozen scheduled runs",
+      "provider_or_framework_failure": "failure",
+      "benchmark_infrastructure_failure": "not scored and exact cell rerun only under the pre-registered retry rule",
+      "protocol_violation": "invalid run retained in audit ledger but excluded from effect estimation"
+    },
+    {
+      "id": "capability-sensitivity",
+      "population": "runs reaching a valid benchmark environment and provider response boundary",
+      "role": "sensitivity analysis only",
+      "exclusion_rule": "only pre-registered external infrastructure categories; never logical, grounding, verdict, timeout, or model-format failures"
+    }
+  ],
+  "metrics": [
+    {
+      "id": "official_task_success",
+      "family": "effectiveness",
+      "role": "primary",
+      "type": "binary",
+      "definition": "The unchanged official benchmark evaluator reports task success.",
+      "numerator": "successful official evaluator outcomes",
+      "denominator": "all valid scheduled runs under the declared estimand"
+    },
+    {
+      "id": "testing_verdict_correct",
+      "family": "testing-oracle",
+      "role": "primary-on-testing-benchmark",
+      "type": "binary",
+      "definition": "The arm's PASS/FAIL verdict matches the official benchmark verdict.",
+      "denominator": "all valid scheduled testing-benchmark runs; missing verdict is incorrect"
+    },
+    {
+      "id": "sensitivity",
+      "family": "testing-oracle",
+      "role": "primary-on-testing-benchmark",
+      "formula": "TP/(TP+FN)",
+      "positive_class": "official failing test"
+    },
+    {
+      "id": "specificity",
+      "family": "testing-oracle",
+      "role": "primary-on-testing-benchmark",
+      "formula": "TN/(TN+FP)",
+      "positive_class": "official failing test"
+    },
+    {
+      "id": "false_pass_rate",
+      "family": "testing-oracle",
+      "role": "primary-on-testing-benchmark",
+      "formula": "FN/(TP+FN)",
+      "definition": "Fraction of genuinely failing tests incorrectly passed or left without a FAIL verdict."
+    },
+    {
+      "id": "false_alarm_rate",
+      "family": "testing-oracle",
+      "role": "secondary",
+      "formula": "FP/(TN+FP)"
+    },
+    {
+      "id": "failure_localization_accuracy",
+      "family": "testing-oracle",
+      "role": "secondary-when-official-failing-step-exists",
+      "formula": "correctly localized detected failures / detected failures"
+    },
+    {
+      "id": "task_level_reliability",
+      "family": "reliability",
+      "role": "primary",
+      "formula": "successful repetitions / valid scheduled repetitions",
+      "aggregation": "retain the task-level distribution"
+    },
+    {
+      "id": "all_run_reliability",
+      "family": "reliability",
+      "role": "secondary",
+      "type": "binary-per-task",
+      "definition": "All frozen repetitions for the task/configuration succeeded."
+    },
+    {
+      "id": "verdict_consistency",
+      "family": "reliability",
+      "role": "secondary",
+      "definition": "Agreement of repeated PASS/FAIL outputs for the same official task and configuration."
+    },
+    {
+      "id": "wall_time_ms",
+      "family": "efficiency",
+      "role": "secondary",
+      "censoring": "timeouts retain the timeout boundary and censoring indicator"
+    },
+    {
+      "id": "browser_action_count",
+      "family": "efficiency",
+      "role": "secondary"
+    },
+    {
+      "id": "llm_call_count",
+      "family": "efficiency",
+      "role": "secondary-agentic-only"
+    },
+    {
+      "id": "input_tokens",
+      "family": "efficiency",
+      "role": "secondary-agentic-only",
+      "missingness": "null, never zero-imputed"
+    },
+    {
+      "id": "output_tokens",
+      "family": "efficiency",
+      "role": "secondary-agentic-only",
+      "missingness": "null, never zero-imputed"
+    },
+    {
+      "id": "api_cost_usd",
+      "family": "efficiency",
+      "role": "secondary-agentic-only",
+      "missingness": "null, never zero-imputed"
+    },
+    {
+      "id": "authoring_minutes",
+      "family": "engineering-cost",
+      "role": "primary-practical",
+      "applies_to": "Traditional per-task script adaptation"
+    },
+    {
+      "id": "debugging_minutes",
+      "family": "engineering-cost",
+      "role": "secondary-practical"
+    },
+    {
+      "id": "review_minutes",
+      "family": "engineering-cost",
+      "role": "secondary-practical"
+    },
+    {
+      "id": "adapter_configuration_minutes",
+      "family": "engineering-cost",
+      "role": "secondary-practical",
+      "applies_to": "agent framework and benchmark integration"
+    },
+    {
+      "id": "exclusive_success",
+      "family": "complementarity",
+      "role": "primary-rq4",
+      "formula": "P(A=1 and B=0) on paired official tasks"
+    },
+    {
+      "id": "oracle_gain",
+      "family": "complementarity",
+      "role": "primary-rq4",
+      "formula": "P(any paradigm succeeds) - max single-paradigm success"
+    },
+    {
+      "id": "step_completion_rate",
+      "family": "diagnostic",
+      "role": "non-primary",
+      "constraint": "only when official steps or reference actions define the denominator"
+    },
+    {
+      "id": "failure_stage",
+      "family": "diagnostic",
+      "role": "non-primary",
+      "levels": ["observation", "target-identification", "planning", "action-execution", "state-tracking", "verification", "recovery", "infrastructure"]
+    }
+  ],
+  "reporting": {
+    "required_levels": ["per-benchmark", "macro-across-benchmarks", "micro-with-disclosed-denominator"],
+    "effect_requirements": ["absolute difference", "95% confidence interval", "effect size", "odds ratio when applicable"],
+    "multiple_testing": "Holm correction within pre-registered RQ families",
+    "forbidden": ["significance-only claims", "single weighted score", "pooling framework/model strata without an interaction model", "relabeling infrastructure failure as capability failure"]
+  }
+}

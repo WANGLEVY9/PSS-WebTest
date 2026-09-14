@@ -1,5 +1,11 @@
 # PSS-WebTest Phase 2 long-run campaign plan
 
+> **Paused and superseded for future data collection.** The `30 × 8 × 3 × 3 ×
+> 14` application-first target is retained as planning history, not as the
+> confirmatory design. See
+> [`FINAL-STUDY-DESIGN-v1.0.md`](FINAL-STUDY-DESIGN-v1.0.md) and
+> `code/config/study-design-contract.v1.0.json`.
+
 Date: 2026-09-13; last updated 2026-09-14
 Status: execution plan; **not** authorization for confirmatory collection.
 

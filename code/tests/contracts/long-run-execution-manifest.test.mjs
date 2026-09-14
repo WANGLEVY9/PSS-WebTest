@@ -6,13 +6,16 @@ import path from 'node:path';
 const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
 const manifest = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/phase2-long-run-execution-manifest.v0.1.json'), 'utf8'));
 
-test('long-run manifest preserves target arithmetic and fail-closed status', () => {
+test('legacy long-run manifest preserves its arithmetic while remaining superseded and paused', () => {
   const target = manifest.target;
   const cells = target.applications * target.workflows_per_application * target.conditions.length * target.primary_arms.length;
   assert.equal(target.matched_cells, cells);
   assert.equal(target.execution_units, cells * target.repetitions_per_cell);
-  assert.equal(manifest.status, 'planning-not-authorized');
+  assert.equal(manifest.status, 'paused-superseded-by-study-design-v1.0');
+  assert.equal(manifest.superseded_by, 'code/config/study-design-contract.v1.0.json');
   assert.equal(manifest.next_batch.confirmatory_authorized, false);
+  assert.equal(manifest.next_batch.campaign_class, 'none-study-design-freeze');
+  assert.deepEqual(manifest.next_batch.applications, []);
 });
 
 test('long-run manifest keeps cross-app and confirmatory lanes blocked', () => {

@@ -1,5 +1,10 @@
 # Preregistration and analysis protocol — draft v0.1
 
+> **Historical draft — do not register or execute.** This file predates the
+> benchmark-first redesign. A new preregistration must be generated only after
+> explicit confirmation of [`FINAL-STUDY-DESIGN-v1.0.md`](FINAL-STUDY-DESIGN-v1.0.md),
+> release pinning, and official-task screening.
+
 ## Material Passport
 
 - Origin skill: `aer-preregistration`, adapted for a software-engineering benchmark study

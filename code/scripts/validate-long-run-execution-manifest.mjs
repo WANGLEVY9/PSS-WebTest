@@ -7,7 +7,8 @@ const manifestPath = path.join(codeRoot, 'config', 'phase2-long-run-execution-ma
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const errors = [];
 const expected = manifest.target.applications * manifest.target.workflows_per_application * manifest.target.conditions.length * manifest.target.primary_arms.length * manifest.target.repetitions_per_cell;
-if (manifest.status !== 'planning-not-authorized') errors.push('manifest must remain planning-not-authorized');
+if (manifest.status !== 'paused-superseded-by-study-design-v1.0') errors.push('legacy long-run manifest must remain paused and superseded');
+if (manifest.superseded_by !== 'code/config/study-design-contract.v1.0.json') errors.push('legacy long-run manifest must point to study-design-contract.v1.0.json');
 if (manifest.target.matched_cells !== manifest.target.applications * manifest.target.workflows_per_application * manifest.target.conditions.length * manifest.target.primary_arms.length *  manifest.target.repetitions_per_cell / manifest.target.repetitions_per_cell) errors.push('matched_cells must equal application × workflow × condition × arm');
 if (manifest.target.execution_units !== expected) errors.push(`execution_units=${manifest.target.execution_units} does not equal derived ${expected}`);
 const ids = new Set();
@@ -27,7 +28,7 @@ for (const field of ['run_id', 'campaign_id', 'application', 'workflow', 'condit
   if (!manifest.storage_contract.required_record_fields.includes(field)) errors.push(`required run-record field missing: ${field}`);
 }
 const result = {
-  status: errors.length ? 'fail' : 'planning-valid-not-authorized',
+  status: errors.length ? 'fail' : 'legacy-plan-valid-and-paused',
   manifest: manifestPath,
   target: manifest.target,
   lane_status: manifest.lane_order.map(({ id, tranche, status }) => ({ id, tranche, status })),

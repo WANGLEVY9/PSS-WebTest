@@ -32,3 +32,9 @@ test('WorkArena++ remains a conditional extension with unstarted access gates', 
   assert.equal(manifest.conditional_extension.environment.three_reset_gate, 'not-started');
   assert.match(manifest.conditional_extension.admission, /^conditional/);
 });
+
+test('WebArena candidate environment image is pinned by digest rather than a mutable tag', () => {
+  const webarena = manifest.mandatory_core.find((item) => item.id === 'webarena-verified');
+  assert.match(webarena.environment.candidate_image.reference, /@sha256:[a-f0-9]{64}$/);
+  assert.equal(webarena.environment.candidate_image.status, 'digest-pinned-pull-pending');
+});

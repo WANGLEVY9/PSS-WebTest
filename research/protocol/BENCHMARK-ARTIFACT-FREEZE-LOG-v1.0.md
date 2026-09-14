@@ -17,6 +17,12 @@ environment, evaluator, or benchmark is admitted to confirmatory collection.
 
 ## Evidence observed
 
+- The WebArena-Verified Shopping deployment example uses a mutable `latest`
+  tag. Its observed image manifest was resolved to
+  `am1n3e/webarena-verified-shopping@sha256:3e8cb9b945ea9b1c94ab26dba53e8d12dd0406abbf4bf686fd3bb2b6a5908feb`.
+  Only that digest-pinned reference is eligible for the pending local pull;
+  the earlier incomplete `latest` transfer is not environment evidence.
+
 - WebArena-Verified README at the pinned commit describes version-controlled
   tasks, deterministic evaluation based on agent response and captured network
   trace, and controlled environments.

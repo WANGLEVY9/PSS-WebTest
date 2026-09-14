@@ -119,6 +119,7 @@
     "validate:long-cycle-plan": "node scripts/validate-long-cycle-experiment-plan.mjs",
     "validate:benchmark-artifact-manifest": "node scripts/validate-benchmark-artifact-manifest.mjs",
     "audit:benchmark-artifact-snapshot": "node scripts/audit-benchmark-artifact-snapshot.mjs",
+    "gate:webarena:shopping": "node scripts/probe-webarena-shopping-gate.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",
     "gate:invoiceninja:payments:fault-evolution": "node scripts/invoiceninja-payments-fault-evolution-gate.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",

@@ -57,6 +57,11 @@ artifact: the process is intentionally not treated as a benchmark image and
 must be recreated by an explicit setup procedure before admission. Classifieds
 and Reddit remain unavailable, so the four-service gate remains closed.
 
+Latest service observations are therefore: Classifieds **unavailable**,
+Shopping **reachable (302)**, Reddit **unavailable/timeout**, Homepage
+**reachable (200)**. The gate result remains `ready=false` because all four
+services and a live reset proof are required.
+
 The pinned source commit remains
 `89f5af29305c3d1e9f97ce4421462060a70c9a03`. To retry the gate, start the four
 version-pinned services and provide the reset token through the ignored local

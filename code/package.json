@@ -125,6 +125,7 @@
     "gate:webarena:shopping:state-reset": "node scripts/probe-webarena-shopping-state-reset-gate.mjs",
     "gate:visualwebarena": "node scripts/probe-visualwebarena-environment-gate.mjs",
     "probe:visualwebarena:assets": "node scripts/probe-visualwebarena-local-assets.mjs",
+    "gate:ata": "node scripts/probe-ata-environment-gate.mjs",
     "inventory:benchmark:outcome-blind": "node scripts/export-outcome-blind-task-candidates.mjs",
     "screening:prepare-template": "node scripts/prepare-screening-ledger.mjs",
     "screening:audit": "node scripts/validate-screening-ledger.mjs",

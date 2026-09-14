@@ -53,3 +53,18 @@ conditions, verify reset and oracle evidence for every repetition, and keep
 provider/model strata separate. The global confirmatory gate remains closed
 until outcome-blind screening, benchmark reset/evaluator gates, and Traditional
 adaptation are complete.
+
+## Medium-workflow follow-up
+
+The same profile and fixture were then used for the medium intent (search, then
+open the visible product detail page):
+
+| Arm | Run record | Status | Actions | Retries | Wall time | Task state | Independent oracle |
+|---|---|---:|---:|---:|---:|---|---|
+| Pure visual | `code/artifacts/phase2/prestashop-engineering-deepseek-visual-medium-20260914.jsonl` | completed | 4 | 0 | 8.86 s | reached (`product-detail`) | passed |
+| Hybrid | `code/artifacts/phase2/prestashop-engineering-deepseek-hybrid-medium-20260914.jsonl` | completed | 5 | 1 | 11.18 s | reached (`product-detail`) | passed |
+
+Hybrid again needed one diagnostic re-plan after a repeated target click; the
+retry is present in the run record. These four runs establish runner/provider
+feasibility for this fixture and two task lengths only. They are not sufficient
+to estimate a repetition rate or to support a method ranking.

@@ -10,7 +10,7 @@ const jsonResponse = (status, json) => new Response(JSON.stringify(json), { stat
 test('WebArena environment gate accepts only matching image plus healthy controller and HTTP site', async () => {
   const result = await probeWebArenaShoppingGate({
     manifest,
-    execFile: () => 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    execFile: (_command, args) => args[0] === 'info' ? 'amd64' : args[0] === 'image' ? 'amd64' : 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     fetchImpl: async (url) => String(url).includes('status')
       ? jsonResponse(200, { success: true, details: { value: { services: { 'php-fpm': 'HEALTHY' } } } })
       : new Response('ok', { status: 200 }),
@@ -19,12 +19,13 @@ test('WebArena environment gate accepts only matching image plus healthy control
   assert.equal(result.ready, true);
   assert.equal(result.classification, 'environment-ready');
   assert.equal(result.study_execution_allowed, false);
+  assert.equal(result.architecture_compatible, true);
 });
 
 test('WebArena environment gate classifies PHP fatal and 502 as infrastructure failure, never an arm outcome', async () => {
   const result = await probeWebArenaShoppingGate({
     manifest,
-    execFile: () => 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    execFile: (_command, args) => args[0] === 'info' ? 'arm64' : args[0] === 'image' ? 'amd64' : 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     fetchImpl: async (url) => String(url).includes('status')
       ? jsonResponse(200, { success: false, details: { value: { services: { 'php-fpm': 'FATAL' } } } })
       : new Response('bad gateway', { status: 502 })
@@ -32,4 +33,5 @@ test('WebArena environment gate classifies PHP fatal and 502 as infrastructure f
   assert.equal(result.ready, false);
   assert.equal(result.classification, 'infrastructure-gate-failed');
   assert.equal(result.php_fpm_service, 'FATAL');
+  assert.equal(result.architecture_compatible, false);
 });

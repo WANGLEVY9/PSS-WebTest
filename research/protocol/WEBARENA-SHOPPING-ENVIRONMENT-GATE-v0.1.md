@@ -23,3 +23,21 @@ relationship is a plausible diagnosis, not yet a proven root cause. The next
 valid remediation is an image/runtime combination that passes the same
 digest-pinned health and reset gate; changing method parameters would be an
 invalid response to this failure.
+
+## Follow-up probe
+
+The strengthened gate now records the architecture fields explicitly:
+
+```text
+host_architecture=aarch64
+image_architecture=amd64
+architecture_compatible=false
+image_matches=true
+ready=false
+```
+
+An isolated `webarena-x86` Colima profile was attempted with the native
+Virtualization.Framework backend, but Colima reported that `qemu-img` is not
+installed and refused to create the x86_64 VM. The default arm64 profile and
+the stopped candidate container were left unchanged. No fallback emulation,
+task execution, or provider request was attempted.

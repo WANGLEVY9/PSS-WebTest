@@ -37,6 +37,14 @@ export async function probeWebArenaShoppingGate({
   let inspectError = null;
   try { containerImage = execFile('docker', ['inspect', container, '--format', '{{.Image}}']); } catch (error) { inspectError = String(error?.stderr ?? error?.message ?? error); }
   const image_matches = containerImage === expectedDigest;
+  let hostArch = null;
+  let imageArch = null;
+  let architectureError = null;
+  try { hostArch = execFile('docker', ['info', '--format', '{{.Architecture}}']); } catch (error) { architectureError = String(error?.stderr ?? error?.message ?? error); }
+  try { imageArch = execFile('docker', ['image', 'inspect', expectedImage, '--format', '{{.Architecture}}']); } catch (error) { architectureError = [architectureError, String(error?.stderr ?? error?.message ?? error)].filter(Boolean).join('; '); }
+  const architecture_compatible = /^(amd64|arm64|aarch64)$/.test(hostArch ?? '') && /^(amd64|arm64|aarch64)$/.test(imageArch ?? '')
+    ? (hostArch === imageArch || (hostArch === 'aarch64' && imageArch === 'arm64'))
+    : false;
   let controllerProbe = null;
   let siteProbe = null;
   let probeError = null;
@@ -50,7 +58,7 @@ export async function probeWebArenaShoppingGate({
   const phpFpm = services['php-fpm'] ?? null;
   const controllerReady = controllerProbe?.json?.success === true;
   const siteReady = Boolean(siteProbe?.ok && siteProbe.status >= 200 && siteProbe.status < 400);
-  const ready = image_matches && controllerReady && siteReady && phpFpm !== 'FATAL';
+  const ready = image_matches && architecture_compatible && controllerReady && siteReady && phpFpm !== 'FATAL';
   return {
     schema_version: '1.0',
     kind: 'webarena-shopping-environment-gate',
@@ -60,6 +68,10 @@ export async function probeWebArenaShoppingGate({
     expected_image: expectedImage,
     observed_container_image: containerImage,
     image_matches,
+    host_architecture: hostArch,
+    image_architecture: imageArch,
+    architecture_compatible,
+    architecture_error: architectureError,
     controller: controllerProbe,
     site: siteProbe,
     php_fpm_service: phpFpm,

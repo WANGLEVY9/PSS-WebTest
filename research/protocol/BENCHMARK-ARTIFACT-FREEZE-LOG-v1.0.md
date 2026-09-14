@@ -60,3 +60,11 @@ environment, evaluator, or benchmark is admitted to confirmatory collection.
 4. perform three reset/evaluator cycles for each candidate benchmark;
 5. record any credential, license, evaluator, or reset failure with the
    pre-registered exclusion code rather than silently skipping it.
+
+## Contract validation checkpoint
+
+On 2026-09-14, the repository contract suite completed **275/275 tests**.
+The study-design validator, compliance audit, benchmark-manifest validator,
+and long-cycle-plan validator all passed while retaining
+`confirmatory_authorized=false` and `G0_COMPLETE_G1_PENDING`. These are
+implementation safeguards, not benchmark outcomes.

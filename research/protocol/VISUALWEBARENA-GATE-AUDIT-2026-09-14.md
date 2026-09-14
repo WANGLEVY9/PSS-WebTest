@@ -1,20 +1,44 @@
 # VisualWebArena gate audit — 2026-09-14
 
-Command: `npm run gate:visualwebarena`
+Command: `PSS_VWA_CLASSIFIEDS_RESET_TOKEN=<documented-default> npm run gate:visualwebarena`
 
 | Service | Endpoint | Observation |
 |---|---|---|
 | Classifieds | `127.0.0.1:9980` | fetch failed |
-| Shopping | `127.0.0.1:7770` | fetch failed |
+| Shopping | `127.0.0.1:7770` | HTTP 302; reachable (canonical redirect) |
 | Reddit | `127.0.0.1:9999` | request timeout |
 | Homepage | `127.0.0.1:4399` | fetch failed |
-| Classifieds reset token | local configuration | not configured |
+| Classifieds reset token | local configuration | supplied for this probe from the benchmark's documented default; not persisted |
 
 The gate returned `infrastructure-gate-failed`, `ready=false`, and
-`study_execution_allowed=false`. No VisualWebArena task, arm, evaluator, or
-provider request was executed. These observations therefore remain an
+`study_execution_allowed=false`. The shopping service is now reachable via
+the isolated x86 WebArena container and its HTTP 302 is accepted as a healthy
+reachability result. Classifieds, Reddit, and the homepage remain unavailable;
+therefore the all-services gate is still closed. No VisualWebArena task, arm,
+evaluator, or provider request was executed. These observations remain an
 environment prerequisite failure and do not enter any experimental
 denominator.
+
+The reset token was passed only as a process environment variable for this
+probe. It was not written to the repository or any run ledger. The benchmark
+default is recorded here solely as source-documented configuration evidence;
+the eventual reset gate must exercise the live endpoint and prove recovery
+before any task is admitted.
+
+## Local asset probe
+
+Command: `npm run probe:visualwebarena:assets`
+
+The read-only asset probe observed Docker architecture `x86_64` and the
+running WebArena-Verified shopping image. It did **not** find the official VWA
+image names `shopping_final_0712` or `postmill-populated-exposed-withimg`, nor
+the downloaded Classifieds compose bundle. The checked-out VWA source does
+contain the homepage template, but that source alone is not a running service.
+The result was `official-assets-missing`, `ready_for_service_start=false`, and
+`study_execution_allowed=false`. The Reddit image archive is approximately
+49.7 GB at the documented Archive.org mirror, so it was not downloaded as an
+unbounded troubleshooting action; the blocker is recorded for an explicit
+environment-provisioning decision.
 
 The pinned source commit remains
 `89f5af29305c3d1e9f97ce4421462060a70c9a03`. To retry the gate, start the four

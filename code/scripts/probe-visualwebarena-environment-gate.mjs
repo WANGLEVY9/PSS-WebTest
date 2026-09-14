@@ -15,9 +15,10 @@ const defaultServices = {
 async function probe(fetchImpl, url) {
   try {
     const response = await fetchImpl(url, { signal: AbortSignal.timeout(10_000), redirect: 'manual' });
-    return { url, status: response.status, ok: response.ok };
+    const reachable = response.status >= 200 && response.status < 400;
+    return { url, status: response.status, ok: response.ok, reachable };
   } catch (error) {
-    return { url, status: null, ok: false, error: String(error?.message ?? error) };
+    return { url, status: null, ok: false, reachable: false, error: String(error?.message ?? error) };
   }
 }
 
@@ -31,7 +32,11 @@ export async function probeVisualWebArenaEnvironmentGate({
   const benchmark = manifest.mandatory_core.find((item) => item.id === 'visualwebarena');
   if (!benchmark) throw new Error('benchmark artifact manifest lacks VisualWebArena');
   const serviceProbes = Object.fromEntries(await Promise.all(Object.entries(services).map(async ([name, url]) => [name, await probe(fetchImpl, url)])));
-  const healthy = Object.values(serviceProbes).every((result) => result.ok && result.status >= 200 && result.status < 400);
+  // `Response.ok` is true only for 2xx.  The canonical VWA services may
+  // redirect HTTP to their configured base URL, so a 3xx is still a healthy
+  // reachability result for this infrastructure gate.  Keep transport
+  // failures (status=null) and 4xx/5xx responses failed.
+  const healthy = Object.values(serviceProbes).every((result) => result.reachable);
   const resetTokenConfigured = typeof classifiedsResetToken === 'string' && classifiedsResetToken.trim().length >= 8;
   const ready = healthy && resetTokenConfigured;
   return {

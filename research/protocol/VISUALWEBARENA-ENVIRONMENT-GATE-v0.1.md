@@ -12,6 +12,9 @@ npm run gate:visualwebarena
 ```
 
 Every service must return HTTP 2xx/3xx and the reset token must be configured.
+The gate records both the raw `Response.ok` field and a separate
+`reachable` predicate; `Response.ok=false` for a 3xx is expected when probes
+use `redirect: manual`, and does not invalidate reachability.
 Missing services, connection errors, 5xx responses, and missing reset material
 are classified as `infrastructure-gate-failed`; they are not arm failures and
 do not enter any denominator. Even a passing probe reports

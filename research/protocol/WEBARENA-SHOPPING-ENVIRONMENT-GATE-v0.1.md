@@ -2,8 +2,8 @@
 
 Date: 2026-09-14
 
-Status: **health and restart-recovery gates passed; task-level state reset and
-confirmatory execution remain closed**
+Status: **health, restart-recovery, and task-state projection gates passed;
+confirmatory execution remains closed by the global benchmark admission gate**
 
 The digest-pinned candidate image
 `am1n3e/webarena-verified-shopping@sha256:3e8cb9b945ea9b1c94ab26dba53e8d12dd0406abbf4bf686fd3bb2b6a5908feb`
@@ -61,11 +61,37 @@ cycle_3=recovered
 classification=reset-recovery-ready
 ```
 
-This is a **restart-recovery** result, not proof that task-level database
-state is reset to the benchmark baseline. The reset gate consequently emits
-`state_reset_verified=false` and `study_execution_allowed=false`. Before any
-confirmatory arm is launched, the official WebArena reset procedure and a
-baseline state digest must be implemented and independently checked.
+## Task-state reset projection
+
+The new `npm run gate:webarena:shopping:state-reset` probe was run with three
+independent delete-and-recreate cycles from the fixed image. Every cycle had
+no persistent mounts, matched the expected image digest, recovered all
+services, and produced the same application-state projection:
+
+```text
+reset_cycles=3
+state_digest_stable=true
+baseline_state_digest=73c22b644b6042db6ddd02a970ad7c93d9a4d6a9a3277a6b62ed1629a25bf79e
+volatile_tables_excluded=cron_schedule,queue_message,queue_message_status
+classification=state-reset-ready
+state_reset_verified=true
+```
+
+The projection consists of MariaDB application table cardinalities and a
+schema digest (with automatically assigned `AUTO_INCREMENT` values
+canonicalized). Magento scheduler and message-queue tables were excluded
+only after an explicit fresh-recreate diff showed that they are populated by
+service startup; they are runtime bookkeeping rather than user task state.
+Redis session/key counts are likewise not used as a baseline because they
+change during service startup. This scope is recorded in the gate output as
+`mariadb-application-cardinality-and-schema-v1` and must remain unchanged for
+future runs.
+
+This closes the WebArena Shopping **local state-reset projection** gate. It
+does not by itself admit a benchmark: the outcome-blind screening ledger,
+Traditional adaptation, common evaluator, and three-arm feasibility gates are
+still pending. The reset probe therefore continues to emit
+`study_execution_allowed=false`.
 
 ## Gate implementation notes
 

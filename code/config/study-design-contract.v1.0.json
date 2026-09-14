@@ -1,7 +1,14 @@
 {
   "schema_version": "1.0",
   "contract_id": "pss-webtest-condition-aware-study-v1.0",
-  "status": "candidate-final-awaiting-human-confirmation",
+  "status": "human-confirmed-design-frozen",
+  "confirmed_at": "2026-09-14",
+  "confirmation_scope": [
+    "mandatory core benchmarks and conditional WorkArena++ extension",
+    "legacy five-application evidence remains pilot and engineering only",
+    "Traditional adaptation failures remain in the deployment-effectiveness denominator",
+    "pure-visual progress detection may use only admitted screenshot-derived and action-state signals"
+  ],
   "execution_status": "paused",
   "confirmatory_authorized": false,
   "supersedes": [
@@ -77,6 +84,12 @@
     "selection_unit": "benchmark_release x official_task_id",
     "outcome_blind": true,
     "screen_before_any_arm_execution": true,
+    "eligible_task_set_freeze": {
+      "required_before_any_arm_execution": true,
+      "required_artifacts": ["included_tasks.csv", "excluded_tasks.csv", "screening_log.csv", "task_annotations.csv"],
+      "manifest_digest_required": true,
+      "post_freeze_change_policy": "versioned protocol amendment plus full affected-arm rerun; no in-place task-list edits"
+    },
     "inclusion_criteria": [
       {"code": "IC1", "rule": "The task is an official task in the pinned public benchmark release."},
       {"code": "IC2", "rule": "The official instruction and evaluator are available and can be preserved without semantic edits."},
@@ -203,6 +216,23 @@
       "script_hash_freeze_required": true
     }
   },
+  "hard_freeze_rules": [
+    {
+      "id": "HF1-outcome-blind-task-set",
+      "rule": "Freeze and hash the eligible official task set before running any CUA, Hybrid, or Traditional arm.",
+      "violation": "invalidate all affected runs and repeat them after a versioned amendment"
+    },
+    {
+      "id": "HF2-traditional-double-blind-adaptation",
+      "rule": "Traditional authoring and semantic review must be completed without evaluator internals and without CUA or Hybrid outcomes.",
+      "violation": "invalidate the affected script and all runs produced from it"
+    },
+    {
+      "id": "HF3-no-silent-protocol-drift",
+      "rule": "Any change to task population, information boundary, evaluator, authoring protocol, retry rule, or primary metric requires a versioned amendment before new runs.",
+      "violation": "keep old and new versions in separate strata; never pool them"
+    }
+  ],
   "outcomes": {
     "primary": [
       "official_task_success",

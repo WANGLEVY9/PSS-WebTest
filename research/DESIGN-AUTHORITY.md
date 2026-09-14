@@ -4,7 +4,8 @@ Current authority: [`FINAL-STUDY-DESIGN-v1.0.md`](FINAL-STUDY-DESIGN-v1.0.md)
 
 Machine contract: `code/config/study-design-contract.v1.0.json`
 
-Status: candidate final, awaiting explicit human confirmation; execution paused.
+Status: human-confirmed v1.0 design freeze; execution paused while artifacts,
+task IDs, compliant runners, and adaptation records are prepared.
 
 All earlier application-first, 3,000+, 30-application, custom fault/evolution,
 and Phase 2 long-run plans are retained for traceability only. They may describe

@@ -8,8 +8,9 @@ const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
 const contract = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'study-design-contract.v1.0.json'), 'utf8'));
 const metrics = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'metric-dictionary.v1.0.json'), 'utf8'));
 
-test('final-design candidate is valid, paused, and fail-closed', () => {
+test('human-confirmed final design is frozen, paused, and fail-closed', () => {
   assert.deepEqual(validateStudyDesignContract(contract), []);
+  assert.equal(contract.status, 'human-confirmed-design-frozen');
   assert.equal(contract.execution_status, 'paused');
   assert.equal(contract.confirmatory_authorized, false);
   assert.equal(contract.implementation_readiness.ready_for_new_evaluated_runs, false);
@@ -70,4 +71,14 @@ test('screening and Traditional adaptation ledgers expose the required audit col
   for (const field of ['task_id', 'script_hash', 'authoring_minutes', 'debugging_minutes', 'review_minutes', 'semantic_review_status', 'black_box_conformance_status']) {
     assert.ok(headers('traditional_adaptation_ledger.csv').has(field), `traditional_adaptation_ledger.csv missing ${field}`);
   }
+});
+
+test('hard freeze rules block outcome-aware filtering and Traditional evaluator leakage', () => {
+  const ids = new Set(contract.hard_freeze_rules.map((rule) => rule.id));
+  assert.ok(ids.has('HF1-outcome-blind-task-set'));
+  assert.ok(ids.has('HF2-traditional-double-blind-adaptation'));
+  assert.ok(ids.has('HF3-no-silent-protocol-drift'));
+  assert.equal(contract.task_filtering.eligible_task_set_freeze.required_before_any_arm_execution, true);
+  assert.equal(contract.task_filtering.eligible_task_set_freeze.manifest_digest_required, true);
+  assert.ok(contract.traditional_adaptation.forbidden_author_inputs.includes('official evaluator source or network-trace answer'));
 });

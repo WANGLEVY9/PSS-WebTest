@@ -1,8 +1,10 @@
-# PSS-WebTest final study design v1.0 — confirmation candidate
+# PSS-WebTest final study design v1.0 — confirmed and frozen
 
 Date: 2026-09-14
 
-Status: **candidate final; experiment execution paused; confirmatory collection not authorized**
+Status: **human-confirmed design freeze; experiment execution paused; confirmatory collection not authorized**
+
+Confirmation date: 2026-09-14
 
 Machine-readable contract: `code/config/study-design-contract.v1.0.json`
 
@@ -59,6 +61,11 @@ primary confirmatory estimate.
 The sampling unit is `pinned benchmark release × official task ID`. Every task
 must retain its verbatim instruction, initial-state semantics, and official
 evaluator.
+
+**Hard freeze HF1:** the eligible task set and its manifest digest must be
+frozen before *any* arm is executed. A post-freeze task-list change requires a
+versioned amendment and a complete rerun of every affected arm; the list may
+never be edited in place after outcomes are observed.
 
 ### Inclusion
 
@@ -150,6 +157,10 @@ ordinary access to the pinned browser environment, and Playwright docs. They
 must be blind to evaluator source, reference trajectories unless officially
 part of the task specification, database truth, and all CUA/Hybrid results.
 
+**Hard freeze HF2:** both authoring and semantic-equivalence review must finish
+without access to evaluator internals and without access to CUA/Hybrid outcomes.
+Violating this rule invalidates the script and every run produced from it.
+
 For every official task:
 
 1. register author pseudonym and timing;
@@ -224,3 +235,19 @@ No new evaluated experiment begins until all of the following are complete:
 
 Until then, repository execution status remains `paused`, and confirmatory
 authorization remains `false`.
+
+## 9. Confirmation record
+
+The study owner explicitly confirmed v1.0 on 2026-09-14, including:
+
+1. WebArena-Verified, VisualWebArena, and ATA as mandatory core benchmarks,
+   with WorkArena++ admitted only through its pre-registered environment gate;
+2. all existing five-application data retained exclusively as pilot and
+   engineering evidence;
+3. Traditional adaptation failures retained in the deployment-effectiveness
+   denominator;
+4. removal of every URL/milestone side channel from the future pure-visual
+   control loop.
+
+This confirmation freezes the design principles, not the yet-unpinned task
+IDs, model configurations, repetition count, or confirmatory authorization.

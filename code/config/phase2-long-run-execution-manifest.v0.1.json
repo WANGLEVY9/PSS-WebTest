@@ -136,7 +136,7 @@
   "next_batch": {
     "campaign_class": "none-study-design-freeze",
     "applications": [],
-    "required_before_expansion": ["confirm study-design-contract.v1.0", "pin public benchmark releases and licenses", "freeze screened official task IDs", "pass information-boundary and Traditional adaptation conformance gates"],
+    "required_before_expansion": ["pin public benchmark releases and licenses", "freeze and hash screened official task IDs", "pass information-boundary and Traditional adaptation conformance gates", "implement benchmark-provenance run-record schema"],
     "confirmatory_authorized": false
   }
 }

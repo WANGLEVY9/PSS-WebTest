@@ -9,7 +9,8 @@ const contractPath = path.join(codeRoot, 'config', 'study-design-contract.v1.0.j
 export function validateStudyDesignContract(contract) {
   const errors = [];
   if (contract?.schema_version !== '1.0') errors.push('schema_version must be 1.0');
-  if (contract?.status !== 'candidate-final-awaiting-human-confirmation') errors.push('status must remain candidate-final-awaiting-human-confirmation before explicit approval');
+  if (contract?.status !== 'human-confirmed-design-frozen') errors.push('status must record the explicit v1.0 design confirmation');
+  if (!contract?.confirmed_at || (contract?.confirmation_scope ?? []).length < 4) errors.push('confirmation date and scope are required');
   if (contract?.execution_status !== 'paused') errors.push('experiment execution must remain paused during design confirmation');
   if (contract?.confirmatory_authorized !== false) errors.push('confirmatory collection must not be authorized');
 
@@ -29,6 +30,7 @@ export function validateStudyDesignContract(contract) {
   for (let i = 1; i <= 7; i += 1) if (!inclusionCodes.has(`IC${i}`)) errors.push(`missing inclusion criterion IC${i}`);
   for (let i = 1; i <= 8; i += 1) if (!exclusionCodes.has(`EX${i}`)) errors.push(`missing exclusion reason EX${i}`);
   if (filtering?.outcome_blind !== true || filtering?.screen_before_any_arm_execution !== true) errors.push('task screening must be outcome-blind and precede arm execution');
+  if (filtering?.eligible_task_set_freeze?.required_before_any_arm_execution !== true || filtering?.eligible_task_set_freeze?.manifest_digest_required !== true) errors.push('eligible task set must be frozen and hashed before any arm execution');
   if ((filtering?.forbidden_exclusion_reasons ?? []).length < 4) errors.push('performance-dependent exclusion guardrails are incomplete');
   if (filtering?.sampling?.freeze_before_execution !== true || !Number.isInteger(filtering?.sampling?.random_seed)) errors.push('sampling seed and pre-execution freeze are required');
   if ((filtering?.screening?.reviewers ?? 0) < 2 || filtering?.screening?.adjudication_required !== true) errors.push('two-reviewer screening and adjudication are required');
@@ -50,6 +52,7 @@ export function validateStudyDesignContract(contract) {
 
   const traditional = contract?.traditional_adaptation;
   if (traditional?.review?.minimum_reviewers < 2 || traditional?.review?.author_blind_to_agent_results !== true || traditional?.review?.reviewer_blind_to_agent_results !== true) errors.push('Traditional adaptation must be double-reviewed and blind to agent outcomes');
+  if (!(traditional?.forbidden_author_inputs ?? []).includes('official evaluator source or network-trace answer')) errors.push('Traditional authoring must prohibit evaluator internals');
   if (traditional?.adaptation_failure_policy?.includes('do not exclude') !== true) errors.push('Traditional adaptation failure must remain in the denominator');
   for (const field of ['authoring_minutes', 'debugging_minutes', 'review_minutes', 'loc', 'locator_count', 'assertion_count', 'debug_edit_count']) {
     if (!(traditional?.required_cost_fields ?? []).includes(field)) errors.push(`Traditional cost field missing: ${field}`);
@@ -59,6 +62,8 @@ export function validateStudyDesignContract(contract) {
   if (contract?.outcomes?.single_composite_score !== 'prohibited') errors.push('single composite score must remain prohibited');
   if (contract?.implementation_readiness?.ready_for_new_evaluated_runs !== false) errors.push('new evaluated runs must remain blocked until implementation gaps close');
   if ((contract?.implementation_readiness?.blocking_gaps ?? []).length < 5) errors.push('implementation gap register is incomplete');
+  const hardFreezeIds = new Set((contract?.hard_freeze_rules ?? []).map((rule) => rule.id));
+  for (const id of ['HF1-outcome-blind-task-set', 'HF2-traditional-double-blind-adaptation', 'HF3-no-silent-protocol-drift']) if (!hardFreezeIds.has(id)) errors.push(`hard freeze rule missing: ${id}`);
   if ((contract?.freeze_gates ?? []).length < 8) errors.push('freeze gate list is incomplete');
   return errors;
 }

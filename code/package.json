@@ -116,6 +116,7 @@
     "validate:phase2-campaign": "node scripts/validate-phase2-campaign-tranches.mjs",
     "validate:long-run-manifest": "node scripts/validate-long-run-execution-manifest.mjs",
     "validate:study-design": "node scripts/validate-study-design-contract.mjs",
+    "audit:study-design-compliance": "node scripts/audit-study-design-compliance.mjs",
     "validate:long-cycle-plan": "node scripts/validate-long-cycle-experiment-plan.mjs",
     "validate:benchmark-artifact-manifest": "node scripts/validate-benchmark-artifact-manifest.mjs",
     "audit:benchmark-artifact-snapshot": "node scripts/audit-benchmark-artifact-snapshot.mjs",

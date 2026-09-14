@@ -29,7 +29,7 @@ fs.mkdirSync(path.dirname(recordsOut), { recursive: true });
 fs.mkdirSync(path.dirname(summaryOut), { recursive: true });
 
 async function healthGate(label) {
-  const response = await fetch(`${baseURL}/login`, { signal: AbortSignal.timeout(10000) });
+  const response = await fetch(`${baseURL}/index.php?controller=authentication`, { signal: AbortSignal.timeout(10000) });
   if (!response.ok && response.status >= 500) throw new Error(`${label}: PrestaShop returned HTTP ${response.status}`);
   return { label, ok: true, status: response.status };
 }

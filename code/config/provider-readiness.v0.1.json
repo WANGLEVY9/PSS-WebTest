@@ -1,6 +1,6 @@
 {
   "schema_version": "0.1",
-  "generated_at": "2026-09-13T04:22:08.182Z",
+  "generated_at": "2026-09-14T10:59:21.803Z",
   "gate": "prestashop click-type-keypress conformance",
   "evidence_boundary": "protocol/plumbing gate only; not a capability or strategy comparison",
   "profiles": [
@@ -17,8 +17,8 @@
             {
               "step": 0,
               "type": "click",
-              "x": 1059,
-              "y": 90,
+              "x": 1064,
+              "y": 69,
               "coordinate_mode": "pixels"
             },
             {
@@ -41,8 +41,8 @@
                 "action": {
                   "step": 0,
                   "type": "click",
-                  "x": 1059,
-                  "y": 90,
+                  "x": 1064,
+                  "y": 69,
                   "coordinate_mode": "pixels"
                 }
               },
@@ -68,7 +68,7 @@
             "typed_text_non_empty": true
           },
           "error": null,
-          "elapsed_ms": 6027,
+          "elapsed_ms": 6506,
           "protocol": {
             "profile_id": "aliyun-qwen3.7-flash-tool-v1",
             "profile_status": "frozen-pilot",
@@ -136,7 +136,7 @@
             "typed_text_non_empty": true
           },
           "error": null,
-          "elapsed_ms": 7295,
+          "elapsed_ms": 6676,
           "protocol": {
             "profile_id": "aliyun-qwen3.7-flash-tool-v1",
             "profile_status": "frozen-pilot",
@@ -168,14 +168,14 @@
               "step": 0,
               "type": "click",
               "x": 1064,
-              "y": 90,
+              "y": 89,
               "coordinate_mode": "pixels"
             },
             {
               "step": 1,
               "type": "click",
               "x": 1064,
-              "y": 90,
+              "y": 89,
               "coordinate_mode": "pixels"
             },
             {
@@ -199,7 +199,7 @@
                   "step": 0,
                   "type": "click",
                   "x": 1064,
-                  "y": 90,
+                  "y": 89,
                   "coordinate_mode": "pixels"
                 }
               },
@@ -225,7 +225,7 @@
             "typed_text_non_empty": true
           },
           "error": null,
-          "elapsed_ms": 7307,
+          "elapsed_ms": 7080,
           "protocol": {
             "profile_id": "deepseek-v4-flash-vision-tool-v1",
             "profile_status": "frozen-pilot",
@@ -293,7 +293,7 @@
             "typed_text_non_empty": true
           },
           "error": null,
-          "elapsed_ms": 5731,
+          "elapsed_ms": 5836,
           "protocol": {
             "profile_id": "deepseek-v4-flash-vision-tool-v1",
             "profile_status": "frozen-pilot",
@@ -326,7 +326,7 @@
             "name": "Error",
             "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217"
           },
-          "elapsed_ms": 1136
+          "elapsed_ms": 1131
         },
         "hybrid": {
           "arm": "hybrid",
@@ -337,7 +337,7 @@
             "name": "Error",
             "message": "CUA API request failed (429): Your account [2127044686] has reached the set inference limit for the [doubao-seed-2-1-pro] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \"Safe Experience Mode\". Request id: 0217"
           },
-          "elapsed_ms": 800
+          "elapsed_ms": 974
         }
       },
       "status": "blocked",

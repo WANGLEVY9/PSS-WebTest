@@ -206,7 +206,7 @@ const startedAt = Date.now();
 try {
   // Authentication is a matched preamble and is completed before any arm
   // observation is exposed, so credentials never enter a provider prompt.
-  await page.goto(`${baseURL}/login`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${baseURL}/index.php?controller=authentication`, { waitUntil: 'domcontentloaded' });
   await page.locator('#field-email').fill(username);
   await page.locator('#field-password').fill(password);
   await page.locator('#submit-login').click();

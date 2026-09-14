@@ -91,7 +91,7 @@ async function independentOracle() {
 }
 
 try {
-  await page.goto(`${baseURL}/login`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${baseURL}/index.php?controller=authentication`, { waitUntil: 'domcontentloaded' });
   await fill(page.locator('#field-email'), username, 'email');
   await fill(page.locator('#field-password'), password, 'password');
   await click(page.locator('#submit-login'), 'login');

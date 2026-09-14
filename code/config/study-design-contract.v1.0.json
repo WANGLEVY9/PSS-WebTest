@@ -30,14 +30,14 @@
         "id": "webarena-verified",
         "role": "general-purpose realistic browser tasks",
         "official_repository": "https://github.com/ServiceNow/webarena-verified",
-        "selection_status": "selected-pending-release-pin-and-task-screening",
+        "selection_status": "selected-pending-local-reproduction-and-task-screening",
         "task_semantics_policy": "official instruction and official evaluator unchanged"
       },
       {
         "id": "visualwebarena",
         "role": "externally defined visually grounded tasks",
         "official_repository": "https://github.com/web-arena-x/visualwebarena",
-        "selection_status": "selected-pending-release-pin-and-task-screening",
+        "selection_status": "selected-pending-local-reproduction-and-task-screening",
         "task_semantics_policy": "official instruction, goal images, and official evaluator unchanged"
       },
       {
@@ -46,7 +46,7 @@
         "official_repository": "https://github.com/Smartesting/pinata",
         "official_artifact": "https://doi.org/10.5281/zenodo.15198569",
         "paper_doi": "https://doi.org/10.1145/3728879",
-        "selection_status": "selected-pending-artifact-pin-and-task-count-audit",
+        "selection_status": "selected-pending-local-reproduction-and-evaluator-semantics-audit",
         "task_semantics_policy": "official step sequence, assertions, pass/fail label, and application state unchanged",
         "scale_note": "The final ISSTA page/artifact and the preprint describe different task-count snapshots; compute the denominator from the pinned artifact rather than copying a reported count."
       }
@@ -258,11 +258,12 @@
   "implementation_readiness": {
     "ready_for_new_evaluated_runs": false,
     "blocking_gaps": [
-      "replace harness-derived URL or milestone progress tokens in agent control logic with observation-permitted change detection",
-      "implement a strict visible-interactable Hybrid projection schema and reject every undeclared field recursively",
-      "add benchmark release, official task, official evaluator, screening manifest, boundary contract, and Traditional adaptation digests to the next run-record schema",
-      "pin benchmark releases and populate outcome-blind included/excluded task tables",
-      "implement Traditional semantic-equivalence review and authoring-cost ledger checks"
+      "pass local environment, evaluator-semantics, and three-reset gates for each benchmark (ATA currently has a remote-reset and agent-coupled evaluator finding)",
+      "populate and adjudicate outcome-blind included/excluded task tables before any arm execution",
+      "connect every benchmark adapter to the repaired pure-visual and canonical Hybrid boundary contracts",
+      "complete double-blind Traditional semantic-equivalence review, authoring-cost capture, and script freeze",
+      "wire benchmark-provenance run-record v1.0 into the append-only ledger and dashboard",
+      "run the held-out protocol pilot, freeze repetitions from power simulation, and obtain explicit confirmatory authorization"
     ],
     "legacy_runner_use": "diagnostic-only",
     "legacy_record_use": "engineering-and-feasibility-only"

@@ -45,8 +45,8 @@ test('Traditional authoring is outcome-blind and adaptation failures stay in the
 test('legacy runners and records cannot enter the redesigned confirmatory denominator', () => {
   assert.equal(contract.implementation_readiness.legacy_runner_use, 'diagnostic-only');
   assert.equal(contract.implementation_readiness.legacy_record_use, 'engineering-and-feasibility-only');
-  assert.ok(contract.implementation_readiness.blocking_gaps.some((gap) => gap.includes('progress tokens')));
-  assert.ok(contract.implementation_readiness.blocking_gaps.some((gap) => gap.includes('run-record schema')));
+  assert.ok(contract.implementation_readiness.blocking_gaps.some((gap) => gap.includes('pure-visual') && gap.includes('Hybrid')));
+  assert.ok(contract.implementation_readiness.blocking_gaps.some((gap) => gap.includes('benchmark-provenance run-record')));
 });
 
 test('metric dictionary keeps benchmark success, testing correctness, reliability, and cost separate', () => {

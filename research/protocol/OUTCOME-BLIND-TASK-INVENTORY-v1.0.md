@@ -19,3 +19,13 @@ npm run inventory:benchmark:outcome-blind
 
 The generated JSON is written under the ignored local benchmark-artifact cache;
 it is not itself a result ledger or a confirmatory dataset.
+
+The screening template can then be prepared with:
+
+```bash
+npm run screening:prepare-template
+```
+
+It creates one blank row per candidate and IC1--IC7 criterion. All reviewer,
+adjudication, and annotation fields remain null until two independent reviewers
+complete the pre-registered screening; no arm may run against this template.

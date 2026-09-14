@@ -68,3 +68,9 @@ Hybrid again needed one diagnostic re-plan after a repeated target click; the
 retry is present in the run record. These four runs establish runner/provider
 feasibility for this fixture and two task lengths only. They are not sufficient
 to estimate a repetition rate or to support a method ranking.
+
+Finally, the explicit profile-file path was exercised with
+`PSS_PROVIDER_ENV_FILE=./.env.deepseek` (without manually sourcing the file):
+the simple visual task completed in 3 actions (6.48 s) and passed the same
+independent oracle. This validates the configuration remediation itself; the
+result remains engineering evidence.

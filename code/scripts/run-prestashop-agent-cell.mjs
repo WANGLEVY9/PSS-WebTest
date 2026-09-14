@@ -15,7 +15,14 @@ import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { assertProtocolMatchesFrozenProfile, resolveProviderProtocol } from '../src/provider-profile.mjs';
 import { applyPrestashopMutation } from '../src/prestashop-mutations.mjs';
 
+// Load the repository defaults first (credentials and local SUT settings),
+// then optionally overlay a provider-specific profile such as
+// `.env.deepseek`.  The overlay is explicit and local-only; it never enters a
+// run record, and shell variables remain available to select task parameters.
 dotenv.config();
+if (process.env.PSS_PROVIDER_ENV_FILE?.trim()) {
+  dotenv.config({ path: process.env.PSS_PROVIDER_ENV_FILE.trim(), override: true });
+}
 const execFileAsync = promisify(execFile);
 const arm = process.env.PSS_ARM ?? 'visual';
 if (!['visual', 'hybrid'].includes(arm)) throw new Error('PSS_ARM must be visual or hybrid');

@@ -38,16 +38,18 @@ Remaining gate: benchmark-specific extractors must feed this one projector and
 pass its bounded-field tests. Historical local projection data remain pilot
 engineering evidence only.
 
-## G3 — Confirmatory run-record v1.0 is implemented; wiring remains
+## G3 — Confirmatory run-record and task-input boundaries implemented; wiring remains
 
 Schema `1.0` is now implemented and requires benchmark ID/source commit,
 official task-source ID, official task/evaluator digests, artifact-manifest,
-screening, boundary-contract, and Traditional-adaptation digests. It retains
-the v0.2 reset/configuration/trace provenance and rejects undeclared fields.
+screening, boundary-contract, and Traditional-adaptation digests. The official
+task adapter now verifies the verbatim instruction digest and refuses evaluator
+or expected-answer fields. An authorized writer separately refuses every record
+unless a frozen confirmatory manifest explicitly authorizes collection.
 
-Remaining gate: no official benchmark adapter or ledger writer is wired to the
-schema yet, and its referenced screening/adaptation digests cannot exist until
-G4/G5 complete. Schema unit tests are not study observations.
+Remaining gate: no official benchmark runner is wired to the adapter/writer
+yet, and the referenced screening/adaptation digests cannot exist until G4/G5
+complete. Schema and adapter unit tests are not study observations.
 
 ## G4 — Official task population is not yet frozen
 

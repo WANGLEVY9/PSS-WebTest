@@ -157,13 +157,13 @@ const observeScreenshot = async ({ step } = {}) => {
   const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' });
   const state = await replayState();
   await replay.capture({ page, buffer: image, phase: 'before-action', step, state, providerEventIds: pendingProviderEventIds.splice(0) });
-  return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}`, progressToken: `${page.url()}::${state.milestone}` };
+  return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}` };
 };
 const observeHybrid = async ({ step } = {}) => {
   const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' });
   const state = await replayState();
   await replay.capture({ page, buffer: image, phase: 'before-action', step, state, providerEventIds: pendingProviderEventIds.splice(0) });
-  return { screenshot: image.toString('base64'), pageStructure: await structure(page), viewport, progressToken: `${page.url()}::${state.milestone}` };
+  return { screenshot: image.toString('base64'), pageStructure: await structure(page), viewport };
 };
 const executeAction = async (action) => {
   if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) throw new Error(`pointer action outside viewport: ${action.x},${action.y}`);

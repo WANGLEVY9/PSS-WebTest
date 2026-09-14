@@ -11,57 +11,52 @@ already enforces it. Existing contract tests are useful, but the current local
 pilots were built for the superseded application-first design and are not
 automatically valid under the new benchmark-first protocol.
 
-## G1 — Pure-visual control loop receives harness progress tokens
+## G1 — Pure-visual progress side channel remediated; adapter audit remains
 
-Current agent runners construct `progressToken` values from `page.url()` and
-internal milestone labels. The driver uses this token when deciding whether a
-repeated click represents progress. Even if the token is not placed in the
-model prompt, it changes the behavior of the CUA control loop using information
-that a screenshot-only system would not have.
+The former `progressToken` path, constructed from `page.url()` and internal
+milestone labels, has been removed from the CUA driver and repaired local
+runners. Repeated-action control now uses admitted screenshot digest plus the
+agent's own accepted-action history; URL and milestone state are rejected by
+the observation contract.
 
-Required repair: the new pure-visual runner may detect change only from the
-admitted screenshot/cursor/action-error history. URL or harness milestone state
-must not affect planning, retry, loop detection, termination, or budget.
+Remaining gate: every future benchmark adapter must pass the same conformance
+and adversarial-leak tests. The repair is implementation evidence, not a
+retroactive repair of historical local records.
 
 Consequence: existing visual runs remain diagnostic; they are not grandfathered
 into the redesigned confirmatory denominator.
 
-## G2 — Hybrid structure needs one canonical projection
+## G2 — Canonical Hybrid projection implemented; extraction adapters pending
 
-Current local runners independently build page-structure lists. They generally
-filter visible controls and create target IDs, but the field set and extraction
-logic are runner-specific.
-
-Required repair: implement one shared projection that emits only visible and
-interactable elements with ephemeral IDs, role, accessible name, user-visible
-value/placeholder, allowed accessibility states, and visible bounding box. It
-must recursively reject HTML, selectors, stable application IDs, hidden text,
+`hybrid-projection.mjs` now accepts only an allowlisted visible-interactable
+projection with ephemeral target IDs, role, accessible name, visible
+value/placeholder, bounded states, and visible bounding box. It recursively
+rejects HTML, selectors, stable application IDs, URLs, hidden text,
 network/evaluator fields, and application-specific milestone state.
 
-## G3 — Run records lack official-benchmark provenance
+Remaining gate: benchmark-specific extractors must feed this one projector and
+pass its bounded-field tests. Historical local projection data remain pilot
+engineering evidence only.
 
-The current v0.1/v0.2 records identify local application/task/condition and
-configuration provenance, but the redesigned unit requires stronger lineage.
+## G3 — Confirmatory run-record v1.0 is implemented; wiring remains
 
-The next schema must require:
+Schema `1.0` is now implemented and requires benchmark ID/source commit,
+official task-source ID, official task/evaluator digests, artifact-manifest,
+screening, boundary-contract, and Traditional-adaptation digests. It retains
+the v0.2 reset/configuration/trace provenance and rejects undeclared fields.
 
-- benchmark ID and pinned release/version;
-- official task ID;
-- digest of the verbatim official instruction;
-- digest of the unchanged official evaluator;
-- digest of the included/excluded task-list freeze;
-- information-boundary contract ID/digest;
-- framework/model/script configuration digest;
-- Traditional adaptation ledger and frozen script hash where applicable.
-
-Without these fields, a record cannot prove that the three arms executed the
-same official task selected before outcomes were observed.
+Remaining gate: no official benchmark adapter or ledger writer is wired to the
+schema yet, and its referenced screening/adaptation digests cannot exist until
+G4/G5 complete. Schema unit tests are not study observations.
 
 ## G4 — Official task population is not yet frozen
 
-The three mandatory benchmarks are selected, but exact releases, licenses, and
-eligible task IDs are not yet pinned. The empty CSV files under
-`research/protocol/` are schemas, not evidence that screening is complete.
+The three mandatory sources are now pinned and locally source-inventoried:
+WebArena-Verified has 812 raw source records, VisualWebArena has 910 across
+its three VWA files, and ATA has 112 test cases. The ATA Zenodo archive matches
+its published MD5. These are raw inventories, **not** eligible-task counts.
+The empty CSV files under `research/protocol/` remain schemas, not evidence
+that screening is complete.
 
 Required repair: obtain the official artifacts, compute task inventories,
 screen every task using IC1–IC7/EX1–EX8, independently review and adjudicate,
@@ -94,10 +89,10 @@ published task population.
 No model choice, provider backfill, repetition increase, or application
 expansion closes these gaps. Work resumes in this order:
 
-1. benchmark artifact and license pinning;
+1. local benchmark environments, evaluator semantics audit, and reset gate;
 2. outcome-blind task screening and annotation;
-3. boundary-conformant shared CUA/Hybrid adapters;
+3. benchmark adapter conformance against the repaired CUA/Hybrid boundaries;
 4. official-task Traditional adaptation workflow;
-5. benchmark-provenance run-record schema;
+5. wire the v1.0 record schema and append-only ledger;
 6. small protocol pilot, power analysis, and final freeze;
 7. confirmatory collection only after all hashes are recorded.

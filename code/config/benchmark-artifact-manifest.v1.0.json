@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.0",
+  "manifest_id": "pss-webtest-benchmark-artifact-manifest-v1.0",
+  "generated_on": "2026-09-14",
+  "authority_contract": "study-design-contract.v1.0.json",
+  "status": "source-pinned-local-reproduction-pending",
+  "confirmatory_authorized": false,
+  "admission_rule": "A source pin is necessary but insufficient. No benchmark is admitted until local environment, reset, evaluator, license, task inventory, and three-arm feasibility evidence are sealed.",
+  "mandatory_core": [
+    {
+      "id": "webarena-verified",
+      "repository": "https://github.com/ServiceNow/webarena-verified",
+      "default_branch": "main",
+      "source_commit": "6473f72db5dcefc97b5725b59e734504edc28a21",
+      "source_commit_observed_on": "2026-09-14",
+      "license": {
+        "identifier": "Apache-2.0",
+        "evidence_url": "https://raw.githubusercontent.com/ServiceNow/webarena-verified/6473f72db5dcefc97b5725b59e734504edc28a21/LICENSE",
+        "status": "source-license-verified"
+      },
+      "task_artifact": {
+        "status": "source-inventoried-eligibility-pending",
+        "task_manifest_digest": "sha256:25db425868b3a77e1c442bc88db8090c9ecf8959d90d656aa7525bb6e4a3a2be",
+        "source_record_count": 812,
+        "eligible_task_count": null,
+        "inventory_scope": "all records in assets/dataset/webarena-verified.json; not a screened population"
+      },
+      "evaluator": {
+        "status": "source-fingerprinted-local-semantics-audit-pending",
+        "evidence_url": "https://raw.githubusercontent.com/ServiceNow/webarena-verified/6473f72db5dcefc97b5725b59e734504edc28a21/README.md",
+        "declared_mode": "deterministic evaluator over agent response and captured network trace",
+        "evaluator_digest": "sha256:5db797eeeb5e1c626044c0f0c5714e9a464d129e5e56186c58c91fd1162d7803"
+      },
+      "environment": {
+        "status": "not-installed",
+        "reset_evidence": [],
+        "three_reset_gate": "pending"
+      }
+    },
+    {
+      "id": "visualwebarena",
+      "repository": "https://github.com/web-arena-x/visualwebarena",
+      "default_branch": "main",
+      "source_commit": "89f5af29305c3d1e9f97ce4421462060a70c9a03",
+      "source_commit_observed_on": "2026-09-14",
+      "license": {
+        "identifier": "MIT",
+        "evidence_url": "https://raw.githubusercontent.com/web-arena-x/visualwebarena/89f5af29305c3d1e9f97ce4421462060a70c9a03/LICENSE",
+        "status": "source-license-verified"
+      },
+      "task_artifact": {
+        "status": "source-inventoried-eligibility-pending",
+        "task_manifest_digest": "sha256:eeac5f23558800a192fbb14c6f86fe62754fff74dd4c52373c4fcfe166b56cc2",
+        "source_record_count": 910,
+        "eligible_task_count": null,
+        "inventory_scope": "all records across config_files/vwa/{test_reddit,test_classifieds,test_shopping}.raw.json; task identifiers are site-scoped"
+      },
+      "evaluator": {
+        "status": "source-fingerprinted-local-semantics-audit-pending",
+        "evidence_url": "https://raw.githubusercontent.com/web-arena-x/visualwebarena/89f5af29305c3d1e9f97ce4421462060a70c9a03/README.md",
+        "declared_mode": "benchmark-provided execution-based evaluation",
+        "evaluator_digest": "sha256:0126550967ebd77b3731e264b0383940fba959a6bb416053befd52eac71346f2"
+      },
+      "environment": {
+        "status": "not-installed",
+        "reset_evidence": [],
+        "three_reset_gate": "pending",
+        "documented_reset_prerequisite": "CLASSIFIEDS_RESET_TOKEN and benchmark environment setup"
+      }
+    },
+    {
+      "id": "autonomous-tester-agent-benchmark",
+      "repository": "https://github.com/Smartesting/pinata",
+      "default_branch": "main",
+      "source_commit": "650b9edaa055915cb27d2498f379a66430cc3e02",
+      "source_commit_observed_on": "2026-09-14",
+      "license": {
+        "identifier": "CC-BY-4.0",
+        "evidence_url": "https://zenodo.org/records/15198569",
+        "status": "published-artifact-license-verified-source-repository-license-absent",
+        "source_repository_license": null
+      },
+      "published_artifact": {
+        "doi": "10.5281/zenodo.15198569",
+        "record_id": 15198569,
+        "file_name": "ISSTA_ARTEFACT.zip",
+        "declared_checksum": "md5:ba9931778e25bac80bda02f3a9c2e61f",
+        "local_checksum": "md5:ba9931778e25bac80bda02f3a9c2e61f",
+        "local_sha256": "sha256:c0b0a21f3ca5871f8c6db59e7d015e04350c577aef8714091e40246dc8fcb3bf",
+        "status": "local-download-checksum-verified"
+      },
+      "task_artifact": {
+        "status": "source-inventoried-eligibility-pending",
+        "task_manifest_digest": "sha256:539cc8c55703f4a4369ddfe97c95c10acb8a0b33dde4b331752317d07dd03a2e",
+        "source_record_count": 112,
+        "eligible_task_count": null,
+        "inventory_scope": "112 test-case delimiters across six published CSVs; 1,650 non-empty source lines are not treated as 1,650 tasks"
+      },
+      "evaluator": {
+        "status": "requires-independent-semantics-audit",
+        "evidence_url": "https://raw.githubusercontent.com/Smartesting/pinata/650b9edaa055915cb27d2498f379a66430cc3e02/README.md",
+        "declared_mode": "published benchmark uses actor/assertor orchestration; confirm the unchanged official PASS/FAIL source before arm adaptation",
+        "evaluator_digest": "sha256:0f1757dd63ee640df35fd4e26f2ef85b7927db7a4adbadcf503afec27c3ee9c3"
+      },
+      "environment": {
+        "status": "not-installed",
+        "reset_evidence": [],
+        "three_reset_gate": "pending"
+      }
+    }
+  ],
+  "conditional_extension": {
+    "id": "workarena-plus-plus",
+    "repository": "https://github.com/ServiceNow/WorkArena",
+    "default_branch": "main",
+    "source_commit": "a772230a94cf1caf4166b8ead3983f3b3786455b",
+    "source_commit_observed_on": "2026-09-14",
+    "license": {
+      "identifier": "Apache-2.0",
+      "evidence_url": "https://raw.githubusercontent.com/ServiceNow/WorkArena/a772230a94cf1caf4166b8ead3983f3b3786455b/LICENSE",
+      "status": "source-license-verified"
+    },
+    "environment": {
+      "status": "not-requested",
+      "gate_dependencies": ["ServiceNow instance access", "Hugging Face authenticated instance retrieval", "three-arm common evaluator", "reset and credential feasibility"],
+      "three_reset_gate": "not-started"
+    },
+    "admission": "conditional; excluded as a whole if this benchmark-level gate fails before arm outcomes"
+  }
+}

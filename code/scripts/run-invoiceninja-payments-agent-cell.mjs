@@ -82,8 +82,8 @@ const capture = async (phase, step, action = null) => {
   await replay.capture({ page, buffer: image, phase, step, action, state: current, providerEventIds: pendingProviderEventIds.splice(0) });
   return { image, current };
 };
-const observeScreenshot = async ({ step } = {}) => { const { image, current } = await capture('before-action', step); return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}`, progressToken: `${page.url()}::${current.milestone}` }; };
-const observeHybrid = async ({ step } = {}) => { const { image, current } = await capture('before-action', step); return { screenshot: image.toString('base64'), pageStructure: await structure(page), viewport, progressToken: `${page.url()}::${current.milestone}` }; };
+const observeScreenshot = async ({ step } = {}) => { const { image } = await capture('before-action', step); return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}` }; };
+const observeHybrid = async ({ step } = {}) => { const { image } = await capture('before-action', step); return { screenshot: image.toString('base64'), pageStructure: await structure(page), viewport }; };
 const executeAction = async (action) => {
   if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {
     const candidates = await structure(page); const target = candidates.controls.find((candidate) => candidate.target_id === action.target_id); if (!target) throw new Error(`hybrid target is not visible: ${action.target_id}`);

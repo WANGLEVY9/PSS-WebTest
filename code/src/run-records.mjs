@@ -11,6 +11,7 @@ const CONTRACTS = new Set(['screenshot-only', 'screenshot-plus-structure', 'scri
 const FAMILY_BY_ARM = Object.freeze({ visual: 'visual', hybrid: 'hybrid', playwright: 'scripted' });
 const CONTRACT_BY_FAMILY = Object.freeze({ visual: 'screenshot-only', hybrid: 'screenshot-plus-structure', scripted: 'scripted-locator' });
 const AUTHORING_SOURCES = new Set(['human', 'llm-generated', 'llm-repaired']);
+const BENCHMARK_IDS = new Set(['webarena-verified', 'visualwebarena', 'autonomous-tester-agent-benchmark', 'workarena-plus-plus']);
 const FAILURE_CATEGORIES = new Set([
   'perception', 'grounding', 'planning', 'execution', 'oracle', 'environment', 'task-defect',
   'provider', 'provider-timeout', 'provider-api', 'provider-format', 'grounding-loop',
@@ -126,12 +127,48 @@ function validateRunRecordV02(record) {
   }
 }
 
+/**
+ * v1.0 is reserved for the redesigned public-benchmark study.  It retains
+ * v0.2's configuration and reset provenance, then binds each emitted cell to
+ * the exact official task/evaluator sources and the outcome-blind screening
+ * and Traditional-adaptation artifacts.  The schema alone does not authorize
+ * collection; authorization remains a separate gate in the study contract.
+ */
+function validateRunRecordV10(record) {
+  const { benchmark_provenance: _benchmarkProvenance, ...v02Fields } = record;
+  validateRunRecordV02(v02Fields);
+  const required = ['benchmark_provenance'];
+  for (const field of required) if (!(field in record)) throw new Error(`v1.0 run record missing required field: ${field}`);
+  assertAllowedKeys(record, new Set([
+    'schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status',
+    'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance',
+    'failure_category', 'configuration_id', 'strategy_family', 'protocol_version', 'run_manifest_digest', 'sut_image_digest',
+    'reset_digest', 'randomization_block', 'benchmark_provenance'
+  ]));
+  const benchmark = record.benchmark_provenance;
+  if (!benchmark || typeof benchmark !== 'object' || Array.isArray(benchmark)) throw new Error('v1.0 benchmark_provenance must be an object');
+  const requiredBenchmarkFields = [
+    'benchmark_id', 'source_commit', 'task_source_id', 'task_manifest_digest', 'evaluator_digest',
+    'benchmark_artifact_manifest_digest', 'screening_manifest_digest', 'boundary_contract_digest',
+    'traditional_adaptation_digest'
+  ];
+  for (const field of requiredBenchmarkFields) if (!(field in benchmark)) throw new Error(`v1.0 benchmark_provenance missing required field: ${field}`);
+  assertAllowedKeys(benchmark, new Set(requiredBenchmarkFields), 'v1.0 benchmark_provenance');
+  if (!BENCHMARK_IDS.has(benchmark.benchmark_id)) throw new Error('v1.0 benchmark_provenance.benchmark_id is unsupported');
+  if (!/^[a-f0-9]{40}$/.test(benchmark.source_commit)) throw new Error('v1.0 benchmark_provenance.source_commit must be a SHA-1 commit');
+  if (typeof benchmark.task_source_id !== 'string' || !benchmark.task_source_id.trim() || benchmark.task_source_id.length > 256) throw new Error('v1.0 benchmark_provenance.task_source_id must be a bounded non-empty string');
+  for (const field of requiredBenchmarkFields.filter((field) => field.endsWith('_digest'))) {
+    if (!/^[a-f0-9]{64}$/.test(benchmark[field])) throw new Error(`v1.0 benchmark_provenance.${field} must be a SHA-256 hex digest`);
+  }
+}
+
 export function validateRunRecord(record) {
   if (!record || typeof record !== 'object' || Array.isArray(record)) throw new Error('run record must be an object');
-  if (!['0.1', '0.2'].includes(record.schema_version)) throw new Error(`unsupported run record schema_version: ${record.schema_version}`);
+  if (!['0.1', '0.2', '1.0'].includes(record.schema_version)) throw new Error(`unsupported run record schema_version: ${record.schema_version}`);
   validateCommonRunRecord(record);
   if (record.schema_version === '0.1') validateRunRecordV01(record);
   if (record.schema_version === '0.2') validateRunRecordV02(record);
+  if (record.schema_version === '1.0') validateRunRecordV10(record);
   assertSafe(record);
   return record;
 }
@@ -172,7 +209,9 @@ export function createRunRecord(input) {
     provenance: { provider_id: null, model_id: null, seed: null, ...(fields.provenance || {}), trace_hash: traceHash(trace) }
   };
   // Explicitly whitelist the immutable schema; traces and arbitrary provider metadata never leave this function.
-  const allowed = schemaVersion === '0.2'
+  const allowed = schemaVersion === '1.0'
+    ? ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'configuration_id', 'strategy_family', 'protocol_version', 'run_manifest_digest', 'sut_image_digest', 'reset_digest', 'randomization_block', 'benchmark_provenance']
+    : schemaVersion === '0.2'
     ? ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'configuration_id', 'strategy_family', 'protocol_version', 'run_manifest_digest', 'sut_image_digest', 'reset_digest', 'randomization_block']
     : ['schema_version', 'run_id', 'application_id', 'application_version', 'task_id', 'condition', 'arm', 'status', 'checkpoint_reached', 'independent_oracle_passed', 'emitted_verdict', 'ground_truth_verdict', 'timing', 'provenance', 'failure_category', 'reset_digest', 'reset_contract', 'randomization_block'];
   const output = Object.fromEntries(allowed.filter((key) => record[key] !== undefined).map((key) => [key, record[key]]));

@@ -60,7 +60,7 @@ test('Juice Shop anonymous authorization lane maps guard task and independent or
   assert.match(hybridRunner, /if \(isAuthorizationTask\) await page\.locator\('body'\)\.waitFor\(\{ state: 'attached'/);
 });
 
-test('Juice Shop pagination hybrid runner exposes a page-progress token and rejects disabled targets early', () => {
-  assert.match(hybridRunner, /progressToken: `\$\{page\.url\(\)\}::\$\{paginator\}`/);
+test('Juice Shop pagination hybrid runner has no URL-derived progress token and rejects disabled targets early', () => {
+  assert.doesNotMatch(hybridRunner, /progressToken/);
   assert.match(hybridRunner, /target\.isEnabled\(\)\.catch\(\(\) => false\)/);
 });

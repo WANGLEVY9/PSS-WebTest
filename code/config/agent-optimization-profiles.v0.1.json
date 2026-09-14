@@ -14,7 +14,7 @@
         "lower output budget to reduce provider latency",
         "retry malformed decisions without changing the screenshot or structure",
         "use semantic candidate ids for hybrid clicks",
-        "require screenshot digest or URL progress before repeating a pointer action",
+        "use screenshot digest and self-action history before repeating a pointer action",
         "keep typed values single-line and task-specified"
       ],
       "arms": {
@@ -26,7 +26,7 @@
           "coordinate_mode": "normalized_1000",
           "screenshot_quality": 80,
           "post_action_settle_ms": 650,
-          "progress_guard": "screenshot-digest-or-url",
+          "progress_guard": "screenshot-digest-plus-self-action-history",
           "structure_items": 0
         },
         "hybrid": {
@@ -38,7 +38,7 @@
           "hybrid_action_mode": "semantic",
           "screenshot_quality": 80,
           "post_action_settle_ms": 650,
-          "progress_guard": "candidate-id-plus-screenshot-digest",
+          "progress_guard": "candidate-id-plus-screenshot-digest-plus-self-action-history",
           "structure_items": 40
         }
       },
@@ -61,8 +61,8 @@
       "status": "pilot-candidate",
       "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
       "arms": {
-        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },
-        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest", "structure_items": 40 }
+        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-plus-self-action-history", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest-plus-self-action-history", "structure_items": 40 }
       },
       "task_family_steps": { "navigation": 10, "search-navigation": 12, "multi-step": 18, "form-persistence": 18, "cross-page-state": 20, "authorization": 18, "runtime": 20 },
       "admission_note": "Registered provider-specific pilot profile; separate connectivity and matched admission evidence required."
@@ -75,8 +75,8 @@
       "status": "pilot-candidate",
       "principles": ["keep JSON action schema explicit", "bounded retries", "preserve screenshot-only versus structure contracts"],
       "arms": {
-        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },
-        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest", "structure_items": 40 }
+        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-plus-self-action-history", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest-plus-self-action-history", "structure_items": 40 }
       },
       "task_family_steps": { "navigation": 10, "search-navigation": 12, "multi-step": 18, "form-persistence": 18, "cross-page-state": 20, "authorization": 18, "runtime": 20 },
       "admission_note": "Registered provider-specific pilot profile; separate connectivity and matched admission evidence required."
@@ -89,8 +89,8 @@
       "status": "pilot-candidate-connectivity-verified",
       "principles": ["keep image payloads bounded", "retry malformed decisions once", "preserve screenshot-only versus structure contracts"],
       "arms": {
-        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-or-url", "structure_items": 0 },
-        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest", "structure_items": 40 }
+        "visual": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "screenshot-digest-plus-self-action-history", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 30000, "max_retries": 2, "max_decision_retries": 1, "max_output_tokens": 384, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "semantic", "screenshot_quality": 80, "post_action_settle_ms": 650, "progress_guard": "candidate-id-plus-screenshot-digest-plus-self-action-history", "structure_items": 40 }
       },
       "task_family_steps": { "navigation": 10, "search-navigation": 12, "multi-step": 18, "form-persistence": 18, "cross-page-state": 20, "authorization": 18, "runtime": 20 },
       "admission_note": "Candidate selected from the account-visible Ark model list; separate model-access, connectivity, and matched admission evidence required."
@@ -103,8 +103,8 @@
       "status": "legacy-pilot",
       "principles": ["preserve historical pilot settings"],
       "arms": {
-        "visual": { "timeout_ms": 15000, "max_retries": 1, "max_decision_retries": 1, "max_output_tokens": 512, "coordinate_mode": "normalized_1000", "screenshot_quality": 85, "post_action_settle_ms": 350, "progress_guard": "screenshot-digest", "structure_items": 0 },
-        "hybrid": { "timeout_ms": 15000, "max_retries": 1, "max_decision_retries": 1, "max_output_tokens": 512, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "coordinate", "screenshot_quality": 85, "post_action_settle_ms": 350, "progress_guard": "screenshot-digest", "structure_items": 80 }
+        "visual": { "timeout_ms": 15000, "max_retries": 1, "max_decision_retries": 1, "max_output_tokens": 512, "coordinate_mode": "normalized_1000", "screenshot_quality": 85, "post_action_settle_ms": 350, "progress_guard": "screenshot-digest-plus-self-action-history", "structure_items": 0 },
+        "hybrid": { "timeout_ms": 15000, "max_retries": 1, "max_decision_retries": 1, "max_output_tokens": 512, "coordinate_mode": "normalized_1000", "hybrid_action_mode": "coordinate", "screenshot_quality": 85, "post_action_settle_ms": 350, "progress_guard": "pointer-identity-plus-screenshot-digest-plus-self-action-history", "structure_items": 80 }
       },
       "task_family_steps": { "navigation": 8, "search-navigation": 10, "multi-step": 14, "form-persistence": 16, "cross-page-state": 18, "authorization": 16, "runtime": 18 },
       "admission_note": "Historical baseline only; not a recommendation for confirmatory use."

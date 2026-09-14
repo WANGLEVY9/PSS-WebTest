@@ -257,34 +257,35 @@ test('driver permits the same coordinate after the screenshot visibly changes', 
   assert.equal(calls, 2);
 });
 
-test('driver permits the same coordinate after a harness progress token changes', async () => {
-  let progressToken = 'search-results:entry';
+test('visual driver rejects harness progress tokens as an undeclared side channel', async () => {
   const driver = createVolcengineCuaDriver({
     env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '0' },
-    observeScreenshot: async () => ({ screenshot: 'same-pixels', progressToken }),
+    observeScreenshot: async () => ({ screenshot: 'same-pixels', progressToken: 'url-or-milestone-derived' }),
     executeAction: async () => {},
-    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","x":10,"y":10}' } }] } }] }; } })
+    fetchImpl: async () => { throw new Error('provider must not be called'); }
   });
-  await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 0 });
-  progressToken = 'search-results:after-back';
-  const second = await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 1 });
-  assert.equal(second.type, 'action');
+  await assert.rejects(() => driver.observe(), /progressToken/);
 });
 
-test('driver permits a legitimate revisit after an A-B-A navigation cycle', async () => {
-  let progressToken = 'search-results';
+test('visual driver permits a revisit only after an intervening self-action', async () => {
+  let calls = 0;
   const driver = createVolcengineCuaDriver({
     env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_MAX_DECISION_RETRIES: '0' },
-    observeScreenshot: async () => ({ screenshot: 'same-pixels', progressToken }),
+    observeScreenshot: async () => ({ screenshot: 'same-pixels' }),
     executeAction: async () => {},
-    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"action","action":{"type":"click","x":10,"y":10}}' } }] }; } })
+    fetchImpl: async () => {
+      calls += 1;
+      const content = calls === 2
+        ? '{"type":"action","action":{"type":"keypress","key":"ALT+LEFT"}}'
+        : '{"type":"action","action":{"type":"click","x":10,"y":10}}';
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { content } }] }; } };
+    }
   });
   await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 0 });
-  progressToken = 'product-detail';
   await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 1 });
-  progressToken = 'search-results';
   const second = await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 2 });
   assert.equal(second.type, 'action');
+  assert.equal(calls, 3);
 });
 
 test('driver enforces an optional agent wall-time budget before another provider call', async () => {

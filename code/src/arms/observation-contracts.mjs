@@ -1,13 +1,13 @@
 const contracts = Object.freeze({
   visual: {
     required: ['screenshot'],
-    optional: ['viewport', 'cursor', 'timestamp', 'progressToken'],
+    optional: ['viewport', 'cursor', 'timestamp'],
     forbidden: ['dom', 'pageStructure', 'accessibilityTree', 'selectors', 'network', 'applicationState', 'goldOracle', 'mutationLabel'],
     label: 'screenshot-only'
   },
   hybrid: {
     required: ['screenshot', 'pageStructure'],
-    optional: ['viewport', 'cursor', 'timestamp', 'structureSchema', 'progressToken'],
+    optional: ['viewport', 'cursor', 'timestamp', 'structureSchema'],
     forbidden: ['goldOracle', 'mutationLabel', 'applicationState'],
     label: 'screenshot-plus-structure'
   },

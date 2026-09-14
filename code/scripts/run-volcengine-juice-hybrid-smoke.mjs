@@ -98,8 +98,7 @@ const driver = createVolcengineHybridDriver({
   observeHybrid: async ({ step } = {}) => {
     const image = await page.screenshot({ type: 'jpeg', quality: Number(process.env.CUA_SCREENSHOT_QUALITY ?? optimization.screenshot_quality), animations: 'disabled' });
     await replay.capture({ page, buffer: image, phase: 'before-action', step, state: await replayState(), providerEventIds: pendingProviderEventIds.splice(0) });
-    const paginator = await page.locator('mat-paginator').innerText().catch(() => '');
-    return { screenshot: image.toString('base64'), pageStructure: await hybridPageStructure(), viewport, progressToken: `${page.url()}::${paginator}` };
+    return { screenshot: image.toString('base64'), pageStructure: await hybridPageStructure(), viewport };
   },
   onProviderResponse: (summary) => { const id = replay.recordProviderEvent(summary); if (id) pendingProviderEventIds.push(id); },
   hybridActionMode,

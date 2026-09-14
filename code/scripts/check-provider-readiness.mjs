@@ -105,8 +105,8 @@ async function runArm({ profile, env, arm }) {
     const observe = async () => {
       const image = await page.screenshot({ type: 'jpeg', quality: 80, animations: 'disabled' });
       const state = { url: page.url() };
-      if (arm === 'visual') return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}`, progressToken: state.url };
-      return { screenshot: image.toString('base64'), pageStructure: await structure(page), viewport, progressToken: state.url };
+      if (arm === 'visual') return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}` };
+      return { screenshot: image.toString('base64'), pageStructure: await structure(page), viewport };
     };
     const executeAction = async (action) => {
       if (['click', 'double_click'].includes(action.type) && (action.x < 0 || action.y < 0 || action.x >= viewport.width || action.y >= viewport.height)) {

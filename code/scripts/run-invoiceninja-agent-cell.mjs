@@ -120,11 +120,11 @@ const capture = async (phase, step, action = null) => {
 };
 const observeScreenshot = async ({ step } = {}) => {
   const { image, state } = await capture('before-action', step);
-  return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}`, progressToken: `${page.url()}::${state.milestone}` };
+  return { screenshot: `data:image/jpeg;base64,${image.toString('base64')}` };
 };
 const observeHybrid = async ({ step } = {}) => {
   const { image, state } = await capture('before-action', step);
-  return { screenshot: image.toString('base64'), pageStructure: await pageStructure(page), viewport, progressToken: `${page.url()}::${state.milestone}` };
+  return { screenshot: image.toString('base64'), pageStructure: await pageStructure(page), viewport };
 };
 const executeAction = async (action) => {
   if (arm === 'hybrid' && action.target_id && ['click', 'double_click'].includes(action.type)) {

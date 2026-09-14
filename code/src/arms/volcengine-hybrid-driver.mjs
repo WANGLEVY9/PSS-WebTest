@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
 import { resolveProviderProtocol } from '../provider-profile.mjs';
 import { assertObservationContract } from './observation-contracts.mjs';
+import { canonicalizeHybridProjection } from './hybrid-projection.mjs';
 import {
   parseProviderDecision,
   UI_ACTION_TOOL,
@@ -103,8 +104,6 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     return null;
   };
   let lastAcceptedPointer = null;
-  let observationSequence = 0;
-  let lastObservedProgressToken = null;
   let retryCount = 0;
   const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
 
@@ -116,9 +115,9 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       // evaluator/application properties supplied by an upstream collector.
       const admitted = {
         screenshot: asDataUrl(observation.screenshot),
-        pageStructure: observation.pageStructure
+        pageStructure: canonicalizeHybridProjection(observation.pageStructure)
       };
-      for (const field of ['viewport', 'cursor', 'timestamp', 'structureSchema', 'progressToken']) {
+      for (const field of ['viewport', 'cursor', 'timestamp', 'structureSchema']) {
         if (observation[field] !== undefined) admitted[field] = observation[field];
       }
       return admitted;
@@ -127,14 +126,6 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
       assertObservationContract('hybrid', observation);
       if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
-      const currentProgressToken = observation.progressToken ?? currentObservationDigest;
-      // Preserve legitimate revisits after an intervening navigation.  A
-      // same target on the same observation sequence is still rejected, but
-      // an A -> B -> A transition is a new opportunity to act.
-      if (currentProgressToken !== lastObservedProgressToken) {
-        observationSequence += 1;
-        lastObservedProgressToken = currentProgressToken;
-      }
       const structure = JSON.stringify(observation.pageStructure);
       const coordinateInstruction = coordinateMode === 'pixels'
         ? 'pixel coordinates: integer x from 0 to 1280 and integer y from 0 to 720'
@@ -229,13 +220,16 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           const decisionIdentity = pointerIdentity(decision?.action);
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
             && decisionIdentity !== null && decisionIdentity === lastAcceptedPointer.identity;
+          const interveningAcceptedAction = lastAcceptedPointer
+            ? actionHistory.slice(lastAcceptedPointer.historyIndex + 1).some((action) => action.type !== 'rejected_click')
+            : false;
           // Compare target_id in semantic mode and coordinates in coordinate
-          // mode. The observation digest still gates the rejection because
-          // the same target/point can be valid after a visible transition.
+          // mode. The screenshot and self-action history gate the rejection;
+          // URL, harness milestones, DOM, and hidden state do not influence
+          // Hybrid control flow.
           if (repeatsPointer
             && currentObservationDigest === lastAcceptedPointer.observationDigest
-            && currentProgressToken === lastAcceptedPointer.progressToken
-            && observationSequence === lastAcceptedPointer.observationSequence) {
+            && !interveningAcceptedAction) {
             const repeatedTarget = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
               ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
               : null;
@@ -275,7 +269,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           const target = decision.action.target_id && Array.isArray(observation.pageStructure?.controls)
             ? observation.pageStructure.controls.find((candidate) => candidate.target_id === decision.action.target_id)
             : null;
-          lastAcceptedPointer = { identity: pointerIdentity(decision.action), interaction: target?.interaction ?? null, targetName: target?.name ?? null, observationDigest: currentObservationDigest, progressToken: currentProgressToken, observationSequence };
+          lastAcceptedPointer = { identity: pointerIdentity(decision.action), interaction: target?.interaction ?? null, targetName: target?.name ?? null, observationDigest: currentObservationDigest, historyIndex: actionHistory.length - 1 };
         }
         if (decision.type === 'action' && ['click', 'double_click'].includes(decision.action.type) && Number.isInteger(decision.action.x) && Number.isInteger(decision.action.y)) {
           const normalized = coordinateMode === 'normalized_1000' || (coordinateMode === 'auto' && (decision.action.x > 1000 || decision.action.y > 720));

@@ -27,6 +27,15 @@ test('pure-visual arm rejects hybrid structure and hidden evaluator fields', () 
   }
 });
 
+test('agent observation contracts reject harness progress tokens', () => {
+  for (const [arm, observation] of [
+    ['visual', { screenshot: 'sha256:example', progressToken: 'https://sut.example/path::milestone' }],
+    ['hybrid', { screenshot: 'sha256:example', pageStructure: {}, progressToken: 'https://sut.example/path::milestone' }]
+  ]) {
+    assert.throws(() => assertObservationContract(arm, observation), /progressToken/);
+  }
+});
+
 test('contracts reject undeclared observation fields', () => {
   assert.throws(
     () => assertObservationContract('hybrid', { screenshot: 'x', pageStructure: {}, rawHtml: '<main />' }),

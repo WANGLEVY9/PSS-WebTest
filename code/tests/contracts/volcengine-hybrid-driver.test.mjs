@@ -6,7 +6,7 @@ test('hybrid driver sends screenshot and declared structure, never hidden evalua
   let request;
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'volcengine', CUA_MODEL: 'test-model', CUA_API_KEY: 'test-key', CUA_BASE_URL: 'https://example.test/v1' },
-    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] }, structureSchema: 'a11y-v1' }),
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { controls: [{ target_id: 'c1', role: 'button', name: 'Save' }] }, structureSchema: 'visible-interactable-a11y-v1' }),
     executeAction: async () => {},
     fetchImpl: async (url, options) => { request = { url, options }; return { ok: true, status: 200, async json() { return { choices: [{ message: { content: '{"type":"done","verdict":"pass"}' } }] }; } }; }
   });
@@ -28,7 +28,7 @@ test('hybrid Responses API mode sends declared structure with input_image and pa
       CUA_PROVIDER: 'volcengine', CUA_MODEL: 'doubao-seed-2-1-pro-260628', CUA_API_KEY: 'test-key',
       CUA_BASE_URL: 'https://example.test/v1', CUA_VOLCENGINE_API_MODE: 'responses', CUA_VOLCENGINE_ACTION_MODE: 'tool', CUA_HYBRID_ACTION_MODE: 'coordinate'
     },
-    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { controls: [{ target_id: 'c1', role: 'button', name: 'Save' }] } }),
     executeAction: async () => {},
     fetchImpl: async (url, options) => {
       request = { url, options };
@@ -62,7 +62,7 @@ test('hybrid Alibaba driver uses function-call output without leaking evaluator 
   let request;
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key' },
-    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { controls: [{ target_id: 'c1', role: 'button', name: 'Save' }] } }),
     executeAction: async () => {},
     fetchImpl: async (url, options) => {
       request = { url, options };
@@ -82,7 +82,7 @@ test('hybrid Alibaba JSON action mode preserves the structure boundary and avoid
   let request;
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_ALIYUN_ACTION_MODE: 'json' },
-    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { controls: [{ target_id: 'c1', role: 'button', name: 'Save' }] } }),
     executeAction: async () => {},
     fetchImpl: async (url, options) => {
       request = { url, options };
@@ -101,7 +101,7 @@ test('hybrid DeepSeek V4.1-Flash profile sends screenshot plus declared structur
   let request;
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'deepseek', CUA_MODEL: 'deepseek-flash', CUA_API_KEY: 'test-key' },
-    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { role: 'main', children: [{ role: 'button', name: 'Save' }] } }),
+    observeHybrid: async () => ({ screenshot: 'abc123', pageStructure: { controls: [{ target_id: 'c1', role: 'button', name: 'Save' }] } }),
     executeAction: async () => {},
     fetchImpl: async (url, options) => {
       request = { url, options };
@@ -158,34 +158,35 @@ test('hybrid driver permits a repeated coordinate after a screenshot transition'
   assert.equal(second.type, 'action');
 });
 
-test('hybrid driver permits the same target after a harness progress token changes', async () => {
-  let progressToken = 'search-results:entry';
+test('hybrid driver rejects harness progress tokens as an undeclared side channel', async () => {
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3.7-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic', CUA_MAX_DECISION_RETRIES: '0' },
-    observeHybrid: async () => ({ screenshot: 'same-pixels', progressToken, pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'Target' }] } }),
+    observeHybrid: async () => ({ screenshot: 'same-pixels', progressToken: 'url-or-milestone-derived', pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'Target' }] } }),
     executeAction: async () => {},
-    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c12"}' } }] } }] }; } })
+    fetchImpl: async () => { throw new Error('provider must not be called'); }
   });
-  await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 0 });
-  progressToken = 'search-results:after-back';
-  const second = await driver.decide({ intent: 'Reopen the target', observation: await driver.observe(), step: 1 });
-  assert.equal(second.type, 'action');
+  await assert.rejects(() => driver.observe(), /progressToken/);
 });
 
-test('hybrid driver permits a legitimate revisit after an A-B-A navigation cycle', async () => {
-  let progressToken = 'search-results';
+test('hybrid driver permits a revisit only after an intervening self-action', async () => {
+  let calls = 0;
   const driver = createVolcengineHybridDriver({
     env: { CUA_PROVIDER: 'aliyun', CUA_MODEL: 'qwen3-vl-flash', CUA_API_KEY: 'test-key', CUA_HYBRID_ACTION_MODE: 'semantic', CUA_MAX_DECISION_RETRIES: '0' },
-    observeHybrid: async () => ({ screenshot: 'same-pixels', progressToken, pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'Target' }] } }),
+    observeHybrid: async () => ({ screenshot: 'same-pixels', pageStructure: { controls: [{ target_id: 'c12', role: 'link', name: 'Target' }] } }),
     executeAction: async () => {},
-    fetchImpl: async () => ({ ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: '{"action_type":"click","target_id":"c12"}' } }] } }] }; } })
+    fetchImpl: async () => {
+      calls += 1;
+      const argumentsText = calls === 2
+        ? '{"action_type":"keypress","key":"ALT+LEFT"}'
+        : '{"action_type":"click","target_id":"c12"}';
+      return { ok: true, status: 200, async json() { return { choices: [{ message: { tool_calls: [{ function: { name: 'ui_action', arguments: argumentsText } }] } }] }; } };
+    }
   });
   await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 0 });
-  progressToken = 'product-detail';
   await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 1 });
-  progressToken = 'search-results';
   const second = await driver.decide({ intent: 'Open, go back, and reopen', observation: await driver.observe(), step: 2 });
   assert.equal(second.type, 'action');
+  assert.equal(calls, 3);
 });
 
 test('semantic hybrid guard compares target ids instead of undefined coordinates', async () => {

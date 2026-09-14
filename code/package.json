@@ -117,6 +117,8 @@
     "validate:long-run-manifest": "node scripts/validate-long-run-execution-manifest.mjs",
     "validate:study-design": "node scripts/validate-study-design-contract.mjs",
     "validate:long-cycle-plan": "node scripts/validate-long-cycle-experiment-plan.mjs",
+    "validate:benchmark-artifact-manifest": "node scripts/validate-benchmark-artifact-manifest.mjs",
+    "audit:benchmark-artifact-snapshot": "node scripts/audit-benchmark-artifact-snapshot.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",
     "gate:invoiceninja:payments:fault-evolution": "node scripts/invoiceninja-payments-fault-evolution-gate.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",

@@ -130,10 +130,14 @@ async function structure(page) {
       if (rect.width < 1 || rect.height < 1 || style.visibility === 'hidden' || style.display === 'none') return null;
       const role = element.tagName === 'A' ? 'link' : element.tagName === 'BUTTON' ? 'button' : element.getAttribute('role') || (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA' ? 'textbox' : element.tagName.toLowerCase());
       const name = element.getAttribute('aria-label') || element.getAttribute('title') || element.getAttribute('placeholder') || element.textContent?.replace(/\s+/g, ' ').trim().slice(0, 80) || '';
-      return { element, role, name, interaction: role === 'textbox' ? 'type' : 'click', center_normalized_1000: { x: Math.round((rect.x + rect.width / 2) * 1000 / innerWidth), y: Math.round((rect.y + rect.height / 2) * 1000 / innerHeight) } };
+      const normalize = (value, extent) => Math.max(0, Math.min(1000, Math.round(value * 1000 / extent)));
+      return { element, role, name, interaction: role === 'textbox' ? 'type' : 'click', center_normalized_1000: { x: normalize(rect.x + rect.width / 2, innerWidth), y: normalize(rect.y + rect.height / 2, innerHeight) } };
     }).filter(Boolean).slice(0, 120);
     visible.forEach((item, index) => { item.element.dataset.pssTargetId = `c${index}`; });
-    return visible.map((item, index) => ({ ...item, element: undefined, target_id: `c${index}` }));
+    return visible.map((item, index) => {
+      const { element: _liveElement, ...safe } = item;
+      return { ...safe, target_id: `c${index}` };
+    });
   });
   return { controls };
 }

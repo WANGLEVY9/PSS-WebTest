@@ -35,7 +35,9 @@ export function auditScreeningLedger(inventory, ledger) {
   if (ledger?.candidate_count !== candidates.length) errors.push('screening ledger candidate_count does not match inventory');
   if (ledger?.criterion_count !== CRITERIA.length) errors.push('screening ledger criterion_count must be 7');
 
-  const candidateSet = new Set(candidates.map(candidateKey));
+  const candidateKeys = candidates.map(candidateKey);
+  const candidateSet = new Set(candidateKeys);
+  if (candidateSet.size !== candidateKeys.length) errors.push('source inventory contains duplicate candidate identities; task instruction digest must disambiguate repeated task ids');
   const rows = Array.isArray(ledger?.screening_rows) ? ledger.screening_rows : [];
   const byCandidate = new Map();
   for (const row of rows) {

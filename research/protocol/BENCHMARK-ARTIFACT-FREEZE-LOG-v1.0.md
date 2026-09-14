@@ -10,9 +10,9 @@ environment, evaluator, or benchmark is admitted to confirmatory collection.
 
 | Benchmark | Pinned source | License evidence | Current gate state |
 |---|---|---|---|
-| WebArena-Verified | `6473f72db5dcefc97b5725b59e734504edc28a21` | Apache-2.0 source `LICENSE` | 812 source records fingerprinted; screening, local environment, evaluator semantics, and three-reset gate pending |
-| VisualWebArena | `89f5af29305c3d1e9f97ce4421462060a70c9a03` | MIT source `LICENSE` | 910 source records fingerprinted across three VWA files; screening, local environment, evaluator semantics, and three-reset gate pending |
-| Autonomous Tester Agent Benchmark / PinATA | `650b9edaa055915cb27d2498f379a66430cc3e02`; Zenodo `10.5281/zenodo.15198569` | Zenodo record CC-BY-4.0; repository has no root `LICENSE` at this pin | 112 test cases fingerprinted; Zenodo MD5 verified; evaluator-semantics audit, local environment, and reset gate pending |
+| WebArena-Verified | `6473f72db5dcefc97b5725b59e734504edc28a21` | Apache-2.0 source `LICENSE` | 812 source records fingerprinted; Shopping image health and 3-cycle state-reset projection pass; global screening, evaluator semantics, and benchmark reset gate remain pending |
+| VisualWebArena | `89f5af29305c3d1e9f97ce4421462060a70c9a03` | MIT source `LICENSE` | 910 source records fingerprinted across three VWA files; shopping/homepage service probes can reach 302/200, but Classifieds/Reddit assets and four-service reset gate remain pending |
+| Autonomous Tester Agent Benchmark / PinATA | `650b9edaa055915cb27d2498f379a66430cc3e02`; Zenodo `10.5281/zenodo.15198569` | Zenodo record CC-BY-4.0; repository has no root `LICENSE` at this pin | 112 test cases fingerprinted; Zenodo MD5 verified; remote services reachable, but local reset credential and independent evaluator-semantics audit remain pending |
 | WorkArena++ | `a772230a94cf1caf4166b8ead3983f3b3786455b` | Apache-2.0 source `LICENSE` | Conditional extension; instance access, credentials, evaluator compatibility, and reset gate not started |
 
 ## Evidence observed
@@ -42,6 +42,15 @@ environment, evaluator, or benchmark is admitted to confirmatory collection.
   benchmark Actor/Assertor orchestration. It therefore remains blocked pending
   a protocol decision on whether its unchanged endpoint can be a shared,
   method-independent oracle. See `EVALUATOR-SEMANTICS-AUDIT-v0.1.md`.
+- The WebArena-Verified Shopping candidate was run in an isolated x86 profile
+  because the pinned image is amd64. Health, restart recovery, and a
+  MariaDB-cardinality/schema state-reset projection passed three cycles; this
+  is benchmark-component evidence, not full-core admission. See
+  `WEBARENA-SHOPPING-ENVIRONMENT-GATE-v0.1.md`.
+- VisualWebArena reachability and local asset probes are recorded in
+  `VISUALWEBARENA-GATE-AUDIT-2026-09-14.md`. The official Reddit image mirror
+  advertises an approximately 49.7 GB archive, so it was not downloaded as an
+  unbounded action.
 
 ## Next mandatory evidence
 

@@ -29,3 +29,16 @@ npm run screening:prepare-template
 It creates one blank row per candidate and IC1--IC7 criterion. All reviewer,
 adjudication, and annotation fields remain null until two independent reviewers
 complete the pre-registered screening; no arm may run against this template.
+
+Audit the completed artifact with:
+
+```bash
+npm run screening:audit
+```
+
+The audit is fail-closed. A blank or partially completed template reports
+`screening-pending` and exits non-zero; only a fully dual-reviewed and
+adjudicated ledger can report `screening-complete-pending-manifest-freeze`.
+That status still does not authorize execution: the included/excluded task
+manifests, annotation agreement, and benchmark environment gates must be
+frozen separately.

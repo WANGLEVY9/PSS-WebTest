@@ -96,9 +96,17 @@ still pending. The reset probe therefore continues to emit
 ## Gate implementation notes
 
 - `probe-webarena-shopping-gate.mjs` now normalizes `x86_64`/`amd64` and treats
-  a non-error HTTP 3xx as reachable for the site probe.
+  a non-error HTTP 3xx as reachable for the site probe. It polls the controller
+  and storefront during cold start (bounded by `PSS_WEBARENA_HEALTH_MAX_POLLS`)
+  and accepts an explicit `PSS_WEBARENA_DOCKER_CONTEXT` so host architecture
+  and the inspected container cannot silently come from different Docker
+  daemons.
 - `probe-webarena-shopping-reset-gate.mjs` separates Docker restart errors from
-  transient health-probe errors and allows a 120-second cold-start window.
+  transient health-probe errors and allows a 120-second cold-start window; its
+  Docker commands honor the same explicit context and bounded command timeout.
+- `probe-webarena-shopping-state-reset-gate.mjs` uses the explicit context for
+  delete-and-recreate operations and state capture, preventing the previously
+  observed cross-daemon port collision (`PSS_WEBARENA_DOCKER_CONTEXT=colima-webarena-x86`).
 - Neither gate authorizes a study arm. Failures remain classified as
   `infrastructure-gate-failed`, never as CUA, Hybrid, Traditional, task, or
   oracle outcomes.

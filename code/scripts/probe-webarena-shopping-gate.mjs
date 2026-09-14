@@ -9,9 +9,19 @@ const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.
 const containerName = process.env.PSS_WEBARENA_SHOPPING_CONTAINER ?? 'webarena-verified-shopping';
 const siteUrl = process.env.PSS_WEBARENA_SHOPPING_URL ?? 'http://127.0.0.1:7770/';
 const controllerUrl = process.env.PSS_WEBARENA_SHOPPING_CONTROLLER_URL ?? 'http://127.0.0.1:7771/status';
+const dockerContext = process.env.PSS_WEBARENA_DOCKER_CONTEXT?.trim() || null;
+const maxPolls = Number.parseInt(process.env.PSS_WEBARENA_HEALTH_MAX_POLLS ?? '24', 10);
+const pollIntervalMs = Number.parseInt(process.env.PSS_WEBARENA_HEALTH_POLL_INTERVAL_MS ?? '5000', 10);
 
 function defaultExecFile(command, args) {
-  return childProcess.execFileSync(command, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return childProcess.execFileSync(command, args, {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: Number.parseInt(process.env.PSS_WEBARENA_DOCKER_COMMAND_TIMEOUT_MS ?? '180000', 10)
+  }).trim();
+}
+
+function dockerArgs(args) {
+  return dockerContext ? ['--context', dockerContext, ...args] : args;
 }
 
 function normalizeArchitecture(value) {
@@ -28,6 +38,12 @@ async function responseSummary(response) {
   return { status: response.status, ok: response.ok, json };
 }
 
+function serviceReady(controllerProbe) {
+  const services = controllerProbe?.json?.details?.value?.services ?? {};
+  return controllerProbe?.status === 200 && controllerProbe?.json?.success === true
+    && services['php-fpm'] !== 'FATAL';
+}
+
 export async function probeWebArenaShoppingGate({
   manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')),
   execFile = defaultExecFile,
@@ -35,20 +51,22 @@ export async function probeWebArenaShoppingGate({
   now = () => new Date().toISOString(),
   container = containerName,
   site = siteUrl,
-  controller = controllerUrl
+  controller = controllerUrl,
+  healthPolls = maxPolls,
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 } = {}) {
   const expectedImage = manifest.mandatory_core.find((item) => item.id === 'webarena-verified')?.environment?.candidate_image?.reference;
   if (!expectedImage) throw new Error('benchmark artifact manifest lacks a WebArena Shopping candidate image');
   const expectedDigest = expectedImage.split('@')[1];
   let containerImage = null;
   let inspectError = null;
-  try { containerImage = execFile('docker', ['inspect', container, '--format', '{{.Image}}']); } catch (error) { inspectError = String(error?.stderr ?? error?.message ?? error); }
+  try { containerImage = execFile('docker', dockerArgs(['inspect', container, '--format', '{{.Image}}'])); } catch (error) { inspectError = String(error?.stderr ?? error?.message ?? error); }
   const image_matches = containerImage === expectedDigest;
   let hostArch = null;
   let imageArch = null;
   let architectureError = null;
-  try { hostArch = execFile('docker', ['info', '--format', '{{.Architecture}}']); } catch (error) { architectureError = String(error?.stderr ?? error?.message ?? error); }
-  try { imageArch = execFile('docker', ['image', 'inspect', expectedImage, '--format', '{{.Architecture}}']); } catch (error) { architectureError = [architectureError, String(error?.stderr ?? error?.message ?? error)].filter(Boolean).join('; '); }
+  try { hostArch = execFile('docker', dockerArgs(['info', '--format', '{{.Architecture}}'])); } catch (error) { architectureError = String(error?.stderr ?? error?.message ?? error); }
+  try { imageArch = execFile('docker', dockerArgs(['image', 'inspect', expectedImage, '--format', '{{.Architecture}}'])); } catch (error) { architectureError = [architectureError, String(error?.stderr ?? error?.message ?? error)].filter(Boolean).join('; '); }
   const normalizedHostArch = normalizeArchitecture(hostArch);
   const normalizedImageArch = normalizeArchitecture(imageArch);
   const architecture_compatible = /^(amd64|arm64)$/.test(normalizedHostArch) && /^(amd64|arm64)$/.test(normalizedImageArch)
@@ -57,15 +75,21 @@ export async function probeWebArenaShoppingGate({
   let controllerProbe = null;
   let siteProbe = null;
   let probeError = null;
-  try {
-    controllerProbe = await responseSummary(await fetchImpl(controller, { signal: AbortSignal.timeout(10_000) }));
-    siteProbe = await responseSummary(await fetchImpl(site, { signal: AbortSignal.timeout(10_000), redirect: 'manual' }));
-  } catch (error) {
-    probeError = String(error?.message ?? error);
+  let polls = 0;
+  for (let poll = 1; poll <= healthPolls; poll += 1) {
+    polls = poll;
+    try {
+      controllerProbe = await responseSummary(await fetchImpl(controller, { signal: AbortSignal.timeout(10_000) }));
+      siteProbe = await responseSummary(await fetchImpl(site, { signal: AbortSignal.timeout(10_000), redirect: 'manual' }));
+      if (serviceReady(controllerProbe) && siteProbe?.status >= 200 && siteProbe?.status < 400) break;
+    } catch (error) {
+      probeError = String(error?.message ?? error);
+    }
+    if (poll < healthPolls) await sleep(pollIntervalMs);
   }
   const services = controllerProbe?.json?.details?.value?.services ?? {};
   const phpFpm = services['php-fpm'] ?? null;
-  const controllerReady = controllerProbe?.json?.success === true;
+  const controllerReady = serviceReady(controllerProbe);
   // A canonical WebArena deployment may redirect HTTP to its configured base URL;
   // any non-error status is a reachable site for this infrastructure gate.
   const siteReady = Boolean(siteProbe && siteProbe.status >= 200 && siteProbe.status < 400);
@@ -87,6 +111,7 @@ export async function probeWebArenaShoppingGate({
     architecture_error: architectureError,
     controller: controllerProbe,
     site: siteProbe,
+    health_polls: polls,
     php_fpm_service: phpFpm,
     inspect_error: inspectError,
     probe_error: probeError,

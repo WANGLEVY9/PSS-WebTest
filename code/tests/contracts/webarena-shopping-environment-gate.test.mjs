@@ -44,7 +44,9 @@ test('WebArena environment gate classifies PHP fatal and 502 as infrastructure f
     execFile: (_command, args) => args[0] === 'info' ? 'arm64' : args[0] === 'image' ? 'amd64' : 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     fetchImpl: async (url) => String(url).includes('status')
       ? jsonResponse(200, { success: false, details: { value: { services: { 'php-fpm': 'FATAL' } } } })
-      : new Response('bad gateway', { status: 502 })
+      : new Response('bad gateway', { status: 502 }),
+    healthPolls: 1,
+    sleep: async () => {}
   });
   assert.equal(result.ready, false);
   assert.equal(result.classification, 'infrastructure-gate-failed');

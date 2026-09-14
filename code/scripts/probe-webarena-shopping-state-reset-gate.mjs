@@ -10,6 +10,7 @@ const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.
 const containerName = process.env.PSS_WEBARENA_SHOPPING_CONTAINER ?? 'webarena-verified-shopping-x86';
 const siteUrl = process.env.PSS_WEBARENA_SHOPPING_URL ?? 'http://127.0.0.1:7770/';
 const controllerUrl = process.env.PSS_WEBARENA_SHOPPING_CONTROLLER_URL ?? 'http://127.0.0.1:7771/status';
+const dockerContext = process.env.PSS_WEBARENA_DOCKER_CONTEXT?.trim() || null;
 const cycles = Number.parseInt(process.env.PSS_WEBARENA_SHOPPING_STATE_RESET_CYCLES ?? '3', 10);
 // Magento populates scheduler/message-queue rows while services boot. These
 // are runtime bookkeeping, not user-visible task state, and are excluded only
@@ -17,7 +18,14 @@ const cycles = Number.parseInt(process.env.PSS_WEBARENA_SHOPPING_STATE_RESET_CYC
 const volatileTables = new Set(['cron_schedule', 'queue_message', 'queue_message_status']);
 
 function defaultExecFile(command, args) {
-  return childProcess.execFileSync(command, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return childProcess.execFileSync(command, args, {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: Number.parseInt(process.env.PSS_WEBARENA_DOCKER_COMMAND_TIMEOUT_MS ?? '180000', 10)
+  }).trim();
+}
+
+function dockerArgs(args) {
+  return dockerContext ? ['--context', dockerContext, ...args] : args;
 }
 
 function digest(value) {
@@ -60,12 +68,12 @@ function parseMounts(value) {
 }
 
 function captureState(execFile, container) {
-  const mountsRaw = execFile('docker', ['inspect', container, '--format', '{{json .Mounts}}']);
-  const imageId = execFile('docker', ['inspect', container, '--format', '{{.Image}}']);
-  const dbCardinality = execFile('docker', ['exec', container, 'sh', '-c',
-    "mysql -N -B -umagentouser -pMyPassword -e \"SELECT table_name,table_rows FROM information_schema.tables WHERE table_schema='magentodb' AND table_name NOT IN ('cron_schedule','queue_message','queue_message_status') ORDER BY table_name\"" ]);
-  const schema = execFile('docker', ['exec', container, 'sh', '-c',
-    'mysqldump -umagentouser -pMyPassword --no-data --skip-comments --compact magentodb 2>/dev/null | sed -E "s/AUTO_INCREMENT=[0-9]+/AUTO_INCREMENT=0/g"']);
+  const mountsRaw = execFile('docker', dockerArgs(['inspect', container, '--format', '{{json .Mounts}}']));
+  const imageId = execFile('docker', dockerArgs(['inspect', container, '--format', '{{.Image}}']));
+  const dbCardinality = execFile('docker', dockerArgs(['exec', container, 'sh', '-c',
+    "mysql -N -B -umagentouser -pMyPassword -e \"SELECT table_name,table_rows FROM information_schema.tables WHERE table_schema='magentodb' AND table_name NOT IN ('cron_schedule','queue_message','queue_message_status') ORDER BY table_name\"" ]));
+  const schema = execFile('docker', dockerArgs(['exec', container, 'sh', '-c',
+    'mysqldump -umagentouser -pMyPassword --no-data --skip-comments --compact magentodb 2>/dev/null | sed -E "s/AUTO_INCREMENT=[0-9]+/AUTO_INCREMENT=0/g"']));
   const state = {
     image_id: imageId,
     mounts: parseMounts(mountsRaw),
@@ -104,9 +112,9 @@ export async function probeWebArenaShoppingStateResetGate({
   for (let cycle = 1; cycle <= resetCycles; cycle += 1) {
     let removeError = null;
     let runError = null;
-    try { execFile('docker', ['rm', '-f', container]); } catch (error) { removeError = String(error?.stderr ?? error?.message ?? error); }
+    try { execFile('docker', dockerArgs(['rm', '-f', container])); } catch (error) { removeError = String(error?.stderr ?? error?.message ?? error); }
     try {
-      execFile('docker', ['run', '-d', '--name', container, '--platform', 'linux/amd64', '-p', '7770:80', '-p', '7771:8877', expectedImage]);
+      execFile('docker', dockerArgs(['run', '-d', '--name', container, '--platform', 'linux/amd64', '-p', '7770:80', '-p', '7771:8877', expectedImage]));
     } catch (error) { runError = String(error?.stderr ?? error?.message ?? error); }
     const recovery = runError ? { recovered: false, controller: null, site: null, probe_error: null }
       : await waitUntilHealthy(fetchImpl, site, controller, sleep, maxPolls);

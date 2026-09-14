@@ -9,10 +9,18 @@ const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.
 const containerName = process.env.PSS_WEBARENA_SHOPPING_CONTAINER ?? 'webarena-verified-shopping';
 const siteUrl = process.env.PSS_WEBARENA_SHOPPING_URL ?? 'http://127.0.0.1:7770/';
 const controllerUrl = process.env.PSS_WEBARENA_SHOPPING_CONTROLLER_URL ?? 'http://127.0.0.1:7771/status';
+const dockerContext = process.env.PSS_WEBARENA_DOCKER_CONTEXT?.trim() || null;
 const cycles = Number.parseInt(process.env.PSS_WEBARENA_SHOPPING_RESET_CYCLES ?? '3', 10);
 
 function defaultExecFile(command, args) {
-  return childProcess.execFileSync(command, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
+  return childProcess.execFileSync(command, args, {
+    encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+    timeout: Number.parseInt(process.env.PSS_WEBARENA_DOCKER_COMMAND_TIMEOUT_MS ?? '180000', 10)
+  }).trim();
+}
+
+function dockerArgs(args) {
+  return dockerContext ? ['--context', dockerContext, ...args] : args;
 }
 
 async function probe(fetchImpl, url) {
@@ -47,7 +55,7 @@ export async function probeWebArenaShoppingResetGate({
   const cycleResults = [];
   for (let cycle = 1; cycle <= resetCycles; cycle += 1) {
     let restartError = null;
-    try { execFile('docker', ['restart', container]); } catch (error) { restartError = String(error?.stderr ?? error?.message ?? error); }
+    try { execFile('docker', dockerArgs(['restart', container])); } catch (error) { restartError = String(error?.stderr ?? error?.message ?? error); }
     let controllerProbe = null;
     let siteProbe = null;
     let recovered = false;

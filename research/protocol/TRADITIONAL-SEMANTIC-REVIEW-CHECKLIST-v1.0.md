@@ -48,3 +48,8 @@ must remain blind to CUA/Hybrid trajectories and outcomes.
 
 If adaptation fails after task-list freeze, record the failure in
 `traditional_adaptation_ledger.csv`; do not remove the official task.
+
+Run `npm run traditional:audit` before script freeze. The command exits
+non-zero while the included-task manifest is empty or any adaptation row is
+missing required provenance, cost, review, or hash fields. An adaptation
+failure is a recorded deployment failure, not an exclusion.

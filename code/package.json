@@ -123,6 +123,7 @@
     "inventory:benchmark:outcome-blind": "node scripts/export-outcome-blind-task-candidates.mjs",
     "screening:prepare-template": "node scripts/prepare-screening-ledger.mjs",
     "screening:audit": "node scripts/validate-screening-ledger.mjs",
+    "traditional:audit": "node scripts/validate-traditional-adaptation-ledger.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",
     "gate:invoiceninja:payments:fault-evolution": "node scripts/invoiceninja-payments-fault-evolution-gate.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",

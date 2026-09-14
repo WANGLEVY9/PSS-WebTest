@@ -14,6 +14,13 @@ function defaultExecFile(command, args) {
   return childProcess.execFileSync(command, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
+function normalizeArchitecture(value) {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (normalized === 'x86_64' || normalized === 'x86-64' || normalized === 'x64') return 'amd64';
+  if (normalized === 'aarch64') return 'arm64';
+  return normalized;
+}
+
 async function responseSummary(response) {
   const body = await response.text();
   let json = null;
@@ -42,8 +49,10 @@ export async function probeWebArenaShoppingGate({
   let architectureError = null;
   try { hostArch = execFile('docker', ['info', '--format', '{{.Architecture}}']); } catch (error) { architectureError = String(error?.stderr ?? error?.message ?? error); }
   try { imageArch = execFile('docker', ['image', 'inspect', expectedImage, '--format', '{{.Architecture}}']); } catch (error) { architectureError = [architectureError, String(error?.stderr ?? error?.message ?? error)].filter(Boolean).join('; '); }
-  const architecture_compatible = /^(amd64|arm64|aarch64)$/.test(hostArch ?? '') && /^(amd64|arm64|aarch64)$/.test(imageArch ?? '')
-    ? (hostArch === imageArch || (hostArch === 'aarch64' && imageArch === 'arm64'))
+  const normalizedHostArch = normalizeArchitecture(hostArch);
+  const normalizedImageArch = normalizeArchitecture(imageArch);
+  const architecture_compatible = /^(amd64|arm64)$/.test(normalizedHostArch) && /^(amd64|arm64)$/.test(normalizedImageArch)
+    ? normalizedHostArch === normalizedImageArch
     : false;
   let controllerProbe = null;
   let siteProbe = null;
@@ -57,7 +66,9 @@ export async function probeWebArenaShoppingGate({
   const services = controllerProbe?.json?.details?.value?.services ?? {};
   const phpFpm = services['php-fpm'] ?? null;
   const controllerReady = controllerProbe?.json?.success === true;
-  const siteReady = Boolean(siteProbe?.ok && siteProbe.status >= 200 && siteProbe.status < 400);
+  // A canonical WebArena deployment may redirect HTTP to its configured base URL;
+  // any non-error status is a reachable site for this infrastructure gate.
+  const siteReady = Boolean(siteProbe && siteProbe.status >= 200 && siteProbe.status < 400);
   const ready = image_matches && architecture_compatible && controllerReady && siteReady && phpFpm !== 'FATAL';
   return {
     schema_version: '1.0',
@@ -70,6 +81,8 @@ export async function probeWebArenaShoppingGate({
     image_matches,
     host_architecture: hostArch,
     image_architecture: imageArch,
+    normalized_host_architecture: normalizedHostArch,
+    normalized_image_architecture: normalizedImageArch,
     architecture_compatible,
     architecture_error: architectureError,
     controller: controllerProbe,

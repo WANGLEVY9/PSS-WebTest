@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildScreeningPilotSample } from '../../scripts/export-screening-pilot-sample.mjs';
+import { buildScreeningPilotSample, buildScreeningReviewPacket } from '../../scripts/export-screening-pilot-sample.mjs';
 
 const candidate = (id, benchmark = 'b', sites = ['site']) => ({
   benchmark_id: benchmark,
@@ -33,4 +33,13 @@ test('screening pilot sample contains only outcome-blind candidate fields', () =
   const output = buildScreeningPilotSample(inventory, { sampleFraction: 1, randomSeed: 1 });
   assert.deepEqual(Object.keys(output.candidates[0]).sort(), ['benchmark_id', 'difficulty', 'instruction_digest', 'require_login', 'sites', 'source_commit', 'source_file', 'start_url_count', 'task_source_id']);
   assert.equal(Object.hasOwn(output.candidates[0], 'status'), false);
+});
+
+test('review packet leaves decisions blank and expands seven criteria per task', () => {
+  const inventory = { status: 'source-inventory-only-screening-pending', confirmatory_authorized: false, candidates: [candidate('a')] };
+  const sample = buildScreeningPilotSample(inventory, { sampleFraction: 1, randomSeed: 1 });
+  const lines = buildScreeningReviewPacket(sample).trim().split('\n');
+  assert.equal(lines.length, 8);
+  assert.match(lines[0], /criterion_code,reviewer_decision/);
+  assert.equal(lines.slice(1).every((line) => line.split(',')[7] === ''), true);
 });

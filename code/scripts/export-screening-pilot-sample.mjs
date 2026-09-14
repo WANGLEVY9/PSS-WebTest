@@ -15,6 +15,7 @@ const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
 const snapshotRoot = path.join(codeRoot, 'artifacts', 'benchmark-snapshots');
 const inputPath = path.join(snapshotRoot, 'outcome-blind-task-candidates-v1.0.json');
 const outputPath = path.join(snapshotRoot, 'screening-pilot-sample-v1.0.json');
+const packetPath = path.join(snapshotRoot, 'screening-pilot-review-packet-v1.0.csv');
 const fraction = Number.parseFloat(process.env.PSS_SCREENING_PILOT_FRACTION ?? '0.10');
 const seed = Number.parseInt(process.env.PSS_SCREENING_RANDOM_SEED ?? '20260914', 10);
 
@@ -85,9 +86,36 @@ export function buildScreeningPilotSample(inventory, { sampleFraction = fraction
   };
 }
 
+export function buildScreeningReviewPacket(sample) {
+  const criteria = ['IC1', 'IC2', 'IC3', 'IC4', 'IC5', 'IC6', 'IC7'];
+  const header = ['benchmark', 'benchmark_version', 'task_id', 'task_instruction_digest', 'sites', 'source_file', 'criterion_code', 'reviewer_decision', 'evidence_reference', 'notes'];
+  const rows = [header];
+  for (const candidate of sample.candidates ?? []) {
+    for (const criterion of criteria) {
+      rows.push([
+        candidate.benchmark_id,
+        candidate.source_commit,
+        candidate.task_source_id,
+        candidate.instruction_digest,
+        (candidate.sites ?? []).join('|'),
+        candidate.source_file,
+        criterion,
+        '',
+        `${candidate.source_file}#${candidate.instruction_digest}`,
+        ''
+      ]);
+    }
+  }
+  return rows.map((row) => row.map((value) => {
+    const text = String(value ?? '');
+    return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+  }).join(',')).join('\n') + '\n';
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const inventory = JSON.parse(fs.readFileSync(inputPath, 'utf8'));
   const output = buildScreeningPilotSample(inventory);
   fs.writeFileSync(outputPath, `${JSON.stringify(output, null, 2)}\n`);
-  console.log(JSON.stringify({ status: output.status, output: outputPath, candidate_count: output.candidate_count, sample_count: output.sample_count, strata_count: Object.keys(output.strata).length, confirmatory_authorized: output.confirmatory_authorized }, null, 2));
+  fs.writeFileSync(packetPath, buildScreeningReviewPacket(output));
+  console.log(JSON.stringify({ status: output.status, output: outputPath, review_packet: packetPath, candidate_count: output.candidate_count, sample_count: output.sample_count, review_rows: output.sample_count * 7, strata_count: Object.keys(output.strata).length, confirmatory_authorized: output.confirmatory_authorized }, null, 2));
 }

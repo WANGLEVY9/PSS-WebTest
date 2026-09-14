@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ProbeFlow · Screening Desk</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/screening-review.css" />
+  </head>
+  <body class="review-body">
+    <div class="review-shell">
+      <header class="review-header">
+        <a class="review-brand" href="/"><span class="brand-mark">PF</span><span><strong>ProbeFlow</strong><small>OUTCOME-BLIND SCREENING</small></span></a>
+        <div><p class="kicker">BENCHMARK ARTIFACT FREEZE / G1</p><h1>Screening Desk</h1></div>
+        <div class="review-status"><span class="online-dot"></span><span><small>LOCAL WORKSPACE</small><strong id="workspace-status">LOADING</strong></span></div>
+      </header>
+      <section class="review-toolbar">
+        <label>WORK MODE<select id="mode"><option value="reviewer-1">Reviewer 1 · independent</option><option value="reviewer-2">Reviewer 2 · independent</option><option value="adjudicator">Adjudicator · conflicts only</option></select></label>
+        <label>SEARCH TASK<input id="search" type="search" placeholder="task id, benchmark, site…" /></label>
+        <label>BENCHMARK<select id="benchmark"><option value="all">All benchmarks</option></select></label>
+        <div class="review-toolbar-note"><strong id="sample-count">—</strong><span>pilot tasks · decisions never authorize collection</span></div>
+      </section>
+      <main class="review-grid">
+        <aside class="review-queue panel">
+          <div class="panel-title"><span>REVIEW QUEUE</span><strong id="queue-count">—</strong></div>
+          <div id="queue" class="queue-list"></div>
+        </aside>
+        <section class="review-main">
+          <article class="review-brief panel">
+            <div class="panel-title"><span>SELECTED OFFICIAL TASK</span><span class="blind-pill">OUTCOME BLIND</span></div>
+            <h2 id="task-title">Select a task</h2>
+            <p id="task-meta" class="task-meta-copy">The reviewer packet contains only pinned source metadata and instruction digests.</p>
+            <div class="source-box"><span>SOURCE FILE</span><code id="source-file">—</code><span>INSTRUCTION DIGEST</span><code id="instruction-digest">—</code></div>
+            <div id="task-tags" class="task-tags"></div>
+          </article>
+          <section id="criteria" class="criteria-list"></section>
+          <article id="adjudication" class="panel adjudication-panel" hidden>
+            <div class="panel-title"><span>ADJUDICATION QUEUE</span><strong id="conflict-count">—</strong></div>
+            <p class="task-meta-copy">Only disagreements between two completed independent reviews appear here. Adjudication is stored separately and never changes either reviewer’s original record.</p>
+            <div id="conflicts"></div>
+          </article>
+        </section>
+        <aside class="review-sidebar">
+          <article class="panel progress-panel"><div class="panel-title"><span>PROGRESS</span><span class="blind-pill">NO OUTCOMES</span></div><div id="progress-cards"></div><p class="guard-copy">A task is eligible only after both reviewers complete all seven criteria and disagreements are adjudicated.</p></article>
+          <article class="panel rubric-panel"><div class="panel-title"><span>RUBRIC</span><span>IC1–IC7</span></div><p>Use <b>yes</b> only with a source citation. Use <b>unclear</b> when the pinned release does not prove the criterion. Never infer eligibility from a model run.</p><a href="https://github.com/WANGLEVY9/PSS-WebTest/blob/main/research/protocol/SCREENING-PILOT-REVIEW-GUIDE-v1.0.md" class="guide-link" target="_blank" rel="noreferrer">Review protocol →</a></article>
+        </aside>
+      </main>
+      <footer class="review-footer"><span>local-only reviewer workspace · append-only event log · confirmatory_authorized=false</span><a href="/">Return to live run dashboard</a></footer>
+    </div>
+    <script src="/review.js" type="module"></script>
+  </body>
+</html>

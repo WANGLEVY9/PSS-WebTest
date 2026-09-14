@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 import { buildDashboardAnalysis } from '../src/dashboard-analytics.mjs';
+import { createScreeningReviewStore, sampleDigest } from '../src/screening-review-store.mjs';
 
 dotenv.config({ path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.env') });
 
@@ -18,9 +19,13 @@ const expansionPlanPath = path.join(codeRoot, 'config', 'phase2-large-scale-expa
 const dashboardArtifactRoot = path.join(artifactsRoot, 'dashboard');
 const dashboardSnapshotPath = path.join(dashboardArtifactRoot, 'overview-latest.json');
 const dashboardAnalysisPath = path.join(dashboardArtifactRoot, 'analysis-latest.json');
+const screeningSamplePath = path.join(codeRoot, 'artifacts', 'benchmark-snapshots', 'screening-pilot-sample-v1.0.json');
+const screeningReviewStateRoot = path.join(codeRoot, 'artifacts', 'benchmark-snapshots', 'screening-review-state');
 const host = process.env.PSS_DASHBOARD_HOST ?? '127.0.0.1';
 const port = Number.parseInt(process.env.PSS_DASHBOARD_PORT ?? '4173', 10);
 const sseClients = new Set();
+const screeningSample = readJson(screeningSamplePath) ?? { candidates: [] };
+const screeningReviewStore = createScreeningReviewStore({ sample: screeningSample, root: screeningReviewStateRoot });
 
 const SUTS = [
   { id: 'bookstack', name: 'BookStack', url: process.env.BOOKSTACK_BASE_URL ?? 'http://127.0.0.1:8081' },
@@ -36,6 +41,16 @@ function json(response, payload, status = 200) {
 function readJson(file) {
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
   catch { return null; }
+}
+
+async function readRequestJson(request) {
+  let body = '';
+  for await (const chunk of request) {
+    body += chunk;
+    if (body.length > 256 * 1024) throw new Error('request body too large');
+  }
+  if (!body.trim()) return {};
+  return JSON.parse(body);
 }
 
 function safeRunId(value) {
@@ -230,7 +245,7 @@ async function overview() {
   const analysis = buildDashboardAnalysis({ records, matrix, expansionPlan });
   const payload = {
     generated_at: new Date().toISOString(),
-    mode: 'local-read-only-observation',
+    mode: 'local-observation-and-screening-review',
     refresh_interval_ms: 2500,
     evidence_boundary: 'Pilot and feasibility records are never confirmatory findings. A strict pass requires completed execution, independent checkpoint reach, and a matching emitted/ground-truth verdict.',
     suts,
@@ -331,6 +346,33 @@ const server = http.createServer(async (request, response) => {
   const requestUrl = new URL(request.url, `http://${host}`);
   if (requestUrl.pathname === '/api/overview') return json(response, await overview());
   if (requestUrl.pathname === '/api/analysis') return json(response, (await overview()).analysis);
+  if (requestUrl.pathname === '/api/screening/progress') {
+    return json(response, { schema_version: '1.0', status: 'outcome-blind-review-progress', confirmatory_authorized: false, candidate_count: screeningReviewStore.candidateCount, sample_digest: sampleDigest(screeningSample), reviewers: screeningReviewStore.progress() });
+  }
+  if (requestUrl.pathname === '/api/screening/review' && request.method === 'GET') {
+    try {
+      const reviewer = requestUrl.searchParams.get('reviewer') ?? 'reviewer-1';
+      return json(response, screeningReviewStore.snapshotForReviewer(reviewer));
+    } catch (error) { return json(response, { error: error.message }, 400); }
+  }
+  if (requestUrl.pathname === '/api/screening/conflicts') {
+    if (requestUrl.searchParams.get('role') !== 'adjudicator') return json(response, { error: 'adjudicator role required' }, 403);
+    return json(response, { schema_version: '1.0', status: 'adjudication-view', confirmatory_authorized: false, conflicts: screeningReviewStore.conflicts() });
+  }
+  if (requestUrl.pathname === '/api/screening/review' && request.method === 'POST') {
+    try {
+      const body = await readRequestJson(request);
+      const saved = screeningReviewStore.writeReviewerDecision(body);
+      return json(response, { ok: true, saved, confirmatory_authorized: false });
+    } catch (error) { return json(response, { error: error.message }, 400); }
+  }
+  if (requestUrl.pathname === '/api/screening/adjudicate' && request.method === 'POST') {
+    try {
+      const body = await readRequestJson(request);
+      const saved = screeningReviewStore.adjudicate(body);
+      return json(response, { ok: true, saved, confirmatory_authorized: false });
+    } catch (error) { return json(response, { error: error.message }, 400); }
+  }
   if (requestUrl.pathname.startsWith('/api/runs/')) {
     const detail = runDetail(decodeURIComponent(requestUrl.pathname.slice('/api/runs/'.length)));
     return detail ? json(response, detail) : json(response, { error: 'run not found' }, 404);
@@ -346,5 +388,5 @@ const server = http.createServer(async (request, response) => {
   return serveStatic(request, response);
 });
 
-server.listen(port, host, () => console.log(JSON.stringify({ status: 'ready', url: `http://${host}:${port}`, mode: 'local-read-only-observation' })));
+server.listen(port, host, () => console.log(JSON.stringify({ status: 'ready', url: `http://${host}:${port}`, mode: 'local-observation-and-screening-review' })));
 setInterval(() => { publish().catch((error) => console.error(`dashboard refresh failed: ${error.message}`)); }, 2500).unref();

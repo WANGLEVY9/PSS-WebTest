@@ -116,6 +116,7 @@
     "validate:phase2-campaign": "node scripts/validate-phase2-campaign-tranches.mjs",
     "validate:long-run-manifest": "node scripts/validate-long-run-execution-manifest.mjs",
     "validate:study-design": "node scripts/validate-study-design-contract.mjs",
+    "validate:long-cycle-plan": "node scripts/validate-long-cycle-experiment-plan.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",
     "gate:invoiceninja:payments:fault-evolution": "node scripts/invoiceninja-payments-fault-evolution-gate.mjs",
     "oracle:prestashop:search": "node scripts/evaluate-prestashop-search.mjs",

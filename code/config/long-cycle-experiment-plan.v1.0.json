@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0",
+  "plan_id": "pss-webtest-long-cycle-v1.0",
+  "authority_contract": "study-design-contract.v1.0.json",
+  "status": "planned-execution-paused",
+  "current_state": "G0_COMPLETE_G1_PENDING",
+  "confirmatory_authorized": false,
+  "scale": {
+    "minimum_layer_a_scheduled_units": 3000,
+    "unit_formula": "N_confirmatory_tasks * repetitions * 5",
+    "units_per_task_repetition": 5,
+    "scale_is_not_power_substitute": true
+  },
+  "layers": [
+    {
+      "id": "A-controlled-core",
+      "role": "primary-confirmatory",
+      "configurations": [
+        "pure-visual-shared-model-M1",
+        "hybrid-shared-model-M1",
+        "pure-visual-shared-model-M2",
+        "hybrid-shared-model-M2",
+        "traditional-semantic-playwright"
+      ],
+      "weighting": "equal-weight-within-frozen-model-set; never raw-run-count weighting"
+    },
+    {
+      "id": "B-implementation-robustness",
+      "role": "secondary-pre-registered-subset",
+      "candidate_extensions": ["second-cua-framework", "second-hybrid-framework", "selenium-webdriver", "third-model-family"],
+      "primary_denominator": false
+    },
+    {
+      "id": "C-workarena-extension",
+      "role": "conditional-separate-stratum",
+      "primary_denominator": false,
+      "requires_benchmark_gate": true
+    }
+  ],
+  "task_partition": {
+    "freeze_before_any_arm": true,
+    "roles": ["protocol-pilot", "confirmatory-core", "robustness-subset"],
+    "pilot_fraction": "5-10%",
+    "pilot_excluded_from_primary_confirmatory_estimates": true,
+    "selection_seed": 20260914,
+    "screeners": 2,
+    "outcome_blind": true
+  },
+  "configuration_policy": {
+    "shared_models_across_visual_and_hybrid": 2,
+    "candidate_provider_configurations_are_not_pre_admitted": true,
+    "provider_response_soak_minimum": 0.95,
+    "provider_response_soak_minimum_requests_per_interface": 30,
+    "admission_may_not_use_task_success": true,
+    "freeze_required": ["model_ids", "prompts", "framework_commits", "action_schemas", "timeouts", "step_budgets", "retry_policy", "browser_image", "configuration_digests"]
+  },
+  "repetition_policy": {
+    "pilot_repetitions": 5,
+    "candidate_confirmatory_repetitions": [5, 7, 10],
+    "power_target_primary": 0.9,
+    "minimum_practical_primary_difference_pp": 10,
+    "power_target_interaction": 0.8,
+    "minimum_practical_interaction_difference_pp": 15,
+    "family_alpha": 0.05,
+    "multiple_testing": "Holm",
+    "post_confirmatory_adaptive_increase": false
+  },
+  "scheduling": {
+    "pregenerated": true,
+    "randomized_within_task_repetition": true,
+    "provider_temporal_interleaving": true,
+    "parallel_only_on_isolated_environment_shards": true,
+    "shared_mutable_state_between_runs": false
+  },
+  "failure_policy": {
+    "provider_or_model_failure_is_deployment_failure": true,
+    "grounding_timeout_format_and_budget_failures_are_deployment_failures": true,
+    "pre_arm_infrastructure_failure_is_invalid_and_exactly_rerun": true,
+    "protocol_boundary_violation_quarantines_batch": true,
+    "performance_based_configuration_removal": false
+  },
+  "analysis": {
+    "benchmark_fixed_effect_with_three_core_benchmarks": true,
+    "task_nested_in_benchmark_random_intercept": true,
+    "within_model_visual_hybrid_contrasts": true,
+    "equal_weight_agent_model_margins": true,
+    "right_censored_timeout_analysis": true,
+    "single_weighted_score": false,
+    "failure_coding_blind_to_competing_arm_outcomes": true
+  },
+  "gates": [
+    {"id": "G0", "name": "design-freeze", "status": "complete"},
+    {"id": "G1", "name": "benchmark-artifact-freeze", "status": "pending"},
+    {"id": "G2", "name": "eligible-population-freeze", "status": "blocked-by-G1"},
+    {"id": "G3", "name": "boundary-runner-and-record-remediation", "status": "pending-engineering-only"},
+    {"id": "G4", "name": "traditional-blind-adaptation", "status": "blocked-by-G2"},
+    {"id": "G5", "name": "protocol-pilot", "status": "blocked-by-G2-G3-G4"},
+    {"id": "G6", "name": "power-configuration-analysis-freeze", "status": "blocked-by-G5"},
+    {"id": "G7", "name": "confirmatory-authorization", "status": "blocked-by-G6"},
+    {"id": "G8", "name": "confirmatory-collection", "status": "blocked-by-G7"},
+    {"id": "G9", "name": "locked-analysis", "status": "blocked-by-G8"},
+    {"id": "G10", "name": "independent-reproduction", "status": "blocked-by-G9"}
+  ],
+  "next_allowed_work": [
+    "benchmark artifact manifest and license pinning",
+    "official task inventory without arm execution",
+    "pure-visual side-channel remediation",
+    "canonical Hybrid projection and recursive leak tests",
+    "benchmark-provenance run-record v1 schema",
+    "Traditional role-separated authoring and review tooling",
+    "schedule generator and isolated worker leases",
+    "pilot power-simulation skeleton"
+  ]
+}

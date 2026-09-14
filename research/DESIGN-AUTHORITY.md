@@ -4,6 +4,10 @@ Current authority: [`FINAL-STUDY-DESIGN-v1.0.md`](FINAL-STUDY-DESIGN-v1.0.md)
 
 Machine contract: `code/config/study-design-contract.v1.0.json`
 
+Gate-driven execution plan: `LONG-CYCLE-EXPERIMENT-PLAN-v1.0.md`
+
+Machine execution plan: `code/config/long-cycle-experiment-plan.v1.0.json`
+
 Status: human-confirmed v1.0 design freeze; execution paused while artifacts,
 task IDs, compliant runners, and adaptation records are prepared.
 

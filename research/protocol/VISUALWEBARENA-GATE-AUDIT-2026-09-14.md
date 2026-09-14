@@ -40,6 +40,17 @@ The result was `official-assets-missing`, `ready_for_service_start=false`, and
 unbounded troubleshooting action; the blocker is recorded for an explicit
 environment-provisioning decision.
 
+## Follow-up reachability probe
+
+For a bounded engineering check, the pinned homepage source was copied to an
+ephemeral directory, its documented hostname placeholder was replaced with
+`127.0.0.1`, and the source Flask app was started in a live terminal process.
+The subsequent gate observed homepage HTTP 200 and shopping HTTP 302. This is
+useful service-level evidence, but it is not yet a reproducible deployment
+artifact: the process is intentionally not treated as a benchmark image and
+must be recreated by an explicit setup procedure before admission. Classifieds
+and Reddit remain unavailable, so the four-service gate remains closed.
+
 The pinned source commit remains
 `89f5af29305c3d1e9f97ce4421462060a70c9a03`. To retry the gate, start the four
 version-pinned services and provide the reset token through the ignored local

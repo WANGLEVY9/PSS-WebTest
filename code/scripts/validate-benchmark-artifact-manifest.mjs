@@ -37,6 +37,10 @@ export function validateBenchmarkArtifactManifest(manifest) {
   if (!/^sha256:[a-f0-9]{64}$/.test(ata?.published_artifact?.local_sha256 ?? '')) errors.push('ATA local artifact SHA-256 fingerprint is required');
   if (ata?.evaluator?.status !== 'requires-independent-semantics-audit') errors.push('ATA evaluator semantics audit must remain open');
 
+  const webarena = core.find((item) => item.id === 'webarena-verified');
+  if (!/^am1n3e\/webarena-verified-shopping@sha256:[a-f0-9]{64}$/.test(webarena?.environment?.candidate_image?.reference ?? '')) errors.push('WebArena shopping candidate image must be digest-pinned');
+  if (webarena?.environment?.candidate_image?.status !== 'digest-pinned-pull-pending') errors.push('WebArena shopping image must remain pull-pending until a local image ID is recorded');
+
   const extension = manifest?.conditional_extension;
   if (extension?.id !== 'workarena-plus-plus' || !SHA1.test(extension?.source_commit ?? '')) errors.push('conditional WorkArena++ source pin is invalid');
   if (extension?.environment?.status !== 'not-requested' || extension?.environment?.three_reset_gate !== 'not-started') errors.push('WorkArena++ must remain conditional and unstarted');

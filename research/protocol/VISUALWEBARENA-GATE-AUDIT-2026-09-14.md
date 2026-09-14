@@ -40,6 +40,12 @@ The result was `official-assets-missing`, `ready_for_service_start=false`, and
 unbounded troubleshooting action; the blocker is recorded for an explicit
 environment-provisioning decision.
 
+The Classifieds archive itself is small, but its compose file references
+`jykoh/classifieds:latest`; the Docker manifest advertises a 76.6 GB layer.
+Consequently, downloading the compose bundle alone cannot make the service
+reproducible on this workstation. The image must be provisioned on a host with
+adequate disk and memory, then digest-pinned before admission.
+
 ## Follow-up reachability probe
 
 For a bounded engineering check, the pinned homepage source was copied to an

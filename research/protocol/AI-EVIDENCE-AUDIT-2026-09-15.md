@@ -101,6 +101,13 @@ These are diagnostic conflict candidates, not exclusions. They should be reviewe
 | IC6 — 确定性 evaluator 或 tolerance | 引用 evaluator 文档/版本和预注册 tolerance；单纯的 expected UI text、LLM judge 或截图描述不足。 | webarena-verified/README.md#L28-L30；webarena-verified/docs/evaluation/*；visualwebarena/evaluation_harness/evaluators.py；ATA evaluation.py/pinata README |
 | IC7 — 秘密、外部或特权信息 | 核对官方 credential policy、CAPTCHA、外部站点依赖和账号是否为公开 fixture；require_login 不自动等于 no。 | visualwebarena/README.md#L58-L85；ATA SeeAct README#L233-L235；各 benchmark environment documentation |
 
+## Local benchmark-artifact feasibility audit
+
+- **WebArena-Verified:** the pinned source contains 812 tasks; its README documents an audited release, deterministic type-aware scoring, and environment-control health/reset interfaces. This supports benchmark-level evidence for IC2/IC5/IC6, but the local environment is still `not-installed`, so IC3 and the operational reset gate remain pending.
+- **VisualWebArena:** the pinned source contains 910 tasks and reset scripts. The local evaluator inventory contains 409 `program_html`, 280 `string_match`, 224 `url_match`, and 42 `page_image_query` evaluator entries; 49 targets use `fuzzy_match`. The evaluator source calls `llm_fuzzy_match`, `llm_ua_match`, and a `captioning_fn` for image queries. IC6 therefore cannot be marked yes for the whole benchmark without a task-level deterministic-subset split or a pre-registered evaluator tolerance/repeatability audit.
+- **ATA/PinATA:** the pinned artifact contains 112 tasks and an `evaluation.py` that reports PASS/FAIL, failing-step and confusion metrics. Its reset function dispatches a GitHub Actions workflow using `GITHUB_TOKEN`, and the Pinata assertor uses an LLM over screenshots. The official README also warns that direct login is unsupported. Remote reset, evaluator independence, login-task treatment and credential provisioning remain unresolved; IC5/IC6/IC7 need explicit task-level adjudication before admission.
+- These findings affect feasibility and evidence requirements, not post-hoc task exclusion. Any task-list change must occur before HF1 or through a versioned amendment plus affected-arm rerun.
+
 ## Human-verification queue
 
 For every high-risk task, a human reviewer should record the following before deciding yes/no:

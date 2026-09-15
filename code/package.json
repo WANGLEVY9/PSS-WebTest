@@ -130,6 +130,7 @@
     "screening:prepare-template": "node scripts/prepare-screening-ledger.mjs",
     "screening:pilot-sample": "node scripts/export-screening-pilot-sample.mjs",
     "screening:llm-simulate": "node scripts/simulate-llm-screening-review.mjs",
+    "screening:llm-audit": "node scripts/audit-llm-screening-evidence.mjs",
     "screening:audit": "node scripts/validate-screening-ledger.mjs",
     "traditional:audit": "node scripts/validate-traditional-adaptation-ledger.mjs",
     "gate:invoiceninja:fault-evolution": "node scripts/invoiceninja-fault-evolution-gate.mjs",

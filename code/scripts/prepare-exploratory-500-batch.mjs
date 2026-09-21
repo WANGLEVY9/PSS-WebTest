@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { validateExploratoryBatchPlan } from './validate-exploratory-batch-plan.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const planPath = path.join(codeRoot, 'config/exploratory-500-block-campaign.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const errors = validateExploratoryBatchPlan(plan);

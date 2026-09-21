@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 
 /**
  * Sequential T1 condition batch for the two currently runnable local SUTs.
@@ -16,7 +17,7 @@ const repetitions = Number.parseInt(process.env.PSS_BATCH_REPETITIONS ?? '2', 10
 if (process.env.PSS_EXECUTE !== '1') throw new Error('refusing to run batch without PSS_EXECUTE=1');
 if (!Number.isInteger(repetitions) || repetitions < 1 || repetitions > 3) throw new Error('PSS_BATCH_REPETITIONS must be an integer in [1,3]');
 
-const root = path.resolve(new URL('..', import.meta.url).pathname, '..');
+const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)), '..');
 const codeRoot = path.join(root, 'code');
 const artifactRoot = path.join(root, 'artifacts', 'phase2');
 const timestamp = process.env.PSS_BATCH_DATE ?? new Date().toISOString().slice(0, 10).replaceAll('-', '');

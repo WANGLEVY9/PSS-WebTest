@@ -1,10 +1,11 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { validateScalingPlan } from '../../scripts/validate-phase2-scaling-plan.mjs';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/phase2-scaling-plan.v0.1.json'), 'utf8'));
 
 test('scaling plan keeps broad coverage and validates its run-count arithmetic', () => {

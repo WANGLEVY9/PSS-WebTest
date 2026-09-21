@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { deriveLargeScaleInventory, validateLargeScaleExpansionPlan } from '../src/large-scale-expansion.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(codeRoot, relativePath), 'utf8'));
 const plan = readJson('config/phase2-large-scale-expansion.v0.1.json');
 const benchmarkMatrix = readJson('config/benchmark-matrix.v0.1.json');

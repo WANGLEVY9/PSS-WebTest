@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { chromium } from 'playwright';
@@ -41,7 +42,7 @@ const dismissOverlaysOnly = process.env.CUA_DISMISS_OVERLAYS === '1';
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SETTLE_MS ?? String(optimization.post_action_settle_ms), 10);
 const viewport = { width: 1280, height: 720 };
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({

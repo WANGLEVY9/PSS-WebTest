@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -12,7 +13,7 @@ import {
   resolveFrameworkVersion
 } from '../../src/framework-version.mjs';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const manifest = loadFrameworkManifest();
 
 test('the manifest declares both tracks and never pools them', () => {

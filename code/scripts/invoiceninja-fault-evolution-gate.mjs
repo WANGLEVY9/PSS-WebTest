@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
@@ -5,14 +6,14 @@ import { chromium } from 'playwright';
 import { evaluateInvoiceNinjaInvoice } from '../src/invoiceninja-oracle.mjs';
 import { installInvoiceNinjaMutation } from '../src/mutations/invoiceninja.mjs';
 
-const envFile = process.env.PSS_INVOICENINJA_ENV ?? new URL('../../third_party/WebTestPilot/webapps/invoiceninja/.env', import.meta.url).pathname;
+const envFile = process.env.PSS_INVOICENINJA_ENV ?? fileURLToPath(new URL('../../third_party/WebTestPilot/webapps/invoiceninja/.env', import.meta.url));
 dotenv.config({ path: envFile });
 dotenv.config();
 const baseURL = process.env.INVOICE_NINJA_BASE_URL ?? `http://127.0.0.1:${process.env.APP_PORT ?? '8082'}`;
 const username = process.env.PSS_INVOICENINJA_USERNAME ?? process.env.IN_USER_EMAIL;
 const password = process.env.PSS_INVOICENINJA_PASSWORD ?? process.env.IN_PASSWORD;
 if (!username || !password) throw new Error('Invoice Ninja credentials are missing');
-const outputPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? new URL('../../results/phase2/2026-09-12-invoiceninja-fault-evolution-gate.md', import.meta.url).pathname);
+const outputPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? fileURLToPath(new URL('../../results/phase2/2026-09-12-invoiceninja-fault-evolution-gate.md', import.meta.url)));
 
 async function dismissOnboarding(page) {
   await page.waitForTimeout(1000);

@@ -13,7 +13,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import dotenv from 'dotenv';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const snapshotRoot = path.join(codeRoot, 'artifacts', 'benchmark-snapshots');
 const samplePath = path.join(snapshotRoot, 'screening-pilot-sample-v1.0.json');
 const outputRoot = path.join(snapshotRoot, 'llm-screening-simulations');

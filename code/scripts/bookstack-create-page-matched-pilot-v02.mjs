@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
@@ -7,7 +8,7 @@ import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 const explicitEnv = { ...process.env };
 dotenv.config();
 
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const repositoryRoot = `${root}/..`;
 const taskId = 'bookstack-create-page';
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);

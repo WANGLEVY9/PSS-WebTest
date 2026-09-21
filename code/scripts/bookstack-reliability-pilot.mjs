@@ -1,9 +1,10 @@
+import {fileURLToPath} from 'node:url';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
 import process from 'node:process';
 
-const codeRoot = resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = resolve(codeRoot, '..');
 const iterations = Number(process.env.PSS_PILOT_ITERATIONS ?? 10);
 const outputPath = resolve(repositoryRoot, 'artifacts/phase2/bookstack-reliability-pilot.json');

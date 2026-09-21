@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Build a reproducible descriptive summary from the append-only Phase 2
 // ledgers. This is a pilot/diagnostic artifact; it never authorizes
 // confirmatory collection and never pools model/framework strata implicitly.
@@ -9,7 +10,7 @@ import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
 import { executionVariant } from '../src/execution-variant.mjs';
 
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
 const args = process.argv.slice(2);
 const value = (flag, fallback = null) => {

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import { chromium } from 'playwright';
 import { appendRunRecord, createTraditionalRunRecord } from '../src/traditional-run-record.mjs';
@@ -6,7 +7,7 @@ import { applyPrestashopMutation } from '../src/prestashop-mutations.mjs';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
-dotenv.config({ path: process.env.PSS_PRESTASHOP_ENV ?? new URL('../../third_party/WebTestPilot/webapps/prestashop/.env', import.meta.url).pathname });
+dotenv.config({ path: process.env.PSS_PRESTASHOP_ENV ?? fileURLToPath(new URL('../../third_party/WebTestPilot/webapps/prestashop/.env', import.meta.url)) });
 const execFileAsync = promisify(execFile);
 const baseURL = process.env.PRESTASHOP_BASE_URL ?? 'http://localhost:8083';
 const username = process.env.PSS_PRESTASHOP_USERNAME;

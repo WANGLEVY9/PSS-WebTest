@@ -1,9 +1,10 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const read = (relative) => fs.readFileSync(path.join(codeRoot, relative), 'utf8');
 
 test('PrestaShop simple agent and Playwright runners use the same benchmark task id', () => {

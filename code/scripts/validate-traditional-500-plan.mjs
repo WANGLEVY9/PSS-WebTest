@@ -1,7 +1,8 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const planPath = process.argv[2] ? path.resolve(process.argv[2]) : path.join(codeRoot, 'config/traditional-500-playwright.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const errors = [];

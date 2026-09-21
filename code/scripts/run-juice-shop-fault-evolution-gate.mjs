@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -5,7 +6,7 @@ import { chromium } from 'playwright';
 import { evaluateJuiceShopUiSearch } from '../src/oracles/juice-shop-ui-search.mjs';
 import { installJuiceShopLayoutEvolution, installJuiceShopSearchOmission } from '../src/mutations/juice-shop.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const query = process.env.PSS_JUICE_SHOP_QUERY ?? 'apple';

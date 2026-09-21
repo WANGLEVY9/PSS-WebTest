@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Three-way consistency check for the external framework layer:
 //   manifest declaration == configuration-registry declaration == installed version
 //
@@ -12,7 +13,7 @@ import { loadFrameworkManifest } from '../src/framework-version.mjs';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { FRAMEWORK_VARIANTS } from '../src/framework-variants.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const errors = [];
 const warnings = [];

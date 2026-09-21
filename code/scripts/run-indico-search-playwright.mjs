@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import { chromium } from 'playwright';
 import { createRunRecord } from '../src/run-records.mjs';
@@ -16,7 +17,7 @@ const query = process.env.PSS_INDICO_SEARCH_QUERY ?? 'test';
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const expectedVerdict = condition === 'functional-fault' ? 'fault' : 'clean';
 if (!username || !password) throw new Error('Indico credentials must be configured in the local environment');
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const phase2Fields = process.env.PSS_PROTOCOL_VERSION === '2.0-draft' ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
   runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${root}/config/indico-search-events-run-manifest.v0.2.json`,

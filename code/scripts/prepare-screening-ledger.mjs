@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const snapshotRoot = path.join(codeRoot, 'artifacts', 'benchmark-snapshots');
 const inputPath = path.join(snapshotRoot, 'outcome-blind-task-candidates-v1.0.json');
 const outputPath = path.join(snapshotRoot, 'screening-ledger-template-v1.0.json');

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const defaultArtifactsDir = path.join(repositoryRoot, 'artifacts/phase2');
 const defaultOutput = path.join(repositoryRoot, 'research/phase2-experiment-data-2026-09-04.md');
@@ -114,7 +115,7 @@ export function buildEvidenceReport({ artifactsDir = defaultArtifactsDir, genera
   ].join('\n') + '\n';
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(new URL(import.meta.url)))) {
   const args = process.argv.slice(2);
   const outputIndex = args.indexOf('--output');
   const output = outputIndex >= 0 ? path.resolve(args[outputIndex + 1]) : defaultOutput;

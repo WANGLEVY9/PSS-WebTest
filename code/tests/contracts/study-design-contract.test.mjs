@@ -1,10 +1,11 @@
+import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { validateStudyDesignContract } from '../../scripts/validate-study-design-contract.mjs';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const contract = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'study-design-contract.v1.0.json'), 'utf8'));
 const metrics = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'metric-dictionary.v1.0.json'), 'utf8'));
 

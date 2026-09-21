@@ -1,7 +1,8 @@
+import {fileURLToPath} from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
-const codeRoot = resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const manifestPath = resolve(codeRoot, 'manifests/task-manifest.v0.1.json');
 const errors = [];
 

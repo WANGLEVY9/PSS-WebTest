@@ -40,6 +40,7 @@ def agentlab_probe():
             assert 'FORBIDDEN_' not in text
             assert ('VISIBLE_BUTTON_SENTINEL' in text) == (mode == 'hybrid')
             assert 'data:image/' in text
+            assert '<action>' in text and '</action>' in text, 'Native parser grammar must be disclosed in the prompt'
             assert 'mouse_upload_file' not in text
         counts[mode] = 2
         for forbidden in ('goto("http://example.test")', 'upload_file("1", "/tmp/file")', 'page.evaluate("1")'):
@@ -93,7 +94,8 @@ def browser_use_probe():
         assert action == {'pss_click': {'x': 20, 'y': 20}}, action
         sent = json.dumps(captured[-1])
         assert 'FORBIDDEN_' not in sent and 'VISIBLE_BUTTON_SENTINEL' in sent and 'data:image/png' in sent
-        assert set(agent.tools.registry.registry.actions) == {'pss_click', 'pss_type', 'pss_scroll', 'pss_key', 'done'}
+        assert set(agent.tools.registry.registry.actions) == {'pss_click', 'pss_type', 'pss_scroll', 'pss_key', 'done',
+            'pss_upload', 'pss_tab_focus', 'pss_tab_close', 'pss_back', 'pss_forward', 'pss_wait'}
         try: await agent.run()
         except RuntimeError: pass
         else: raise AssertionError('Unsafe stock loop accepted')

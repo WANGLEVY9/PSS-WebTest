@@ -102,7 +102,7 @@ export function parseProviderResponse(api,payload,{httpStatus=200,requestId=null
   return record;
 }
 
-export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch}={}) {
+export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch,includeRaw=false}={}) {
   if(!config.apiKey) throw Error('Provider key is required');
   if(!Number.isInteger(timeoutMs) || timeoutMs<1) throw Error('Positive request time budget required');
   const start=Date.now(),controller=new AbortController();
@@ -122,7 +122,11 @@ export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch}={}) {
     }
     const retryAfter=res.headers?.get('retry-after');
     const retryAfterMs=retryAfter===null||retryAfter===undefined?null:/^\d+(?:\.\d+)?$/.test(retryAfter)?Number(retryAfter)*1000:Math.max(0,Date.parse(retryAfter)-Date.now());
-    return {...parseProviderResponse(config.api,payload,{httpStatus:res.status,requestId:res.headers?.get('x-request-id')||null}),retry_after_ms:Number.isFinite(retryAfterMs)?retryAfterMs:null,latency_ms:Date.now()-start};
+    const rawOutput=config.api==='chat-completions'?payload?.choices?.[0]?.message?.content:
+      (Array.isArray(payload?.output)?payload.output:[]).filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text).join('');
+    return {...parseProviderResponse(config.api,payload,{httpStatus:res.status,requestId:res.headers?.get('x-request-id')||null}),
+      ...(includeRaw&&res.ok&&typeof rawOutput==='string'?{raw_output:rawOutput}:{}),
+      retry_after_ms:Number.isFinite(retryAfterMs)?retryAfterMs:null,latency_ms:Date.now()-start};
     })()]);
   } catch(e) {
     return {failure_class:/timeout|abort/i.test(e?.name)?'provider-timeout':'provider-network',

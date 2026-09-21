@@ -7,6 +7,7 @@ flags there. Native task integration must use this projection at every step.
 from dataclasses import dataclass
 import json
 from framework_boundary import project_observation, public_task_text
+from framework_actions import upload_task_image, focus_task_tab, close_task_tab, task_back, task_forward
 
 
 @dataclass
@@ -16,17 +17,19 @@ class RestrictedActionArgs:
 
     def make_action_set(self):
         from browsergym.core.action.highlevel import HighLevelActionSet
-        action_set = HighLevelActionSet(subsets=['coord', 'chat'], multiaction=False,
+        action_set = HighLevelActionSet(subsets=['coord', 'chat', 'custom'],
+                                       custom_actions=[upload_task_image, focus_task_tab, close_task_tab, task_back, task_forward], multiaction=False,
                                        strict=True, retry_with_force=False, demo_mode='off')
-        # File upload, arbitrary Python, DOM queries and URL navigation are not
-        # model tools. Both modes use the same coordinate/keyboard action space.
+        # Upload is restricted to task asset IDs; arbitrary paths/Python, DOM
+        # queries and goto(URL) are not tools. Both arms share this action space.
         allowed = {'noop', 'mouse_click', 'mouse_dblclick', 'mouse_move', 'scroll_at',
-                   'keyboard_press', 'keyboard_type', 'send_msg_to_user'}
+                   'keyboard_press', 'keyboard_type', 'send_msg_to_user',
+                   'upload_task_image', 'focus_task_tab', 'close_task_tab', 'task_back', 'task_forward'}
         action_set.action_set = {k: v for k, v in action_set.action_set.items() if k in allowed}
         return action_set
 
 
-def make_agent(chat_model_args, mode):
+def make_agent(chat_model_args, mode, coordinate_space='css-pixels'):
     from agentlab.agents.generic_agent.generic_agent import GenericAgent
     from agentlab.agents.generic_agent.generic_agent_prompt import GenericPromptFlags
     from agentlab.agents.dynamic_prompting import ObsFlags, ActionFlags
@@ -39,14 +42,21 @@ def make_agent(chat_model_args, mode):
                      use_think_history=False, use_diff=False, openai_vision_detail='high'),
         action=ActionFlags(action_set=RestrictedActionArgs()), use_thinking=False,
         use_plan=False, use_memory=False, use_hints=False, enable_chat=False,
-        max_prompt_tokens=None, use_concrete_example=False, use_abstract_example=False)
+        max_prompt_tokens=None, use_concrete_example=False, use_abstract_example=True,
+        extra_instructions=('For this run, point x,y use normalized 0..999 axes, NOT the generic tool descriptions\' CSS pixels. Scroll distances remain CSS pixels. ' if coordinate_space=='qwen-0-999' else '') +
+        'Return exactly one action inside <action>...</action> tags. '
+        'PSS actuator restrictions override generic action descriptions: no bid IDs; '
+        'mouse_click and mouse_dblclick accept only x,y (left button); noop() takes no arguments. '
+        'keyboard_press accepts only Enter, Tab, Shift+Tab, Escape, ArrowUp, ArrowDown, ArrowLeft, '
+        'ArrowRight, PageUp, PageDown, Home, End, Backspace, Delete, ControlOrMeta+A, Control+A, Meta+A. '
+        'Use keyboard_type for all text. Upload uses only the supplied task-image IDs, never filesystem paths.')
     # Upstream counts total parser attempts, not retries. 1 means one request;
     # 0 would silently make no request at all.
     return GenericAgent(chat_model_args=chat_model_args, flags=flags, max_retry=1)
 
 
-def get_action(agent, raw, mode, task, index, viewport):
-    projected = project_observation(raw, mode, task, index, viewport)
+def get_action(agent, raw, mode, task, index, viewport, coordinate_space='css-pixels'):
+    projected = project_observation(raw, mode, task, index, viewport, coordinate_space)
     # Blank mandatory framework fields rather than letting upstream preprocessor
     # derive structured side channels. Never use native reward/done to select actions.
     goal = [{'type': 'text', 'text': public_task_text(projected)}]

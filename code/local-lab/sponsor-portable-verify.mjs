@@ -48,6 +48,8 @@ if(o['framework-profile']) {
   for(const [key,name] of [['agentlab','agentlab'],['browser_use','browser-use']])
     steps.push({id:`native-framework-${name}`,native:true,cmd:profile.python_environments[key].executable,
       args:['local-lab/framework-native-probe.py','--framework',name]});
+  steps.push({id:'journaled-chromium-actuator',actuator:true,cmd:profile.python_environments.agentlab.executable,
+    args:['local-lab/journaled-browser-probe.py','--output',path.join(dest,'actuator-proof')]});
 }
 const report={kind:'SPONSOR_PORTABLE_OFFLINE_VERIFICATION',started_at:new Date().toISOString(),
   source_files:before,source_tree_sha256:sha(JSON.stringify(before)),checks:[],
@@ -69,8 +71,11 @@ for(const step of steps) {
   const passed=count('pass')??(py&&r.status===0?Number(py)-skipped:null);
   let nativeResult=null;
   if(step.native)try{nativeResult=JSON.parse(raw.split('\n').find(l=>l.startsWith('{"kind": "FRAMEWORK_NATIVE_COMPONENT_PROBE"')));}catch{}
-  report.checks.push({id:step.id,passed:r.status===0&&(!step.tests||(n>0&&passed===n&&skipped===0))&&(!step.native||(nativeResult?.passed===true&&nativeResult?.benchmark_adapter_admitted===false)),exit_code:r.status,error_code:r.error?.code??null,
+  let actuatorResult=null;
+  if(step.actuator)try{actuatorResult=JSON.parse(raw.split('\n').find(l=>l.startsWith('{"kind": "SYNTHETIC_CHROMIUM_ACTUATOR_PROBE"')));}catch{}
+  report.checks.push({id:step.id,passed:r.status===0&&(!step.tests||(n>0&&passed===n&&skipped===0))&&(!step.native||(nativeResult?.passed===true&&nativeResult?.benchmark_adapter_admitted===false))&&(!step.actuator||(actuatorResult?.passed===true&&actuatorResult?.model_requests===0&&actuatorResult?.benchmark_executions===0)),exit_code:r.status,error_code:r.error?.code??null,
     ...(step.native?{native_component:nativeResult}:{}),
+    ...(step.actuator?{actuator_probe:actuatorResult}:{}),
     tests:n,passed_tests:passed,skipped_tests:skipped,
     elapsed_ms:Date.now()-start,log_sha256:sha(raw)});
 }

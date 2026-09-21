@@ -14,7 +14,7 @@ import re
 import subprocess
 
 
-def plan_install(framework, lock, lock_sha256, prefix, python, uv, system=None, machine=None):
+def plan_install(framework, lock, lock_sha256, prefix, python, uv, system=None, machine=None, install_browser=False):
     raw = Path(lock).read_bytes()
     if hashlib.sha256(raw).hexdigest() != lock_sha256:
         raise ValueError('Reviewed lock drift')
@@ -36,11 +36,15 @@ def plan_install(framework, lock, lock_sha256, prefix, python, uv, system=None, 
     for tool in (python, uv):
         if not Path(tool).is_absolute() or not os.access(tool, os.X_OK):
             raise ValueError('Explicit existing executable required')
+    if install_browser and 'playwright' not in pins:
+        raise ValueError('Browser provisioning requires playwright in the reviewed full lock')
     return {'framework': framework, 'lock_sha256': lock_sha256, 'pins': pins,
             'native_host': (system or platform.system()) == 'Linux' and (machine or platform.machine()) in ('x86_64', 'AMD64'),
             'commands': [[uv, 'venv', '--python', python, str(target)],
                          [uv, 'pip', 'sync', '--python', str(target/'bin/python'), str(Path(lock).resolve())],
-                         [uv, 'pip', 'check', '--python', str(target/'bin/python')]],
+                         [uv, 'pip', 'check', '--python', str(target/'bin/python')]] +
+                        ([[str(target/'bin/python'),'-m','playwright','install','chromium']] if install_browser else []),
+            'browser_install_requested':install_browser,
             'model_requests': 0, 'benchmark_executions': 0, 'confirmatory_authorized': False}
 
 
@@ -50,8 +54,9 @@ def main():
     for name in ('lock', 'lock-sha256', 'prefix', 'python', 'uv', 'output'):
         p.add_argument('--' + name, required=True)
     p.add_argument('--execute', action='store_true')
+    p.add_argument('--install-browser',action='store_true',help='Install the exact pinned Playwright Chromium; system libraries remain host provisioning')
     args = p.parse_args()
-    report = plan_install(args.framework, args.lock, args.lock_sha256, args.prefix, args.python, args.uv)
+    report = plan_install(args.framework, args.lock, args.lock_sha256, args.prefix, args.python, args.uv, install_browser=args.install_browser)
     report['kind'] = 'SPONSOR_FRAMEWORK_INSTALLATION'
     report['executed'] = False
     report['installed'] = False

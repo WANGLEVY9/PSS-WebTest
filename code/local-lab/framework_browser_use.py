@@ -7,6 +7,7 @@ This component intentionally blocks the stock run loop until those are bound.
 import base64
 import json
 from framework_boundary import project_observation, public_task_text
+from framework_actions import browser_use_action
 
 
 def make_agent(llm, browser, task, private_directory):
@@ -35,6 +36,30 @@ def make_agent(llm, browser, task, private_directory):
 
     @tools.action('Press a keyboard key.')
     async def pss_key(key: str):
+        raise RuntimeError('Use the benchmark-owned journaled actuator')
+
+    @tools.action('Click upload control at CSS coordinates and attach a pinned public task image ID.')
+    async def pss_upload(x: int, y: int, asset_id: str):
+        raise RuntimeError('Use the benchmark-owned journaled actuator')
+
+    @tools.action('Focus zero-based creation-order tab ordinal, not a URL or title.')
+    async def pss_tab_focus(index: int):
+        raise RuntimeError('Use the benchmark-owned journaled actuator')
+
+    @tools.action('Close the current tab.')
+    async def pss_tab_close():
+        raise RuntimeError('Use the benchmark-owned journaled actuator')
+
+    @tools.action('Go back in browser history.')
+    async def pss_back():
+        raise RuntimeError('Use the benchmark-owned journaled actuator')
+
+    @tools.action('Go forward in browser history.')
+    async def pss_forward():
+        raise RuntimeError('Use the benchmark-owned journaled actuator')
+
+    @tools.action('Wait briefly for the next screenshot.')
+    async def pss_wait():
         raise RuntimeError('Use the benchmark-owned journaled actuator')
 
     @tools.action('Finish and return an answer. This is not an independent success verdict.')
@@ -70,42 +95,36 @@ def make_agent(llm, browser, task, private_directory):
         override_system_message='Execute only the supplied public task with the declared actions and observations. Never infer success from your own completion claim.')
 
 
-async def get_action(agent, raw, task, index, viewport, accepted_actions=()):
+async def get_action(agent, raw, task, index, viewport, accepted_actions=(), coordinate_space='css-pixels'):
     from browser_use.llm.messages import SystemMessage, UserMessage
-    projected = project_observation(raw, 'hybrid', task, index, viewport)
+    projected = project_observation(raw, 'hybrid', task, index, viewport, coordinate_space)
     image = projected['screenshot']
     if not isinstance(image, bytes) or not image.startswith(b'\x89PNG\r\n\x1a\n'):
         raise ValueError('Original PNG screenshot bytes required')
     # History contains only previously accepted actions from this component.
     for action in accepted_actions:
-        validate_action(action, viewport)
+        validate_action(action, viewport, [f'task-image-{i}' for i in range(len(task.get('task_images', [])))], coordinate_space)
     text = json.dumps({'task': public_task_text(projected), 'controls': projected['controls'],
                        'action_error': projected['action_error'], 'accepted_actions': list(accepted_actions)}, ensure_ascii=False)
     content = [{'type': 'text', 'text': text}, {'type': 'image_url', 'image_url':
                {'url': 'data:image/png;base64,' + base64.b64encode(image).decode()}}]
     content.extend({'type': 'image_url', 'image_url': {'url': i['image_url']}} for i in projected['task_images'])
-    messages = [SystemMessage(content='Complete the public task. Use one declared action at a time. Coordinates are screenshot CSS pixels.'), UserMessage(content=content)]
+    messages = [SystemMessage(content='Complete the public task. Use one declared action at a time. '+
+        ('Point x,y are normalized 0..999; this overrides generic tool descriptions. Scroll distances remain CSS pixels.' if coordinate_space=='qwen-0-999' else 'Coordinates are screenshot CSS pixels.')), UserMessage(content=content)]
     # One upstream decision, no hidden empty-output retry, no model fallback.
     output = await agent.get_model_output(messages)
     if len(output.action) != 1:
         raise ValueError('Exactly one action required')
     action = output.action[0].model_dump(exclude_none=True)
-    validate_action(action, viewport)
+    validate_action(action, viewport, [f'task-image-{i}' for i in range(len(task.get('task_images', [])))], coordinate_space)
     return action, messages
 
 
-def validate_action(action, viewport):
-    if not isinstance(action, dict) or len(action) != 1:
-        raise ValueError('Single allowed action required')
-    name, args = next(iter(action.items()))
-    fields = {'pss_click': {'x', 'y'}, 'pss_type': {'text'}, 'pss_scroll': {'delta_y'}, 'pss_key': {'key'}, 'done': {'text'}}
-    if name not in fields or not isinstance(args, dict) or set(args) != fields[name]:
-        raise ValueError('Undeclared Browser Use action/arguments')
-    if name == 'pss_click' and not all(type(args[k]) is int and 0 <= args[k] < viewport[i] for i, k in enumerate(('x', 'y'))):
-        raise ValueError('Click outside screenshot')
-    if name == 'pss_scroll' and (type(args['delta_y']) is not int or abs(args['delta_y']) > viewport[1]*2):
-        raise ValueError('Invalid bounded scroll')
-    if name == 'pss_key' and args['key'] not in ('Enter', 'Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Backspace'):
-        raise ValueError('Undeclared key')
-    if name in ('pss_type', 'done') and not isinstance(args['text'], str):
-        raise ValueError('Text required')
+def validate_action(action, viewport, asset_ids=(), coordinate_space='css-pixels'):
+    from framework_actions import to_css, validate
+    parsed=browser_use_action(action, [1000,1000] if coordinate_space=='qwen-0-999' else viewport, asset_ids)
+    # pss_scroll uses the viewport center internally, not a model point.
+    if 'pss_scroll' in action:
+        parsed=browser_use_action(action,viewport,asset_ids)
+    else: parsed=to_css(parsed,viewport,coordinate_space)
+    validate(parsed,viewport,asset_ids)

@@ -133,7 +133,8 @@ def execute_one(store, binding, invoke=run_command):
     start = time.monotonic()
     phase_start = start
     try:
-        reset = invoke(binding['commands']['reset'], {**base, 'baseline_sha256': binding['baseline_sha256']}, heartbeat)
+        reset = invoke(binding['commands']['reset'], {**base, 'baseline_sha256': binding['baseline_sha256'],
+            **({'setup_ref':op['setup_ref']} if 'setup_ref' in op else {})}, heartbeat)
         verify_receipt(reset, base)
         if reset.get('opportunity_id') != oid or reset.get('environment_id') != op['environment_id'] or reset.get('baseline_sha256') != binding['baseline_sha256'] or reset.get('restored') is not True:
             raise AdapterReceiptError('Per-opportunity reset attestation mismatch')

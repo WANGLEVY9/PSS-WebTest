@@ -8,6 +8,15 @@ from bootstrap_sponsor_framework import plan_install
 
 
 class InstallTests(unittest.TestCase):
+    def test_explicit_browser_provisioning_requires_pinned_playwright(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            lock=Path(tmp)/'lock';lock.write_text('agentlab==0.4.2\n')
+            with self.assertRaisesRegex(ValueError,'playwright'):
+                plan_install('agentlab',lock,hashlib.sha256(lock.read_bytes()).hexdigest(),Path(tmp)/'new',sys.executable,sys.executable,install_browser=True)
+            lock.write_text('agentlab==0.4.2\nplaywright==1.44.0\n')
+            result=plan_install('agentlab',lock,hashlib.sha256(lock.read_bytes()).hexdigest(),Path(tmp)/'new',sys.executable,sys.executable,install_browser=True)
+            self.assertEqual(result['commands'][-1][1:],['-m','playwright','install','chromium'])
+
     def test_reviewed_lock_plan_never_claims_host_install(self):
         with tempfile.TemporaryDirectory() as tmp:
             lock = Path(tmp)/'lock'

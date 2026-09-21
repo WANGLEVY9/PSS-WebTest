@@ -34,7 +34,7 @@ export function diagnosticTasks(allowed, value) {
 // Explicit capability, not silent provider fallback. Qwen3-VL keeps JSON Object.
 // https://help.aliyun.com/zh/model-studio/qwen-structured-output
 export function responseFormat(model, controls, arm) {
-  if (!/^qwen3\.7-flash(?:-|$)/.test(model)) return {type:"json_object"};
+  if (!/^(?:qwen3\.7-flash|qwen3\.8-(?:max|flash))(?:-|$)/.test(model)) return {type:"json_object"};
   return actionResponseFormat(controls, arm);
 }
 

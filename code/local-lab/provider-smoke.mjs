@@ -29,10 +29,12 @@ if(!process.argv.includes('--live')) {
     report.image_sha256=crypto.createHash('sha256').update(image).digest('hex');
     for(const arm of ['visual','hybrid']) {
       const controls=arm==='hybrid'?[{target_id:'o0-c0',role:'button',name:'Continue'}]:[];
-      const prompt='This is a synthetic API contract check, not a benchmark task. Read the token printed in the screenshot. Return a JSON action with action="done" and answer=[the exact token].'+
+      const prompt='This is a synthetic API contract check, not a benchmark task. Read the token printed in the screenshot. Return exactly one JSON OBJECT (not an array, not a list of actions), with action="done" and answer=[the exact token].'+
         (arm==='hybrid'?` Visible controls: ${JSON.stringify(controls)}`:'');
       const body=buildProviderRequest(config,{arm,controls,messages:modelMessages(prompt,[],`data:image/png;base64,${image.toString('base64')}`)});
       const response=await callProvider(config,body,{timeoutMs:45000});
+      // Private diagnostic evidence, never copied into the public smoke summary.
+      if(typeof response.output==='string') fs.writeFileSync(path.join(dir,`${arm}-output.txt`),response.output,{mode:0o600});
       const row={arm,...response,request_sha256:crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex'),contract_valid:false,image_read_correct:false};
       if(!response.failure_class) {
         try {const decision=parseDecision(response.output,{arm,controls});row.contract_valid=true;row.image_read_correct=decision.action==='done' && JSON.stringify(decision.answer)===JSON.stringify([visibleToken]);}

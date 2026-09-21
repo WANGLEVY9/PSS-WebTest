@@ -88,7 +88,18 @@ def bind(plan, package, freeze=None):
                 evaluation_ref_sha256=digest(ref), schedule_freeze_sha256=package['schedule_freeze_sha256'])
         yield {**op, 'configuration_sha256': b['configuration_sha256'],
                'runtime_binding_sha256': digest(b), 'model_binding': b.get('model_binding'), 'environment_id': b['environment_id'],
-               'agent_input': payload, 'evaluation_ref': ref, **({'task_input_binding': evidence} if evidence else {})}
+               'agent_input': payload, 'evaluation_ref': ref, **({'task_input_binding': evidence} if evidence else {}),
+               **bind_setup(task, selected if freeze is not None else None)}
+
+
+def bind_setup(task, selected):
+    ref=task.get('setup_ref')
+    if ref is None:return {}  # historical/synthetic inputs; native session refuses absence
+    if selected is None:raise ValueError('Official setup requires frozen task correspondence')
+    setup=json.loads(read_pinned(ref['file'],ref['sha256']))
+    for field in ('benchmark','official_task_id','application','source_sha256'):
+        if setup.get(field)!=selected.get(field):raise ValueError('Setup mapped to another official task')
+    return {'setup_ref':ref,'setup_binding_sha256':digest(ref)}
 
 
 def main():

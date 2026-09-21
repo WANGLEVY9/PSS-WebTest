@@ -39,6 +39,7 @@ const before=sources(),steps=[
   {id:'local-node-and-browser',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('local-lab')]},
   {id:'source-only-contract-regression',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('tests/contracts').filter(f=>!artifactTests.includes(f))]},
   {id:'runtime-python',tests:true,cmd:o.python,args:['-m','unittest','discover','-s','local-lab','-p','test_runtime*.py','-v']},
+  {id:'shared-budget-python',tests:true,cmd:o.python,args:['-m','unittest','discover','-s','local-lab','-p','test_spend*.py','-v']},
   {id:'ata-input-projection',tests:true,cmd:o.python,args:['local-lab/ata-preparation-test.py']}
 ];
 if(o.artifacts)steps.push({id:'historical-artifact-integration',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...artifactTests]});

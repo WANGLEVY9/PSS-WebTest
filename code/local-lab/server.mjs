@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {loadRuntimeEnv} from './runtime-env.mjs';
+import {spendGuard} from './spend-guard.mjs';
 import {resolveProvider, publicProvider} from './provider.mjs';
 import { alive } from "./lock.mjs";
 import { currentExecutionGate } from './execution-gate.mjs';
@@ -15,6 +16,10 @@ import { PROTOCOL } from "./agent-protocol.mjs";
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
 const runtimeEnv=loadRuntimeEnv();
+function budgetStatus() {
+  try {return spendGuard(runtimeEnv).status(providerStatus());}
+  catch {return {ready:false,error:'Budget ledger unavailable or policy changed; dispatch blocked'};}
+}
 function providerStatus() {
   try {
     const config=resolveProvider(runtimeEnv,{requireKey:false});
@@ -88,6 +93,7 @@ const server = http.createServer((req, res) => {
       } catch {}
       return json(res, {
         token,
+        spending: budgetStatus(),
         active,
         study_design: studyStatus(),
         model: providerStatus().model || null,
@@ -117,6 +123,12 @@ const server = http.createServer((req, res) => {
         batches: batches(),
       });
     }
+    if (req.method === 'POST' && ['/api/budget/pause','/api/budget/resume'].includes(url.pathname)) {
+      if(req.headers['x-local-token']!==token || req.headers.origin!==`http://${req.headers.host}`)
+        return json(res,{error:'same-origin token required'},403);
+      spendGuard(runtimeEnv).pause(url.pathname.endsWith('/pause'));
+      return json(res,budgetStatus());
+    }
     if (req.method === "POST" && url.pathname === "/api/start") {
       if (
         req.headers["x-local-token"] !== token ||
@@ -139,6 +151,8 @@ const server = http.createServer((req, res) => {
       const admission = currentExecutionGate();
       if (!admission.allowed)
         return json(res, { error: 'Benchmark admission gate blocked', execution_gate: admission }, 409);
+      const spending=budgetStatus();
+      if(!spending.ready) return json(res,{error:'Budget or pricing gate blocked',spending},409);
       active = `local-benchmark-${Date.now()}`;
       const id = active;
       fs.mkdirSync(path.join(store, id), { recursive: true });

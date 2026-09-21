@@ -93,6 +93,11 @@ An actor timeout or provider error remains that failure even when independent ev
 
 ## 6. Data and access
 
+Configure and verify [shared API spending controls](./SPEND-CONTROLS.md) before
+any paid canary. The default CNY 1,500 budget is shared across batches, with
+80%/90% alerts, a 95% new-task stop and per-execution limits. A verified price
+card is required; supplying an API key does not enable unpriced requests.
+
 Keep fixtures, credentials, screenshots/HAR/prompts, evaluator references, detailed logs, cost-ledger DB/WAL and raw outputs on restricted storage. Keep the console on loopback; use SSH port forwarding instead of exposing it publicly. Back up the ledger with SQLite's consistent-backup mechanism or while quiescent, not by copying only the live `.sqlite` file while ignoring WAL. Publish only reviewed, redacted summaries with source/configuration hashes.
 
 **Offline regression passed ≠ installed official environment ≠ conformant framework ≠ formal collection authorized.** These tools make deployment failures explicit; they do not claim that supplying an API key alone completes the remaining adapters and scientific acceptance.

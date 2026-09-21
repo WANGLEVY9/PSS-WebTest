@@ -59,6 +59,7 @@ function status(r) {
       : r.status.charAt(0).toUpperCase() + r.status.slice(1);
 }
 function render() {
+  renderSpending();
   let admission = document.getElementById("admission");
   if (!admission) {
     admission = el("section", undefined, "protocol");
@@ -163,7 +164,7 @@ function render() {
   );
   if (task) $("task").value = String(task.task_id);
   $("model").textContent = batch?.model || state.model || "Not configured";
-  $("start").disabled = Boolean(state.active) || !state.configured || !state.diagnostic_start_enabled || state.execution_gate?.allowed !== true;
+  $("start").disabled = Boolean(state.active) || !state.configured || !state.diagnostic_start_enabled || state.execution_gate?.allowed !== true || state.spending?.ready !== true;
   $("model").title = `Selected run model: ${batch?.model || "none"}. Next diagnostic model: ${state.model || "not configured"}. Protocol: ${state.next_protocol || "unknown"}.`;
   $("start").textContent = state.active
     ? "Benchmark running…"
@@ -517,9 +518,53 @@ async function poll() {
       render();
     }
   } catch (e) {
+    lastStamp=null;
     $("connection").textContent = `Connection unavailable · ${e.message}`;
+    $("start").disabled = true;
+    $("pause-spend").disabled = true;
+    $("spend-status").textContent = 'Ledger connection lost. Values may be stale; launch is disabled.';
   }
 }
+const money=n=>typeof n==='number'?new Intl.NumberFormat('en-GB',{style:'currency',currency:'CNY'}).format(n/1e6):'Unknown';
+const alertLabels={warning:'80% warning threshold reached',critical:'90% critical threshold reached',stop_new_tasks:'95% reached; new tasks stopped',cap:'Total cap reached',
+  'charge-unknown':'Usage unconfirmed; full reservation retained','provider-budget':'Provider budget exhausted; requests paused',
+  'provider-auth':'Provider authentication failed; requests paused','provider-model-mismatch':'Returned model differs from the price binding; requests paused',
+  'global-cap':'Request would exceed the total cap; blocked','task-cap':'Request would exceed the task cap; blocked',
+  'task-request-limit':'Task request limit reached','task-deadline':'Task deadline reached',
+  'reservation-overrun':'Charge exceeded reservation; all new requests locked','operator-pause':'Operator paused requests',paused:'Request blocked while paused',
+  'stop-new-tasks':'New task admission blocked','duplicate-request':'Duplicate request blocked'};
+function renderSpending() {
+  const s=state.spending,p=s?.policy;
+  $('pause-spend').disabled=!p;
+  if(!p) {$('spend-status').textContent=s?.error||'Ledger unavailable; launch is blocked.';return;}
+  $('pause-spend').textContent=s.paused?'Lift manual pause':'Pause new requests';
+  const exposure=s.exposure_micro_cny;
+  $('spending').dataset.severity=exposure>=p.critical_micro_cny||s.paused?'critical':exposure>=p.warning_micro_cny?'warning':'normal';
+  $('spend-status').textContent=s.paused?'Paused: new model requests are blocked. In-flight requests may still incur charges.':s.pricing_error?
+    'Pricing not ready: verify model rates and input bounds. Paid execution remains blocked.':!s.ready?'Budget gate closed. Check alerts below; restarting does not restore the allowance.':
+      exposure>=p.critical_micro_cny?'Critical: 90% of the budget is committed. New tasks stop at 95%.':
+      exposure>=p.warning_micro_cny?'Warning: 80% of the budget is committed. Review the remaining experiment scope.':'Budget permits new tasks. Experiment acceptance gates still apply.';
+  $('spend-metrics').replaceChildren(metric('Total budget',money(p.cap_micro_cny),'Shared across runs; no monthly reset'),
+    metric('Accounted cost',money(s.known_micro_cny),'Verified rates and returned usage'),
+    metric('Unconfirmed / reserved',money(s.held_micro_cny||0),`${s.unknown_requests||0} requests awaiting confirmation`),
+    metric('Available to reserve',money(Math.max(0,p.cap_micro_cny-exposure)),'After accounted costs and reservations'));
+  $('spend-progress').max=p.cap_micro_cny;$('spend-progress').value=exposure;
+  $('spend-progress').setAttribute('aria-valuetext',`${money(exposure)} / ${money(p.cap_micro_cny)}`);
+  $('spend-thresholds').replaceChildren(...[['warning','80% Warning'],['critical','90% Critical'],['stop_new_tasks','95% Stop new tasks'],['cap','100% Request cap']]
+    .map(([key,label])=>el('span',`${label} · ${money(p[key+'_micro_cny'])}`)));
+  $('spend-limits').textContent=`Per execution (task × configuration × round): ${money(p.task_cap_micro_cny)}, up to ${p.task_max_requests} requests, ${p.task_timeout_ms/1000} seconds and ${p.task_max_actions} actions. Stricter experiment limits take precedence. Conversion: 1 USD = ${p.fx_cny_per_usd} CNY (planning assumption, not a live rate).`;
+  $('spend-alerts').replaceChildren(...(s.alerts.length?s.alerts.map(a=>el('li',`${new Date(a.at*1000).toLocaleString('en-GB')} · ${alertLabels[a.kind]||a.kind} · Committed ${money(a.exposure)}`)):[el('li','No ledger alerts. This does not authorize confirmatory experiments.')]));
+  $('spend-tasks').replaceChildren(...s.tasks.map(t=>el('li',`${t.id} · ${t.requests} requests · Committed ${money(t.exposure_micro_cny)}`)));
+}
+$('pause-spend').onclick=async()=>{
+  $('pause-spend').disabled=true;
+  try {
+    const endpoint=state.spending.paused?'resume':'pause';
+    const r=await fetch(`/api/budget/${endpoint}`,{method:'POST',headers:{'x-local-token':state.token}});
+    if(!r.ok)throw Error('Budget control failed. Check the ledger service.');
+    await poll();
+  } catch(e) {toast(e.message);}
+};
 await poll();
 setInterval(() => {
   poll();

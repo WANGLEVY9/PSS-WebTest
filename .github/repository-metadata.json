@@ -1,0 +1,19 @@
+{
+  "repository": "WANGLEVY9/PSS-WebTest",
+  "description": "Research infrastructure for computer-use agents and scripted Web testing: repeated reliability, recurring errors, and complementarity beyond retries.",
+  "topics": [
+    "computer-use-agents",
+    "web-testing",
+    "gui-agents",
+    "agent-evaluation",
+    "empirical-software-engineering",
+    "playwright",
+    "webarena",
+    "visualwebarena",
+    "test-oracles",
+    "reproducible-research"
+  ],
+  "homepage": "",
+  "social_preview": "docs/assets/social-preview.png",
+  "publication_note": "Presentation payload only; saving this file does not update GitHub repository settings. No release, DOI, acceptance or artifact badge is claimed."
+}

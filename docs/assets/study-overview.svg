@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="410" viewBox="0 0 1280 410" role="img" aria-labelledby="title desc">
+<title id="title">PSS-WebTest study overview</title>
+<desc id="desc">Versioned official tasks feed four configuration families. Execution evidence supports independent native evaluation and four research questions. This is a design overview, not completed-run evidence.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8" fill="#64748b"/></marker></defs>
+<rect width="1280" height="410" rx="20" fill="#f8fafc"/>
+<g font-family="Arial,Helvetica,sans-serif">
+<text x="40" y="47" fill="#0f172a" font-size="23" font-weight="700">From task completion to recurring test quality</text>
+<text x="40" y="74" fill="#475569" font-size="15">Design overview · versioned inputs, declared information boundaries, separate evidence levels</text>
+<rect x="40" y="124" width="233" height="171" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="60" y="157" fill="#0f172a" font-size="16" font-weight="700">Official benchmark tasks</text>
+<text x="60" y="188" fill="#334155" font-size="16">WebArena-Verified</text><text x="60" y="215" fill="#334155" font-size="16">VisualWebArena · ATA</text>
+<text x="60" y="259" fill="#64748b" font-size="14">Source IDs · inputs · reset state</text>
+<path d="M278,209 H317" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="332" y="107" width="300" height="47" rx="10" fill="#dbeafe"/><text x="348" y="137" fill="#1e3a8a" font-size="16">AgentLab visual · screenshots</text>
+<rect x="332" y="165" width="300" height="47" rx="10" fill="#ccfbf1"/><text x="348" y="195" fill="#115e59" font-size="16">AgentLab hybrid · visible structure</text>
+<rect x="332" y="223" width="300" height="47" rx="10" fill="#ccfbf1"/><text x="348" y="253" fill="#115e59" font-size="16">Browser Use · restricted hybrid</text>
+<rect x="332" y="281" width="300" height="47" rx="10" fill="#e2e8f0"/><text x="348" y="311" fill="#334155" font-size="16">Playwright · shared human script</text>
+<path d="M642,209 H682" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="696" y="124" width="237" height="171" rx="14" fill="#ffffff" stroke="#cbd5e1"/>
+<text x="715" y="157" fill="#0f172a" font-size="18" font-weight="700">Execution evidence</text><text x="715" y="189" fill="#334155" font-size="15">Frozen task / config / round</text><text x="715" y="216" fill="#334155" font-size="15">Status · usage · trace identity</text><text x="715" y="258" fill="#64748b" font-size="14">Independent native evaluation</text>
+<path d="M942,209 H978" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"/>
+<rect x="992" y="107" width="248" height="221" rx="14" fill="#0f172a"/>
+<text x="1011" y="142" fill="#ffffff" font-size="17" font-weight="700">Four research questions</text><text x="1011" y="179" fill="#cbd5e1" font-size="16">01  Native performance</text><text x="1011" y="214" fill="#cbd5e1" font-size="16">02  Repeated use</text><text x="1011" y="249" fill="#cbd5e1" font-size="16">03  Recurring errors</text><text x="1011" y="284" fill="#cbd5e1" font-size="16">04  Beyond retries</text>
+<text x="40" y="380" fill="#475569" font-size="14">Active design v2.1 · D1–D2 discovery / V1–V10 validation · Planned workload does not imply completed execution.</text>
+</g></svg>

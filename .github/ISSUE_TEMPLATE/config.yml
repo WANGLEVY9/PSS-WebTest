@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Research and reproduction guides
+    url: https://github.com/WANGLEVY9/PSS-WebTest#inspect-or-extend-the-project
+    about: Start with the active design, reproduction layers and evidence status.
+  - name: Security policy and private contact
+    url: https://github.com/WANGLEVY9/PSS-WebTest/blob/main/SECURITY.md
+    about: Use the private route for vulnerabilities, credentials and private data.

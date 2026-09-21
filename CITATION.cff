@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "Please cite this software and record the exact commit used. A public paper and archival release identifier are forthcoming."
+type: software
+title: "PSS-WebTest: Research Infrastructure for Computer-Use Agents and Scripted Web Testing"
+abstract: >-
+  Research infrastructure for comparing screenshot-only and structure-assisted
+  computer-use agents with human-authored Playwright scripts. The active design
+  connects benchmark-native performance, repeated reliability, recurring errors
+  with same-class controls, and complementarity beyond either retry baseline
+  across WebArena-Verified, VisualWebArena and ATA. Code, analysis and engineering
+  checks are available; full benchmark acceptance and execution-level public
+  replication evidence remain separate milestones.
+authors:
+  - family-names: Wang
+    given-names: Taijie
+    orcid: "https://orcid.org/0009-0000-8098-2451"
+    website: "https://github.com/WANGLEVY9"
+repository-code: "https://github.com/WANGLEVY9/PSS-WebTest"
+url: "https://github.com/WANGLEVY9/PSS-WebTest"
+license: MIT
+keywords:
+  - computer-use agents
+  - Web UI testing
+  - empirical software engineering
+  - agent evaluation
+  - repeated reliability
+  - test oracles
+  - Playwright
+  - reproducibility

@@ -36,3 +36,11 @@ test-results/
 playwright-report/
 blob-report/
 .DS_Store
+.codebuddy/
+
+# Internal discussion data and private manuscript delivery archives
+/research/data-entry/
+/research/PSS-WebTest-Overleaf-*.zip
+/code/results/
+.workbuddy/
+.venv*/

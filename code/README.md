@@ -1,259 +1,80 @@
-# Experimental harness plan
+# PSS-WebTest code
 
-The eventual harness will run matched test intents in three arms:
+[Project overview](../README.md) · [Research design](../docs/RESEARCH.md) · [Reproduction guide](../docs/REPRODUCIBILITY.md)
 
-1. **Pure-visual CUA:** screenshot-only action loop; no DOM or accessibility-tree observations.
-2. **Hybrid agent:** screenshot plus a declared DOM/accessibility representation.
-3. **Traditional arm:** Playwright scripts using accessibility-first locators and explicit state assertions.
+This directory contains the current benchmark integration/analysis/runtime work in `local-lab/` and the earlier local-application harness in `src/` and `scripts/`. The active study follows [`config/active-study-design.json`](config/active-study-design.json): WAV, VWA and ATA; nineteen configurations; twelve discovery/validation opportunities. Older pilot commands remain available for their original scope.
 
-All arms use the same matched intent and are scored by an independent evaluator. An arm's self-reported verdict is never treated as ground truth.
+## Install and check
 
-Each execution record should include application version/mutation, task ID, run ID, outcome, ground-truth verdict, wall time, model/API cost, retries, trace path, and human repair time. Secrets belong only in a local `.env` file and must never be committed.
-
-## Initial setup
+Requirements for source-only checks: Node.js 20+, Python 3, npm and Playwright Chromium. No API key or private data is needed.
 
 ```sh
-cd code
-cp .env.example .env
-npm install
+# From this code/ directory
+npm ci
 npx playwright install chromium
-npm run test:traditional
+npm run study:validate
+mkdir -p artifacts/local-runtime
+npm run sponsor:verify:portable -- \
+  --python python3 --output artifacts/local-runtime/offline-001
 ```
 
-The smoke test intentionally requires a self-hosted SUT; no external website should be used as an experimental target.
+Use `npx playwright install --with-deps chromium` on a fresh Linux host where system dependencies are needed. Every verification output directory must be new. Read test counts, skips, source-change detection and the explicit `not-run` historical artifact group in the report.
 
-## Phase 2 contracts
+The portable verifier runs the installed local Node/browser tests, source-only contracts, Python runtime tests, ATA input projection and active design validation. It makes no model requests and executes no official benchmark tasks. Its synthetic fixtures are engineering checks, not study results.
 
-The hybrid arm receives the screenshot and an explicitly declared
-`pageStructure` (an accessibility/DOM-derived representation), plus optional
-viewport metadata.  It must not receive evaluator outputs, application state,
-mutation labels, or database/network data.  The observation-contract checker
-recursively rejects those forbidden fields, including when nested inside the
-structured representation.  The checker admits element roles, names, states,
-and stable harness references only as observation data; it does not treat any
-of them as a gold oracle.  See
-`tests/contracts/hybrid-agent-contract.test.mjs` for the executable boundary.
+## Entry points
 
-The current pilot manifest is `manifests/task-manifest.v0.1.json`. It marks BookStack, Indico, and Juice Shop as `provisional` applications: their reset and task-oracle feasibility gates pass, but confirmatory admission and fault/evolution coverage are not yet complete. Validate it before editing or running a task:
+| Purpose | Command from code/ | Notes |
+| --- | --- | --- |
+| Active design | `npm run study:validate` | Validates the current design pointer and scale |
+| Portable source checks | `npm run sponsor:verify:portable -- --python python3 --output NEW_DIRECTORY` | Includes actual Chromium tests; output must be new |
+| RQ formulas/import pipeline | `npm run test:study-analysis` | Synthetic analysis fixtures |
+| Runtime recovery/accounting | `npm run test:runtime-reliability` | Python and Node regression |
+| Local observatory | `npm run sponsor:console` | Loopback port 4173; gate status remains enforced |
+| Analyze supplied input | `node local-lab/analyze-study.mjs INPUT.json NEW_REPORT.json` | See the input contract; does not validate underlying scientific truth |
+| Plan/import supplied bundle | `node local-lab/study-workflow.mjs plan INPUT.json NEW_DIRECTORY` or `import` | Choose one subcommand; no dispatch or implicit cloud access |
 
-```sh
-npm run validate:manifests
-npm run check:sut -- http://127.0.0.1:8081
-npm run check:agent
-```
+Detailed input/round/metric semantics: [ANALYSIS-AND-ROUTING.md](local-lab/ANALYSIS-AND-ROUTING.md). Current changes and source/fixture constraints: [DESIGN-V2-MIGRATION.md](local-lab/DESIGN-V2-MIGRATION.md) and [adapter progress](local-lab/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md).
 
-On macOS, `PSS_BROWSER_CHANNEL=chrome` can use an already-installed Google Chrome build for feasibility smoke tests. Confirmatory runs must freeze and record one browser build/channel across all arms.
+## Code map
 
-`schemas/task-manifest.schema.json` defines the task/application contract and `schemas/run-record.schema.json` defines the immutable execution record. The latter distinguishes test failure, timeout, model refusal, evaluator failure, and infrastructure failure; these states must not be collapsed into a single success-rate number.
+| Location | Responsibility |
+| --- | --- |
+| `config/active-study-design.json` | Sole active design pointer; older contracts are historical |
+| `local-lab/study-analysis.mjs` | Native outcomes, operational bounds, error-conditioned controls and retry decomposition |
+| `local-lab/study-pipeline.mjs` | Schedule construction, import reconciliation and analysis conversion |
+| `local-lab/runtime_store.py` | Runtime ledger/recovery infrastructure |
+| `local-lab/runtime_worker.py` | Diagnostic worker and trusted adapter receipt handling |
+| `local-lab/runtime_inputs.py` | Restricted actor input and separate evaluator-reference preparation |
+| `local-lab/framework_agentlab.py` / `framework_browser_use.py` | Framework-specific restricted components; full benchmark acceptance separate |
+| `local-lab/server.mjs` | Local benchmark observatory |
+| `tests/contracts/` | Shared contract/provenance checks and historical artifact integrations |
+| `src/arms/`, `scripts/`, `manifests/` | Earlier local-SUT arms, lifecycle and pilot infrastructure |
 
-## Configuration registry and v0.2 records
+## Prepare a new campaign
 
-`config/configuration-registry.v0.2.json` separates a strategy family from its
-concrete execution configuration: framework/version, provider and model,
-observation/action contract, prompt fingerprint, or scripted-test framework
-and authoring source. The five existing historical configurations are labelled
-`legacy-pilot`; they remain readable as v0.1 records but cannot be relabelled
-as confirmatory evidence. The three v0.2 configurations are only
-`implemented`, not admitted for formal collection.
+Use [SPONSOR-DEPLOYMENT.md](local-lab/SPONSOR-DEPLOYMENT.md). Separate the public study contract, private deployment profile, private runtime bindings and credentials. Exact API identities, matched budgets, framework/benchmark pins and fixture acceptance must be recorded before measured execution. Do not silently fall back to another model or relabel a custom runner as a study framework.
 
-Validate the registry and all ledger records before any pilot or formal run:
+The active information boundary is stricter than generic screenshot-plus-DOM: hybrid receives only the allowed visible projection. Visual cannot use URL/DOM/AX for control-flow decisions. Evaluator truth and other-arm results are never actor inputs.
 
-```sh
-npm run validate:configuration-registry
-npm run records:audit -- ../artifacts/phase2/records.jsonl
-```
+The current default worker is diagnostic. Frozen schedule/input hashes and valid receipts prevent specific integrity failures; they do not by themselves authorize formal collection or prove reset/evaluator correctness. The [status page](../docs/STATUS.md) distinguishes implementation, component probes and accepted benchmark execution.
 
-A v0.2 run must contain a registered `configuration_id`, matching strategy and
-observation contract, protocol version, randomization block, and SHA-256
-digests for the run manifest, SUT image, reset state, environment, trace and
-agent prompt. `records:collect` and `records:audit` reject a v0.2 record that
-does not resolve to this registry or conflicts with its framework/provider
-metadata. Unknown token or billing cost remains `null`, never zero.
+## Historical harness
 
-Before a configuration can enter a clean admission pilot, run the
-provider-free adapter-conformance contract suite. It checks that each strategy
-family admits only its declared observation, blocks hidden evaluator fields
-before a decision or script execution, and records only aggregate action/retry
-data at this gate:
+The earlier BookStack/Indico/Juice Shop/Invoice Ninja/PrestaShop runners remain for reproducing their dated pilots. They are outside the current core workload. Their package scripts include reset/mutation commands; inspect the named local fixture and original protocol before using them.
 
 ```sh
-npm run test:adapter-conformance
-```
-
-This is an infrastructure gate, not evidence that a real model can complete a
-workflow. Provider connectivity, reset integrity, independent-oracle success,
-and matched repetitions remain separate Phase 2 requirements.
-
-## Phase 2 local lifecycle commands
-
-The scripts below delete only their named experimental containers/Compose volumes. They do not alter the ignored WebTestPilot checkout.
-
-```sh
-npm run sut:bookstack:reset
-npm run oracle:bookstack
+# Optional legacy checks; some require downloaded historical artifacts.
 npm run test:contracts
-
-npm run sut:indico:reset
-npm run sut:juice-shop:reset
+npm run test:adapter-conformance
+npm run test:phase2-provenance
+npm run validate:manifests
+npm run validate:configuration-registry
+npm run validate:study-assets
 ```
 
-The default BookStack port is `8081`. If another local service owns that port,
-use the same alternate port for Compose and every runner, for example:
+`npm run dashboard:serve` is the earlier read-only inspection surface. It shares the observatory's default port, so start only one console at a time. Legacy registry versions and five-application readiness reports must not override the active v2.1 study contract.
 
-```sh
-PSS_BOOKSTACK_APP_PORT=18081 BOOKSTACK_BASE_URL=http://127.0.0.1:18081 \
-  npm run sut:bookstack:reset
-PSS_BOOKSTACK_APP_PORT=18081 BOOKSTACK_BASE_URL=http://127.0.0.1:18081 \
-  npm run pilot:bookstack:navigation
-```
+## Local data
 
-The lifecycle now passes the selected port explicitly to Compose, so the
-readiness URL and the host mapping cannot silently diverge.
-
-The first lower-complexity BookStack task is `bookstack-open-book`. It is a
-non-confirmatory navigation pilot designed to isolate grounding from the rich
-text editor workflow. It writes a matched summary and standard run records
-under the ignored `../artifacts/phase2/` directory:
-
-```sh
-PSS_MATCHED_REPETITIONS=1 CUA_MAX_STEPS=8 CUA_TIMEOUT_MS=30000 \
-  npm run pilot:bookstack:navigation
-npm run metrics:summarize -- \
-  --input ../artifacts/phase2/bookstack-navigation-records.jsonl \
-  --output ../artifacts/phase2/bookstack-navigation-metrics.json
-npm run pilot:variance -- \
-  --input ../artifacts/phase2/bookstack-navigation-pilot.json \
-  --output ../artifacts/phase2/bookstack-navigation-variance.json
-```
-
-The navigation oracle accepts only the exact `/books/<slug>` overview route;
-chapter, page, draft, and editor descendants are rejected. One passing pilot
-repetition does not freeze repetition counts or authorize confirmatory data
-collection.
-
-The navigation pilot permits one predeclared reset retry (`PSS_RESET_MAX_ATTEMPTS=2`)
-to handle transient container/database startup races. Every retry is retained
-in the pilot artifact as `reset_attempts` and `reset_retry_used`; it is never
-silently removed from the infrastructure audit.
-
-`pilot:bookstack:navigation` now defaults to the Phase 2 `2.0-draft` runner.
-For each arm it resets only the named local BookStack SUT, hashes a small
-read-only test-fixture snapshot, and records that reset digest together with a
-deterministic arm-order block. The script emits registry-resolved v0.2 records;
-`records:audit` deliberately fails until all three arms for a cell are present.
-The visual and hybrid arms send screenshots to the configured model provider,
-so obtain explicit approval for that authenticated *test-fixture* scope before
-running a full matched block.
-
-Use `PSS_PILOT_RUN_TAG` to prevent a rerun under a changed execution context
-from appending to an earlier JSONL ledger. The tag is recorded in its summary
-artifact and becomes part of the artifact filename; it is an isolation label,
-not an experimental condition.
-
-To run the behavior-preserving UI-evolution pilot, use the same matched task
-and change only the condition/mutation labels:
-
-```sh
-PSS_PILOT_CONDITION=ui-evolution:bookstack-layout-v1 \
-PSS_UI_MUTATION=bookstack-layout-v1 \
-PSS_MATCHED_REPETITIONS=1 \
-  npm run pilot:bookstack:navigation
-```
-
-The mutation is installed before navigation in every arm. It changes layout
-CSS only; the independent route-and-heading oracle remains unchanged.
-
-The more complex `bookstack-create-page` pilot uses the same condition-aware
-artifact naming and reset retry policy through `npm run pilot:bookstack:matched`.
-
-BookStack, Indico, and Juice Shop now each have a task-level Playwright slice and an independent feasibility oracle. BookStack additionally has a verified persistence fault and behavior-preserving UI mutation. The pure-visual and hybrid arms have strict observation contracts; they are not considered executable until real provider adapters pass those contracts under a fixed budget.
-
-`npm run check:agent` checks only whether `CUA_PROVIDER`, `CUA_MODEL`, and `CUA_API_KEY` are present; it never prints the key. A blocked readiness result is expected until a real CUA provider is selected. The adapter tests use contract-only drivers and are not experimental Agent results.
-
-### Optional external framework variants
-
-The repository registers three optional comparison variants without changing
-the primary three-arm semantics: Stagehand for Playwright-native visual/hybrid
-tools, Browser Use for a hybrid browser agent, and AgentLab/BrowserGym for a
-benchmark adapter. Stagehand is a dev dependency; the Python environments are
-isolated under `/private/tmp/pss-frameworks/` and are not uploaded.
-
-```sh
-PSS_BROWSER_USE_PYTHON=/private/tmp/pss-frameworks/browser-use/bin/python \
-PSS_AGENTLAB_PYTHON=/private/tmp/pss-frameworks/agentlab/bin/python \
-  npm run check:frameworks
-PSS_BROWSER_USE_PYTHON=/private/tmp/pss-frameworks/browser-use/bin/python \
-PSS_AGENTLAB_PYTHON=/private/tmp/pss-frameworks/agentlab/bin/python \
-  npm run framework:smoke
-```
-
-`framework:smoke` checks imports and launches a local Stagehand browser. The
-redacted artifact is `research/framework-install-smoke-2026-09-09.json`.
-`framework:task:smoke` additionally runs one exploratory authenticated
-BookStack navigation with Browser Use and writes
-`research/framework-task-smoke-2026-09-09.json`. Stagehand's built-in
-AI-SDK `agent.execute` path is incompatible with the current Qwen message
-schema, so `framework:stagehand:qwen:v02` uses a custom `LLMClient`,
-Stagehand's hybrid `act` grounding, and a bounded visible locator fallback.
-It writes complete replay frames and a v0.2 run record; the fallback is
-explicitly marked in the replay and is not silently treated as model-only
-success. AgentLab/BrowserGym now has a PSS task setup/observation/oracle
-adapter (`framework:agentlab:adapter`); a model-backed AgentLab policy remains
-separate. These external-framework artifacts are feasibility evidence only;
-they do not enter the primary matched three-arm pilot ledger until admission.
-
-Two local model profiles are currently available for CUA pilot runs. The
-default `code/.env` profile is Qwen3-VL-Flash through the Alibaba-compatible
-endpoint. The ignored `code/.env.doubao` profile is the restored Doubao Seed
-2.0 Pro Ark profile. Run each model in a separate shell environment; pilot
-artifact and ledger names include provider and model, so their outcomes cannot
-be accidentally pooled:
-
-```sh
-set -a; source .env; set +a
-PSS_PILOT_RUN_TAG=qwen-stabilization-v1 PSS_MATCHED_REPETITIONS=1 \
-  npm run pilot:bookstack:matched
-
-set -a; source .env; source .env.doubao; set +a
-PSS_PILOT_RUN_TAG=doubao-stabilization-v1 PSS_MATCHED_REPETITIONS=1 \
-  npm run pilot:bookstack:matched
-```
-
-`PSS_PILOT_RUN_TAG` creates an isolated summary and JSONL ledger instead of
-appending a changed protocol to an older pilot.  Agent records separately
-report the independently reached task state, correct agent termination, and
-strict cell admission.  An oracle-confirmed postcondition after a timeout is
-retained as `oracle_only_success=true` but is not counted as a passed cell.
-
-Never commit either local profile or copy an API key into a report.
-
-## Live local experiment dashboard
-
-The dashboard is a **read-only local observability surface** for Phase 2. It
-scans ignored `artifacts/phase2/*.jsonl` ledgers, reads the public benchmark
-matrix, and performs short HTTP health probes of the three local SUTs. It never
-serves `.env`, prompts, credentials, provider responses, hidden oracle state,
-or literal typed values. Newly instrumented agent runs may additionally retain
-local-only screenshot frames under ignored `artifacts/phase2/replays/`; the
-dashboard serves only the frames named by that run's replay manifest and only
-from its loopback address. Historical ledgers are never retroactively supplied
-with reconstructed screenshots. A row is labelled `STRICT PASS` only when the stored record has a
-completed execution, an independently reached checkpoint, and a matching
-emitted/ground-truth verdict; pilot records are never promoted to confirmatory
-findings by the UI.
-
-```sh
-cd code
-npm run dashboard:serve
-# open http://127.0.0.1:4173
-```
-
-The page receives an SSE refresh every 2.5 seconds, so newly appended ledger
-records become visible during a run without writing or mutating experiment
-data. Selecting a run opens its redacted trajectory and any retained local
-frames; set `PSS_CAPTURE_REPLAY_FRAMES=0` to disable frame capture or
-`PSS_REPLAY_MAX_FRAMES=<n>` to bound it. Use `PSS_DASHBOARD_PORT=4174` if port 4173 is occupied. The dashboard is
-bound to `127.0.0.1` by default; do not expose it on a public network without a
-separate access-control review.
-
-Phase 2 design decisions prioritize evidence published or released from 2023 onward. The local `third_party/` directory is a read-only checkout area and is ignored by Git; it is not part of the public replication package.
+Keep keys in ignored env files and private runtime artifacts under `code/artifacts/`. For the OpenAI route, the example is [`local-lab/openai.env.example`](local-lab/openai.env.example); an accessible model identity is configured explicitly. Never publish keys, cookies or raw authenticated browser/provider traces. See [SECURITY.md](../SECURITY.md) and [data availability](../docs/DATA_AVAILABILITY.md).

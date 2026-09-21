@@ -1,0 +1,45 @@
+name: Reproducibility report
+description: Report an installation, offline verification, analysis or benchmark-replication issue.
+title: "[Reproduction] "
+body:
+  - type: markdown
+    attributes:
+      value: "Use sanitized output only. Private ledgers, API keys, cookies and authenticated traces do not belong in an issue."
+  - type: input
+    id: revision
+    attributes:
+      label: Commit and local changes
+      description: Include the exact commit and whether the working tree was modified.
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Reproduction layer
+      options:
+        - Source-only verification
+        - Analysis of supplied records
+        - Official benchmark integration
+        - Empirical replication
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment and versions
+      description: OS/architecture, Node/Python/browser, framework and official-source revision if relevant. Do not include private paths or keys.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Commands and expected versus observed result
+      description: Include working directory, exact command and a minimal sanitized error.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence kind and report summary
+      description: State synthetic/diagnostic/actual execution; tests passed/failed/not-run; source/report hashes and missing inputs. Do not attach raw private evidence.

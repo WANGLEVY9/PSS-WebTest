@@ -1,0 +1,28 @@
+name: Feature or research proposal
+description: Propose a focused implementation, reproducibility, or research-infrastructure improvement.
+title: "[Proposal] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Please distinguish an engineering improvement from a change to the research estimand, evidence boundary, or confirmatory protocol.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or motivation
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and validation plan
+      description: Explain how the proposal can be tested without conflating pilot and confirmatory evidence.
+    validations:
+      required: true

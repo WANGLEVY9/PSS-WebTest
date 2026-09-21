@@ -103,6 +103,14 @@ function render() {
     list.append(...(state.execution_gate?.reasons || ['Execution evidence unavailable']).map(g=>el('li',g)));
     details.append(list);admission.append(details);
   }
+  if(state.reset_preflight) {
+    const r=state.reset_preflight, details=el('details'), list=el('ul');
+    details.append(el('summary',`Reset preflight · ${r.status} · ${r.completed_cycles ?? '—'}/3 cycles`));
+    list.append(el('li',`Phase: ${r.phase || 'unavailable'}`),
+      el('li',`Scoped evidence verified: ${r.audit?.verified === true ? 'yes' : 'no'}. Not benchmark admission.`));
+    if(r.homepage) list.append(el('li',`Last homepage: HTTP ${r.homepage.status}, ${r.homepage.elapsed_ms} ms`));
+    details.append(list);admission.append(details);
+  }
   admission.title = `Readiness observed: ${state.expansion?.observed_at || "unavailable"}. Not confirmatory authorization.`;
   const batches = state.batches.filter(
     (b) => b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",

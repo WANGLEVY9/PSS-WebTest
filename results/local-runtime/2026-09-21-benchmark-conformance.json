@@ -1,6 +1,6 @@
 {
   "kind": "BENCHMARK_CONFORMANCE_AUDIT",
-  "observed_at": "2026-09-21T11:53:15.844Z",
+  "observed_at": "2026-09-21T12:19:48.248Z",
   "confirmatory_authorized": false,
   "authorization_capability": "none",
   "manifest_sha256": "3d8f0c45d78e2f6adf1ebad1555d0592feccfe18e1ed10f5d1e65d00f1e5ebdb",
@@ -13,6 +13,40 @@
     "Explicit confirmatory authorization; high agent success is not a gate"
   ],
   "preflight_evidence_observed_at": "2026-09-21T09:51:03.376445+00:00",
+  "reset_preflight": {
+    "artifact": "wav-reset-preflight-1789991751682.json",
+    "sha256": "d0028242007d92597963c642a5635db4db1499664804576c88ead22bdbbfebec",
+    "captured_source_verified": true,
+    "run_id": "wav-reset-preflight-1789991751682",
+    "status": "completed",
+    "started_at": "2026-09-21T11:55:51.682Z",
+    "finished_at": "2026-09-21T12:18:32.144Z",
+    "phase": "site-ready",
+    "completed_cycles": 3,
+    "services": {
+      "nginx": "RUNNING",
+      "env-ctrl": "RUNNING",
+      "mysqld": "HEALTHY",
+      "redis-server": "HEALTHY",
+      "php-fpm": "RUNNING",
+      "mailcatcher": "HEALTHY",
+      "cron": "RUNNING",
+      "elasticsearch": "HEALTHY"
+    },
+    "homepage": {
+      "at": "2026-09-21T12:17:34.692Z",
+      "status": 200,
+      "elapsed_ms": 48252,
+      "bytes": 164865
+    },
+    "audit": {
+      "verified": true,
+      "reasons": [],
+      "confirmatory_authorized": false,
+      "scope": "Review-related table contents only; not full task-set or benchmark admission",
+      "task_admission": false
+    }
+  },
   "vwa_last_pull": {
     "job": "vwa-pull-1789980803461",
     "started": "2026-09-21T08:53:23.460Z",
@@ -33,7 +67,7 @@
       "official_reference": "https://github.com/ServiceNow/webarena-verified",
       "published_artifact": null,
       "open_gates": [
-        "Three verified reset cycles and task-state fingerprints; browser context is insufficient",
+        "Extend the verified six-review-table reset proof to exact task dependencies and implement per-arm reset in the runner; no full fixture admission yet",
         "Environment dependency closure for the frozen task set; only Shopping is presently integrated",
         "Resolve preregistered handling of reproduced answer-dependent native evaluator errors; no silent evaluator patch or exclusion",
         "Adapters beyond the exposed read-only retrieval development subset"
@@ -42,6 +76,7 @@
         "Native evaluator/response tests: 438 passed, 3 skipped",
         "Installed source comparison: 74 files, match=true",
         "Native null-schema error reproduced with synthetic wrong answers; preserved as unresolved",
+        "Isolated reset: 3/3 cycles; scoped evidence verified=true. No task admission.",
         "Retained clone recovery: component-recovered; homepage 200 in 57101 ms. NOT fresh reset proof."
       ]
     },

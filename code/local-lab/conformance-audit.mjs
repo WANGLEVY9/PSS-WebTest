@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { resetProgress } from './reset-evidence.mjs';
 
 // Read-only observations; this utility deliberately cannot authorize collection.
 const code=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -57,6 +58,9 @@ const common=[
 ];
 const ata=readJSON(path.join(code,'artifacts/local-runtime/ata-preparation/summary.json'));
 const runtime=path.join(code,'artifacts/local-runtime');
+const reset=resetProgress(runtime,manifest.mandatory_core.find(b=>b.id==='webarena-verified').environment.candidate_image.reference);
+if(reset.audit?.verified) openGates['webarena-verified'][0]=
+  'Extend the verified six-review-table reset proof to exact task dependencies and implement per-arm reset in the runner; no full fixture admission yet';
 const lastPull=fs.readdirSync(runtime).filter(n=>/^vwa-pull-\d+\.json$/.test(n)).sort().at(-1);
 const pull=lastPull?readJSON(path.join(runtime,lastPull)):null;
 const preflight=readJSON(path.join(runtime,'preflight-summary.json'));
@@ -66,6 +70,7 @@ const completedChecks={
     `Native evaluator/response tests: ${preflight.wav.native_tests?.passed ?? 'unknown'} passed, ${preflight.wav.native_tests?.skipped ?? 'unknown'} skipped`,
     `Installed source comparison: ${preflight.wav.installed_source_files_compared} files, match=${preflight.wav.installed_matches_source}`,
     'Native null-schema error reproduced with synthetic wrong answers; preserved as unresolved',
+    `Isolated reset: ${reset.completed_cycles ?? 'unknown'}/3 cycles; scoped evidence verified=${reset.audit?.verified === true}. No task admission.`,
     ...(resumption?.recovery ? [`Retained clone recovery: ${resumption.recovery.status}; homepage ${resumption.recovery.homepage?.status ?? 'unknown'} in ${resumption.recovery.homepage?.elapsed_ms ?? 'unknown'} ms. NOT fresh reset proof.`] : []),
   ]:[],
   visualwebarena:preflight?.vwa?[
@@ -83,6 +88,7 @@ const report={kind:'BENCHMARK_CONFORMANCE_AUDIT',observed_at:new Date().toISOStr
   manifest_sha256:sha(fs.readFileSync(path.join(code,'config/benchmark-artifact-manifest.v1.0.json'))),
   common_open_gates:common,
   preflight_evidence_observed_at:preflight?.observed_at||null,
+  reset_preflight:reset,
   vwa_last_pull:pull?{job:pull.job,started:pull.started,finished:pull.finished,exit_code:pull.exit_code,error_code:pull.error_code}:null,
   benchmarks:manifest.mandatory_core.map(b=>({id:b.id,admitted:false,source:gitSource(b),
     official_reference:b.repository,published_artifact:b.published_artifact?.doi||null,

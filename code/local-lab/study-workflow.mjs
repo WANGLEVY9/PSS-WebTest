@@ -28,6 +28,13 @@ const summary={kind:bundle.scope==='synthetic'?'SYNTHETIC_PIPELINE_CHECK':'MANUS
 if(command==='plan') {
   const fd=fs.openSync(path.join(outDir,'opportunities.jsonl'),'wx',0o600);
   try {for(const op of plan.opportunities()) fs.writeSync(fd,JSON.stringify({...op,execution_status:'not-dispatched',runtime_ready:runtime.ready})+'\n');}finally{fs.closeSync(fd);}
+  // Byte hashes bridge JS and Python without assuming identical JSON canonicalization.
+  save('schedule-freeze.json', {schema:'pss-schedule-freeze-v1',protocol_id:design.protocol_id,
+    scope:bundle.scope,schedule_sha256:plan.schedule_sha256,design_sha256:plan.design_sha256,
+    selection_sha256:plan.selection_sha256,source_bundle_sha256:digest(raw),
+    opportunities_file_sha256:digest(fs.readFileSync(path.join(outDir,'opportunities.jsonl'),'utf8')),
+    scheduled:plan.scheduled,configurations:plan.configurations,rounds:plan.rounds,
+    tasks:bundle.tasks,confirmatory_authorized:false});
 }
 if(coverage)save('coverage.json',coverage);if(analysis)save('analysis.json',analysis);if(observability)save('observability.json',observability);save('report.json',summary);
 console.log(JSON.stringify({kind:summary.kind,protocol_id:design.protocol_id,scheduled:plan.scheduled,imported:coverage?.imported??null,not_imported_unknown:coverage?.not_imported_unknown??null,runtime_ready:runtime.ready,new_execution_authorized:false}));

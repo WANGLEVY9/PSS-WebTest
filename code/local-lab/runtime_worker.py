@@ -14,6 +14,7 @@ import signal
 import subprocess
 import time
 from runtime_store import Store, canonical
+from runtime_inputs import verify_bound_input, materialize_actor_input
 
 
 class AdapterReceiptError(ValueError):
@@ -24,6 +25,19 @@ def verify_receipt(receipt, identity):
     if not isinstance(receipt, dict) or any(receipt.get(k) != identity[k] for k in
             ('opportunity_id', 'environment_id', 'configuration_sha256')):
         raise AdapterReceiptError('Adapter receipt identity mismatch')
+
+
+def verify_native_endpoint(benchmark, evaluated):
+    if evaluated.get('assessment_status') != 'valid':
+        return
+    if benchmark in ('wav', 'vwa'):
+        if type(evaluated.get('native_score')) is not int or evaluated['native_score'] not in (0, 1) or evaluated.get('verdict') is not None:
+            raise AdapterReceiptError('WAV/VWA require their native binary task score, not an ATA verdict')
+    elif benchmark == 'ata':
+        if evaluated.get('native_score') is not None or evaluated.get('verdict') not in (None, 'PASS', 'FAIL'):
+            raise AdapterReceiptError('ATA requires a verdict endpoint, not a substituted task score')
+        if evaluated.get('step_class') not in (None, 'AFB', 'AFC', 'AFA', 'Ustep'):
+            raise AdapterReceiptError('Unknown independently assessed failure-step class')
 
 
 def validate_commands(binding):
@@ -104,6 +118,8 @@ def execute_one(store, binding, invoke=run_command):
         raise ValueError('Full runtime binding is not frozen into opportunity')
     if op.get('model_binding') != binding.get('model_binding'):
         raise ValueError('Opportunity actor identity is not frozen into the request ledger')
+    verify_bound_input(op)
+    actor_input = materialize_actor_input(op['agent_input'])
     store.start(oid, token)
     heartbeat = lambda: store.heartbeat(oid, token)
     base = {'opportunity_id': oid, 'environment_id': op['environment_id'], 'lease_token': token,
@@ -128,7 +144,7 @@ def execute_one(store, binding, invoke=run_command):
         result['actor_started'] = True
         # Only the separate, outcome-free input is delivered to the framework.
         actor_command = {**binding['commands']['actor'], 'timeout_ms': min(binding['commands']['actor']['timeout_ms'], binding['budget']['task_timeout_ms'])}
-        actor = invoke(actor_command, {**base, 'input': op['agent_input'],
+        actor = invoke(actor_command, {**base, 'input': actor_input,
                        'configuration_sha256': binding['configuration_sha256'],
                        'model_binding': binding.get('model_binding'), 'budget': binding['budget'],
                        'request_ledger': {'database': store.filename, 'opportunityId': oid, 'leaseToken': token,
@@ -161,7 +177,10 @@ def execute_one(store, binding, invoke=run_command):
             raise AdapterReceiptError('Invalid native endpoint')
         if evaluated['assessment_status'] == 'unresolved' and (evaluated.get('native_score') is not None or evaluated.get('verdict') is not None):
             raise AdapterReceiptError('Unresolved evaluator cannot supply outcomes')
+        verify_native_endpoint(op.get('benchmark'), evaluated)
         result.update({k: evaluated.get(k) for k in ('assessment_status', 'native_score', 'verdict')})
+        if op.get('benchmark') == 'ata':
+            result['step_class'] = evaluated.get('step_class')
         result['terminal_status'] = ('evaluator-error' if evaluated['assessment_status'] != 'valid'
             else 'timeout' if actor['terminal_status'] == 'completed' and not result['budget_met']
             else actor['terminal_status'])

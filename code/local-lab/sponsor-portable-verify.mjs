@@ -4,13 +4,14 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
+import {readDeploymentProfile} from './sponsor-portable-config.mjs';
 
 const code=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const args=process.argv.slice(2),o={python:'python3'};
 for(let i=0;i<args.length;i++) {
-  if(['--output','--python'].includes(args[i])&&args[i+1]&&!args[i+1].startsWith('--'))o[args[i].slice(2)]=args[++i];
+  if(['--output','--python','--framework-profile'].includes(args[i])&&args[i+1]&&!args[i+1].startsWith('--'))o[args[i].slice(2)]=args[++i];
   else if(args[i]==='--with-artifacts')o.artifacts=true;
-  else throw Error('Usage: node local-lab/sponsor-portable-verify.mjs --output NEW_DIRECTORY [--python PYTHON_EXECUTABLE] [--with-artifacts]');
+  else throw Error('Usage: node local-lab/sponsor-portable-verify.mjs --output NEW_DIRECTORY [--python PYTHON_EXECUTABLE] [--with-artifacts] [--framework-profile DEPLOYMENT_PROFILE.json]');
 }
 if(!o.output)throw Error('New private output directory required');
 const dest=path.resolve(o.output);
@@ -42,6 +43,12 @@ const before=sources(),steps=[
   {id:'ata-input-projection',tests:true,cmd:o.python,args:['local-lab/ata-preparation-test.py']}
 ];
 if(o.artifacts)steps.push({id:'historical-artifact-integration',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...artifactTests]});
+if(o['framework-profile']) {
+  const profile=readDeploymentProfile(path.resolve(o['framework-profile']),code).resolved;
+  for(const [key,name] of [['agentlab','agentlab'],['browser_use','browser-use']])
+    steps.push({id:`native-framework-${name}`,native:true,cmd:profile.python_environments[key].executable,
+      args:['local-lab/framework-native-probe.py','--framework',name]});
+}
 const report={kind:'SPONSOR_PORTABLE_OFFLINE_VERIFICATION',started_at:new Date().toISOString(),
   source_files:before,source_tree_sha256:sha(JSON.stringify(before)),checks:[],
   historical_data_required:false,model_requests:0,benchmark_executions:0,confirmatory_authorized:false,
@@ -50,6 +57,8 @@ const report={kind:'SPONSOR_PORTABLE_OFFLINE_VERIFICATION',started_at:new Date()
 // Avoid leaking inherited paid-provider credentials to an offline verification child.
 const env=Object.fromEntries(Object.entries(process.env).filter(([k])=>!(/^(CUA_|OPENAI_|PSS_|ANTHROPIC_|AZURE_|DEEPSEEK_|DASHSCOPE_|ARK_|GOOGLE_API_KEY|GEMINI_API_KEY)/.test(k)||/(API_KEY|ACCESS_TOKEN|SECRET_KEY)$/.test(k))));
 env.PYTHONDONTWRITEBYTECODE='1';
+env.ANONYMIZED_TELEMETRY='false';env.BROWSER_USE_VERSION_CHECK='false';
+env.LITELLM_LOCAL_MODEL_COST_MAP='True';
 for(const step of steps) {
   console.log(`Checking ${step.id} ...`);
   const start=Date.now(),r=spawnSync(step.cmd,step.args,{cwd:code,env,encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024});
@@ -58,7 +67,10 @@ for(const step of steps) {
   const py=raw.match(/Ran (\d+) tests? in /)?.[1];
   const n=count('tests')??(py?Number(py):null),skipped=count('skipped')??(py?Number(raw.match(/OK \(skipped=(\d+)\)/)?.[1]||0):null);
   const passed=count('pass')??(py&&r.status===0?Number(py)-skipped:null);
-  report.checks.push({id:step.id,passed:r.status===0&&(!step.tests||(n>0&&passed===n&&skipped===0)),exit_code:r.status,error_code:r.error?.code??null,
+  let nativeResult=null;
+  if(step.native)try{nativeResult=JSON.parse(raw.split('\n').find(l=>l.startsWith('{"kind": "FRAMEWORK_NATIVE_COMPONENT_PROBE"')));}catch{}
+  report.checks.push({id:step.id,passed:r.status===0&&(!step.tests||(n>0&&passed===n&&skipped===0))&&(!step.native||(nativeResult?.passed===true&&nativeResult?.benchmark_adapter_admitted===false)),exit_code:r.status,error_code:r.error?.code??null,
+    ...(step.native?{native_component:nativeResult}:{}),
     tests:n,passed_tests:passed,skipped_tests:skipped,
     elapsed_ms:Date.now()-start,log_sha256:sha(raw)});
 }

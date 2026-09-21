@@ -2,6 +2,13 @@ export function nativeInitializerExited(status, stdout) {
   return [0,3].includes(status) && /^env-ctrl-init\s+EXITED\b/m.test(stdout);
 }
 
+export function officialShoppingServicesReady(httpStatus, body) {
+  const services=body?.details?.value?.services;
+  return httpStatus===200 && body?.success===true &&
+    ['mysqld','elasticsearch','redis-server','php-fpm','nginx','cron','mailcatcher','env-ctrl']
+      .every(name=>['HEALTHY','RUNNING'].includes(services?.[name]));
+}
+
 export function assertDisposableInstance(info, runId, imageDigest) {
   if (!runId || !imageDigest || info?.Config?.Labels?.['pss.preflight-run'] !== runId ||
       !Array.isArray(info.Mounts) || info.Mounts.length !== 0 || info.Image !== imageDigest)

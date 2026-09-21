@@ -97,6 +97,12 @@ function render() {
     details.append(list,el('p',`Audit: ${state.conformance.observed_at}. Agent success rate does not determine admission.`));
     admission.append(details);
   }
+  if(state.execution_gate?.allowed !== true) {
+    const details=el('details'), list=el('ul');
+    details.append(el('summary','Execution gate · blocked before task or model execution'));
+    list.append(...(state.execution_gate?.reasons || ['Execution evidence unavailable']).map(g=>el('li',g)));
+    details.append(list);admission.append(details);
+  }
   admission.title = `Readiness observed: ${state.expansion?.observed_at || "unavailable"}. Not confirmatory authorization.`;
   const batches = state.batches.filter(
     (b) => b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",
@@ -128,12 +134,12 @@ function render() {
   );
   if (task) $("task").value = String(task.task_id);
   $("model").textContent = batch?.model || state.model || "Not configured";
-  $("start").disabled = Boolean(state.active) || !state.configured || !state.diagnostic_start_enabled;
+  $("start").disabled = Boolean(state.active) || !state.configured || !state.diagnostic_start_enabled || state.execution_gate?.allowed !== true;
   $("model").title = `Selected run model: ${batch?.model || "none"}. Next diagnostic model: ${state.model || "not configured"}. Protocol: ${state.next_protocol || "unknown"}.`;
   $("start").textContent = state.active
     ? "Benchmark running…"
-    : state.diagnostic_start_enabled ? "Run diagnostic ↗" : "Collection paused";
-  $("start").title = "Collection is gated while runner remediation is validated. Historical results remain unchanged.";
+    : state.diagnostic_start_enabled && state.execution_gate?.allowed === true ? "Run diagnostic ↗" : "Collection paused";
+  $("start").title = state.execution_gate?.reasons?.join('; ') || "Collection is gated while runner remediation is validated. Historical results remain unchanged.";
   $("task-title").textContent = task
     ? `Task ${task.task_id} · ${task.intent_template_id === 136 ? "Retrieve review titles" : "Retrieve reviewer names"}`
     : "Official benchmark tasks";

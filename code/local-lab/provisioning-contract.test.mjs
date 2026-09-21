@@ -1,6 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {nativeInitializerExited,assertDisposableInstance,imageCapacityGate,parseDfKilobytes} from './provisioning-contract.mjs';
+import {nativeInitializerExited,assertDisposableInstance,imageCapacityGate,parseDfKilobytes,officialShoppingServicesReady} from './provisioning-contract.mjs';
+test('homepage warmup requires every official dependency, not just MySQL or initializer exit',()=>{
+  const services=Object.fromEntries(['mysqld','elasticsearch','redis-server','php-fpm','nginx','cron','mailcatcher','env-ctrl'].map(k=>[k,'HEALTHY']));
+  const body={success:true,details:{value:{services}}};
+  assert.equal(officialShoppingServicesReady(200,body),true);
+  assert.equal(officialShoppingServicesReady(503,body),false);
+  assert.equal(officialShoppingServicesReady(200,{success:true}),false);
+  for(const name of Object.keys(services)) {
+    assert.equal(officialShoppingServicesReady(200,{...body,details:{value:{services:{...services,[name]:'UNHEALTHY'}}}}),false);
+  }
+});
 test('image provisioning checks VM space, not host free space or download timeout',()=>{
   assert.equal(imageCapacityGate(76861304894,9826464*1024).allowed,false);
   assert.equal(imageCapacityGate(76861304894,9826464*1024).reason,'below-compressed-size-lower-bound');

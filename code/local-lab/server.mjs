@@ -6,6 +6,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { alive } from "./lock.mjs";
+import { currentExecutionGate } from './execution-gate.mjs';
 import { summarize } from "./metrics.mjs";
 import { resolveModel, PROTOCOL } from "./agent-protocol.mjs";
 const root = path.dirname(fileURLToPath(import.meta.url)),
@@ -80,6 +81,7 @@ const server = http.createServer((req, res) => {
         model: process.env.PSS_LOCAL_MODEL || process.env.CUA_MODEL || null,
         next_protocol: PROTOCOL,
         diagnostic_start_enabled: process.env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN === "1",
+        execution_gate: currentExecutionGate(),
         provider: "aliyun",
         configured: Boolean(process.env.CUA_API_KEY),
         benchmark,
@@ -120,6 +122,9 @@ const server = http.createServer((req, res) => {
       catch { return json(res, { error: "Explicit model configuration required" }, 400); }
       if (process.env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
         return json(res, { error: "Batch collection paused. The revised diagnostic protocol requires explicit enablement after review." }, 409);
+      const admission = currentExecutionGate();
+      if (!admission.allowed)
+        return json(res, { error: 'Benchmark admission gate blocked', execution_gate: admission }, 409);
       active = `local-benchmark-${Date.now()}`;
       const id = active;
       fs.mkdirSync(path.join(store, id), { recursive: true });

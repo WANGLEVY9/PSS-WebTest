@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import dotenv from "dotenv";
 import { chromium } from "playwright";
 import { acquireLock } from "./lock.mjs";
+import { currentExecutionGate } from './execution-gate.mjs';
 import { summarize } from "./metrics.mjs";
 import { runReviewScript } from "./benchmark-script.mjs";
 import { retrievalResponse, evaluatorSummary } from "./benchmark-contract.mjs";
@@ -15,6 +16,8 @@ import { PROTOCOL, OBSERVATION_POLICY, MAX_CONSECUTIVE_PROTOCOL_ERRORS,
 
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
+const admission = currentExecutionGate();
+if (!admission.allowed) throw new Error('Benchmark execution blocked: ' + admission.reasons.join('; '));
 dotenv.config({ path: path.join(code, ".env"), quiet: true });
 const modelConfig = resolveModel(process.env);
 const model = modelConfig.model;

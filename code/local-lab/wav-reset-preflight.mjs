@@ -3,7 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {nativeInitializerExited,assertDisposableInstance} from './provisioning-contract.mjs';
+import {nativeInitializerExited,assertDisposableInstance,officialShoppingServicesReady} from './provisioning-contract.mjs';
 const code=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const context='colima-webarena-x86', container='pss-wav-reset-preflight';
 const primary='webarena-verified-shopping-x86', site='http://127.0.0.1:17770/';
@@ -64,15 +64,34 @@ async function create() {
   // An exited initializer alone is insufficient: require DB configuration AND serving site.
   const urls=sql(container,"SELECT value FROM core_config_data WHERE path IN ('web/unsecure/base_url','web/secure/base_url') ORDER BY path").split('\n');
   if(urls.length!==2 || urls.some(x=>x!==site)) throw Error('Isolated site base URL mismatch');
-  let response=null;
-  for(let attempt=0;attempt<6;attempt++) {
+  event('waiting-for-official-service-health');
+  let servicesReady=false;
+  const serviceDeadline=Date.now()+480000;
+  while(Date.now()<serviceDeadline) {
+    const observation={at:new Date().toISOString()};
     try {
-      const r=await fetch(site,{signal:AbortSignal.timeout(20000)});
-      if(r.ok && new URL(r.url).origin===new URL(site).origin) {response=r;break;}
-    } catch {}
-    await new Promise(r=>setTimeout(r,5000));
+      const r=await fetch('http://127.0.0.1:17771/status',{signal:AbortSignal.timeout(Math.min(15000,serviceDeadline-Date.now()))});
+      const body=await r.json();
+      observation.http_status=r.status;observation.services=body.details?.value?.services||{};
+      servicesReady=officialShoppingServicesReady(r.status,body);
+      observation.ready=servicesReady;
+    } catch(e) {observation.error=e.name;}
+    report.service_observations||=[];report.service_observations.push(observation);save();
+    if(servicesReady) break;
+    await new Promise(r=>setTimeout(r,Math.min(15000,Math.max(0,serviceDeadline-Date.now()))));
   }
-  if(!response) throw Error('Isolated site HTTP/origin gate failed after bounded warmup');
+  if(!servicesReady) throw Error('Official dependency service health did not pass; homepage not requested');
+  // Provisioning only, outside every arm's budget. One request avoids accumulating
+  // PHP workers: client abort is not server-side cancellation. A retained clone
+  // took 57 seconds to return its first page; fresh resets still need verification.
+  event('single-homepage-warmup');
+  const begin=Date.now();
+  const response=await fetch(site,{signal:AbortSignal.timeout(90000),redirect:'manual'});
+  const html=await response.text();
+  report.homepage_observations||=[];
+  report.homepage_observations.push({at:new Date().toISOString(),status:response.status,elapsed_ms:Date.now()-begin,bytes:Buffer.byteLength(html)});save();
+  if(response.status!==200 || !html.includes('<html') || html.includes('Fatal error'))
+    throw Error('Isolated site homepage content/status gate failed');
   event('site-ready');
   return {container_id:ownsContainer().Id,site_status:response.status,base_urls_match:true,digest:fingerprint(container)};
 }

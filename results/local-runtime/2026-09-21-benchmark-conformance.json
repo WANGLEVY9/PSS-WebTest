@@ -1,6 +1,6 @@
 {
   "kind": "BENCHMARK_CONFORMANCE_AUDIT",
-  "observed_at": "2026-09-21T09:52:42.607Z",
+  "observed_at": "2026-09-21T11:53:15.844Z",
   "confirmatory_authorized": false,
   "authorization_capability": "none",
   "manifest_sha256": "3d8f0c45d78e2f6adf1ebad1555d0592feccfe18e1ed10f5d1e65d00f1e5ebdb",
@@ -41,7 +41,8 @@
       "component_evidence": [
         "Native evaluator/response tests: 438 passed, 3 skipped",
         "Installed source comparison: 74 files, match=true",
-        "Native null-schema error reproduced with synthetic wrong answers; preserved as unresolved"
+        "Native null-schema error reproduced with synthetic wrong answers; preserved as unresolved",
+        "Retained clone recovery: component-recovered; homepage 200 in 57101 ms. NOT fresh reset proof."
       ]
     },
     {

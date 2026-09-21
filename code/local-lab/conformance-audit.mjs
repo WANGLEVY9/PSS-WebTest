@@ -60,11 +60,13 @@ const runtime=path.join(code,'artifacts/local-runtime');
 const lastPull=fs.readdirSync(runtime).filter(n=>/^vwa-pull-\d+\.json$/.test(n)).sort().at(-1);
 const pull=lastPull?readJSON(path.join(runtime,lastPull)):null;
 const preflight=readJSON(path.join(runtime,'preflight-summary.json'));
+const resumption=readJSON(path.join(runtime,'local-resumption.json'));
 const completedChecks={
   'webarena-verified':preflight?.wav?[
     `Native evaluator/response tests: ${preflight.wav.native_tests?.passed ?? 'unknown'} passed, ${preflight.wav.native_tests?.skipped ?? 'unknown'} skipped`,
     `Installed source comparison: ${preflight.wav.installed_source_files_compared} files, match=${preflight.wav.installed_matches_source}`,
     'Native null-schema error reproduced with synthetic wrong answers; preserved as unresolved',
+    ...(resumption?.recovery ? [`Retained clone recovery: ${resumption.recovery.status}; homepage ${resumption.recovery.homepage?.status ?? 'unknown'} in ${resumption.recovery.homepage?.elapsed_ms ?? 'unknown'} ms. NOT fresh reset proof.`] : []),
   ]:[],
   visualwebarena:preflight?.vwa?[
     `Pinned native runtime: Python ${preflight.vwa.runtime?.python}, Playwright ${preflight.vwa.runtime?.playwright}, Chromium ${preflight.vwa.runtime?.chromium}`,

@@ -37,6 +37,8 @@ export function buildAnalysisReport(input) {
     const out={benchmark:p.benchmark,c:p.c,d:p.d,operational_difference_lower:ds.lower-cs.upper,operational_difference_upper:ds.upper-cs.lower};
     if(p.retry) {
       if(p.retry.rows) throw Error('Retry outcomes must derive from native rows, not an independent outcome table');
+      const canonicalWindows=[Array.from({length:5},(_,i)=>`V${i+1}`),Array.from({length:5},(_,i)=>`V${i+6}`)];
+      if(JSON.stringify([p.retry.first_window,p.retry.second_window])!==JSON.stringify(canonicalWindows)||(p.retry.min_joint??8)!==8) throw Error('Retry requires frozen validation windows V1-V5/V6-V10 and min_joint=8');
       const windows=[...p.retry.first_window,...p.retry.second_window];
       if(windows.some(r=>!c.operational.rounds.includes(r))) throw Error('Retry analysis outside selected schedule');
       const value=r=>!r?null:p.benchmark==='ata'?(r.verdict===null?null:Number(r.verdict===r.expected)):r.success;
@@ -53,6 +55,7 @@ export function buildAnalysisReport(input) {
       if(p.benchmark!=='ata') throw Error('Error-conditioned analysis requires ATA');
       const e=p.error_conditioned;
       if(e.discovery_rounds.some(r=>e.validation_rounds.includes(r)) || [...e.discovery_rounds,...e.validation_rounds].some(r=>!c.operational.rounds.includes(r))) throw Error('Discovery and validation must be disjoint scheduled stages');
+      if(JSON.stringify(e.discovery_rounds)!=='["D1","D2"]'||JSON.stringify(e.validation_rounds)!==JSON.stringify(Array.from({length:10},(_,i)=>`V${i+1}`))) throw Error('RQ3 requires frozen discovery D1-D2 and validation V1-V10');
       // Discovery reads the anchor's native records, not supplied model labels or validation outcomes.
       const cohort=discoveryCohorts({task_ids:c.operational.task_ids,discovery_rounds:e.discovery_rounds,error_type:e.error_type,rows:c.native_rows.filter(r=>e.discovery_rounds.includes(r.round))});
       const correct=r=>!r || r.verdict===null?null:Number(r.verdict===r.expected);

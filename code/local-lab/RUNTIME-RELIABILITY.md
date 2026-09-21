@@ -1,0 +1,35 @@
+# Execution reliability follow-up, 2026-09-21
+
+Follow-up receipt hardening uses `diagnostic-receipts-v2`: actor timeout/provider failure cannot be converted to completion by a late native score; actor, evaluator, reset and cleanup all bind opportunity/environment/configuration identity. The binding now requires `max_actions` as well as wall time, and the actor adapter reports explicit action count and budget status. Invalid receipts quarantine the environment. See [SPONSOR-DEPLOYMENT.md](./SPONSOR-DEPLOYMENT.md) for portable acceptance. These are diagnostic contracts, not proof of formal framework conformance or task-input-to-schedule binding.
+
+The active research definition remains `config/study-design-contract.v2.1.json` (19 configurations, D1–D2/V1–V10). This change does not rewrite collected results, measured framework identities, budgets or paper tables. Cloud-version verification is deferred at the user's request. No model requests or live benchmark runs were performed for this change.
+
+## What runs now
+
+- `analysis-export.mjs` uses alternative correctness minus visual correctness for RQ3, and rejects swapped/contaminated RQ3/RQ4 stages or a lowered RQ4 threshold.
+- `ata_mapping.py` extracts original source IDs, CSV hashes, row locations, class labels, input digests and official step IDs. A selection must be one-to-one and label preserving to qualify as a native subset. The user confirmed the manuscript was wrong: active v2.1 follows the full official release, 113 cases (62 PASS + 51 FAIL), without rebalancing. Legacy 112/56/56 records remain historical; changing a label to fill a quota is rejected. The output is **evaluator-only**, never an agent input.
+- `runtime_store.py` gives each opportunity a durable identity, transactions, environment-exclusive leases, worker fencing, append-only events and idempotent terminal acknowledgements. SQLite WAL is for one host with local disk, not NFS or a distributed scheduler. Started work with an expired lease becomes `uncertain`, retaining its environment lock. Recovery never retries a possibly executed scientific opportunity. Unstarted expired leases can be reclaimed. D-stage completion is required before V-stage dispatch within the same schedule.
+- `runtime_worker.py` calls a pinned reset, framework, native evaluator and cleanup subprocess **for every arm/opportunity**. It checks reset instance/baseline/opportunity identity, source hashes, configuration identity, leases and deadlines. Input and evaluator references are separated. Cleanup failure or uncertain subprocess completion quarantines the environment. The bridge runs diagnostic/synthetic plans; formal collection is blocked until real adapters and benchmark-specific admission are supplied.
+- `reliable-provider.mjs` provides one retry owner, at most three explicit HTTP attempts, bounded jitter and Retry-After, wall-time accounting, fixed actor identity, and persistent request reservations/settlements via `runtime-ledger.mjs`. Only explicit 429/5xx failures are retried; ambiguous network/timeouts, auth errors, refusals and schema failures are not replayed. SDK retries must be zero. Requests missing usage/pricing retain an unknown cost and their reservation; failed/retried calls remain in the ledger. Cache discount is not guessed; reasoning tokens are not double-counted. Prices are explicit caller-supplied, dated rate cards, not invented current prices. Reservation bounds are estimates: a returned charge above the reservation is retained and flagged, never truncated.
+- Existing `provider.mjs` now bounds headers **and body**. Legacy visual and hybrid transport is versioned `single-owner-body-deadline-v2`, removes multiplied inner/outer retries, accounts for each actual provider response, and refuses ambiguous transport replay. Old experiments remain separate protocol strata.
+- Returned model identity is audited independently of requested identity. A missing identity is unverified; aliases must be frozen into the provider configuration before execution.
+
+## Running checks
+
+From `code/`:
+
+```sh
+npm run test:runtime-reliability
+npm run test:study-analysis
+python3 local-lab/ata_mapping.py --source artifacts/benchmark-snapshots/ata-zenodo/ISSTA_ARTEFACT/benchmark --all-official --output /tmp/ata-mapping-new.json
+```
+
+Existing plan production remains `npm run study:workflow -- plan BUNDLE.json NEW_OUTPUT_DIRECTORY`. Once actual diagnostic executors and task-input sources are supplied, `bind_runtime_plan.py` binds its `opportunities.jsonl`; `runtime_worker.py enqueue --database ... --input ...` idempotently registers it. `work --input EXECUTOR.json` executes one matching cell. `recover` only reconciles expired leases; `status` returns state/cost coverage. Use a new ledger per frozen plan/cost cap. Files contain metadata and evaluator references and should remain private. Do not reuse a dataset's human screening claim for these diagnostic jobs.
+
+`runtime-ledger.mjs` requires database path, opportunity ID, current lease token, frozen campaign cost cap and explicit Python executable when needed. The worker supplies this request-ledger context and frozen cost policy to each actor subprocess; the plan binder also freezes the model binding in the database so a changed actor request is rejected. Its output is durable before a provider call may be sent. Framework integrations must route **all** provider calls through this accounting path (or the same SQLite protocol), including framework-internal auxiliary calls. The worker cannot establish that property from a child's self-report; integration must pass an instrumented conformance test first.
+
+## Remaining admission work
+
+This is tested engineering infrastructure, not evidence that AgentLab or browser-use is already running the paper's exact controlled projection. Their current smoke scripts do not establish that equivalence. Real pinned adapter commands, native evaluator configuration, verified baseline reset receipts, provider/API IDs, matched budgets and task input manifests must be bound before a real integration run. The existing `execution-gate.mjs` stays closed; its `per_arm_state_reset=false` still accurately describes the old `benchmark-runner.mjs`.
+
+The remaining evidence gates are: reconcile historical ATA records against the verified 113-case source mapping and recompute results; supply actual formal framework/reset bindings; pass an isolated per-arm native-evaluator integration run. The cloud source correspondence remains unverified. Model cost-reduction experiments start only after these gates, with a separate routing-policy stratum. Cheap post-run triage may not feed back into actor decisions or rewrite outcomes. No cost saving or accuracy equivalence is claimed from synthetic tests.

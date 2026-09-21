@@ -1,0 +1,61 @@
+{
+  "kind": "ENGINEERING_VERIFICATION_NOT_EMPIRICAL_RESULTS",
+  "observed_at": "2026-09-21T15:53:22.025Z",
+  "active_protocol": "pss-manuscript-v2.1",
+  "planned_tasks": 1413,
+  "planned_configurations": 19,
+  "planned_rounds": 12,
+  "planned_opportunities": 322164,
+  "source_tree_sha256": "61fe244c7d7aa82562b9e809fd6bf28e1e635f427da887bdd7a6262f9e1ebb6a",
+  "prepared_worktree_regression": {
+    "node_tests_passed": 394,
+    "python_tests_passed": 24,
+    "test_skips": 0,
+    "source_tree_unchanged": true,
+    "includes_historical_artifact_integration_tests": 7,
+    "private_report_sha256": "4183ef175a737876900fa8d988e10fa3fb4630c06c6dcbdb503da945dd5c4fb1"
+  },
+  "source_only_rehearsal": {
+    "node_tests_passed": 387,
+    "python_tests_passed": 24,
+    "test_skips": 0,
+    "source_tree_unchanged": true,
+    "historical_artifact_integration_status": "not-run-explicit-separate-group",
+    "environment": "relocated working source, existing Node dependencies and Chromium cache reused",
+    "absent": ["historical artifacts", "API credential files", "downloaded official benchmark sources", "benchmark Python environments", "private manuscript"],
+    "clean_linux_install_verified": false,
+    "private_report_sha256": "19e7f5a3ad309f9c07ae665735af4ae455eb7e14a3bc38c93283342db7268bd7"
+  },
+  "worker_hardening": {
+    "runtime_protocol": "diagnostic-receipts-v2",
+    "timeout_plus_late_native_success_remains_timeout": true,
+    "provider_failure_preserved": true,
+    "all_stage_receipt_identity_checks": true,
+    "wall_time_and_action_budget_checks": true,
+    "mismatched_receipt_quarantines_environment": true,
+    "actual_framework_action_journal_conformance": "pending"
+  },
+  "deployment_audit": {
+    "engineering_preflight_passed": false,
+    "agentlab_exact_distributions_matched": 212,
+    "browser_use_exact_distributions_matched": 107,
+    "remaining_local_findings": [
+      "VWA and PiNATA sources have untracked deployment/log files, retained for review",
+      "VWA torch platform metadata/dependency compatibility check unresolved",
+      "Local Shopping port bindings are not loopback-only",
+      "WAV/VWA portable exact dependency locks and daemon storage reserve unverified"
+    ],
+    "private_report_sha256": "0629506cbaaee15c1b7193e51f1bc582dc80a71ccfd72e672736abb3d51533b3"
+  },
+  "formal_blockers": [
+    "Real pinned AgentLab and restricted Browser Use benchmark adapters and observation-boundary conformance",
+    "All official task dependencies, per-arm reset/isolation and independent evaluator controls",
+    "Complete task-input to frozen schedule binding",
+    "Prospective sponsor budget/model bindings and outcome-blind selection/preparation evidence",
+    "Native sponsor Linux installation and live provider acceptance"
+  ],
+  "old_cloud_data_required_for_new_deployment": false,
+  "model_requests": 0,
+  "benchmark_executions": 0,
+  "confirmatory_authorized": false
+}

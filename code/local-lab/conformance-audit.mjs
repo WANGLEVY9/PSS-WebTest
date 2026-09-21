@@ -42,7 +42,7 @@ const openGates={
     'Three-arm adapter and replay evidence; DOM-derived SoM cannot enter the pixel-only arm',
   ],
   'autonomous-tester-agent-benchmark':[
-    'Map the adopted 112 selected ATA task IDs and 56/56 classes to the pinned artifact with 113 parsed candidates; preserve exclusion/duplicate-step evidence, do not change the selected denominator to 113',
+    'Verify the complete official ATA source mapping: 113 cases, 62 PASS/51 FAIL; preserve original step indices, reconcile legacy records, and verify live fixture labels without class balancing',
     'Local fixture/reset equivalence to published PASS/FAIL labels; do not dispatch upstream GitHub reset workflows',
     'Separate artifact-bundled evaluator from independently pinned PinATA checkout',
     'Live specification-only adapters and independent verdict/failed-step correctness checks',
@@ -53,7 +53,7 @@ const common=[
   'Recover originally frozen included/excluded IDs and development/measurement separation; do not fabricate a pre-outcome freeze after collection',
   'Blinded Traditional authoring, two semantic reviewers, engineering-cost and deployment-failure ledger',
   'Dynamic information-boundary audit of inputs AND control flow on every adapter',
-  'Bind actual models/frameworks/prompts/budgets to adopted manuscript v2.0; fixed D1-D2 and V1-V10, with original collection provenance',
+  'Bind actual models/frameworks/prompts/budgets to benchmark-corrected design v2.1; fixed D1-D2 and V1-V10, with original collection provenance',
   'Explicit confirmatory authorization; high agent success is not a gate',
 ];
 const ata=readJSON(path.join(code,'artifacts/local-runtime/ata-preparation/summary.json'));
@@ -93,7 +93,7 @@ const report={kind:'BENCHMARK_CONFORMANCE_AUDIT',observed_at:new Date().toISOStr
   benchmarks:manifest.mandatory_core.map(b=>({id:b.id,admitted:false,source:gitSource(b),
     official_reference:b.repository,published_artifact:b.published_artifact?.doi||null,
     open_gates:openGates[b.id],component_evidence:completedChecks[b.id],
-    ...(b.id==='autonomous-tester-agent-benchmark'?{parsed_candidates:ata?.published_tasks??null,frozen_marker_inventory:b.task_artifact.source_record_count}:{}),
+    ...(b.id==='autonomous-tester-agent-benchmark'?{parsed_candidates:ata?.published_tasks??null,historical_v1_marker_inventory:b.task_artifact.source_record_count,active_population:{tasks:113,expected_pass:62,expected_fail:51}}:{}),
   })),
   local_images:[image('am1n3e/webarena-verified-shopping:latest'),image('jykoh/classifieds:latest'),image('mysql:8.1')],
   interpretation:'Source and image presence are observations, not reset/evaluator/fairness conformance. Missing evidence remains unresolved. Never infer readiness from method pass rates.'};

@@ -1,0 +1,43 @@
+{
+  "schema": "ata-official-population-v1",
+  "authority": "published-benchmark-source",
+  "artifact_doi": "10.5281/zenodo.15198569",
+  "source_catalog_sha256": "67c27329a41c83b8ac6eacf9ce0e2d9f639a3767e52d6bd111702b807aa1dad1",
+  "published_tasks": 113,
+  "expected_pass": 62,
+  "expected_fail": 51,
+  "application_counts": {
+    "classifieds": 30,
+    "onestopshop": 49,
+    "postmill": 34
+  },
+  "files": [
+    {
+      "file": "classifieds_failing.csv",
+      "sha256": "45cf3d9668c38f1bdd1e6f84cc5a3bfc6e200d5f5b3c2f7c9bd6d18cec0cfa46"
+    },
+    {
+      "file": "classifieds_passing.csv",
+      "sha256": "d170262362c2bea0c79203e5626e13f5714f576be612463b0ec3e917c9d1393d"
+    },
+    {
+      "file": "onestopshop_failing.csv",
+      "sha256": "b934c6c3a5d4ea53eed217262879dd9c5cbe5fd0e054120695f6d6f04b5bf8f7"
+    },
+    {
+      "file": "onestopshop_passing.csv",
+      "sha256": "095c0b730ed9fc32d7249b76df6c8d65f785350d9662f3339eb297c2cb197fbd"
+    },
+    {
+      "file": "postmill_failing.csv",
+      "sha256": "b6ec3559b1cda40eebaee870bf5f8ae478111eb8a1afc2cf4e8ce755394f21e9"
+    },
+    {
+      "file": "postmill_passing.csv",
+      "sha256": "2f24bc09f11f645f2a6d755902b17c08be37cccb9555752587dea4ce61bc785d"
+    }
+  ],
+  "selection_policy": "entire-published-release-no-class-balancing",
+  "live_fixture_parity_verified": false,
+  "confirmatory_authorized": false
+}

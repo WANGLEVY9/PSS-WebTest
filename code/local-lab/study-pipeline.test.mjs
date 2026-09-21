@@ -13,7 +13,7 @@ const {design}=loadActiveDesign();
 const tasks=()=>['wav','vwa','ata'].map(benchmark=>({task_key:`${benchmark}:fixture`,benchmark,official_task_id:'synthetic-fixture',application:'test-app',source_sha256:'a'.repeat(64),...(benchmark==='wav'?{template_id:'fixture-template'}:{}),...(benchmark==='ata'?{expected:'FAIL'}:{})}));
 const rows=()=>[...schedulePlan(design,tasks(),{scope:'synthetic'}).opportunities()].map(op=>({...op,data_kind:'SYNTHETIC_TEST',source_opportunity_id:op.opportunity_id,source_sha256:'b'.repeat(64),configuration_sha256:digest(op.config_id),preparation_status:'prepared',started:true,assessment_status:'valid',budget_met:true,terminal_status:'completed',native_score:op.benchmark==='ata'?null:1,verdict:op.benchmark==='ata'?'FAIL':null,...(op.benchmark==='ata'?{step_class:'AFC'}:{})}));
 test('active design fixes six models, 19 configurations, 12 rounds, and keeps deployment separate',()=>{
-  assert.deepEqual(validateDesign(design),[]);assert.equal(configurations(design).length,19);assert.equal(1412*19*12,321936);
+  assert.deepEqual(validateDesign(design),[]);assert.equal(configurations(design).length,19);assert.equal(1413*19*12,322164);
   const wrong=structuredClone(design);wrong.rounds.retry_min_joint=7;assert.ok(validateDesign(wrong).length);
   assert.equal(bindingReadiness(design,{}).ready,false);assert.equal(design.new_execution_authorized,false);
 });
@@ -40,10 +40,10 @@ test('schedule is stable, shared script occurs once per task/round, and all disc
   assert.notEqual(p.schedule_sha256,schedulePlan(design,tasks(),{scope:'synthetic',bindings:{version:'different'}}).schedule_sha256);
   assert.throws(()=>validateTasks(design,tasks()),/denominator/);
 });
-test('full manuscript-sized schedule streams 321936 unique slots without creating results',()=>{
-  const ts=design.benchmarks.flatMap(b=>Array.from({length:b.selected_tasks},(_,i)=>({task_key:`${b.id}:${i}`,benchmark:b.id,official_task_id:`fixture-${i}`,application:'fixture',source_sha256:'a'.repeat(64),...(b.id==='wav'?{template_id:i%20}:{}),...(b.id==='ata'?{expected:i<56?'PASS':'FAIL'}:{})})));
+test('full manuscript-sized schedule streams 322164 unique slots without creating results',()=>{
+  const ts=design.benchmarks.flatMap(b=>Array.from({length:b.selected_tasks},(_,i)=>({task_key:`${b.id}:${i}`,benchmark:b.id,official_task_id:`fixture-${i}`,application:'fixture',source_sha256:'a'.repeat(64),...(b.id==='wav'?{template_id:i%20}:{}),...(b.id==='ata'?{expected:i<b.expected_pass?'PASS':'FAIL'}:{})})));
   const p=schedulePlan(design,ts);let n=0,s=0;for(const o of p.opportunities()){n++;if(o.config_id==='s')s++;}
-  assert.equal(n,321936);assert.equal(s,1412*12);
+  assert.equal(n,322164);assert.equal(s,1413*12);
 });
 test('data absence means not imported, never global nonexecution or automatic rerun',()=>{
   const r=reconcile(design,tasks(),rows().slice(0,1),{scope:'synthetic'});
@@ -81,4 +81,14 @@ test('CLI imports records, preserves source bytes and never replaces an existing
     assert.equal(JSON.parse(fs.readFileSync(path.join(out,'coverage.json'))).imported,684);
     assert.notEqual(spawnSync(process.execPath,args).status,0);
   } finally{fs.rmSync(temp,{recursive:true});}
+});
+
+test('published ATA class imbalance is required and old balanced contracts/records are rejected',()=>{
+  const wrong=structuredClone(design);wrong.benchmarks[2].expected_pass=56;wrong.benchmarks[2].expected_fail=56;
+  assert.ok(validateDesign(wrong).length);
+  const ts=design.benchmarks.flatMap(b=>Array.from({length:b.selected_tasks},(_,i)=>({task_key:`${b.id}:${i}`,benchmark:b.id,official_task_id:`fixture-${i}`,application:'fixture',source_sha256:'a'.repeat(64),...(b.id==='wav'?{template_id:i%20}:{}),...(b.id==='ata'?{expected:i<b.expected_pass?'PASS':'FAIL'}:{})})));
+  assert.doesNotThrow(()=>validateTasks(design,ts));
+  ts.find(t=>t.benchmark==='ata'&&t.expected==='PASS').expected='FAIL';
+  assert.throws(()=>validateTasks(design,ts),/published benchmark/);
+  assert.throws(()=>validateRecords(design,tasks(),[{...rows()[0],protocol_id:'pss-manuscript-v2.0'}]),/Historical acquisition/);
 });

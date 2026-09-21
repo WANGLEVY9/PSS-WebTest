@@ -2,20 +2,20 @@
 
 ## Decision and amendment (2026-09-21)
 
-The user explicitly retired the old execution plan and directed this project to follow the current manuscript. `config/active-study-design.json` is now the sole current design pointer. `study-design-contract.v2.0.json` records authority, source hash and change rationale. Old v1.0 files are retained as history, not execution authority. Default design/plan validation commands resolve v2; use `--legacy-audit` only for historical tests. This is a repository amendment, not a claim of external preregistration or retrospective pre-outcome freezing.
+The user explicitly retired the old execution plan and directed this project to follow the current manuscript. `config/active-study-design.json` is now the sole current design pointer. `study-design-contract.v2.1.json` records authority, source hash and change rationale. Old v1.0 and v2.0 files are retained as history, not execution authority. Default design/plan validation commands resolve v2; use `--legacy-audit` only for historical tests. This is a repository amendment, not a claim of external preregistration or retrospective pre-outcome freezing.
 
 | Dimension | Retired execution plan | Adopted design |
 | --- | --- | --- |
 | Models/configurations | Two shared models, five primary configurations | Six models; AgentLab/BrowserGym visual and hybrid, restricted Browser Use hybrid, plus one shared human-authored Playwright script: 19 |
-| Selected workload | Generic ≥3,000 opportunity target | WAV 600, VWA 700, ATA 112 (56 PASS/56 FAIL) |
+| Selected workload | Generic ≥3,000 opportunity target | WAV 600, VWA 700, ATA 113 (62 PASS/51 FAIL) |
 | Repetitions | Pilot 5, later choose 5/7/10 | 12: D1–D2 discovery, V1–V10 validation |
 | Retry comparison | Earlier planning logic | V1–V5/V6–V10; ≥8 jointly assessed validation rounds; first available per configuration/window |
 | Inference | Earlier power/Holm/mixed-effects plan | Current manuscript's descriptive estimands; identification bounds are not confidence intervals |
 | Collection strategy | Old local readiness snapshot | Reconcile existing collection; prioritize missing GPT results; do not infer global completion from local visibility |
 
-The total selected denominator is 321,936 scheduled opportunities. Prepared, started, scorable, imported and completed are distinct counts. The author reports substantial existing data and a GPT gap. Local summary tables are not row-level ledgers; their presence cannot establish which model runs are complete. No historical files or cloud results were rewritten.
+The total selected denominator is 322,164 scheduled opportunities. Prepared, started, scorable, imported and completed are distinct counts. The author reports substantial existing data and a GPT gap. Local summary tables are not row-level ledgers; their presence cannot establish which model runs are complete. No historical files or cloud results were rewritten.
 
-The ATA artifact contains 113 parsed candidates in the local source audit. This does not automatically make the selected sample 113. Recover the exact 112 selected IDs, class labels and exclusion/duplicate-step provenance. Keep the adopted denominator unless the author separately amends it.
+The user corrected the manuscript population on 2026-09-21. Active v2.1 uses all 113 published ATA cases, 62 PASS and 51 FAIL, with no rebalancing or invented exclusion. `ata-source-population.v1.json` pins the six CSV digests. v2.0 remains historical and its 112-case aggregate results require reanalysis; adoption does not prove live fixture parity or executed coverage.
 
 ## Configuration and budget binding
 
@@ -41,9 +41,9 @@ Neither workflow command starts a browser, calls a model, resets a SUT, accesses
 
 ## Import bundle (normalized JSON adapter)
 
-Top-level fields: `protocol_id: pss-manuscript-v2.0`, `scope: formal|diagnostic|synthetic`, `tasks`, `records` for import, optional `bindings`, optional `preparation`.
+Top-level fields: `protocol_id: pss-manuscript-v2.1`, `scope: formal|diagnostic|synthetic`, `tasks`, `records` for import, optional `bindings`, optional `preparation`.
 
-- Task: `task_key`, `benchmark: wav|vwa|ata`, `application`, `official_task_id` (string), `source_sha256`; WAV `template_id`; ATA independent `expected: PASS|FAIL`. Formal scope requires exactly 600/700/112 and ATA 56/56, with distinct namespaced official identities. Diagnostic scope may use a smaller official set. Original eligibility evidence remains independently necessary.
+- Task: `task_key`, `benchmark: wav|vwa|ata`, `application`, `official_task_id` (string), `source_sha256`; WAV `template_id`; ATA independent `expected: PASS|FAIL`. Formal scope requires exactly 600/700/113 and ATA 62 PASS/51 FAIL, with distinct namespaced official identities. Diagnostic scope may use a smaller official set. Original eligibility evidence remains independently necessary.
 - Record: `task_key`, `config_id`, `round: D1|D2|V1...V10`, `phase: discovery|validation`, `source_opportunity_id`, `source_sha256`, `configuration_sha256`, `data_kind: MEASURED|SYNTHETIC_TEST`, `preparation_status: prepared|unprepared|unknown`, `started` boolean, `assessment_status: valid|unresolved`, `budget_met: true|false|null`, `terminal_status`, `native_score: 0|1|null`, `verdict: PASS|FAIL|null`, and ATA TP `step_class: AFB|AFC|AFA|Ustep`.
 - Terminal status: `completed`, `failed`, `no-verdict`, `timeout`, `provider-error`, `reset-error`, `evaluator-error`, `not-started`. Original attempts/retries remain in the source archive; one explicitly selected observation per planned opportunity is allowed. Duplicates are rejected, never resolved by selecting the best outcome.
 - Optional resource fields: `execution_charge_usd`, `agent_wall_ms`, `total_tokens`. Missing values stay unknown, with reported-subtotal/coverage; no assumed monetary rate or preparation-cost amortization.
@@ -56,7 +56,7 @@ Cloud CSV/Parquet exports need explicit field mapping to this normalized adapter
 - RQ3 now computes `Y_alternative - Y_visual`, where Y is **correctness**. The earlier candidate export used the reverse error-rate direction. Its only exercised end-to-end outputs were synthetic tests; no confirmed production dataset was imported with that candidate in this local work. Any external use of that candidate must regenerate analysis from source rows under v2, retaining the old output for audit.
 - RQ4 uses the same eligible blocks and weights for mixed execution and both retry controls; ATA pooled and PASS/FAIL-specific outputs are available.
 - Native late success is preserved while an out-of-budget opportunity is operationally unsuccessful. ATA observed no-verdict is zero operational correctness; unresolved evaluation/reset remains unknown. Unprepared opportunities remain in the fixed denominator.
-- Tests include a 321,936-slot schedule generation stress test and a 684-row synthetic three-benchmark, 19-configuration, 12-round import/analysis pipeline. These are software checks, not new benchmark observations or empirical model results.
+- Tests include a 322,164-slot schedule generation stress test and a 684-row synthetic three-benchmark, 19-configuration, 12-round import/analysis pipeline. These are software checks, not new benchmark observations or empirical model results.
 
 ## Remaining blockers before a new official-task smoke
 

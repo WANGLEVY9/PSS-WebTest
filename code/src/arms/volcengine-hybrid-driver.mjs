@@ -1,3 +1,5 @@
+import {performance} from 'node:perf_hooks';
+import {fetchJsonOnce} from './provider-transport.mjs';
 import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
 import { resolveProviderProtocol } from '../provider-profile.mjs';
@@ -55,17 +57,6 @@ function providerResponseSummary({ env, response, payload, step, attempt, ok = f
  * cannot be smuggled into the provider prompt. This is a provider smoke
  * driver; it does not itself establish confirmatory SUT evidence.
  */
-async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRetry) {
-  let lastError;
-  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try { return await fetchImpl(url, { ...init, signal: controller.signal }); }
-    catch (error) { lastError = error; if (attempt >= maxRetries) throw error; onRetry?.(error, attempt + 1); }
-    finally { clearTimeout(timer); }
-  }
-  throw lastError;
-}
 
 export function createVolcengineHybridDriver({ env = process.env, observeHybrid, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries, coordinateMode, hybridActionMode = env.CUA_HYBRID_ACTION_MODE ?? 'coordinate', wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
@@ -97,6 +88,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = protocol.max_decision_retries ?? (['aliyun', 'deepseek'].includes(config.provider) ? 1 : 0);
+  if (!Number.isInteger(maxRetries) || maxRetries < 0 || !Number.isInteger(maxDecisionRetries) || maxDecisionRetries < 0 || !Number.isInteger(timeoutMs) || timeoutMs < 1) throw new TypeError('Finite nonnegative retry counts and positive request timeout required');
   const actionHistory = [];
   const pointerIdentity = (action) => {
     if (typeof action?.target_id === 'string' && action.target_id.length > 0) return `target_id=${action.target_id}`;
@@ -105,7 +97,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   };
   let lastAcceptedPointer = null;
   let retryCount = 0;
-  const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
+  const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? performance.now() + wallTimeoutMs : null;
 
   return {
     async observe(context = {}) {
@@ -124,7 +116,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     },
     async decide({ intent, observation, step }) {
       assertObservationContract('hybrid', observation);
-      if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
+      const decisionDeadline = Math.min(wallDeadline ?? Infinity, performance.now()+timeoutMs*(1+Math.max(maxRetries,maxDecisionRetries)));
+      if (wallDeadline && performance.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
       const structure = JSON.stringify(observation.pageStructure);
       const coordinateInstruction = coordinateMode === 'pixels'
@@ -164,7 +157,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
         : '';
       let decision;
       let lastDecisionError;
-      for (let decisionAttempt = 0; decisionAttempt <= maxDecisionRetries; decisionAttempt += 1) {
+      for (let decisionAttempt = 0; decisionAttempt <= Math.max(maxDecisionRetries, maxRetries); decisionAttempt += 1) {
         const retryTextboxClickInstruction = actionHistory.at(-1)?.type === 'rejected_click' && actionHistory.at(-1)?.interaction === 'type'
           ? 'The previous click targeted a textbox. The textbox is already focused; if it is the Page Title field, your next action MUST be keypress CTRL+A, followed by the exact requested type action.'
           : '';
@@ -211,13 +204,14 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           try { onProviderResponse?.(providerResponseSummary({ env, response, payload, step, attempt: decisionAttempt, ok, error })); } catch { /* instrumentation is non-fatal */ }
         };
         try {
-          response = await fetchWithRetry(fetchImpl, `${baseUrl}/${responsesMode ? 'responses' : 'chat/completions'}`, {
+          const remainingMs = Math.min(timeoutMs, decisionDeadline - performance.now());
+          if (remainingMs <= 0) throw Object.assign(new Error('agent wall-time budget exceeded'), { transport: true, retryable: false });
+          ({response, payload} = await fetchJsonOnce(fetchImpl, `${baseUrl}/${responsesMode ? 'responses' : 'chat/completions'}`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
             body: JSON.stringify(requestBody)
-          }, timeoutMs, maxRetries, () => { retryCount += 1; });
-          payload = await response.json();
-          if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
+          }, remainingMs));
+          if (!response.ok) throw Object.assign(new Error(`CUA API request failed (${response.status})`), { transport: true, retryable: response.status === 429 || response.status >= 500 });
           decision = parseProviderDecision(payload, { coordinateMode, allowTargetId: hybridActionMode === 'semantic', allowBoundedJsonRepair: process.env.CUA_ALLOW_BOUNDED_JSON_REPAIR === '1' });
           const decisionIdentity = pointerIdentity(decision?.action);
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
@@ -261,7 +255,14 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
               : null;
             actionHistory.push({ ...decision.action, type: 'rejected_click', interaction: target?.interaction ?? null, reason: error.message.startsWith('title textbox requires CTRL+A') ? 'title-clear' : null });
           }
-          if (decisionAttempt >= maxDecisionRetries) throw error;
+          if ((error.transport && !error.retryable) || decisionAttempt >= (error.transport ? maxRetries : maxDecisionRetries)) throw error;
+          if (error.transport) {
+            const raw = response?.headers?.get?.('retry-after');
+            const retryAfter = raw && /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw)*1000 : raw ? Math.max(0,Date.parse(raw)-Date.now()) : 0;
+            const delay = Math.max(Number.isFinite(retryAfter)?retryAfter:0, Math.floor(250*2**decisionAttempt*(0.5+Math.random())));
+            if (performance.now()+delay >= decisionDeadline) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
           retryCount += 1;
         }
       }
@@ -283,6 +284,8 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
     getRetryCount() { return retryCount; },
     getProtocolResolution() {
       return {
+        transport_revision: 'single-owner-body-deadline-v2',
+        max_provider_attempts_per_decision: 1 + Math.max(maxRetries, maxDecisionRetries),
         profile_id: protocol.profile_id,
         profile_status: protocol.profile_status,
         frozen: protocol.frozen,

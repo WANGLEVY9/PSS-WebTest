@@ -44,7 +44,7 @@ report={'kind':'ATA_NATIVE_PARSER_PARITY','confirmatory_authorized':False,
         'benchmark_task_executions':0,'rows':rows,
         'all_files_match':bool(rows) and all(r['parity'] for r in rows),
         'official_total':sum(r['official_count'] or 0 for r in rows),
-        'frozen_marker_inventory':112,
-        'note':'Parser parity does not authorize the 112-to-113 population amendment or resolve duplicate source indices. Human adjudication and live fixture-label parity remain required.'}
+        'historical_v1_marker_inventory':112, 'active_population':113, 'population_amendment_authorized':True,
+        'note':'The user-authorized v2.1 population follows all 113 published cases (62 PASS/51 FAIL). Parser parity does not resolve duplicate source indices or establish live fixture-label parity.'}
 (code/'artifacts/local-runtime/ata-native-parser-preflight.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))

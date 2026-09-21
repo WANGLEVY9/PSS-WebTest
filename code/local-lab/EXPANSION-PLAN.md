@@ -44,7 +44,7 @@ After admission, propose a **12–24 task stratified protocol pilot**, covering 
 
 ## Concrete findings and revisions
 
-1. ATA published CSV headers parse to **113 candidates**, whereas frozen v1's marker-based inventory counts 112. `postmill_failing.csv:1` begins with `í`, not `►`; its `TC-1-F` header is still valid. Preserve v1 and propose a provenance-linked amendment. Do not call 113 tasks admitted.
+1. ATA published CSV headers parse to **113 candidates**, whereas frozen v1's marker-based inventory counts 112. `postmill_failing.csv:1` begins with `í`, not `►`; its `TC-1-F` header is still valid. The user authorized v2.1 to follow all 113 official cases (62 PASS/51 FAIL), without balancing. Preserve v1/v2.0 as history; source mapping does not constitute live admission.
 2. `postmill_passing.csv:118` has source step indices `[1,1,2,3,4,5]`; maintain source IDs and positional step IDs separately, adjudicate mapping rather than silently renumbering gold.
 3. PinATA's `TestCase.__str__` includes the `P/F` suffix and is used in worker context. The PSS task export uses opaque IDs and excludes filenames/failure annotations. Expected assertions are legitimate public test specifications, unlike actual labels.
 4. ATA's labels come from CSV P/F and Expected Failure annotations. PinATA's Actor/Assertor status is a prediction. Earlier "independence unverified" wording must not be interpreted as absence of gold labels; live fixture-label equivalence is still unverified.

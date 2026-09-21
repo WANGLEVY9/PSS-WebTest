@@ -73,7 +73,7 @@ const progress = {
       id: "ata",
       name: "ATA Benchmark",
       state: "Artifact audit / blocked",
-      detail: `${ata?.published_tasks ?? 0} parsed candidates; v1 inventory has 112. Label separation implemented; population amendment and live fixture-label equivalence unresolved.`,
+      detail: `${ata?.published_tasks ?? 0} parsed cases; active v2.1 follows the official 113-case population (62 PASS / 51 FAIL), without rebalancing. Source separation is implemented; historical-result reconciliation and live fixture-label equivalence remain pending.`,
       audit_warnings: ata?.warnings || [],
       executions: 0,
     },

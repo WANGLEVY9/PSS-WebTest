@@ -1,5 +1,7 @@
 # GPT sponsor handoff and acceptance checklist
 
+**New sponsor campaign:** use [SPONSOR-DEPLOYMENT.md](./SPONSOR-DEPLOYMENT.md) and the portable doctor/verification entrypoints. Previous cloud records are not a dependency for new environment development or acceptance. Historical pooling remains separate. The instructions below also document the older prepared local workstation; they are not a portable three-benchmark installer.
+
 Status (2026-09-21): **OpenAI transport implemented and offline-tested; full benchmark handoff NOT ready.**
 
 The user adopted manuscript v2.0 and retired the old five-configuration plan on 2026-09-21. See [DESIGN-V2-MIGRATION.md](./DESIGN-V2-MIGRATION.md) and [ANALYSIS-AND-ROUTING.md](./ANALYSIS-AND-ROUTING.md). The active matrix is 19 configurations × 12 rounds. Substantial existing collection is user-reported; GPT supplementation should reconcile original IDs/configurations first. Missing local records do not establish globally unrun tasks.
@@ -52,7 +54,7 @@ The model smoke does NOT set `PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN=1`, edit conformanc
 | WAV source/evaluator | Official source pin and Python dependencies verified; original evaluator integration; seven exposed tasks /33 records | Answer-dependent evaluator errors require explicit handling; full dependency closure for selected tasks |
 | WAV reset | Three fresh-image cycles restore six review-table hashes and leave neighbor unchanged | Reset before **every** arm/repetition in actual runner, exact task-state fingerprints and isolation proof |
 | VWA | Official source and local component preparation | VM storage, deployed official site(s), reference-image input adapter, native reset/evaluator and three-arm runs; local torch platform warning persists |
-| ATA | Published artifact parser, specification/gold separation and metric unit checks | 112-vs-113 inventory amendment, local fixture-label parity, reset, live shared evaluation and three-arm adapters |
+| ATA | Published artifact parser, specification/gold separation and metric unit checks | v2.1 follows 113 official cases (62 PASS/51 FAIL); historical-result reconciliation, local fixture-label parity, reset, live shared evaluation and three-arm adapters |
 | Dataset/fairness | Frozen v1.0 rules and machine-checked contracts | `included_tasks.csv` and Traditional adaptation ledger currently have headers only; independent human reviews and blinded scripts still required |
 | Observability | Per-step frames/digests, actions, provider summaries, HAR, trace, durable ledger; English console | Official adapters beyond WAV retrieval, cross-adapter replay validation and tested interrupt/resume/isolation scheduler |
 | Analysis | Strict completion separated from oracle score; metric unit tests, unknowns not invented | Frozen task population, pilot variance, repetitions/power plan, reviewed analysis export and authorization |

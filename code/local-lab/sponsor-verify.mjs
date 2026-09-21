@@ -19,7 +19,7 @@ const report={kind:'SPONSOR_OFFLINE_VERIFICATION',started_at:new Date().toISOStr
 report.active_study=studyStatus();
 report.source_files=fs.readdirSync(path.join(code,'local-lab')).filter(f=>f.endsWith('.mjs')).sort().map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')}));
 report.source_files.push(...['public/app.js','public/resource-accounting.mjs','public/index.html'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')})));
-report.source_files.push(...['../config/active-study-design.json','../config/study-design-contract.v2.0.json','../config/study-runtime-bindings.v2.0.example.json','../scripts/validate-study-design-contract.mjs','../scripts/validate-long-cycle-experiment-plan.mjs','../scripts/audit-study-design-compliance.mjs'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')})));
+report.source_files.push(...['../config/active-study-design.json','../config/study-design-contract.v2.1.json','../config/ata-source-population.v1.json','../config/study-runtime-bindings.v2.1.example.json','../scripts/validate-study-design-contract.mjs','../scripts/validate-long-cycle-experiment-plan.mjs','../scripts/audit-study-design-compliance.mjs'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')})));
 const dest=path.join(code,'artifacts/local-runtime',`sponsor-verify-${Date.now()}`);
 fs.mkdirSync(dest,{recursive:true,mode:0o700});
 for(const step of steps) {

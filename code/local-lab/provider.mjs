@@ -105,21 +105,27 @@ export function parseProviderResponse(api,payload,{httpStatus=200,requestId=null
 export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch}={}) {
   if(!config.apiKey) throw Error('Provider key is required');
   if(!Number.isInteger(timeoutMs) || timeoutMs<1) throw Error('Positive request time budget required');
-  const start=Date.now();
+  const start=Date.now(),controller=new AbortController();
+  let timer;
+  const expired=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new DOMException('Request deadline exceeded','TimeoutError'));},timeoutMs);});
   try {
+    return await Promise.race([expired,(async()=>{
     const res=await fetchImpl(`${config.base_url}/${config.api==='responses'?'responses':'chat/completions'}`,{
       method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.apiKey}`,'Content-Type':'application/json'},
-      body:JSON.stringify(body),signal:AbortSignal.timeout(timeoutMs),
+      body:JSON.stringify(body),signal:controller.signal,
     });
     let payload;
     try {payload=await res.json();} catch(e) {
       if(/timeout|abort/i.test(e?.name)) throw e;
       return {...parseProviderResponse(config.api,null,{httpStatus:res.status}),failure_class:
-        res.ok?'provider-response-invalid':res.status===429?'provider-rate-limit':'provider-http',latency_ms:Date.now()-start};
+        res.ok?'provider-response-invalid':res.status===429?'provider-rate-limit':res.status>=500?'provider-service':res.status===401||res.status===403?'provider-auth':'provider-http',latency_ms:Date.now()-start};
     }
-    return {...parseProviderResponse(config.api,payload,{httpStatus:res.status,requestId:res.headers?.get('x-request-id')||null}),latency_ms:Date.now()-start};
+    const retryAfter=res.headers?.get('retry-after');
+    const retryAfterMs=retryAfter===null||retryAfter===undefined?null:/^\d+(?:\.\d+)?$/.test(retryAfter)?Number(retryAfter)*1000:Math.max(0,Date.parse(retryAfter)-Date.now());
+    return {...parseProviderResponse(config.api,payload,{httpStatus:res.status,requestId:res.headers?.get('x-request-id')||null}),retry_after_ms:Number.isFinite(retryAfterMs)?retryAfterMs:null,latency_ms:Date.now()-start};
+    })()]);
   } catch(e) {
     return {failure_class:/timeout|abort/i.test(e?.name)?'provider-timeout':'provider-network',
       http_status:null,usage:null,output:null,latency_ms:Date.now()-start};
-  }
+  } finally {clearTimeout(timer);}
 }

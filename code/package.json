@@ -7,6 +7,8 @@
     "study:validate": "node local-lab/validate-active-study.mjs",
     "study:workflow": "node local-lab/study-workflow.mjs",
     "sponsor:verify": "node local-lab/sponsor-verify.mjs",
+    "sponsor:verify:portable": "node local-lab/sponsor-portable-verify.mjs",
+    "sponsor:doctor:portable": "node local-lab/sponsor-portable-doctor.mjs",
     "sponsor:preflight": "node local-lab/sponsor-preflight.mjs --live-environment --write",
     "sponsor:smoke": "node local-lab/provider-smoke.mjs",
     "sponsor:console": "node local-lab/server.mjs",
@@ -158,7 +160,10 @@
     "gate:prestashop:fault-evolution": "node scripts/prestashop-fault-evolution-gate.mjs",
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs",
     "oracle:juice-shop:product-detail": "node scripts/evaluate-juice-shop-product-detail.mjs",
-    "oracle:juice-shop:basket": "node scripts/evaluate-juice-shop-basket.mjs"
+    "oracle:juice-shop:basket": "node scripts/evaluate-juice-shop-basket.mjs",
+    "test:runtime-reliability": "python3 -m unittest discover -s local-lab -p 'test_runtime*.py' -v && node --test local-lab/reliable-provider.test.mjs local-lab/model-routing.test.mjs local-lab/provider.test.mjs tests/contracts/provider-deadline-retry.test.mjs",
+    "test:study-analysis": "node --test local-lab/study-analysis.test.mjs local-lab/analysis-export.test.mjs local-lab/study-pipeline.test.mjs",
+    "study:runtime": "python3 local-lab/runtime_worker.py"
   },
   "devDependencies": {
     "@browserbasehq/stagehand": "^3.0.8",

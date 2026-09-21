@@ -1,3 +1,5 @@
+import {performance} from 'node:perf_hooks';
+import {fetchJsonOnce} from './provider-transport.mjs';
 import crypto from 'node:crypto';
 import { requireProviderConfig } from './agent-adapter.mjs';
 import { resolveProviderProtocol } from '../provider-profile.mjs';
@@ -248,21 +250,6 @@ function parseProviderDecision(payload, options = {}) {
   return toolCall ? parseToolDecision(toolCall, options) : parseDecision(payload?.choices?.[0]?.message?.content || '', options);
 }
 
-async function fetchWithRetry(fetchImpl, url, init, timeoutMs, maxRetries, onRetry) {
-  let lastError;
-  for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      return await fetchImpl(url, { ...init, signal: controller.signal });
-    } catch (error) {
-      lastError = error;
-      if (attempt >= maxRetries) throw error;
-      onRetry?.(error, attempt + 1);
-    } finally { clearTimeout(timer); }
-  }
-  throw lastError;
-}
 
 export function createVolcengineCuaDriver({ env = process.env, observeScreenshot, executeAction, onProviderResponse, fetchImpl = fetch, timeoutMs = 15000, maxRetries, coordinateMode, wallTimeoutMs = Number.parseInt(env.CUA_AGENT_WALL_TIMEOUT_MS ?? '0', 10), doneVerdicts = ['pass'] } = {}) {
   const config = requireProviderConfig(env);
@@ -295,10 +282,11 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
   const maxDecisionRetries = protocol.max_decision_retries ?? (['aliyun', 'deepseek'].includes(config.provider) ? 1 : 0);
+  if (!Number.isInteger(maxRetries) || maxRetries < 0 || !Number.isInteger(maxDecisionRetries) || maxDecisionRetries < 0 || !Number.isInteger(timeoutMs) || timeoutMs < 1) throw new TypeError('Finite nonnegative retry counts and positive request timeout required');
   const actionHistory = [];
   let lastAcceptedPointer = null;
   let retryCount = 0;
-  const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? Date.now() + wallTimeoutMs : null;
+  const wallDeadline = Number.isFinite(wallTimeoutMs) && wallTimeoutMs > 0 ? performance.now() + wallTimeoutMs : null;
 
   return {
     async observe(context = {}) {
@@ -310,7 +298,8 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
       return { screenshot: asDataUrl(screenshot) };
     },
     async decide({ intent, observation, step }) {
-      if (wallDeadline && Date.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
+      const decisionDeadline = Math.min(wallDeadline ?? Infinity, performance.now()+timeoutMs*(1+Math.max(maxRetries,maxDecisionRetries)));
+      if (wallDeadline && performance.now() >= wallDeadline) throw new Error('agent wall-time budget exceeded');
       const currentObservationDigest = screenshotDigest(observation.screenshot);
       const coordinateInstruction = coordinateBounds(coordinateMode).instruction;
       const formatInstruction = actionMode === 'tool'
@@ -332,7 +321,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         : '';
       let decision;
       let lastDecisionError;
-      for (let decisionAttempt = 0; decisionAttempt <= maxDecisionRetries; decisionAttempt += 1) {
+      for (let decisionAttempt = 0; decisionAttempt <= Math.max(maxDecisionRetries, maxRetries); decisionAttempt += 1) {
         const retryBlockedClickInstruction = actionHistory.at(-1)?.type === 'rejected_click'
           ? 'The previous click was rejected because the screenshot did not change. Re-plan from the current screenshot and choose a different visible target from the task sequence; do not reuse that coordinate.'
           : blockedClickInstruction;
@@ -385,13 +374,14 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           try { onProviderResponse?.(providerResponseSummary({ env, response, payload, step, attempt: decisionAttempt, ok, error })); } catch { /* instrumentation is non-fatal */ }
         };
         try {
-          response = await fetchWithRetry(fetchImpl, `${baseUrl}/${responsesMode ? 'responses' : 'chat/completions'}`, {
+          const remainingMs = Math.min(timeoutMs, decisionDeadline - performance.now());
+          if (remainingMs <= 0) throw Object.assign(new Error('agent wall-time budget exceeded'), { transport: true, retryable: false });
+          ({response, payload} = await fetchJsonOnce(fetchImpl, `${baseUrl}/${responsesMode ? 'responses' : 'chat/completions'}`, {
             method: 'POST',
             headers: { 'content-type': 'application/json', authorization: `Bearer ${apiKey}` },
             body: JSON.stringify(requestBody)
-          }, timeoutMs, maxRetries, () => { retryCount += 1; });
-          payload = await response.json();
-          if (!response.ok) throw new Error(`CUA API request failed (${response.status}): ${payload?.error?.message || 'unknown error'}`);
+          }, remainingMs));
+          if (!response.ok) throw Object.assign(new Error(`CUA API request failed (${response.status})`), { transport: true, retryable: response.status === 429 || response.status >= 500 });
           decision = parseProviderDecision(payload, { coordinateMode, allowBoundedJsonRepair: process.env.CUA_ALLOW_BOUNDED_JSON_REPAIR === '1' });
           const repeatsPointer = decision.type === 'action' && decision.action.type === 'click' && lastAcceptedPointer
             && decision.action.x === lastAcceptedPointer.x && decision.action.y === lastAcceptedPointer.y;
@@ -414,7 +404,14 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
           emitProviderSummary(false, error);
           lastDecisionError = error;
           if (error.message.startsWith('repeated non-progressing click') && decision?.action) actionHistory.push({ type: 'rejected_click', x: decision.action.x, y: decision.action.y });
-          if (decisionAttempt >= maxDecisionRetries) throw error;
+          if ((error.transport && !error.retryable) || decisionAttempt >= (error.transport ? maxRetries : maxDecisionRetries)) throw error;
+          if (error.transport) {
+            const raw = response?.headers?.get?.('retry-after');
+            const retryAfter = raw && /^\d+(?:\.\d+)?$/.test(raw) ? Number(raw)*1000 : raw ? Math.max(0,Date.parse(raw)-Date.now()) : 0;
+            const delay = Math.max(Number.isFinite(retryAfter)?retryAfter:0, Math.floor(250*2**decisionAttempt*(0.5+Math.random())));
+            if (performance.now()+delay >= decisionDeadline) throw error;
+            await new Promise(resolve => setTimeout(resolve, delay));
+          }
           retryCount += 1;
         }
       }
@@ -436,6 +433,8 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
     getRetryCount() { return retryCount; },
     getProtocolResolution() {
       return {
+        transport_revision: 'single-owner-body-deadline-v2',
+        max_provider_attempts_per_decision: 1 + Math.max(maxRetries, maxDecisionRetries),
         profile_id: protocol.profile_id,
         profile_status: protocol.profile_status,
         frozen: protocol.frozen,

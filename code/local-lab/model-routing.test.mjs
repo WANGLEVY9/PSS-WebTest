@@ -6,7 +6,7 @@ const env={PSS_LOCAL_PROVIDER:'openai',OPENAI_MODEL:'fixed-actor',OPENAI_API_KEY
 const record={finished_at:'synthetic-end',status:'failed',failure_class:'provider-timeout',actions:[],requests:[{http_status:429,latency_ms:15,prompt_text:'SECRET',output:'SECRET'}],oracle:{answer:'SECRET'},pageStructure:'SECRET',url:'SECRET'};
 test('audit detects actor routing drift but does not invent policy provenance for legacy records',()=>{
   const config=resolveProvider(env),route=actorRoute(config);
-  const batch={provider_configuration:publicProvider(config),model_routing:route,records:[{record_id:'v',requests:[{model_requested:config.model,provider:config.provider,model_routing:route}]}]};
+  const batch={provider_configuration:publicProvider(config),model_routing:route,records:[{record_id:'v',requests:[{model_requested:config.model,model_returned:config.model,provider:config.provider,model_routing:route}]}]};
   assert.equal(auditActorRouting(batch).status,'verified');
   batch.records[0].requests[0].model_requested='other';assert.equal(auditActorRouting(batch).status,'invalid');
   assert.equal(auditActorRouting({}).status,'legacy-unrecorded');

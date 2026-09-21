@@ -1,8 +1,12 @@
 {
   "schema_version": "1",
-  "active_contract": "study-design-contract.v2.0.json",
-  "authority": "user-approved-current-manuscript",
+  "active_contract": "study-design-contract.v2.1.json",
+  "authority": "user-approved-benchmark-source-correction",
   "adopted_at": "2026-09-21",
-  "superseded_execution_authorities": ["study-design-contract.v1.0.json", "long-cycle-experiment-plan.v1.0.json"],
+  "superseded_execution_authorities": [
+    "study-design-contract.v1.0.json",
+    "long-cycle-experiment-plan.v1.0.json",
+    "study-design-contract.v2.0.json"
+  ],
   "historical_files_retained_for_audit_only": true
 }

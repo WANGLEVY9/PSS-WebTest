@@ -44,3 +44,11 @@ test('end-to-end ATA report derives both RQ3 and RQ4 from the same native record
   assert.deepEqual(p.error_conditioned.cohort.error_tasks,['error-case']);
   f.pairs[0].error_conditioned.validation_rounds.push('D1');assert.throws(()=>buildAnalysisReport(f),/disjoint/);
 });
+test('RQ4 rejects discovery leakage, swapped windows and lowered inclusion threshold',()=>{
+ const rounds=['D1','D2',...Array.from({length:10},(_,i)=>`V${i+1}`)];
+ const make=()=>({...fixture(),strata:['c','d'].map(configuration_id=>({benchmark:'vwa',configuration_id,operational:{task_ids:['t'],rounds,rows:[]},native_rows:[]})),pairs:[{benchmark:'vwa',c:'c',d:'d',retry:{first_window:rounds.slice(2,7),second_window:rounds.slice(7),min_joint:8}}]});
+ assert.doesNotThrow(()=>buildAnalysisReport(make()));
+ let f=make();f.pairs[0].retry.first_window[0]='D1';assert.throws(()=>buildAnalysisReport(f),/frozen validation/);
+ f=make();f.pairs[0].retry.min_joint=7;assert.throws(()=>buildAnalysisReport(f),/min_joint/);
+ f=make();[f.pairs[0].retry.first_window,f.pairs[0].retry.second_window]=[f.pairs[0].retry.second_window,f.pairs[0].retry.first_window];assert.throws(()=>buildAnalysisReport(f),/frozen validation/);
+});

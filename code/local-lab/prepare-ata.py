@@ -68,14 +68,13 @@ def main():
                 warnings.append({'task_id': key, 'issue': 'empty steps or non-single failure annotation', 'failure_annotations': len(case['failures'])})
             if [s['step'] for s in case['steps']] != list(range(1, len(case['steps']) + 1)):
                 warnings.append({'task_id': key, 'issue': 'non-contiguous official step indices'})
-    if len(gold) != 112:
-        warnings.append({'issue': 'frozen-v1 marker inventory differs from parsed task headers',
-                         'frozen_v1_count': 112, 'parsed_count': len(gold),
-                         'source': 'postmill_failing.csv:1 uses í instead of ►; original task header remains valid',
-                         'action': 'quarantine population revision pending adjudication; do not overwrite frozen manifests'})
+    population = json.loads((ROOT / 'config/ata-source-population.v1.json').read_text())
+    if len(gold) != population['published_tasks'] or sum(v['label'] == 'P' for v in gold.values()) != population['expected_pass'] or sum(v['label'] == 'F' for v in gold.values()) != population['expected_fail']:
+        raise ValueError('Parsed ATA population differs from pinned official release')
     (OUT / 'evaluator-only.json').write_text(json.dumps(gold, indent=2))
     report = {'kind': 'ATA_ARTIFACT_PREPARATION', 'executions': 0, 'confirmatory_eligible': False,
-              'published_tasks': len(gold), 'counts': dict(counts), 'files': files, 'warnings': warnings,
+              'population_protocol': 'pss-manuscript-v2.1', 'historical_v1_marker_inventory': 112,
+              'population_amendment_authorized': True, 'published_tasks': len(gold), 'counts': dict(counts), 'files': files, 'warnings': warnings,
               'gold_authority': 'Published P/F identifiers and Expected Failure column, not an agent verdict',
               'not_verified': ['live environment reproduces labels', 'reset equivalence', 'human eligibility review', 'live adapter'],
               'public_input_fields': ['task_id', 'site', 'title', 'steps'],

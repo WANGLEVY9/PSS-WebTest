@@ -1,0 +1,35 @@
+{
+  "schema": "pss-runtime-bindings-v2",
+  "protocol_id": "pss-manuscript-v2.1",
+  "status": "template-not-executable",
+  "note": "For a new sponsor campaign, freeze prospective matched budgets on separate development tasks; historical settings are only required before pooling or replication claims. Do not guess model API IDs, framework commits or source digests from display labels.",
+  "budget_profiles": {},
+  "configurations": {},
+  "required_budget_fields": [
+    "task_timeout_ms",
+    "max_actions",
+    "browser_revision",
+    "viewport",
+    "locale",
+    "timezone"
+  ],
+  "required_agent_binding_fields": [
+    "model_api_id",
+    "provider",
+    "framework_revision",
+    "prompt_sha256",
+    "action_schema_sha256",
+    "image_settings_sha256",
+    "model_settings_sha256",
+    "boundary_audit_sha256"
+  ],
+  "required_script_binding_fields": [
+    "framework_revision",
+    "script_manifest_sha256",
+    "blind_authoring_evidence_sha256"
+  ],
+  "required_binding_for_all": [
+    "configuration_sha256",
+    "budget_profile_by_benchmark"
+  ]
+}

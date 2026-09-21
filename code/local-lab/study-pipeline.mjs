@@ -18,7 +18,8 @@ export function validateTasks(design,tasks,{scope='formal'}={}) {
   must(new Set(nativeKeys).size===tasks.length,'Duplicate source task identity');
   if(scope==='formal') {
     for(const b of design.benchmarks) must(tasks.filter(t=>t.benchmark===b.id).length===b.selected_tasks,'Formal manifest differs from selected denominator');
-    for(const expected of ['PASS','FAIL']) must(tasks.filter(t=>t.benchmark==='ata'&&t.expected===expected).length===56,'ATA class denominator differs from manuscript');
+    const ata=design.benchmarks.find(b=>b.id==='ata');
+    for(const [expected,count] of [['PASS',ata.expected_pass],['FAIL',ata.expected_fail]]) must(tasks.filter(t=>t.benchmark==='ata'&&t.expected===expected).length===count,'ATA class denominator differs from published benchmark');
   }
 }
 export function schedulePlan(design,tasks,{scope='formal',seed='pss-manuscript-v2',bindings=null}={}) {
@@ -69,6 +70,7 @@ export function validateRecords(design,tasks,records) {
   const byTask=new Map(tasks.map(t=>[t.task_key,t])),configs=new Set(configurations(design).map(c=>c.id)),rounds=new Set([...design.rounds.discovery,...design.rounds.validation]);
   const seen=new Set(),configurationDigests=new Map();
   for(const r of records) {
+    must(r.protocol_id===design.protocol_id,'Historical acquisition protocol requires explicit reconciliation; never silently relabel records');
     const k=key(r.task_key,r.config_id,r.round),t=byTask.get(r.task_key);
     must(t&&configs.has(r.config_id)&&rounds.has(r.round)&&!seen.has(k),'Record outside selected matrix or duplicate opportunity');seen.add(k);
     must(typeof r.source_opportunity_id==='string'&&r.source_opportunity_id&&hash(r.source_sha256)&&hash(r.configuration_sha256),'Original opportunity/configuration provenance required');

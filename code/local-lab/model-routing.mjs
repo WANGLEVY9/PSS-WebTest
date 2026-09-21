@@ -13,13 +13,17 @@ export function actorRoute(config) {
 }
 export function auditActorRouting(batch) {
   if(!batch.model_routing) return {status:'legacy-unrecorded',errors:[]};
-  const expected=actorRoute(batch.provider_configuration),errors=[];
+  const expected=actorRoute(batch.provider_configuration),errors=[],unknown=[];
+  const aliases=batch.provider_configuration.approved_model_returned_aliases||[];
   if(JSON.stringify(batch.model_routing)!==JSON.stringify(expected)) errors.push('batch actor routing differs from declared provider configuration');
   for(const record of batch.records) for(const request of record.requests||[]) {
     if(JSON.stringify(request.model_routing)!==JSON.stringify(expected) || request.model_requested!==expected.model || request.provider!==expected.provider)
       errors.push(`${record.record_id}: action request changed fixed actor routing`);
+    if(request.model_returned) {
+      if(request.model_returned!==expected.model&&!aliases.includes(request.model_returned)) errors.push(`${record.record_id}: returned model is outside the frozen actor identity/alias list`);
+    } else if(!request.failure_class) unknown.push(`${record.record_id}: successful response has no returned model identity`);
   }
-  return {status:errors.length?'invalid':'verified',errors};
+  return {status:errors.length?'invalid':unknown.length?'unverified':'verified',errors,unknown};
 }
 export function auxiliaryProvider(env) {
   if(env.PSS_AUX_ENABLED!=='1') throw Error('Auxiliary model is disabled; explicit opt-in required');

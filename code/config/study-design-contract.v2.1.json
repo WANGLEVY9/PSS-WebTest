@@ -1,0 +1,249 @@
+{
+  "schema_version": "2.1",
+  "protocol_id": "pss-manuscript-v2.1",
+  "status": "benchmark-corrected-design-runtime-bindings-pending",
+  "authority": {
+    "source": "published-benchmark-source-and-user-correction",
+    "source_sha256": "cd8f99d0a57745ee03c3087a34f1509735a48bb8ec85f59583e67dd602be0175",
+    "approval_date": "2026-09-21",
+    "external_registration_claimed": false,
+    "correction_date": "2026-09-21"
+  },
+  "amendment": {
+    "supersedes": [
+      "pss-manuscript-v2.0"
+    ],
+    "reason": "User confirms ATA 112 and 56/56 are manuscript errors; follow the actual published benchmark: 113 cases, 62 PASS, 51 FAIL. No class rebalancing, relabeling or invented exclusions.",
+    "existing_records": "Preserve all v2.0/older records and their acquisition-time protocol IDs; reimport/reconcile actual official task IDs before reanalysis. Do not infer that the additional case was executed."
+  },
+  "benchmarks": [
+    {
+      "id": "wav",
+      "selected_tasks": 600
+    },
+    {
+      "id": "vwa",
+      "selected_tasks": 700
+    },
+    {
+      "id": "ata",
+      "selected_tasks": 113,
+      "expected_pass": 62,
+      "expected_fail": 51,
+      "population_ref": "ata-source-population.v1.json",
+      "source_catalog_sha256": "67c27329a41c83b8ac6eacf9ce0e2d9f639a3767e52d6bd111702b807aa1dad1",
+      "selection_policy": "entire-published-release-no-class-balancing"
+    }
+  ],
+  "outside_core": [
+    "workarena-plus-plus",
+    "legacy-five-local-applications"
+  ],
+  "models": [
+    {
+      "id": "m1",
+      "label": "GPT-6 Astra",
+      "collection_priority": "supplement-gpt"
+    },
+    {
+      "id": "m2",
+      "label": "GPT-5.6 Sol",
+      "collection_priority": "supplement-gpt"
+    },
+    {
+      "id": "m3",
+      "label": "Qwen3.8-Max",
+      "collection_priority": "reconcile-existing"
+    },
+    {
+      "id": "m4",
+      "label": "Qwen3.8-Flash",
+      "collection_priority": "reconcile-existing"
+    },
+    {
+      "id": "m5",
+      "label": "Claude Sonnet 5",
+      "collection_priority": "reconcile-existing"
+    },
+    {
+      "id": "m6",
+      "label": "Gemini 3.8 Flash",
+      "collection_priority": "reconcile-existing"
+    }
+  ],
+  "agent_configurations_per_model": [
+    {
+      "prefix": "v",
+      "framework": "agentlab-browsergym",
+      "input": "visual"
+    },
+    {
+      "prefix": "h",
+      "framework": "agentlab-browsergym",
+      "input": "hybrid"
+    },
+    {
+      "prefix": "u",
+      "framework": "browser-use-restricted",
+      "input": "hybrid"
+    }
+  ],
+  "script": {
+    "id": "s",
+    "framework": "playwright",
+    "input": "scripted",
+    "model": null,
+    "authoring": "human-authored-blind-to-agent-outcomes-and-evaluator-internals",
+    "shared_across_models": true
+  },
+  "rounds": {
+    "discovery": [
+      "D1",
+      "D2"
+    ],
+    "validation": [
+      "V1",
+      "V2",
+      "V3",
+      "V4",
+      "V5",
+      "V6",
+      "V7",
+      "V8",
+      "V9",
+      "V10"
+    ],
+    "retry_windows": [
+      [
+        "V1",
+        "V2",
+        "V3",
+        "V4",
+        "V5"
+      ],
+      [
+        "V6",
+        "V7",
+        "V8",
+        "V9",
+        "V10"
+      ]
+    ],
+    "retry_min_joint": 8,
+    "split_unit": "disjoint-executions-of-the-same-selected-tasks"
+  },
+  "scale": {
+    "tasks": 1413,
+    "configurations": 19,
+    "rounds_per_task_configuration": 12,
+    "scheduled_opportunities": 322164,
+    "meaning": "fixed selected denominator, including unprepared; not a claim about imported or completed records"
+  },
+  "selection": {
+    "official_ids_required": true,
+    "reviewers": 2,
+    "outcome_blind": true,
+    "freeze_before_comparative_execution": true,
+    "preserve_existing_selection_provenance": true,
+    "adaptation_failure_remains_in_denominator": true
+  },
+  "boundaries": {
+    "visual": {
+      "allowed": [
+        "screenshot",
+        "cursor-and-viewport",
+        "accepted-action-history",
+        "action-error",
+        "remaining-budget"
+      ],
+      "forbidden": [
+        "DOM",
+        "accessibility-tree",
+        "external-OCR",
+        "selectors",
+        "network-payload",
+        "hidden-state",
+        "evaluator-state",
+        "URL-control-flow-side-channel"
+      ]
+    },
+    "hybrid": {
+      "adds": [
+        "temporary-target-id",
+        "role",
+        "accessible-name",
+        "visible-value-state",
+        "bounding-box"
+      ],
+      "forbidden": [
+        "raw-HTML",
+        "hidden-offscreen-text",
+        "stable-application-id",
+        "CSS-XPath",
+        "private-API",
+        "evaluator-state"
+      ]
+    },
+    "scripted": {
+      "allowed": [
+        "public-DOM-accessibility",
+        "visible-state",
+        "ordinary-browser-events"
+      ],
+      "forbidden": [
+        "evaluator-implementation",
+        "reference-answer",
+        "private-API-database-truth",
+        "agent-trace"
+      ]
+    },
+    "fixed_actor": true,
+    "auxiliary_feedback_to_actor": false
+  },
+  "budget_policy": {
+    "matched_fields": [
+      "task_timeout_ms",
+      "max_actions",
+      "browser_revision",
+      "viewport",
+      "locale",
+      "timezone"
+    ],
+    "source": "prospectively freeze matched sponsor-campaign limits using separate development tasks; manuscript specifies matching but not numeric limits; recover historical settings only before pooling or replication claims",
+    "inherit_legacy_local_24_steps_240_seconds": false,
+    "historical_budget_changes": "distinct protocol stratum, no silent pooling",
+    "bindings_file": "study-runtime-bindings.v2.1.example.json"
+  },
+  "scheduling": {
+    "pre_generated": true,
+    "interleave_configurations": true,
+    "discovery_before_validation": true,
+    "per_execution_application_and_agent_reset": true,
+    "parallel_only_isolated_environment_shards": true,
+    "stable_opportunity_id": true,
+    "attempts_do_not_create_new_opportunities": true,
+    "existing_records_reconciled_before_supplement": true,
+    "missing_local_record_means": "unknown-not-imported; never infer globally-not-run",
+    "shared_script_scheduled_once": true
+  },
+  "statistics": {
+    "rq1": "all-19-configurations-all-12-rounds-native-endpoints",
+    "rq2_rq3_rq4_pairs": "v_m versus h_m and shared s",
+    "rq1_wav": "round-mean-of-template-macros",
+    "rq1_vwa": "round-mean-of-task-means",
+    "rq1_ata": "pooled-binary-counts; FAIL-positive; binary-coverage-over-started",
+    "rq2": "equal-task-mean-over-12-fixed-opportunities; unresolved-identification-bounds",
+    "rq3": "alternative-correctness-minus-visual-correctness; equal-case-joint-validation; discovery-selected-and-same-class-control",
+    "rq4": "same-eligible-four-outcome-blocks; benchmark-weights; both-retry-controls; ATA-pooled-and-class-specific",
+    "inference": "descriptive; no p-values or CIs reconstructed from rounded tables",
+    "preparation": "authoring-debugging-review hours, including failed preparation; shared script counted once per benchmark; separate from execution charges"
+  },
+  "data_status": {
+    "existing_collection": "user-reports-substantial-existing-data",
+    "reported_gap": "GPT-family-results",
+    "local_import_coverage": "unknown-pending-provenance-import",
+    "local_subset_is_global_inventory": false,
+    "ata_results": "legacy-112-case-aggregates-require-official-ID-reconciliation-and-reanalysis"
+  },
+  "new_execution_authorized": false
+}

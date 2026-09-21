@@ -1,0 +1,24 @@
+{
+  "observed_at": "2026-09-21T06:54:24.780Z",
+  "benchmark_id": "webarena-verified",
+  "expected_image": "am1n3e/webarena-verified-shopping@sha256:3e8cb9b945ea9b1c94ab26dba53e8d12dd0406abbf4bf686fd3bb2b6a5908feb",
+  "image_matches": true,
+  "architecture_compatible": true,
+  "services": {
+    "env-ctrl": "RUNNING",
+    "php-fpm": "RUNNING",
+    "elasticsearch": "HEALTHY",
+    "mysqld": "HEALTHY",
+    "cron": "RUNNING",
+    "mailcatcher": "HEALTHY",
+    "redis-server": "HEALTHY",
+    "nginx": "RUNNING"
+  },
+  "controller_success": true,
+  "site_status": 302,
+  "ready": true,
+  "study_execution_allowed": false,
+  "navigation_status": 200,
+  "navigation_url": "http://localhost:7770/",
+  "navigation_verified": true
+}

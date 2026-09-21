@@ -92,7 +92,7 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
   // Qwen3-VL JSON mode can fail with thinking enabled.  Use Alibaba's
   // generation-limit field explicitly while preserving the Ark shape.
   const generationOptions = config.provider === 'aliyun'
-    ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: 1.5 }
+    ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: env.PSS_PROMPT_PROFILE === 'generic-web-v1' ? 0 : 1.5 }
     : config.provider === 'deepseek'
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
@@ -172,7 +172,9 @@ export function createVolcengineHybridDriver({ env = process.env, observeHybrid,
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
         const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nAccessibility/page structure (use only this declared structure and the screenshot): ${structure}\nThe controls list gives stable target_id values for visible links, buttons, and textboxes. A control with interaction=type requires a click followed by a type action; a control with interaction=click requires a click action; an entry with interaction=observe is an informational text landmark and must not be clicked. In a new-page editor, if the Page Title textbox already contains default text, click it, press CTRL+A, and only then type the exact requested title; never append to the default. After the title is correct, click the Page content editor once and on the very next action type the requested content, not another click.\n${editorFollowupInstruction}\n${titleClearInstruction}\n${typingGuardInstruction}\n${retryTextboxClickInstruction}\n${repeatedClickInstruction}\n${blockedClickInstruction}\n${retryInstruction}\n${groundingInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. Never output selectors or evaluator fields.`;
-        const instructionTextWithRecovery = titleRecoveryInstruction ? `${instructionText}\n${titleRecoveryInstruction}` : instructionText;
+        const instructionTextWithRecovery = env.PSS_PROMPT_PROFILE === 'generic-web-v1'
+          ? `You are a Web task agent. Task: ${intent}\nStep: ${step}\nRecent actions: ${JSON.stringify(actionHistory.slice(-4))}\nVisible controls in this observation: ${structure}\nTarget IDs are observation-local and may change next step; only use IDs in the current observation. Inspect the screenshot after each action. Typing into a field does not necessarily submit a form. Do not declare completion unless all requested visible postconditions are satisfied. ${groundingInstruction}\n${formatInstruction} Never output selectors or evaluator fields.`
+          : titleRecoveryInstruction ? `${instructionText}\n${titleRecoveryInstruction}` : instructionText;
         const requestBody = responsesMode
           ? {
               model: config.model,

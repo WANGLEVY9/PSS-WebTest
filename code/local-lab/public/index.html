@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>PSS / Local Experiment Lab</title>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <aside class="rail">
+      <a class="brand" href="/">P<span>SS</span><small>WEB TEST LAB</small></a>
+      <div class="rail-label">RESEARCH WORKSPACE</div>
+      <nav>
+        <a class="selected" href="#workspace">01　实时实验</a
+        ><a href="#evidence">02　执行轨迹</a><a href="#metrics">03　指标对照</a
+        ><a href="#protocol">04　实验协议</a>
+      </nav>
+      <div class="rail-bottom">
+        <i class="dot"></i> LOCAL WORKSPACE<br /><small
+          >本地存储 · 真实模型请求<br />Pixels / Structure / Scripts</small
+        >
+      </div>
+    </aside>
+    <main id="workspace">
+      <header>
+        <div>
+          <div class="eyebrow">PSS-WEBTEST / LOCAL REPRODUCTION</div>
+          <h1>Experiment observatory<span>实验观测台</span></h1>
+          <p class="muted">
+            一个任务，三条执行路径。观察证据，而不是预设结论。
+          </p>
+        </div>
+        <div class="header-right">
+          <div id="connection" role="status">正在连接…</div>
+          <button id="start">启动三策略最小实验 ↗</button
+          ><small>真实 API 调用 · 每臂最多 16 次决策 / 240 秒</small>
+        </div>
+      </header>
+      <div class="notice">
+        <strong>ENGINEERING EVIDENCE</strong
+        ><span
+          >仅验证本地运行闭环，不纳入正式 WAV / VWA / ATA
+          分母；原有云端汇总数据不在此混入。</span
+        >
+      </div>
+      <section class="toolbar">
+        <div>
+          <label for="batch">EXPERIMENT / 实验批次</label
+          ><select id="batch"></select>
+        </div>
+        <div>
+          <label>MODEL / 当前模型配置</label>
+          <div id="model">—</div>
+        </div>
+        <div>
+          <label>EXECUTION / 执行模式</label>
+          <div>逐臂独立重置 · 串行隔离</div>
+        </div>
+        <div>
+          <label>DATA / 证据归档</label>
+          <div id="exports">运行后可下载</div>
+        </div>
+      </section>
+      <section class="task">
+        <div>
+          <div class="eyebrow">CURRENT TASK / 当前任务</div>
+          <h2>Juice Shop · 商品搜索</h2>
+          <p id="intent">从相同初态出发，搜索 apple，验证预期商品与负例。</p>
+        </div>
+        <span id="batch-status" class="badge">未运行</span>
+      </section>
+      <section id="metrics" class="metrics"></section>
+      <div id="benchmark" class="notice">正式 benchmark 环境状态待检查</div>
+      <section id="evidence">
+        <div class="section-title">
+          <h2>Execution evidence <span>逐步执行证据</span></h2>
+          <span class="muted">截图 · 动作 · 模型响应 · 独立 oracle</span>
+        </div>
+        <div id="arms" class="arms"></div>
+      </section>
+      <section id="protocol" class="protocol">
+        <div>
+          <div class="eyebrow">INFORMATION BOUNDARY</div>
+          <h3>信息边界</h3>
+          <p>
+            Visual 仅接收截图与自身动作历史；Hybrid
+            增加当前视口内控件投影；脚本使用可访问性 locator。URL 与 oracle
+            只用于实验观测，不回传模型或决定下一动作。
+          </p>
+        </div>
+        <div>
+          <div class="eyebrow">METRIC CONTRACT</div>
+          <h3>完成 ≠ 正确</h3>
+          <p>
+            严格通过要求预算内有效结束且独立 oracle 通过。reset / evaluator
+            故障标记未决。此页面的工程通过率不是 WAV 模板宏平均、VWA
+            官方成功率或 ATA 准确率。
+          </p>
+        </div>
+        <div>
+          <div class="eyebrow">PROVENANCE</div>
+          <h3>真实、可追溯、不混算</h3>
+          <p>
+            事件逐条落盘；截图保存
+            SHA-256；模型响应仅存动作输出及用量，不记录密钥与隐藏推理。费用无账单依据时记为未知，不用
+            token 数伪造金额。
+          </p>
+        </div>
+      </section>
+      <footer id="foot">正在读取本地运行状态…</footer>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

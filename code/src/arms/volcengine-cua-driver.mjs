@@ -290,7 +290,7 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
   // OpenAI-compatible endpoint also prefers max_completion_tokens; keep the
   // Volcengine request shape unchanged for backward compatibility.
   const generationOptions = config.provider === 'aliyun'
-    ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: 1.5 }
+    ? { max_completion_tokens: maxOutputTokens, enable_thinking: false, presence_penalty: env.PSS_PROMPT_PROFILE === 'generic-web-v1' ? 0 : 1.5 }
     : config.provider === 'deepseek'
     ? { max_tokens: maxOutputTokens, thinking: { type: 'disabled' } }
     : { max_tokens: maxOutputTokens };
@@ -342,7 +342,9 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
         const retryInstruction = decisionAttempt > 0
           ? 'The previous provider response had empty or invalid action arguments. Retry now with exactly one complete ui_action call and all required arguments.'
           : '';
-        const instructionText = `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\nIf a task asks to set a page title and the title textbox already contains default text, click the title textbox, press CTRL+A, and only then type the exact requested title; do not append to the default text. After the title is correct, click the content editor once and type the requested content.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryRepeatedClickInstruction}\n${retryBlockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. For pointer actions, use ${coordinateInstruction}; never output decimal coordinates. Never omit required fields and do not invent DOM selectors.`;
+        const instructionText = env.PSS_PROMPT_PROFILE === 'generic-web-v1'
+          ? `You are a screenshot-only Web task agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\nThe screenshot is 1280 pixels wide and 720 pixels tall. For pointer actions use ${coordinateInstruction}. Inspect the screenshot after each action. Typing into a field does not necessarily submit a form. Do not declare completion unless all requested visible postconditions are satisfied. Do not invent page structure, target IDs or selectors. ${formatInstruction}`
+          : `You are a UI testing agent. Task: ${intent}\nStep: ${step}\nActions already executed: ${JSON.stringify(actionHistory.slice(-4))}\nIf a task asks to set a page title and the title textbox already contains default text, click the title textbox, press CTRL+A, and only then type the exact requested title; do not append to the default text. After the title is correct, click the content editor once and type the requested content.\n${editorFollowupInstruction}\n${typingGuardInstruction}\n${retryRepeatedClickInstruction}\n${retryBlockedClickInstruction}\n${retryInstruction}\n${formatInstruction} Never output a top-level click/type/keypress object. Never use a key named y=; the coordinate keys are exactly x and y. For type actions, text must be one single-line literal from the task, with no newline characters, no padding, and at most 200 characters. For pointer actions, use ${coordinateInstruction}; never output decimal coordinates. Never omit required fields and do not invent DOM selectors.`;
         const requestBody = responsesMode
           ? {
               model: config.model,
@@ -363,6 +365,13 @@ export function createVolcengineCuaDriver({ env = process.env, observeScreenshot
             };
         if (actionMode === 'tool') {
           requestBody.tools = [responsesMode ? RESPONSES_UI_ACTION_TOOL : UI_ACTION_TOOL];
+          if (env.PSS_PROMPT_PROFILE === 'generic-web-v1') {
+            requestBody.tools = structuredClone(requestBody.tools);
+            const parameters = responsesMode ? requestBody.tools[0].parameters : requestBody.tools[0].function.parameters;
+            delete parameters.properties.target_id;
+            parameters.properties.x.maximum = coordinateBounds(coordinateMode).maxX;
+            parameters.properties.y.maximum = coordinateBounds(coordinateMode).maxY;
+          }
           if (!responsesMode) requestBody.tool_choice = { type: 'function', function: { name: 'ui_action' } };
         } else if (!responsesMode) {
           requestBody.response_format = { type: 'json_object' };

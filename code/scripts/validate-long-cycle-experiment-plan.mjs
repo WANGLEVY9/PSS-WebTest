@@ -50,6 +50,11 @@ export function validateLongCycleExperimentPlan(plan) {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  if(!process.argv.includes('--legacy-audit')) {
+    const {studyStatus}=await import('../local-lab/study-design.mjs');
+    console.log(JSON.stringify({status:'active-manuscript-design-valid',...studyStatus()},null,2));
+    process.exit(0);
+  }
   const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
   const errors = validateLongCycleExperimentPlan(plan);
   console.log(JSON.stringify({

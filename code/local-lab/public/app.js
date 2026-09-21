@@ -118,6 +118,13 @@ function render() {
       el('p',p.error || `API: ${p.api}. Key configured: ${p.configured?'yes':'no'}. Configuration is not live connectivity or benchmark admission.`));
     admission.append(card);
   }
+  if(state.study_design) {
+    const s=state.study_design,card=el('details');
+    card.append(el('summary',`Active study · ${s.protocol_id} · ${s.configuration_count} configurations × 12 rounds`),
+      el('p',`Selected denominator: ${s.scale.tasks.toLocaleString('en-US')} tasks; ${s.scale.scheduled_opportunities.toLocaleString('en-US')} scheduled opportunities. Existing collection is user-reported; local import coverage is unknown. GPT supplementation is the priority.`),
+      el('p','Local diagnostic batches below are not the global research inventory. Discovery: D1–D2. Validation: V1–V10. Runtime budgets must match the original collection settings.'));
+    admission.append(card);
+  }
   if(state.sponsor_readiness) {
     const r=state.sponsor_readiness, card=el('details'), list=el('ul');
     card.append(el('summary','Sponsor handoff · benchmark setup incomplete'),

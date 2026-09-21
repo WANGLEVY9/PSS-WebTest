@@ -26,6 +26,7 @@ test('real console exposes OpenAI config without key and refuses task launch eve
     assert.doesNotMatch(text,new RegExp(key));assert.equal(state.provider,'openai');assert.equal(state.model,'authorized-test-fixture');
     assert.equal(state.provider_configuration.api,'responses');assert.equal(state.configured,true);
     assert.equal(state.execution_gate.allowed,false);
+    assert.equal(state.study_design.protocol_id,'pss-manuscript-v2.0');assert.equal(state.study_design.configuration_count,19);
     const accounting=await fetch(`${origin}/resource-accounting.mjs`);
     assert.equal(accounting.status,200);assert.match(accounting.headers.get('content-type'),/javascript/);
     browser=await chromium.launch({headless:true});

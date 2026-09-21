@@ -47,6 +47,7 @@ export function buildAnalysisReport(input) {
       }));
       const blocks=validationRetryBlocks(retryRows,p.retry);
       out.retry={selected_tasks:c.operational.task_ids.length,selection_policy:p.retry,...blocks,metrics:weightedRetryComplementarity(blocks.blocks,{benchmark:p.benchmark})};
+      if(p.benchmark==='ata') out.retry.by_reference_class=Object.fromEntries(['PASS','FAIL'].map(expected=>[expected,weightedRetryComplementarity(blocks.blocks.filter(b=>(ci.taskMeta.get(b.task_id)??di.taskMeta.get(b.task_id))===expected),{benchmark:'ata'})]));
     }
     if(p.error_conditioned) {
       if(p.benchmark!=='ata') throw Error('Error-conditioned analysis requires ATA');
@@ -54,15 +55,15 @@ export function buildAnalysisReport(input) {
       if(e.discovery_rounds.some(r=>e.validation_rounds.includes(r)) || [...e.discovery_rounds,...e.validation_rounds].some(r=>!c.operational.rounds.includes(r))) throw Error('Discovery and validation must be disjoint scheduled stages');
       // Discovery reads the anchor's native records, not supplied model labels or validation outcomes.
       const cohort=discoveryCohorts({task_ids:c.operational.task_ids,discovery_rounds:e.discovery_rounds,error_type:e.error_type,rows:c.native_rows.filter(r=>e.discovery_rounds.includes(r.round))});
-      const err=r=>!r || r.verdict===null?null:Number(r.verdict!==r.expected);
+      const correct=r=>!r || r.verdict===null?null:Number(r.verdict===r.expected);
       const rows=c.operational.task_ids.flatMap(task_id=>e.validation_rounds.map(round=>{
         const a=get(ci,task_id,round),b=get(di,task_id,round);
         if(a&&b&&a.expected!==b.expected) throw Error('Paired gold class mismatch');
-        return {task_id,round,c:err(a),d:err(b)};
+        return {task_id,round,c:correct(a),d:correct(b)};
       }));
       const contrast=ids=>retainedCaseContrast({cohort_task_ids:ids,validation_rounds:e.validation_rounds,rows:rows.filter(r=>ids.includes(r.task_id))});
       const errors=contrast(cohort.error_tasks),controls=contrast(cohort.control_tasks);
-      out.error_conditioned={cohort,errors,controls,excess:errors.contrast===null||controls.contrast===null?null:errors.contrast-controls.contrast};
+      out.error_conditioned={contrast_direction:'alternative-correctness-minus-visual-correctness',cohort,errors,controls,excess:errors.contrast===null||controls.contrast===null?null:errors.contrast-controls.contrast};
     }
     return out;
   });

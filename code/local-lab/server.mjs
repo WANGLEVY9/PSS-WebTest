@@ -10,6 +10,7 @@ import { alive } from "./lock.mjs";
 import { currentExecutionGate } from './execution-gate.mjs';
 import { resetProgress } from './reset-evidence.mjs';
 import { summarize } from "./metrics.mjs";
+import {studyStatus} from './study-design.mjs';
 import { PROTOCOL } from "./agent-protocol.mjs";
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
@@ -88,6 +89,7 @@ const server = http.createServer((req, res) => {
       return json(res, {
         token,
         active,
+        study_design: studyStatus(),
         model: providerStatus().model || null,
         next_protocol: PROTOCOL,
         diagnostic_start_enabled: runtimeEnv.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN === "1",

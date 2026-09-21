@@ -42,18 +42,18 @@ const openGates={
     'Three-arm adapter and replay evidence; DOM-derived SoM cannot enter the pixel-only arm',
   ],
   'autonomous-tester-agent-benchmark':[
-    'Approve versioned amendment from 112 marker count to 113 officially parsed candidates; adjudicate duplicate source step indices',
+    'Map the adopted 112 selected ATA task IDs and 56/56 classes to the pinned artifact with 113 parsed candidates; preserve exclusion/duplicate-step evidence, do not change the selected denominator to 113',
     'Local fixture/reset equivalence to published PASS/FAIL labels; do not dispatch upstream GitHub reset workflows',
     'Separate artifact-bundled evaluator from independently pinned PinATA checkout',
     'Live specification-only adapters and independent verdict/failed-step correctness checks',
   ],
 };
 const common=[
-  'Two independent human eligibility reviews and adjudication; AI audit is not a replacement',
-  'Freeze included/excluded task IDs and development/confirmatory separation before arm outcomes',
+  'Recover and verify original two-reviewer eligibility/adjudication evidence; AI audit is not a replacement and missing local evidence does not establish global noncompletion',
+  'Recover originally frozen included/excluded IDs and development/measurement separation; do not fabricate a pre-outcome freeze after collection',
   'Blinded Traditional authoring, two semantic reviewers, engineering-cost and deployment-failure ledger',
   'Dynamic information-boundary audit of inputs AND control flow on every adapter',
-  'Freeze models/frameworks/prompts/budgets, pilot-derived repetition plan and analysis version',
+  'Bind actual models/frameworks/prompts/budgets to adopted manuscript v2.0; fixed D1-D2 and V1-V10, with original collection provenance',
   'Explicit confirmatory authorization; high agent success is not a gate',
 ];
 const ata=readJSON(path.join(code,'artifacts/local-runtime/ata-preparation/summary.json'));

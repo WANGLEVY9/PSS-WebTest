@@ -36,6 +36,11 @@ export function auditStudyDesignCompliance({ design = contract, cycle = plan, me
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  if(!process.argv.includes('--legacy-audit')) {
+    const {studyStatus}=await import('../local-lab/study-design.mjs');
+    console.log(JSON.stringify({status:'active-manuscript-design-valid-runtime-evidence-separate',...studyStatus()},null,2));
+    process.exit(0);
+  }
   const result = auditStudyDesignCompliance();
   console.log(JSON.stringify(result, null, 2));
   if (result.errors.length) process.exitCode = 1;

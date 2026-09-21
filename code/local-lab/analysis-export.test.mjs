@@ -39,7 +39,8 @@ test('end-to-end ATA report derives both RQ3 and RQ4 from the same native record
       return {task_id,round,started:true,expected:'FAIL',verdict:error?'PASS':'FAIL',...(!error?{step_class:'AFC'}:{})};
     }))})),pairs:[{benchmark:'ata',c:'c',d:'d',retry:{first_window:rounds.slice(2,7),second_window:rounds.slice(7)},error_conditioned:{discovery_rounds:['D1','D2'],validation_rounds:rounds.slice(2),error_type:'false_pass'}}]};
   const p=buildAnalysisReport(f).pairs[0];
-  assert.equal(p.retry.metrics.n,2);assert.equal(p.error_conditioned.errors.contrast,1);assert.equal(p.error_conditioned.controls.contrast,0);assert.equal(p.error_conditioned.excess,1);
+  assert.equal(p.retry.metrics.n,2);assert.equal(p.error_conditioned.errors.contrast,-1);assert.equal(p.error_conditioned.controls.contrast,0);assert.equal(p.error_conditioned.excess,-1);
+  assert.equal(p.retry.by_reference_class.FAIL.n,2);assert.equal(p.retry.by_reference_class.PASS.n,0);
   assert.deepEqual(p.error_conditioned.cohort.error_tasks,['error-case']);
   f.pairs[0].error_conditioned.validation_rounds.push('D1');assert.throws(()=>buildAnalysisReport(f),/disjoint/);
 });

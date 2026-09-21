@@ -1,5 +1,7 @@
 # Official benchmark expansion and admission plan
 
+> Archived on 2026-09-21. The five-configuration and 5/7/10-repetition execution plan below is superseded by `config/active-study-design.json` and `DESIGN-V2-MIGRATION.md` (19 configurations, 12 D/V opportunities). Retained for historical audit only; technical gate notes are not execution authorization.
+
 ## Material Passport
 
 - Origin Skill: academic-research-suite / experiment-agent

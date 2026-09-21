@@ -4,6 +4,8 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "study:validate": "node local-lab/validate-active-study.mjs",
+    "study:workflow": "node local-lab/study-workflow.mjs",
     "sponsor:verify": "node local-lab/sponsor-verify.mjs",
     "sponsor:preflight": "node local-lab/sponsor-preflight.mjs --live-environment --write",
     "sponsor:smoke": "node local-lab/provider-smoke.mjs",

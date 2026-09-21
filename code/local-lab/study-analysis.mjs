@@ -1,5 +1,5 @@
 // Candidate manuscript-aligned analysis. Pure functions; never authorizes a run or changes a freeze.
-export const ANALYSIS_VERSION = 'candidate-rq-analysis-v1';
+export const ANALYSIS_VERSION = 'manuscript-rq-analysis-v2.0.0';
 const mean = xs => xs.length ? xs.reduce((a,b)=>a+b,0)/xs.length : null;
 const bit = x => x === 0 || x === 1;
 function requireValue(ok, message) { if (!ok) throw Error(message); }

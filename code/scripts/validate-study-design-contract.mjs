@@ -69,6 +69,11 @@ export function validateStudyDesignContract(contract) {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  if(!process.argv.includes('--legacy-audit')) {
+    const {studyStatus}=await import('../local-lab/study-design.mjs');
+    console.log(JSON.stringify({status:'active-manuscript-design-valid',...studyStatus()},null,2));
+    process.exit(0);
+  }
   const contract = JSON.parse(fs.readFileSync(contractPath, 'utf8'));
   const errors = validateStudyDesignContract(contract);
   console.log(JSON.stringify({

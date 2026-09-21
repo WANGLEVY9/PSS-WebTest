@@ -1,38 +1,443 @@
-const $=id=>document.getElementById(id);let state,selected=null;const positions=new Map();let last=null;
-const labels={visual:['Pure visual','截图 → 坐标 / 键盘动作'],hybrid:['Hybrid agent','截图 + 可见结构 → 动作'],playwright:['Playwright','可访问性 locator → 确定性脚本']};
-const statusNames={queued:'等待执行',resetting:'独立重置',running:'正在执行',passed:'严格通过',failed:'未通过',unresolved:'未决',completed:'批次已结束',interrupted:'运行中断'};
-function node(tag,text,cls){const el=document.createElement(tag);if(text!==undefined)el.textContent=text;if(cls)el.className=cls;return el;}
-function addLink(parent,label,url){const a=node('a',label);a.href=url;parent.append(a);}
-function metric(title,value,note){const el=node('div',undefined,'metric');el.append(node('label',title),node('strong',value),node('small',note));return el;}
-function render(){
-  const b=state.batches.find(b=>b.id===selected)||state.batches[0];selected=b?.id||null;
-  const select=$('batch');select.replaceChildren(...(state.batches.length?state.batches.map(b=>{const o=node('option',b.id);o.value=b.id;return o;}):[node('option','暂无批次，点击右上角启动')]));if(selected)select.value=selected;
-  $('model').textContent=`${b?.model||state.model||'未配置'} · ${state.configured?'密钥已配置':'缺少密钥'}`;
-  $('benchmark').textContent=`公开 benchmark 门禁：WebArena Shopping ${state.benchmark?.ready?'镜像 / 架构 / 服务健康通过':'尚未通过'}。正式 reset / evaluator / 任务准入仍待验证；VWA 与 ATA 未在本轮运行。`;
-  $('start').disabled=Boolean(state.active)||!state.configured;$('start').textContent=state.active?'实验执行中…':'启动三策略最小实验 ↗';
-  $('batch-status').textContent=statusNames[b?.status]||'未运行';$('exports').replaceChildren();
-  if(b){addLink($('exports'),'JSON',`/artifacts/${b.id}/snapshot.json`);addLink($('exports'),'JSONL',`/artifacts/${b.id}/events.jsonl`);$('intent').textContent=b.intent;}
-  const rows=b?.records||[],finished=rows.filter(r=>r.finished_at).length,passed=rows.filter(r=>r.strict_pass).length;
-  const tokens=rows.flatMap(r=>r.requests||[]).reduce((s,q)=>s+(q.usage?.total_tokens||0),0);
-  $('metrics').replaceChildren(metric('COMPLETION / 完成进度',`${finished} / ${rows.length||3}`,'终态记录 / 计划执行'),metric('STRICT PASS / 严格通过',`${passed} / ${rows.length||3}`,'完成协议 + 独立 oracle + 预算'),metric('MODEL USAGE / API 用量',tokens.toLocaleString(),'服务端返回 token 总计 · 费用未知'),metric('FORMAL DENOMINATOR / 正式分母','0','LIVE_ENGINEERING · 不纳入正式统计'));
-  $('arms').replaceChildren(...Object.entries(labels).map(([arm,[title,subtitle]])=>{
-    const r=rows.find(r=>r.arm===arm)||{arm,status:'queued',frames:[],actions:[],requests:[]};const card=node('article',undefined,`arm ${r.status}`);const head=node('div',undefined,'arm-head');const titles=node('div');titles.append(node('h3',title),node('p',subtitle));head.append(titles,node('span',statusNames[r.status], 'badge'));card.append(head);
-    const frame=node('div',undefined,'frame');const frames=r.frames||[];const key=`${selected}:${arm}`;let pos=positions.has(key)?Math.min(positions.get(key),frames.length-1):frames.length-1;
-    const meta=node('div',undefined,'frame-meta'),time=node('span'),counter=node('span'),frameEvidence=node('pre');meta.append(time,counter);
-    function show(i){pos=i;const f=frames[i];frameEvidence.textContent=JSON.stringify(f||null,null,2);frame.replaceChildren();if(f){const a=node('a');a.href=`/artifacts/${b.id}/${f.file}`;a.target='_blank';a.rel='noopener';const img=node('img');img.src=a.href;img.alt=`${title} ${f.phase} step ${f.step}`;a.append(img);frame.append(a);time.textContent=`${f.phase} · step ${f.step}`;counter.textContent=`${i+1} / ${frames.length}`;}else{frame.append(node('span','WAITING FOR FIRST FRAME','placeholder'));time.textContent='暂无截图';counter.textContent='0 / 0';}}
-    show(pos);card.append(frame);const timeline=node('div',undefined,'timeline');const range=node('input');range.type='range';range.min=0;range.max=Math.max(0,frames.length-1);range.value=Math.max(0,pos);range.disabled=!frames.length;range.setAttribute('aria-label',`${title} 截图时间线`);range.oninput=()=>{positions.set(key,Number(range.value));show(Number(range.value));};range.ondblclick=()=>{positions.delete(key);show(frames.length-1);};timeline.append(range,meta);card.append(timeline);
-    const body=node('div',undefined,'evidence-body'),stats=node('div',undefined,'mini-stats');const latency=r.agent_wall_ms??(r.status==='running'&&r.agent_started_at?Date.now()-Date.parse(r.agent_started_at):null);
-    for(const [label,value]of[['ACTIONS',r.actions.length],['REQUESTS',r.requests.length],['AGENT TIME',latency===null?'—':`${(latency/1000).toFixed(1)}s`]]){const box=node('div'),valueNode=node('b',String(value));if(label==='AGENT TIME'&&r.status==='running'&&r.agent_started_at)valueNode.dataset.liveStarted=r.agent_started_at;box.append(node('small',label),valueNode);stats.append(box);}body.append(stats);
-    const failure=r.failure_class||(r.protocol_completed&&r.oracle?.passed===false?'verdict-postcondition-disagreement（由终态推导）':'—');
-    const verdict=node('div',undefined,'verdict');verdict.append(node('div',`Protocol: ${r.protocol_completed===undefined?'pending':r.protocol_completed?'completed':'not completed'}`),node('div',`Oracle: ${r.oracle?.passed===undefined?'未评估':r.oracle.passed?'通过':'未通过'}`,r.oracle?.passed?'green':''),node('div',`Failure: ${failure}`,failure!=='—'?'red':''));body.append(verdict);
-    const events=node('div',r.actions.map((a,i)=>`${String(i+1).padStart(2,'0')}  ${a.type} ${a.target_id||a.name||a.key||a.text||(a.x!==undefined?`${a.x}, ${a.y}`:'')}`).join('\n')||'尚无执行动作','event-list');body.append(events);
-    for(const [label,value]of[['模型响应 / 用量（不含隐藏推理）',r.requests],['独立 oracle / reset / 错误详情',{oracle:r.oracle,reset_digest:r.reset_digest,error:r.error,protocol:r.protocol}]]){const d=node('details');d.append(node('summary',label),node('pre',JSON.stringify(value,null,2)));body.append(d);}
-    const frameDetail=node('details');frameDetail.append(node('summary','当前帧证据'),frameEvidence);body.append(frameDetail);
-    if(r.finished_at&&b)addLink(body,'下载 Playwright replay trace ↗',`/artifacts/${b.id}/${arm}-trace.zip`);card.append(body);return card;
-  }));
-  $('foot').textContent=`${b?.id||'NO RUN'} · 每 1 秒刷新 · ${b?.framework||'PSS local diagnostic runtime'} · 轨迹仅本机落盘`;
+const $ = (id) => document.getElementById(id),
+  el = (tag, text, cls) => {
+    const n = document.createElement(tag);
+    if (text !== undefined) n.textContent = text;
+    if (cls) n.className = cls;
+    return n;
+  };
+const labels = {
+  visual: ["A", "Pure visual", "SCREENSHOT ONLY"],
+  hybrid: ["B", "Hybrid agent", "SCREENSHOT + STRUCTURE"],
+  playwright: ["C", "Playwright", "LOCATOR-BASED SCRIPT"],
+};
+let state,
+  selectedBatch = null,
+  selectedTask = null,
+  lastStamp,
+  figure = false;
+const positions = new Map(),
+  opened = new Set();
+function link(text, url) {
+  const a = el("a", text);
+  a.href = url;
+  return a;
 }
-$('batch').onchange=e=>{selected=e.target.value;last=null;render();};
-$('start').onclick=async()=>{if(!confirm('将独立重置 Juice Shop 三次，并向已配置 Qwen 发送本地截图（Hybrid 含可见控件投影）。运行三策略工程示例？'))return;try{const res=await fetch('/api/start',{method:'POST',headers:{'x-local-token':state.token}});const result=await res.json();if(!res.ok)throw new Error(result.error);selected=result.id;last=null;await poll();}catch(e){alert(e.message);}};
-async function poll(){try{const res=await fetch('/api/state');if(!res.ok)throw new Error('HTTP '+res.status);state=await res.json();$('connection').textContent=`● 本地服务在线 · ${new Date().toLocaleTimeString()}`;const stamp=JSON.stringify(state);if(stamp!==last){last=stamp;const open=[...document.querySelectorAll('details')].map(d=>d.open);render();document.querySelectorAll('details').forEach((d,i)=>d.open=open[i]||false);}}catch(e){$('connection').textContent='连接断开 · '+e.message;}}
-await poll();setInterval(()=>{poll();document.querySelectorAll('[data-live-started]').forEach(el=>el.textContent=`${((Date.now()-Date.parse(el.dataset.liveStarted))/1000).toFixed(1)}s`);},1000);
+function toast(text) {
+  $("toast").textContent = text;
+  $("toast").hidden = false;
+  setTimeout(() => ($("toast").hidden = true), 6000);
+}
+function metric(title, value, note) {
+  const n = el("div", undefined, "metric");
+  n.append(
+    el("label", title),
+    el("strong", value, "metric-number"),
+    el("small", note),
+  );
+  return n;
+}
+function showFrame(batch, r, index) {
+  const f = r.frames[index];
+  if (!f) return;
+  $("image-title").textContent =
+    `Task ${r.task_id} / ${labels[r.arm][1]} / ${f.phase} / step ${f.step}`;
+  $("full-frame").src = `/artifacts/${batch.id}/${f.file}`;
+  $("image-caption").textContent = `SHA-256 ${f.sha256} · ${f.at}`;
+  $("image-dialog").showModal();
+}
+function score(r) {
+  return r.oracle?.status !== "error" && typeof r.oracle?.score === "number"
+    ? r.oracle.score.toFixed(2)
+    : "—";
+}
+function status(r) {
+  return r.status === "queued"
+    ? "Pending"
+    : r.status === "preparing"
+      ? "Preparing"
+      : r.status.charAt(0).toUpperCase() + r.status.slice(1);
+}
+function render() {
+  const batches = state.batches.filter(
+    (b) => b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",
+  );
+  const batch = batches.find((b) => b.id === selectedBatch) || batches[0];
+  selectedBatch = batch?.id || null;
+  $("batch").replaceChildren(
+    ...(batches.length
+      ? batches.map((b) => {
+          const n = el(
+            "option",
+            `${new Date(b.started_at).toLocaleString("en-GB", { month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit" })} · ${b.task_ids?.length || 0} official cases`,
+          );
+          n.value = b.id;
+          return n;
+        })
+      : [el("option", "No official benchmark runs")]),
+  );
+  if (selectedBatch) $("batch").value = selectedBatch;
+  const tasks = batch?.tasks || [];
+  const task = tasks.find((t) => t.task_id === selectedTask) || tasks[0];
+  selectedTask = task?.task_id ?? null;
+  $("task").replaceChildren(
+    ...tasks.map((t) => {
+      const n = el("option", `Task ${t.task_id} · Review retrieval`);
+      n.value = t.task_id;
+      return n;
+    }),
+  );
+  if (task) $("task").value = String(task.task_id);
+  $("model").textContent = batch?.model || state.model || "Not configured";
+  $("start").disabled = Boolean(state.active) || !state.configured;
+  $("start").textContent = state.active
+    ? "Benchmark running…"
+    : "Run benchmark ↗";
+  $("task-title").textContent = task
+    ? `Task ${task.task_id} · Retrieve reviewer names`
+    : "Official benchmark tasks";
+  $("intent").textContent =
+    task?.intent ||
+    "Tasks 21 and 22 are pinned from the official WebArena-Verified release.";
+  $("source").textContent = "WEBARENA-VERIFIED / SHOPPING / RETRIEVE";
+  $("source-pin").textContent =
+    `Source ${(batch?.source_commit || "6473f72db5dc").slice(0, 12)} · template ${task?.intent_template_id || "—"} · ${batch?.model || state.model}`;
+  $("batch-status").textContent =
+    batch?.status === "completed"
+      ? "Run complete"
+      : batch?.status === "running"
+        ? "Executing"
+        : "Ready";
+  $("exports").replaceChildren();
+  if (batch)
+    $("exports").append(
+      link("JSON", `/artifacts/${batch.id}/snapshot.json`),
+      link("Events", `/artifacts/${batch.id}/events.jsonl`),
+    );
+  const rows = batch?.records.filter((r) => r.task_id === selectedTask) || [],
+    finished = rows.filter((r) => r.finished_at).length,
+    scored = rows.filter(
+      (r) =>
+        r.oracle?.status !== "error" && typeof r.oracle?.score === "number",
+    ).length,
+    passed = rows.filter((r) => r.strict_pass).length,
+    tokens = rows
+      .flatMap((r) => r.requests)
+      .reduce((n, q) => n + (q.usage?.total_tokens || 0), 0);
+  $("metrics").replaceChildren(
+    metric(
+      "EXECUTION PROGRESS",
+      `${finished} / 3`,
+      "Completed strategy executions",
+    ),
+    metric(
+      "OFFICIAL EVALUATION",
+      `${scored} / 3`,
+      "Cases scored by the original evaluator",
+    ),
+    metric(
+      "VERIFIED COMPLETION",
+      `${passed} / 3`,
+      "Valid termination + official score = 1",
+    ),
+    metric(
+      "MODEL USAGE",
+      tokens.toLocaleString("en-US"),
+      "Reported tokens · monetary cost unavailable",
+    ),
+  );
+  $("arms").replaceChildren(
+    ...Object.entries(labels).map(([arm, [letter, title, subtitle]]) => {
+      const r = rows.find((r) => r.arm === arm) || {
+        arm,
+        task_id: selectedTask,
+        status: "queued",
+        frames: [],
+        actions: [],
+        requests: [],
+      };
+      const card = el("article", undefined, `arm ${r.status}`),
+        header = el("div", undefined, "arm-head"),
+        heading = el("div", undefined, "arm-title"),
+        text = el("div");
+      text.append(el("h3", title), el("p", subtitle));
+      heading.append(el("span", letter, "letter"), text);
+      header.append(heading, el("span", status(r), `badge ${r.status}`));
+      card.append(header);
+      const frames = r.frames,
+        key = `${selectedBatch}:${r.record_id || arm}`,
+        frame = el("div", undefined, "frame"),
+        counter = el("span"),
+        range = el("input"),
+        frameInfo = el("pre");
+      let index = positions.has(key)
+        ? Math.min(positions.get(key), frames.length - 1)
+        : frames.length - 1;
+      const show = (i) => {
+        index = i;
+        const f = frames[i];
+        frame.replaceChildren();
+        if (f) {
+          const button = el("button"),
+            img = el("img");
+          button.setAttribute("aria-label", `Enlarge ${title} frame ${i + 1}`);
+          img.src = `/artifacts/${batch.id}/${f.file}`;
+          img.alt = `${title}: ${f.phase}, step ${f.step}`;
+          button.append(img);
+          button.onclick = () => showFrame(batch, r, index);
+          frame.append(button);
+        } else
+          frame.append(el("span", "AWAITING FIRST OBSERVATION", "placeholder"));
+        counter.textContent = frames.length
+          ? `${i + 1} / ${frames.length}`
+          : "0 / 0";
+        range.value = Math.max(0, i);
+        frameInfo.textContent = JSON.stringify(f || null, null, 2);
+      };
+      show(index);
+      card.append(frame);
+      const timeline = el("div", undefined, "timeline"),
+        prev = el("button", "‹"),
+        next = el("button", "›"),
+        live = el("button", "Latest");
+      prev.setAttribute("aria-label", `Previous ${title} frame`);
+      next.setAttribute("aria-label", `Next ${title} frame`);
+      range.type = "range";
+      range.min = 0;
+      range.max = Math.max(0, frames.length - 1);
+      range.value = Math.max(0, index);
+      range.disabled = !frames.length;
+      range.setAttribute("aria-label", `${title} frame timeline`);
+      const move = (i) => {
+        positions.set(key, i);
+        show(i);
+      };
+      prev.onclick = () => move(Math.max(0, index - 1));
+      next.onclick = () => move(Math.min(frames.length - 1, index + 1));
+      range.oninput = () => move(Number(range.value));
+      live.onclick = () => {
+        positions.delete(key);
+        show(frames.length - 1);
+      };
+      timeline.append(prev, range, next, counter, live);
+      card.append(timeline);
+      const stats = el("div", undefined, "arm-stats");
+      for (const [label, value] of [
+        ["ACTIONS", r.actions.length],
+        ["API CALLS", r.requests.length],
+        [
+          "AGENT TIME",
+          r.agent_wall_ms === undefined
+            ? "—"
+            : `${(r.agent_wall_ms / 1000).toFixed(1)} s`,
+        ],
+      ]) {
+        const box = el("div"),
+          v = el("b", String(value));
+        if (label === "AGENT TIME" && r.status === "running")
+          v.dataset.started = r.agent_started_at;
+        box.append(el("small", label), v);
+        stats.append(box);
+      }
+      card.append(stats);
+      const outcome = el("div", undefined, "outcome");
+      outcome.append(
+        el(
+          "span",
+          `Protocol: ${r.protocol_completed === undefined ? "pending" : r.protocol_completed ? "completed" : "incomplete"}`,
+        ),
+        el("strong", `Official score ${score(r)}`),
+      );
+      card.append(outcome);
+      const body = el("div", undefined, "trace-body"),
+        log = el("ol", undefined, "action-log");
+      body.append(el("div", "ACCEPTED ACTION TRACE", "trace-label"));
+      r.actions.forEach((a, i) => {
+        const row = el("li"),
+          description = `${a.type || a.action} ${a.name || a.target_id || a.key || a.text || (a.delta_y !== undefined ? a.delta_y : a.x !== undefined ? `${a.x}, ${a.y}` : "")}`;
+        row.title = description;
+        row.append(
+          el("span", String(i + 1).padStart(2, "0"), "step"),
+          document.createTextNode(description),
+        );
+        log.append(row);
+      });
+      if (!r.actions.length)
+        log.append(el("li", "No accepted actions recorded."));
+      body.append(log);
+      body.append(
+        el(
+          "p",
+          `Failure boundary: ${r.failure_class || "none recorded"}`,
+          "failure-note",
+        ),
+      );
+      const more = el("button", "Inspect evidence", "secondary"),
+        bottom = el("div", undefined, "trace-bottom"),
+        details = el("div", undefined, "details-panel");
+      details.hidden = !opened.has(key);
+      more.onclick = () => {
+        details.hidden = !details.hidden;
+        if (details.hidden) opened.delete(key);
+        else opened.add(key);
+      };
+      bottom.append(more);
+      if (r.finished_at && batch)
+        bottom.append(
+          link(
+            "Replay trace ↗",
+            `/artifacts/${batch.id}/${r.record_id}-trace.zip`,
+          ),
+        );
+      body.append(bottom);
+      card.append(body);
+      for (const [label, value] of [
+        ["Agent answer", r.answer],
+        ["Official evaluator record", r.oracle],
+        ["Model requests and action output", r.requests],
+        [
+          "Execution diagnostics",
+          {
+            error: r.error,
+            reset: r.reset_digest,
+            reset_contract: batch?.reset_contract,
+          },
+        ],
+      ]) {
+        const d = el("details");
+        d.append(
+          el("summary", label),
+          el("pre", JSON.stringify(value ?? null, null, 2)),
+        );
+        details.append(d);
+      }
+      const fdetail = el("details");
+      fdetail.append(el("summary", "Selected frame provenance"), frameInfo);
+      details.append(fdetail);
+      card.append(details);
+      return card;
+    }),
+  );
+  $("ledger-body").replaceChildren(
+    ...(batch?.records || []).map((r) => {
+      const tr = el(
+        "tr",
+        undefined,
+        r.task_id === selectedTask ? "selected" : "",
+      );
+      tr.tabIndex = 0;
+      tr.setAttribute(
+        "aria-label",
+        `Select task ${r.task_id}, ${labels[r.arm][1]}`,
+      );
+      const choose = () => {
+        selectedTask = r.task_id;
+        render();
+      };
+      tr.onclick = choose;
+      tr.onkeydown = (e) => {
+        if (e.key === "Enter") choose();
+      };
+      const fields = [
+        String(r.task_id),
+        labels[r.arm][1],
+        status(r),
+        score(r),
+        String(r.actions.length),
+        r.requests
+          .reduce((n, q) => n + (q.usage?.total_tokens || 0), 0)
+          .toLocaleString("en-US"),
+        r.agent_wall_ms === undefined
+          ? "—"
+          : `${(r.agent_wall_ms / 1000).toFixed(1)} s`,
+        r.failure_class || "—",
+      ];
+      fields.forEach((s) => tr.append(el("td", s)));
+      return tr;
+    }),
+  );
+  $("foot").textContent =
+    `PSS-WebTest · ${batch?.id || "Awaiting benchmark run"} · Integration evidence, not confirmatory results`;
+  $("environment").textContent = state.benchmark?.navigation_verified
+    ? "Shopping environment: verified HTTP 200"
+    : "Shopping environment: validation pending";
+}
+$("batch").onchange = (e) => {
+  selectedBatch = e.target.value;
+  selectedTask = null;
+  render();
+};
+$("task").onchange = (e) => {
+  selectedTask = Number(e.target.value);
+  render();
+};
+$("figure").onclick = () => {
+  figure = !figure;
+  document.body.classList.toggle("figure-mode", figure);
+  $("figure").setAttribute("aria-pressed", String(figure));
+  if (figure) {
+    const exit = el("button", "Exit figure view", "secondary figure-exit");
+    exit.id = "exit-figure";
+    exit.onclick = () => {
+      $("figure").click();
+    };
+    document.body.append(exit);
+  } else $("exit-figure")?.remove();
+};
+$("close-image").onclick = () => $("image-dialog").close();
+$("image-dialog").onclick = (e) => {
+  if (e.target === $("image-dialog")) $("image-dialog").close();
+};
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && figure) $("figure").click();
+});
+$("start").onclick = async () => {
+  if (
+    !confirm(
+      "Run official WebArena-Verified tasks 21 and 22 with all three strategies? Local screenshots will be sent to the configured Qwen endpoint. This creates six bounded integration executions.",
+    )
+  )
+    return;
+  try {
+    const res = await fetch("/api/start", {
+        method: "POST",
+        headers: { "x-local-token": state.token },
+      }),
+      data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    selectedBatch = data.id;
+    selectedTask = null;
+    await poll();
+  } catch (e) {
+    toast(e.message);
+  }
+};
+async function poll() {
+  try {
+    const response = await fetch("/api/state");
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    state = await response.json();
+    const active = state.batches.find(
+      (b) =>
+        b.status === "running" &&
+        b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",
+    );
+    if (active && !state.active) state.active = active.id;
+    $("connection").textContent =
+      `● Local service online · ${new Date().toLocaleTimeString("en-GB")}`;
+    const stamp = JSON.stringify(state);
+    if (stamp !== lastStamp) {
+      lastStamp = stamp;
+      render();
+    }
+  } catch (e) {
+    $("connection").textContent = `Connection unavailable · ${e.message}`;
+  }
+}
+await poll();
+setInterval(() => {
+  poll();
+  document.querySelectorAll("[data-started]").forEach((n) => {
+    if (n.dataset.started)
+      n.textContent = `${((Date.now() - Date.parse(n.dataset.started)) / 1000).toFixed(1)} s`;
+  });
+}, 1000);

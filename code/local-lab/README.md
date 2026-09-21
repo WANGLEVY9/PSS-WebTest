@@ -1,67 +1,68 @@
-# Local experiment workbench
+# Benchmark observatory
 
-This is a real, bounded **engineering smoke**, not an implementation of all manuscript experiments. It never imports manuscript tables or simulated data. The public benchmarks remain separately gated.
+An English, local-first console for **official benchmark integration runs**. The default experiment uses unmodified WebArena-Verified tasks **21 and 22**, template 222, source commit `6473f72db5dcefc97b5725b59e734504edc28a21`. It invokes the **stock WebArena-Verified 1.2.3 evaluator**, not a replacement page assertion. This is not confirmatory collection.
 
-## Start
+## Start the environment and console
 
 ```bash
 cd /Users/laurantwang/PSS-WebTest/code
-colima start
-npm ci                       # only if dependencies are missing
-npx playwright install chromium  # only if the bundled browser is missing
+colima start webarena-x86 --activate=false
+docker --context colima-webarena-x86 start webarena-verified-shopping-x86
+node local-lab/probe-benchmark.mjs
 node local-lab/server.mjs
 ```
 
-Open <http://127.0.0.1:4173/> and click “启动三策略最小实验”. The server binds only to localhost. Keep the process running; Ctrl-C stops the console. A runner already started may finish independently; its PID and durable artifacts identify it. Do not start the older dashboard on the same port. To inspect the old ledger separately: `PSS_DASHBOARD_PORT=4175 npm run dashboard:serve`.
+Open <http://127.0.0.1:4173/>. **Run benchmark** starts six bounded executions (two official tasks × three strategies). Same-origin token and a runner lock protect the local launch endpoint. The server binds to loopback only. Runs persist on disk if the browser tab closes. Ctrl-C stops the server, not necessarily its already launched runner; do not start a second legacy runner against the same site.
 
-Secrets are read from the existing gitignored `code/.env`. The new workbench defaults to **qwen3-vl-flash** using the existing Alibaba API key/base URL. It does not overwrite `CUA_MODEL` in `.env`. An explicit local override is supported:
+Existing `code/.env` supplies the Alibaba API key and compatible base URL. The local default is **qwen3-vl-flash**, without overwriting the global model. `PSS_LOCAL_MODEL` overrides only this console. No keys are printed or checked in.
+
+Prerequisites, if absent:
 
 ```bash
-PSS_LOCAL_MODEL=qwen3.7-flash PSS_LOCAL_PORT=4174 node local-lab/server.mjs
+npm ci
+npx playwright install chromium
+uv venv .venv-benchmark --python 3.12
+uv pip install --python .venv-benchmark/bin/python ./artifacts/benchmark-snapshots/webarena-verified
 ```
 
-The UI reports the selected batch's actual model. Check the batch protocol, not just the current environment. Never pool runs from different model/prompt/coordinate/output protocols as repetitions.
+The existing x86 shopping container must be provisioned separately. A missing container is not automatically replaced with a homemade task. See `benchmark-config.json` for the shopping URL and `benchmark-selection.json` for the pre-run task choice. Upstream: <https://github.com/ServiceNow/webarena-verified>.
 
-## What actually runs
+## Interface and paper capture
 
-- The existing volume-free `pss-juice-shop` container is recreated before each arm. No other application database is reset. This erases only this disposable experiment container's state.
-- Same search intent, fresh Chromium context, 1280×720 viewport, 16 decisions and 240-second agent budget. Arms are serialized because they share one resettable SUT. A runner lock rejects overlapping resets from this workbench; unrelated legacy runners do not honor it and must not be started concurrently.
-- Visual: screenshot and self-action history, no DOM/URL/milestone feedback.
-- Hybrid: screenshot and visible, viewport-bounded, unoccluded control projection; observation-local IDs map to coordinates from that observation, not a subsequently rebuilt mapping.
-- Script: role-based search workflow. This engineering script is **not** a blinded adaptation of an official benchmark task.
-- Independent evaluator executes after agent termination. No evaluator feedback is used to extend the run. `strict_pass` requires valid completion, budget compliance and oracle success; merely saying “pass” is insufficient.
-- Current configuration is a native PSS diagnostic runner, **not** AgentLab or Browser Use. It does not claim their results or generalize a single-task failure to a whole paradigm.
+- Select an experiment and official case; all three strategies show the **same task** side by side.
+- Inspect persisted frames with per-arm timelines, previous/next/latest controls, and click-to-enlarge with SHA-256 provenance.
+- Inspect accepted actions, model outputs, API usage, runtime, output-contract failures and **official evaluator** outcomes separately.
+- Click a ledger row to switch cases. Download the snapshot, event stream or replay trace.
+- **Figure view** removes navigation and operational controls, preserving task provenance, actual outcomes, failure boundaries and the non-confirmatory label. Escape exits it. Do not crop away the evidence-scope label in a paper.
+- The UI polls durable state every second. An evaluator exception is shown as unresolved with an unavailable score, not as a valid zero score.
 
-The reset digest covers the read-only apple-search product fixture, not the full database. It is not sufficient for admitting state-changing benchmark tasks. Frames/trace capture and oracle execution are observer work, never model inputs. Failures are retained, not retried until a pass.
+The design uses consistent serif headings, tabular numbers, neutral surfaces and restrained semantic color. All interface text is English; raw evidence remains unchanged rather than translated or fabricated.
 
-## Persistent evidence
+## Experimental boundaries
 
-`code/artifacts/local-runtime/<batch-id>/` (gitignored):
+Official `agent-input-get` exports model-facing inputs without reference answers. Intent text is unchanged. The selected tasks are read-only product-review retrieval, selected before any strategy execution. A fresh anonymous Chromium context and blocked non-read requests isolate each arm; **this does not establish a full database reset gate**. Each arm uses a 1280×720 viewport, with an agent budget of 24 decisions / 240 seconds and request timeout of 45 seconds.
 
-- `snapshot.json`: model, budget, protocol, order, per-arm outcomes and metrics; current runs also record source/dependency hashes and runner PID.
-- `events.jsonl`: append-only timestamped events; the snapshot is an atomically replaced materialized view, not an append-only ledger.
-- `<arm>-NNN.jpg`: screenshots, with SHA-256 in snapshot.
-- `<arm>-trace.zip`: Playwright replay, including observer-only DOM evidence; keep private by default.
-- `process.log`: local runner diagnostics.
+- Pure visual receives screenshots and its own accepted-action history. Logged URL and observer replay DOM never control its decisions.
+- Hybrid additionally receives visible, hit-tested, viewport-bounded control labels and observation-local IDs.
+- Playwright is an **AI-assisted, fixed public-UI adaptation**. Semantic predicates were fixed before agent execution / reference evaluation; reviewer names are never hard-coded. This is not a human-authoring fairness claim.
+- The original evaluator runs only after the arm has terminated and its browser has closed. `strict_pass` requires valid termination, budget compliance and official success. Agent claims are not ground truth.
 
-The UI supports batch switching, three side-by-side arm panels, per-arm frame sliders, action histories, model action output/usage, reset evidence, oracle details and JSON/JSONL/trace downloads. It polls durable state every second. No model chain-of-thought, Authorization headers or API keys are displayed.
+Protocol `wav-retrieval-json-v1` incorrectly serialized an empty completed retrieval as SUCCESS. `v2` corrects the general public response contract to NOT_FOUND_ERROR. The same semantic script and task selection remain unchanged. Old results are retained; **do not pool the two protocol versions as repetitions**. A response-induced evaluator schema exception is unresolved, not proof of external infrastructure failure or agent incapability.
 
-Native benchmark scores and monetary costs remain **null** here. Tokens are actual provider-returned usage, not converted into an invented bill. Initial diagnostic batches may lack an agent-duration field after an exception; the validator reports this instead of treating the missing duration as zero.
+This adapter is a native PSS integration runner, not an AgentLab/Browser Use result. Two tasks from one template cannot establish comparative capability or replace outcome-blind screening and formal benchmark admission. VisualWebArena and ATA are not silently marked as running.
 
-## Validation and benchmark gate
+## Evidence and verification
+
+Private artifacts: `code/artifacts/local-runtime/<batch>/`:
+
+- Official public inputs, immutable source copies (v2 onward), digests, `snapshot.json`, append-only `events.jsonl`.
+- `<arm>-<task>-NNN.jpg`, `<arm>-<task>-trace.zip`, provider output and usage.
+- `<arm>/<task>/agent_response.json`, full HAR, original `eval_result.json` and evaluator log. Full evaluator results include references and must not be shown to active agents or exposed in the UI.
 
 ```bash
 node --test local-lab/*.test.mjs
 npm run test:contracts
-node local-lab/validate.mjs
-# Explicitly export only the credential-free engineering summary:
-node local-lab/validate.mjs --export-public
-
-colima start webarena-x86 --activate=false
-docker --context colima-webarena-x86 start webarena-verified-shopping-x86
-node local-lab/probe-benchmark.mjs
+node local-lab/validate-benchmark.mjs --export-public
 ```
 
-The WebArena probe uses the already provisioned x86 profile and writes a sanitized health report. A ready shopping service is **not** a passed reset/evaluator/selection gate, nor permission to start confirmatory collection.
-
-`paper-metrics.mjs` contains tested pure aggregators for template macro averaging, ATA confusion counts, operational identification bounds and matched retry controls. Unit-test fixtures are mathematical checks, not empirical evidence. Full RQ3 cohort construction, ATA failure-step scoring, runtime confidence intervals and a cloud-run import adapter are not implemented by this smoke.
+The public summary exports credential-free counts, digests and official statuses only. HAR, prompts, screenshots and reference answers remain ignored. Monetary cost is unavailable; actual reported tokens are not converted into invented charges. Previous self-authored Juice Shop smoke data is retained as `LIVE_ENGINEERING`, excluded from the benchmark console and validated separately by `validate.mjs`. `runner.mjs` is the legacy smoke entrypoint and is **not** launched by this console.

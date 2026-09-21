@@ -1,113 +1,168 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>PSS / Local Experiment Lab</title>
+    <title>PSS — Benchmark Observatory</title>
     <link rel="stylesheet" href="/style.css" />
   </head>
   <body>
     <aside class="rail">
-      <a class="brand" href="/">P<span>SS</span><small>WEB TEST LAB</small></a>
-      <div class="rail-label">RESEARCH WORKSPACE</div>
+      <a href="#top" class="brand">PSS<span>WEBTEST</span></a>
+      <div class="rail-rule"></div>
       <nav>
-        <a class="selected" href="#workspace">01　实时实验</a
-        ><a href="#evidence">02　执行轨迹</a><a href="#metrics">03　指标对照</a
-        ><a href="#protocol">04　实验协议</a>
+        <a href="#top" class="nav-active"><span>01</span>Overview</a
+        ><a href="#comparison"><span>02</span>Trajectories</a
+        ><a href="#ledger"><span>03</span>Run ledger</a
+        ><a href="#protocol"><span>04</span>Protocol</a>
       </nav>
       <div class="rail-bottom">
-        <i class="dot"></i> LOCAL WORKSPACE<br /><small
-          >本地存储 · 真实模型请求<br />Pixels / Structure / Scripts</small
+        <span class="live-dot"></span>LOCAL LAB<br /><small
+          >Evidence, not assumptions.</small
         >
       </div>
     </aside>
-    <main id="workspace">
+    <main id="top">
       <header>
         <div>
-          <div class="eyebrow">PSS-WEBTEST / LOCAL REPRODUCTION</div>
-          <h1>Experiment observatory<span>实验观测台</span></h1>
-          <p class="muted">
-            一个任务，三条执行路径。观察证据，而不是预设结论。
+          <div class="eyebrow">PSS-WEBTEST / EMPIRICAL RESEARCH</div>
+          <h1>Benchmark observatory</h1>
+          <p class="subtitle">
+            Pixels, page structure, and scripts. One task. Three execution
+            paths.
           </p>
         </div>
-        <div class="header-right">
-          <div id="connection" role="status">正在连接…</div>
-          <button id="start">启动三策略最小实验 ↗</button
-          ><small>真实 API 调用 · 每臂最多 16 次决策 / 240 秒</small>
+        <div class="header-actions">
+          <span id="connection" class="connection" role="status"
+            >Connecting</span
+          >
+          <div class="button-row">
+            <button id="figure" class="secondary" aria-pressed="false">
+              Figure view</button
+            ><button id="start">
+              Run benchmark <span aria-hidden="true">↗</span>
+            </button>
+          </div>
         </div>
       </header>
-      <div class="notice">
-        <strong>ENGINEERING EVIDENCE</strong
+      <div class="evidence-banner">
+        <span class="status-dot"></span
+        ><strong>OFFICIAL BENCHMARK · INTEGRATION RUN</strong
         ><span
-          >仅验证本地运行闭环，不纳入正式 WAV / VWA / ATA
-          分母；原有云端汇总数据不在此混入。</span
+          >Original task intents and evaluator. Non-confirmatory; no aggregate
+          study claims.</span
         >
       </div>
-      <section class="toolbar">
+      <section class="selectors" aria-label="Experiment selection">
         <div>
-          <label for="batch">EXPERIMENT / 实验批次</label
-          ><select id="batch"></select>
+          <label for="batch">EXPERIMENT</label
+          ><select id="batch">
+            <option>No official runs yet</option>
+          </select>
         </div>
         <div>
-          <label>MODEL / 当前模型配置</label>
-          <div id="model">—</div>
+          <label for="task">BENCHMARK CASE</label
+          ><select id="task"></select>
         </div>
-        <div>
-          <label>EXECUTION / 执行模式</label>
-          <div>逐臂独立重置 · 串行隔离</div>
+        <div class="model-block">
+          <label>VISION MODEL</label><span id="model">—</span>
         </div>
-        <div>
-          <label>DATA / 证据归档</label>
-          <div id="exports">运行后可下载</div>
+        <div class="export-block">
+          <label>EVIDENCE EXPORT</label>
+          <div id="exports">—</div>
         </div>
       </section>
-      <section class="task">
+      <section class="task-heading">
         <div>
-          <div class="eyebrow">CURRENT TASK / 当前任务</div>
-          <h2>Juice Shop · 商品搜索</h2>
-          <p id="intent">从相同初态出发，搜索 apple，验证预期商品与负例。</p>
+          <div class="eyebrow" id="source">WEBARENA-VERIFIED / SHOPPING</div>
+          <h2 id="task-title">Official task selection</h2>
+          <p id="intent">Waiting for a benchmark run.</p>
         </div>
-        <span id="batch-status" class="badge">未运行</span>
+        <div class="task-meta">
+          <span id="batch-status" class="badge">Ready</span
+          ><span id="source-pin">Source-pinned dataset</span>
+        </div>
       </section>
-      <section id="metrics" class="metrics"></section>
-      <div id="benchmark" class="notice">正式 benchmark 环境状态待检查</div>
-      <section id="evidence">
-        <div class="section-title">
-          <h2>Execution evidence <span>逐步执行证据</span></h2>
-          <span class="muted">截图 · 动作 · 模型响应 · 独立 oracle</span>
+      <section id="metrics" class="metrics" aria-label="Task metrics"></section>
+      <section id="comparison">
+        <div class="section-heading">
+          <h2>Execution comparison</h2>
+          <div class="legend">
+            <span><i class="key pass"></i>Passed</span
+            ><span><i class="key fail"></i>Failed</span
+            ><span><i class="key pending"></i>Pending / unresolved</span>
+          </div>
         </div>
         <div id="arms" class="arms"></div>
       </section>
-      <section id="protocol" class="protocol">
+      <section id="ledger" class="ledger-section">
+        <div class="section-heading">
+          <h2>Case-level evidence</h2>
+          <span class="muted"
+            >Official scores are reported separately from execution
+            completion.</span
+          >
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Task</th>
+                <th>Strategy</th>
+                <th>Execution</th>
+                <th>Official score</th>
+                <th>Actions</th>
+                <th>Model tokens</th>
+                <th>Agent time</th>
+                <th>Failure boundary</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="protocol" id="protocol">
         <div>
-          <div class="eyebrow">INFORMATION BOUNDARY</div>
-          <h3>信息边界</h3>
+          <span class="eyebrow">01 / INPUT BOUNDARY</span>
+          <h3>Same intent, declared observations</h3>
           <p>
-            Visual 仅接收截图与自身动作历史；Hybrid
-            增加当前视口内控件投影；脚本使用可访问性 locator。URL 与 oracle
-            只用于实验观测，不回传模型或决定下一动作。
+            Visual receives pixels only. Hybrid adds visible, viewport-bounded
+            controls. Scripts use public browser locators. Evaluator results
+            never enter an agent prompt.
           </p>
         </div>
         <div>
-          <div class="eyebrow">METRIC CONTRACT</div>
-          <h3>完成 ≠ 正确</h3>
+          <span class="eyebrow">02 / EVALUATION AUTHORITY</span>
+          <h3>Original benchmark evaluator</h3>
           <p>
-            严格通过要求预算内有效结束且独立 oracle 通过。reset / evaluator
-            故障标记未决。此页面的工程通过率不是 WAV 模板宏平均、VWA
-            官方成功率或 ATA 准确率。
+            Versioned WebArena-Verified tasks, captured HAR, structured agent
+            responses, and official scoring. This read-only subset does not
+            establish full reset admission.
           </p>
         </div>
         <div>
-          <div class="eyebrow">PROVENANCE</div>
-          <h3>真实、可追溯、不混算</h3>
+          <span class="eyebrow">03 / REPRODUCIBILITY</span>
+          <h3>Every transition leaves evidence</h3>
           <p>
-            事件逐条落盘；截图保存
-            SHA-256；模型响应仅存动作输出及用量，不记录密钥与隐藏推理。费用无账单依据时记为未知，不用
-            token 数伪造金额。
+            Per-step frames, action outputs, model usage, source digests and
+            persistent events. Missing values remain unavailable. API keys and
+            hidden reasoning are never shown.
           </p>
         </div>
       </section>
-      <footer id="foot">正在读取本地运行状态…</footer>
+      <footer>
+        <span id="foot">PSS-WebTest · Local benchmark reproduction</span
+        ><span id="environment">Environment check pending</span>
+      </footer>
+      <dialog id="image-dialog">
+        <div class="dialog-head">
+          <span id="image-title">Frame evidence</span
+          ><button id="close-image" class="secondary">Close ×</button>
+        </div>
+        <img id="full-frame" alt="Full-resolution execution frame" />
+        <p id="image-caption"></p>
+      </dialog>
+      <div class="toast" id="toast" role="status" hidden></div>
     </main>
     <script type="module" src="/app.js"></script>
   </body>

@@ -1,0 +1,1 @@
+{ "environments": { "__SHOPPING__": { "urls": ["http://localhost:7770"] } } }

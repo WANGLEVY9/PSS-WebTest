@@ -15,6 +15,8 @@ for (const id of fs
   const file = path.join(root, id, "snapshot.json");
   if (!fs.existsSync(file)) continue;
   const b = JSON.parse(fs.readFileSync(file));
+  // Official cases have their own task-level validator and are never pooled here.
+  if (b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION") continue;
   if (b.status !== "completed") {
     warnings.push(`${id}: incomplete batch`);
     continue;

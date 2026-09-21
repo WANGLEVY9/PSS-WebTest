@@ -100,15 +100,19 @@ const server = http.createServer((req, res) => {
         );
       if (process.env.CUA_PROVIDER !== "aliyun" || !process.env.CUA_API_KEY)
         return json(res, { error: "Qwen configuration missing" }, 400);
-      active = `local-${Date.now()}`;
+      active = `local-benchmark-${Date.now()}`;
       const id = active;
       fs.mkdirSync(path.join(store, id), { recursive: true });
       const log = fs.openSync(path.join(store, id, "process.log"), "a", 0o600);
-      child = spawn(process.execPath, [path.join(root, "runner.mjs"), id], {
-        cwd: code,
-        env: process.env,
-        stdio: ["ignore", log, log],
-      });
+      child = spawn(
+        process.execPath,
+        [path.join(root, "benchmark-runner.mjs"), id],
+        {
+          cwd: code,
+          env: process.env,
+          stdio: ["ignore", log, log],
+        },
+      );
       fs.closeSync(log);
       const finish = (exitCode) => {
         const b = read(id);
@@ -126,7 +130,7 @@ const server = http.createServer((req, res) => {
     if (req.method !== "GET")
       return json(res, { error: "method not allowed" }, 405);
     const artifact = url.pathname.match(
-      /^\/artifacts\/(local-[\w-]+)\/((?:visual|hybrid|playwright)-\d{3}\.jpg|(?:visual|hybrid|playwright)-trace\.zip|snapshot\.json|events\.jsonl)$/,
+      /^\/artifacts\/(local-[\w-]+)\/((?:visual|hybrid|playwright)(?:-\d+)?-\d{3}\.jpg|(?:visual|hybrid|playwright)(?:-\d+)?-trace\.zip|snapshot\.json|events\.jsonl)$/,
     );
     let target;
     if (artifact) target = path.join(store, artifact[1], artifact[2]);

@@ -106,10 +106,12 @@ function render() {
   );
   if (task) $("task").value = String(task.task_id);
   $("model").textContent = batch?.model || state.model || "Not configured";
-  $("start").disabled = Boolean(state.active) || !state.configured;
+  $("start").disabled = Boolean(state.active) || !state.configured || !state.diagnostic_start_enabled;
+  $("model").title = `Selected run model: ${batch?.model || "none"}. Next diagnostic model: ${state.model || "not configured"}. Protocol: ${state.next_protocol || "unknown"}.`;
   $("start").textContent = state.active
     ? "Benchmark running…"
-    : "Run benchmark ↗";
+    : state.diagnostic_start_enabled ? "Run diagnostic ↗" : "Collection paused";
+  $("start").title = "Collection is gated while runner remediation is validated. Historical results remain unchanged.";
   $("task-title").textContent = task
     ? `Task ${task.task_id} · ${task.intent_template_id === 136 ? "Retrieve review titles" : "Retrieve reviewer names"}`
     : "Official benchmark tasks";
@@ -118,7 +120,7 @@ function render() {
     "Task selection is pinned from the official WebArena-Verified release.";
   $("source").textContent = "WEBARENA-VERIFIED / SHOPPING / RETRIEVE";
   $("source-pin").textContent =
-    `Source ${(batch?.source_commit || "6473f72db5dc").slice(0, 12)} · template ${task?.intent_template_id || "—"} · ${batch?.model || state.model}`;
+    `Source ${(batch?.source_commit || "6473f72db5dc").slice(0, 12)} · template ${task?.intent_template_id || "—"} · ${batch?.model || state.model} · ${batch?.local_protocol || state.next_protocol || "—"}`;
   $("batch-status").textContent =
     batch?.status === "completed"
       ? "Run complete"
@@ -318,6 +320,13 @@ function render() {
             error: r.error,
             reset: r.reset_digest,
             reset_contract: batch?.reset_contract,
+            protocol: batch?.local_protocol,
+            model_configuration_source: batch?.model_configuration_source,
+            observation_policy: batch?.observation_policy,
+            observations: r.observations,
+            protocol_errors: r.protocol_errors,
+            execution_failure_class: r.execution_failure_class,
+            evaluation_issue: r.evaluation_issue,
           },
         ],
       ]) {

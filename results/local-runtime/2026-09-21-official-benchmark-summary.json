@@ -1,6 +1,6 @@
 {
   "scope": "official-benchmark-integration-not-confirmatory",
-  "generated_at": "2026-09-21T07:42:24.479Z",
+  "generated_at": "2026-09-21T08:29:03.692Z",
   "errors": [],
   "batches": [
     {
@@ -845,13 +845,219 @@
           "har_sha256": "c35cb6d242f216427258571c22c8ac3d83db2e02d2874d0e93e839ec09cc1d62"
         }
       ]
+    },
+    {
+      "id": "local-benchmark-v4-repair-20260921-t167",
+      "source_commit": "6473f72db5dcefc97b5725b59e734504edc28a21",
+      "task_ids": [
+        167
+      ],
+      "model": "qwen3.7-flash",
+      "protocol": "wav-retrieval-json-v4-diagnostic",
+      "input_sha256": "0d03dcca79b0167ca2865c7fb2202e0d8e9cc45ef28954351c4a9f6a18231ae8",
+      "script_sha256": "74e116dba5408fc86799bdefe8836b5227e0da607dda09436f7a6d64d8d92b63",
+      "runner_sha256": "56d3be9436cbd89fd4501c562f2828bcf518ebac3c0ecdc8d9f595de4df716ef",
+      "snapshot_sha256": "928ba318e428c95b73dbdfc01393f781f112f2442cb8e398571d18bfd51cc9b7",
+      "confirmatory_eligible": false,
+      "records": [
+        {
+          "task_id": 167,
+          "arm": "visual",
+          "status": "failed",
+          "strict_pass": false,
+          "protocol_completed": false,
+          "official_score": 0,
+          "official_status": "failure",
+          "evaluator": {
+            "authority": "WebArena-Verified official evaluator",
+            "score": 0,
+            "status": "failure",
+            "passed": false,
+            "version": "1.2.3",
+            "evaluator_checksum": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+            "data_checksum": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+            "task_revision": 2,
+            "errors": []
+          },
+          "frames": 38,
+          "actions": 1,
+          "requests": 4,
+          "tokens": 9481,
+          "agent_wall_ms": 13354,
+          "failure_class": "time-budget",
+          "exception": "Malformed action JSON or target; recovery budget exhausted",
+          "response_sha256": "c813f4a536df937a06e5061fe1363f114f6325463b765b47668048d0239c833a",
+          "har_sha256": "146f4bb1e550dab18232fe090c5ddfa3f890de42da49a944893e20e643c6ce6b"
+        },
+        {
+          "task_id": 167,
+          "arm": "hybrid",
+          "status": "failed",
+          "strict_pass": false,
+          "protocol_completed": false,
+          "official_score": 0,
+          "official_status": "failure",
+          "evaluator": {
+            "authority": "WebArena-Verified official evaluator",
+            "score": 0,
+            "status": "failure",
+            "passed": false,
+            "version": "1.2.3",
+            "evaluator_checksum": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+            "data_checksum": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+            "task_revision": 2,
+            "errors": []
+          },
+          "frames": 42,
+          "actions": 1,
+          "requests": 4,
+          "tokens": 10663,
+          "agent_wall_ms": 13166,
+          "failure_class": "time-budget",
+          "exception": "Malformed action JSON or target; recovery budget exhausted",
+          "response_sha256": "c813f4a536df937a06e5061fe1363f114f6325463b765b47668048d0239c833a",
+          "har_sha256": "4b4ee6b5744e10371d4453537c97ecf4f71047516c8ae3a263f44ce89fe00dea"
+        },
+        {
+          "task_id": 167,
+          "arm": "playwright",
+          "status": "passed",
+          "strict_pass": true,
+          "protocol_completed": true,
+          "official_score": 1,
+          "official_status": "success",
+          "evaluator": {
+            "authority": "WebArena-Verified official evaluator",
+            "score": 1,
+            "status": "success",
+            "passed": true,
+            "version": "1.2.3",
+            "evaluator_checksum": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+            "data_checksum": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+            "task_revision": 2,
+            "errors": []
+          },
+          "frames": 5,
+          "actions": 3,
+          "requests": 0,
+          "tokens": 0,
+          "agent_wall_ms": 1001,
+          "failure_class": null,
+          "exception": null,
+          "response_sha256": "e4fc261ef79d7e2bcd2cbacc2e6ee2274f2fb9c548be86577b777f102d499b42",
+          "har_sha256": "3b4fcafbfbab68d0d9a250cb7617468ff1342c2947b36ad762765a72bb49f1db"
+        }
+      ]
+    },
+    {
+      "id": "local-benchmark-v5-schema-20260921-t167",
+      "source_commit": "6473f72db5dcefc97b5725b59e734504edc28a21",
+      "task_ids": [
+        167
+      ],
+      "model": "qwen3.7-flash",
+      "protocol": "wav-retrieval-json-v5-diagnostic",
+      "input_sha256": "0d03dcca79b0167ca2865c7fb2202e0d8e9cc45ef28954351c4a9f6a18231ae8",
+      "script_sha256": "74e116dba5408fc86799bdefe8836b5227e0da607dda09436f7a6d64d8d92b63",
+      "runner_sha256": "d86c296bee2ecf5e5c9ea5c78b6fdc94a3e02e30d94864647ab589c7b36518a5",
+      "snapshot_sha256": "64648c428c391c32a06a84bd1397b9f1ff5a76badf6c9156a8466bd257fee148",
+      "confirmatory_eligible": false,
+      "records": [
+        {
+          "task_id": 167,
+          "arm": "visual",
+          "status": "failed",
+          "strict_pass": false,
+          "protocol_completed": false,
+          "official_score": 0,
+          "official_status": "failure",
+          "evaluator": {
+            "authority": "WebArena-Verified official evaluator",
+            "score": 0,
+            "status": "failure",
+            "passed": false,
+            "version": "1.2.3",
+            "evaluator_checksum": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+            "data_checksum": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+            "task_revision": 2,
+            "errors": []
+          },
+          "frames": 218,
+          "actions": 24,
+          "requests": 24,
+          "tokens": 93825,
+          "agent_wall_ms": 109762,
+          "failure_class": "step-budget",
+          "exception": null,
+          "response_sha256": "d2343c88720fe3700002b8b501902f7dc2e6ff40592df81c1291f700464a866b",
+          "har_sha256": "db60cd0355d104e43a9aa3ffc91ff482093b494d71d9e82495391424db227563"
+        },
+        {
+          "task_id": 167,
+          "arm": "hybrid",
+          "status": "passed",
+          "strict_pass": true,
+          "protocol_completed": true,
+          "official_score": 1,
+          "official_status": "success",
+          "evaluator": {
+            "authority": "WebArena-Verified official evaluator",
+            "score": 1,
+            "status": "success",
+            "passed": true,
+            "version": "1.2.3",
+            "evaluator_checksum": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+            "data_checksum": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+            "task_revision": 2,
+            "errors": []
+          },
+          "frames": 32,
+          "actions": 1,
+          "requests": 3,
+          "tokens": 8912,
+          "agent_wall_ms": 13860,
+          "failure_class": null,
+          "exception": null,
+          "response_sha256": "e4fc261ef79d7e2bcd2cbacc2e6ee2274f2fb9c548be86577b777f102d499b42",
+          "har_sha256": "2bcfd97c04f9ffe6f83deaed391f66b99034e15be2c8985a7fcaa5ae6e8d9e10"
+        },
+        {
+          "task_id": 167,
+          "arm": "playwright",
+          "status": "passed",
+          "strict_pass": true,
+          "protocol_completed": true,
+          "official_score": 1,
+          "official_status": "success",
+          "evaluator": {
+            "authority": "WebArena-Verified official evaluator",
+            "score": 1,
+            "status": "success",
+            "passed": true,
+            "version": "1.2.3",
+            "evaluator_checksum": "35c3385b1db4b3378657589f95f50defd4234bd36e5b93d44733fd561b01db4e",
+            "data_checksum": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+            "task_revision": 2,
+            "errors": []
+          },
+          "frames": 5,
+          "actions": 3,
+          "requests": 0,
+          "tokens": 0,
+          "agent_wall_ms": 1007,
+          "failure_class": null,
+          "exception": null,
+          "response_sha256": "e4fc261ef79d7e2bcd2cbacc2e6ee2274f2fb9c548be86577b777f102d499b42",
+          "har_sha256": "c45b0dcbe2abfb9a9274d59053f1919445700033f785bcfd2c5b66429b0f32de"
+        }
+      ]
     }
   ],
   "caveats": [
-    "Two tasks from one template and one site; not representative study evidence.",
+    "Development-only review retrieval tasks from a single site; not representative study evidence.",
     "Protocol versions are separate, not interchangeable repetitions.",
     "Fresh anonymous browser contexts and blocked writes are not a full database reset gate.",
-    "Official evaluator errors stay unresolved; diagnostic raw score zero is not a valid scored failure.",
+    "Official evaluator errors stay unresolved and may be answer-dependent; never automatically exclude as external infrastructure. Raw score zero is not a valid scored failure.",
     "Script is AI-assisted public-UI adaptation, not a blinded human-authored baseline.",
     "Task-specific matches and original reference answers were not edited to obtain success."
   ]

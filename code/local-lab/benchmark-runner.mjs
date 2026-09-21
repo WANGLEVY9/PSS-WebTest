@@ -9,22 +9,33 @@ import { acquireLock } from "./lock.mjs";
 import { summarize } from "./metrics.mjs";
 import { runReviewScript } from "./benchmark-script.mjs";
 import { retrievalResponse, evaluatorSummary } from "./benchmark-contract.mjs";
+import { PROTOCOL, OBSERVATION_POLICY, MAX_CONSECUTIVE_PROTOCOL_ERRORS,
+  resolveModel, observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks, responseFormat } from "./agent-protocol.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
 dotenv.config({ path: path.join(code, ".env"), quiet: true });
+const modelConfig = resolveModel(process.env);
+const model = modelConfig.model;
+if (process.env.CUA_PROVIDER !== "aliyun" || !process.env.CUA_API_KEY)
+  throw new Error("Qwen credentials are not configured");
+if (process.env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
+  throw new Error("Diagnostic protocol requires explicit PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN=1; no automatic batches");
 const store = path.join(code, "artifacts/local-runtime"),
   id = process.argv[2] || `local-benchmark-${Date.now()}`;
 if (!/^local-[\w-]+$/.test(id)) throw new Error("Invalid run ID");
 const release = acquireLock(store);
 process.once("exit", release);
 const dir = path.join(store, id);
+if (fs.existsSync(path.join(dir, "snapshot.json")))
+  throw new Error("Run already exists; refusing to overwrite evidence");
 fs.mkdirSync(dir, { recursive: true });
 const sha = (x) => crypto.createHash("sha256").update(x).digest("hex"),
   now = () => new Date().toISOString();
 const selection = JSON.parse(
   fs.readFileSync(path.join(root, "benchmark-selection.json")),
 );
+const selectedTaskIds = diagnosticTasks(selection.task_ids, process.env.PSS_LOCAL_TASK_IDS);
 const sourceCommit = execFileSync(
   "git",
   [
@@ -42,6 +53,7 @@ for (const file of [
   "benchmark-runner.mjs",
   "benchmark-script.mjs",
   "benchmark-contract.mjs",
+  "agent-protocol.mjs",
   "benchmark-selection.json",
   "benchmark-config.json",
 ])
@@ -56,16 +68,13 @@ execFileSync(
     "--config",
     config,
     "--task-ids",
-    selection.task_ids.join(","),
+    selectedTaskIds.join(","),
     "--output",
     path.join(dir, "agent-inputs.json"),
   ],
   { stdio: "pipe", timeout: 60000 },
 );
 const tasks = JSON.parse(fs.readFileSync(path.join(dir, "agent-inputs.json")));
-const model = process.env.PSS_LOCAL_MODEL || "qwen3-vl-flash";
-if (process.env.CUA_PROVIDER !== "aliyun" || !process.env.CUA_API_KEY)
-  throw new Error("Qwen credentials are not configured");
 const batch = {
   schema_version: "local-runtime-v1",
   id,
@@ -76,15 +85,21 @@ const batch = {
   confirmatory_eligible: false,
   benchmark: "webarena-verified",
   source_commit: selection.source_commit,
-  task_ids: selection.task_ids,
+  task_ids: selectedTaskIds,
+  development_subset: process.env.PSS_LOCAL_TASK_IDS || null,
   tasks,
   model,
+  model_configuration_source: modelConfig.source,
   provider: "aliyun",
   framework: "PSS benchmark adapter",
-  local_protocol: "wav-retrieval-json-v3",
+  local_protocol: PROTOCOL,
   intent: "Official review retrieval tasks",
   protocol_change:
-    "Adds preselected template 136 with public rating/title extraction; generalized retrieval prompt. No gold or outcome-based task selection.",
+    "v5 adds model-capability-gated strict JSON Schema to v4 remediation. No guessed missing actions or coerced coordinates. Not a single-factor model comparison against v3.",
+  observation_policy: OBSERVATION_POLICY,
+  protocol_sha256: sha(fs.readFileSync(path.join(root, "agent-protocol.mjs"))),
+  information_boundary: { visual: "screenshots and own action feedback only", hybrid: "screenshots plus visible control list; NOT full DOM or AX tree" },
+  traditional_policy: "role + CSS locators and public rating tooltip attributes; not accessibility-only",
   selection_sha256: sha(
     fs.readFileSync(path.join(root, "benchmark-selection.json")),
   ),
@@ -97,6 +112,8 @@ const batch = {
     max_decisions: 24,
     agent_timeout_ms: 240000,
     request_timeout_ms: 45000,
+    max_consecutive_protocol_errors: MAX_CONSECUTIVE_PROTOCOL_ERRORS,
+    retry_accounting: "All attempts consume decision, wall-time and token budgets; no HTTP retries",
   },
   reset_contract:
     "read-only retrieval; isolated fresh browser contexts; no full database-reset claim",
@@ -245,11 +262,19 @@ if (!batch.environment_ready) {
           });
           completed = true;
         } else {
-          const history = [];
+          const history = [], previousImages = [], feedback = [];
+          let protocolErrors = 0, candidateAnswer = null;
           for (let step = 0; step < batch.budget.max_decisions; step++) {
             if (Date.now() - agentStart >= 240000)
               throw new Error("Agent wall-time budget exceeded");
-            const image = await capture("observation", step);
+            const observation = await observePixels({
+              capture: () => capture("observation-sample", step), sleep,
+              deadline: agentStart + batch.budget.agent_timeout_ms,
+            });
+            let image = observation.image;
+            r.observations ||= [];
+            r.observations.push({ step, samples: observation.samples, elapsed_ms: observation.elapsed_ms,
+              reason: observation.reason, semantic_ready: null });
             let controls = [];
             if (arm === "hybrid")
               controls = await page.evaluate(() =>
@@ -301,22 +326,26 @@ if (!batch.environment_ready) {
                   .slice(0, 100)
                   .map((e, i) => ({ ...e, target_id: `c${i}` })),
               );
-            const instructions = `You execute an official WebArena-Verified task. Task: ${task.intent}\nRetrieve exactly the items specified in the task (reviewer names or review titles). Read all relevant reviews and pages before answering. Use only the provided screenshot${arm === "hybrid" ? " and visible controls" : ""}. No external knowledge or guessed names.\nReturn exactly one JSON object. Actions: {"action":"click","x":500,"y":500}${arm === "hybrid" ? ' or {"action":"click","target_id":"c2"}' : ""}, {"action":"scroll","delta_y":500}, {"action":"keypress","key":"Enter"}, {"action":"type","text":"text"}, {"action":"wait"}. To finish: {"action":"done","answer":["retrieved text"]}. Click coordinates are normalized to 0..1000 on EACH axis (image 1280x720). Preserve the requested text exactly as displayed; return an empty answer array only if no matching items were found after examination. If you need to keep reading, scroll rather than claiming done. Your recent accepted actions and visual notes: ${JSON.stringify(history.slice(-12))}. You may include a short "note" of visible facts for your next turn; never invent unseen facts.${arm === "hybrid" ? "\nObservation-local controls (IDs may change each turn): " + JSON.stringify(controls) : ""}`;
+            if (arm === "hybrid") {
+              // Bracket DOM extraction with screenshots. Never use DOM as readiness input.
+              const checkedImage = await capture("structure-bracket", step);
+              if (checkedImage !== image) {
+                feedback.push("The screenshot changed during observation; no action was executed. Observe again.");
+                r.observations.at(-1).structure_synchronized = false;
+                emit("observation-retry", { record_id: r.record_id, step });
+                continue;
+              }
+              r.observations.at(-1).structure_synchronized = true;
+              controls = controls.map(c => ({ ...c, target_id: `o${step}-${c.target_id}` }));
+            }
+            const instructions = `You execute an official WebArena-Verified task. Task: ${task.intent}\nRetrieve exactly the items specified in the task (reviewer names or review titles). Read all relevant reviews and pages before answering. Use only the provided screenshots${arm === "hybrid" ? " and current visible controls" : ""}. No external knowledge or guessed names.\nReturn exactly one JSON object. Actions: {"action":"click","x":500,"y":500}${arm === "hybrid" ? ` or {"action":"click","target_id":"o${step}-c2"}` : ""}, {"action":"scroll","delta_y":500}, {"action":"keypress","key":"Enter"}, {"action":"type","text":"text"}, {"action":"wait"}. Use integer scroll distances. To finish: {"action":"done","answer":["retrieved text"]}. Click coordinates are normalized to 0..1000 on EACH axis (image 1280x720). Preserve the requested text exactly as displayed; return an empty answer array only if no matching items were found after examination. A quiet screenshot does not prove loading is complete; wait when needed. If you need to keep reading, scroll rather than claiming done. Your recent accepted actions and visual notes: ${JSON.stringify(history.slice(-12))}. Historical target IDs cannot be reused. Include a short "note" (at most 2000 characters) of observed matching items and remaining work to preserve cross-screen evidence; never invent unseen facts. Recent protocol feedback: ${JSON.stringify(feedback.slice(-3))}.${candidateAnswer !== null ? `\nYou proposed answer ${JSON.stringify(candidateAnswer)}. Check the new current screenshot before repeating done to confirm, or continue reading/correct the answer.` : ""}${arm === "hybrid" ? "\nObservation-local controls: " + JSON.stringify(controls) : ""}`;
             const body = {
               model,
               temperature: 0,
               enable_thinking: false,
               max_tokens: 1024,
-              response_format: { type: "json_object" },
-              messages: [
-                {
-                  role: "user",
-                  content: [
-                    { type: "text", text: instructions },
-                    { type: "image_url", image_url: { url: image } },
-                  ],
-                },
-              ],
+              response_format: responseFormat(model, controls, arm),
+              messages: modelMessages(instructions, previousImages, image),
             };
             const request = {
               step,
@@ -324,7 +353,13 @@ if (!batch.environment_ready) {
               at: now(),
               input_digest: sha(JSON.stringify(body)),
               prompt_text: instructions,
+              model_requested: model,
+              response_format: body.response_format,
+              input_frame_files: [...previousImages.slice(-2).map(f => f.file), r.frames.at(-1).file],
+              controls: arm === "hybrid" ? controls : undefined,
             };
+            previousImages.push({ image, step, file: r.frames.at(-1).file });
+            if (previousImages.length > 2) previousImages.shift();
             r.requests.push(request);
             emit("provider-start", { record_id: r.record_id, step });
             let decision;
@@ -350,20 +385,38 @@ if (!batch.environment_ready) {
               );
               const payload = await response.json();
               request.http_status = response.status;
+              request.model_returned = payload.model || null;
+              request.provider_request_id = payload.id || null;
               request.usage = payload.usage || null;
               request.finish_reason = payload.choices?.[0]?.finish_reason;
               request.output = payload.choices?.[0]?.message?.content || null;
               if (!response.ok)
                 throw new Error(`Provider HTTP ${response.status}`);
-              decision = JSON.parse(request.output);
               request.status = "received";
             } catch (e) {
               request.status = "error";
               request.error = clean(e);
+              r.failure_class = /timeout|abort/i.test(request.error) ? "provider-timeout" : "provider-http-or-response";
               throw e;
             } finally {
               request.latency_ms = Date.now() - begin;
               emit("provider-end", { record_id: r.record_id, step });
+            }
+            try {
+              decision = parseDecision(request.output, { controls, arm });
+              protocolErrors = 0;
+            } catch (e) {
+              request.status = "contract-error";
+              request.error = clean(e);
+              protocolErrors++;
+              feedback.push(`${clean(e)}. No action was executed. Retry with the current observation.`);
+              r.protocol_errors ||= [];
+              r.protocol_errors.push({ step, error: clean(e), consecutive: protocolErrors });
+              candidateAnswer = null;
+              emit("action-contract-error", { record_id: r.record_id, step });
+              if (protocolErrors > MAX_CONSECUTIVE_PROTOCOL_ERRORS)
+                throw new Error("Malformed action JSON or target; recovery budget exhausted");
+              continue;
             }
             if (decision.action === "done") {
               if (
@@ -371,10 +424,16 @@ if (!batch.environment_ready) {
                 decision.answer.some((s) => typeof s !== "string")
               )
                 throw new Error("Malformed benchmark answer");
+              if (!confirmAnswer(candidateAnswer, decision.answer)) {
+                candidateAnswer = decision.answer;
+                emit("answer-proposed", { record_id: r.record_id, step });
+                continue;
+              }
               answer = decision.answer;
               completed = true;
               break;
             }
+            candidateAnswer = null;
             if (decision.action === "click") {
               let x, y;
               if (arm === "hybrid" && decision.target_id) {
@@ -436,7 +495,6 @@ if (!batch.environment_ready) {
             history.push(decision);
             r.actions.push(action);
             emit("action", { record_id: r.record_id, step });
-            await sleep(600);
           }
           if (!completed) r.failure_class = "step-budget";
         }
@@ -446,7 +504,7 @@ if (!batch.environment_ready) {
         }
       } catch (e) {
         r.error = clean(e);
-        r.failure_class = !agentStart
+        r.failure_class ||= !agentStart
           ? "environment"
           : /budget/i.test(r.error)
             ? "time-budget"
@@ -473,6 +531,7 @@ if (!batch.environment_ready) {
         }
         await browser?.close();
         r.protocol_completed = completed;
+        r.execution_failure_class = r.failure_class || null;
         r.answer = answer;
         r.benchmark_response = retrievalResponse(
           answer,
@@ -508,7 +567,10 @@ if (!batch.environment_ready) {
             fs.readFileSync(path.join(work, "eval_result.json")),
           );
           r.oracle = evaluatorSummary(e);
-          if (e.status === "error") r.failure_class = "evaluator";
+          if (e.status === "error") {
+            r.failure_class = "evaluator";
+            r.evaluation_issue = "unresolved; may be answer-dependent; not an automatic infrastructure exclusion";
+          }
         } catch {
           r.failure_class = "evaluator";
           r.oracle = {

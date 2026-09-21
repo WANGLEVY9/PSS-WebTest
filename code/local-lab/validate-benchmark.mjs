@@ -22,6 +22,8 @@ for (const id of fs
     b.confirmatory_eligible !== false
   )
     errors.push(`${id}: scope`);
+  if (b.protocol_sha256 && sha(fs.readFileSync(path.join(dir, "agent-protocol.mjs"))) !== b.protocol_sha256)
+    errors.push(`${id}: protocol source digest`);
   const inputs = JSON.parse(
     fs.readFileSync(path.join(dir, "agent-inputs.json")),
   );
@@ -64,6 +66,15 @@ for (const id of fs
   }
   const rows = [];
   for (const r of b.records) {
+    if (b.protocol_sha256) {
+      for (const request of r.requests) {
+        if (request.model_requested !== b.model) errors.push(`${id}/${r.record_id}: requested model mismatch`);
+        if (!request.input_frame_files?.length || request.input_frame_files.some(file => !r.frames.some(f => f.file === file)))
+          errors.push(`${id}/${r.record_id}: missing model input frame reference`);
+        if (r.arm === "visual" && request.controls !== undefined)
+          errors.push(`${id}/${r.record_id}: visual structural input leak`);
+      }
+    }
     for (const frame of r.frames) {
       if (!/^(visual|hybrid|playwright)-\d+-\d{3}\.jpg$/.test(frame.file))
         throw new Error("Invalid frame path");
@@ -137,10 +148,10 @@ const report = {
   errors,
   batches,
   caveats: [
-    "Two tasks from one template and one site; not representative study evidence.",
+    "Development-only review retrieval tasks from a single site; not representative study evidence.",
     "Protocol versions are separate, not interchangeable repetitions.",
     "Fresh anonymous browser contexts and blocked writes are not a full database reset gate.",
-    "Official evaluator errors stay unresolved; diagnostic raw score zero is not a valid scored failure.",
+    "Official evaluator errors stay unresolved and may be answer-dependent; never automatically exclude as external infrastructure. Raw score zero is not a valid scored failure.",
     "Script is AI-assisted public-UI adaptation, not a blinded human-authored baseline.",
     "Task-specific matches and original reference answers were not edited to obtain success.",
   ],

@@ -4,20 +4,27 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
+import {loadRuntimeEnv} from './runtime-env.mjs';
+import {resolveProvider, publicProvider} from './provider.mjs';
 import { alive } from "./lock.mjs";
 import { currentExecutionGate } from './execution-gate.mjs';
 import { resetProgress } from './reset-evidence.mjs';
 import { summarize } from "./metrics.mjs";
-import { resolveModel, PROTOCOL } from "./agent-protocol.mjs";
+import { PROTOCOL } from "./agent-protocol.mjs";
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
-dotenv.config({ path: path.join(code, ".env"), quiet: true });
+const runtimeEnv=loadRuntimeEnv();
+function providerStatus() {
+  try {
+    const config=resolveProvider(runtimeEnv,{requireKey:false});
+    return {...publicProvider(config),configured:Boolean(config.apiKey),live_verified:false};
+  } catch(e) {return {configured:false,error:e.message,live_verified:false};}
+}
 const store = path.join(code, "artifacts", "local-runtime");
 const expectedResetImage=JSON.parse(fs.readFileSync(path.join(code,'config/benchmark-artifact-manifest.v1.0.json')))
   .mandatory_core.find(b=>b.id==='webarena-verified').environment.candidate_image.reference;
 fs.mkdirSync(store, { recursive: true });
-const port = Number(process.env.PSS_LOCAL_PORT || 4173),
+const port = Number(runtimeEnv.PSS_LOCAL_PORT || 4173),
   token = crypto.randomBytes(24).toString("hex");
 let child = null,
   active = null;
@@ -81,13 +88,16 @@ const server = http.createServer((req, res) => {
       return json(res, {
         token,
         active,
-        model: process.env.PSS_LOCAL_MODEL || process.env.CUA_MODEL || null,
+        model: providerStatus().model || null,
         next_protocol: PROTOCOL,
-        diagnostic_start_enabled: process.env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN === "1",
+        diagnostic_start_enabled: runtimeEnv.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN === "1",
         execution_gate: currentExecutionGate(),
         reset_preflight: resetProgress(store,expectedResetImage),
-        provider: "aliyun",
-        configured: Boolean(process.env.CUA_API_KEY),
+        provider: providerStatus().provider || null,
+        provider_configuration: providerStatus(),
+        configured: providerStatus().configured,
+        sponsor_readiness: fs.existsSync(path.join(store,'sponsor-readiness.json'))
+          ? JSON.parse(fs.readFileSync(path.join(store,'sponsor-readiness.json'),'utf8')) : null,
         benchmark,
         conformance: fs.existsSync(path.join(store,'benchmark-conformance.json'))
           ? JSON.parse(fs.readFileSync(path.join(store,'benchmark-conformance.json'),'utf8')) : null,
@@ -120,11 +130,9 @@ const server = http.createServer((req, res) => {
           { error: "a run is already active; resets must remain isolated" },
           409,
         );
-      if (process.env.CUA_PROVIDER !== "aliyun" || !process.env.CUA_API_KEY)
-        return json(res, { error: "Qwen configuration missing" }, 400);
-      try { resolveModel(process.env); }
-      catch { return json(res, { error: "Explicit model configuration required" }, 400); }
-      if (process.env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
+      try { resolveProvider(runtimeEnv); }
+      catch(e) { return json(res, { error: e.message }, 400); }
+      if (runtimeEnv.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
         return json(res, { error: "Batch collection paused. The revised diagnostic protocol requires explicit enablement after review." }, 409);
       const admission = currentExecutionGate();
       if (!admission.allowed)
@@ -138,7 +146,7 @@ const server = http.createServer((req, res) => {
         [path.join(root, "benchmark-runner.mjs"), id],
         {
           cwd: code,
-          env: process.env,
+          env: runtimeEnv,
           stdio: ["ignore", log, log],
         },
       );

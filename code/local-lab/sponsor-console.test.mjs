@@ -1,0 +1,30 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import net from 'node:net';
+import {spawn} from 'node:child_process';
+import {once} from 'node:events';
+import {fileURLToPath} from 'node:url';
+
+test('real console exposes OpenAI config without key and refuses task launch even with diagnostic opt-in',async()=>{
+  const socket=net.createServer();socket.listen(0,'127.0.0.1');await once(socket,'listening');
+  const port=socket.address().port;await new Promise(resolve=>socket.close(resolve));
+  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'pss-sponsor-console-')),file=path.join(temp,'.env');
+  const key='synthetic-private-config-only';
+  fs.writeFileSync(file,`PSS_LOCAL_PROVIDER=openai\nOPENAI_MODEL=authorized-test-fixture\nOPENAI_API_KEY=${key}\nPSS_LOCAL_PORT=${port}\nPSS_LOCAL_ALLOW_DIAGNOSTIC_RUN=1\n`,{mode:0o600});
+  const child=spawn(process.execPath,[fileURLToPath(new URL('./server.mjs',import.meta.url))],{
+    env:{...process.env,PSS_LOCAL_ENV_FILE:file},stdio:['ignore','pipe','pipe']});
+  const exited=once(child,'exit');
+  try {
+    await Promise.race([once(child.stdout,'data'),exited.then(()=>{throw Error('Console exited before listening');}),new Promise((_,reject)=>{const t=setTimeout(()=>reject(Error('Console start timeout')),8000);t.unref();})]);
+    const origin=`http://127.0.0.1:${port}`;
+    const stateRes=await fetch(`${origin}/api/state`),text=await stateRes.text(),state=JSON.parse(text);
+    assert.doesNotMatch(text,new RegExp(key));assert.equal(state.provider,'openai');assert.equal(state.model,'authorized-test-fixture');
+    assert.equal(state.provider_configuration.api,'responses');assert.equal(state.configured,true);
+    assert.equal(state.execution_gate.allowed,false);
+    const result=await fetch(`${origin}/api/start`,{method:'POST',headers:{origin,'x-local-token':state.token}});
+    assert.equal(result.status,409);assert.equal((await result.json()).execution_gate.allowed,false);
+  } finally {child.kill('SIGTERM');await exited;fs.rmSync(temp,{recursive:true});}
+});

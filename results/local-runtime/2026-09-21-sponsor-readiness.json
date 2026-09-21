@@ -1,0 +1,454 @@
+{
+  "kind": "SPONSOR_READINESS_AUDIT",
+  "observed_at": "2026-09-21T12:53:14.111Z",
+  "host": {
+    "platform": "darwin",
+    "architecture": "arm64",
+    "node": "v20.18.0"
+  },
+  "checks": [
+    {
+      "id": "provider-configuration",
+      "passed": true,
+      "detail": "Configured, NOT live-verified"
+    },
+    {
+      "id": "openai-sponsor-configuration",
+      "passed": false,
+      "detail": "Sponsor model/key not configured in isolated env file; template is prepared"
+    },
+    {
+      "id": "node-runtime",
+      "passed": true,
+      "detail": "v20.18.0"
+    },
+    {
+      "id": "chromium-installed",
+      "passed": true,
+      "detail": "Browser executable presence only; run sponsor-verify for launch tests"
+    },
+    {
+      "id": "node-dependencies",
+      "passed": true,
+      "detail": "Installed direct dependencies satisfy package.json"
+    },
+    {
+      "id": "wav-python-dependencies",
+      "passed": true,
+      "detail": "uv pip check passed"
+    },
+    {
+      "id": "vwa-python-dependencies",
+      "passed": false,
+      "detail": "Dependency check failed or environment/tool unavailable; do not silently upgrade official pins"
+    },
+    {
+      "id": "webarena-verified-source-pin",
+      "passed": true,
+      "detail": {
+        "expected": "6473f72db5dcefc97b5725b59e734504edc28a21",
+        "actual": "6473f72db5dcefc97b5725b59e734504edc28a21",
+        "tracked_clean": true
+      }
+    },
+    {
+      "id": "visualwebarena-source-pin",
+      "passed": true,
+      "detail": {
+        "expected": "89f5af29305c3d1e9f97ce4421462060a70c9a03",
+        "actual": "89f5af29305c3d1e9f97ce4421462060a70c9a03",
+        "tracked_clean": true
+      }
+    },
+    {
+      "id": "autonomous-tester-agent-benchmark-source-pin",
+      "passed": true,
+      "detail": {
+        "expected": "650b9edaa055915cb27d2498f379a66430cc3e02",
+        "actual": "650b9edaa055915cb27d2498f379a66430cc3e02",
+        "tracked_clean": true
+      }
+    },
+    {
+      "id": "shopping-loopback-isolation",
+      "passed": false,
+      "detail": "Wildcard-bound benchmark ports must be isolated before sponsor deployment; firewall reachability not tested"
+    },
+    {
+      "id": "shopping-official-services",
+      "passed": true,
+      "detail": {
+        "env-ctrl": "RUNNING",
+        "php-fpm": "RUNNING",
+        "elasticsearch": "HEALTHY",
+        "mysqld": "HEALTHY",
+        "cron": "RUNNING",
+        "mailcatcher": "HEALTHY",
+        "redis-server": "HEALTHY",
+        "nginx": "RUNNING"
+      }
+    }
+  ],
+  "provider": {
+    "provider": "aliyun",
+    "model": "qwen3.7-flash",
+    "api": "chat-completions",
+    "configuration_sha256": "f7e7c30d68167465d19b8613dc123938ae713caaad8a7178e0ce3e3f62ece04e"
+  },
+  "infrastructure": {
+    "probed": true,
+    "vm_available_bytes": 15967887360,
+    "shopping": {
+      "container_id": "4bccd465fe7269093ef634f41a20b9416d88de9373936fa2829de09a336c3e7b",
+      "running": true,
+      "image": "sha256:3e8cb9b945ea9b1c94ab26dba53e8d12dd0406abbf4bf686fd3bb2b6a5908feb",
+      "wildcard_port_bindings": true
+    }
+  },
+  "offline_verification": {
+    "kind": "SPONSOR_OFFLINE_VERIFICATION",
+    "started_at": "2026-09-21T12:53:05.867Z",
+    "model_requests": 0,
+    "benchmark_executions": 0,
+    "confirmatory_authorized": false,
+    "checks": [
+      {
+        "id": "local-node-and-browser",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": 59,
+        "passed_tests": 59,
+        "failed_tests": 0,
+        "skipped_tests": 0,
+        "elapsed_ms": 3700,
+        "log_sha256": "25db12fdabc81044c36c322d25b6594a95412aeb3e1f117198caaa021b939c9b"
+      },
+      {
+        "id": "study-contracts",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": 287,
+        "passed_tests": 287,
+        "failed_tests": 0,
+        "skipped_tests": 0,
+        "elapsed_ms": 355,
+        "log_sha256": "ee2c95fd1af4f6c7f3e529da98a441209410224ba3af394c89f9262bafaff5f3"
+      },
+      {
+        "id": "ata-preparation",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": 3,
+        "passed_tests": 3,
+        "failed_tests": null,
+        "skipped_tests": null,
+        "elapsed_ms": 52,
+        "log_sha256": "921b60a7fd52e978fbb551cacd29df2d6708879400278e1fcc70fceeb0c6f8e0"
+      },
+      {
+        "id": "historical-ledger",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": null,
+        "passed_tests": null,
+        "failed_tests": null,
+        "skipped_tests": null,
+        "elapsed_ms": 222,
+        "log_sha256": "1a62221f261563be55b58f468ed82d623956fd36a89e54d33a219dd7b64cdfbf"
+      },
+      {
+        "id": "study-design-contract",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": null,
+        "passed_tests": null,
+        "failed_tests": null,
+        "skipped_tests": null,
+        "elapsed_ms": 27,
+        "log_sha256": "80fdeb22cccf9f23c752c7e2cf4993c3be49cd0df1b9ece8ae362c95329486b1"
+      },
+      {
+        "id": "benchmark-artifact-manifest",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": null,
+        "passed_tests": null,
+        "failed_tests": null,
+        "skipped_tests": null,
+        "elapsed_ms": 26,
+        "log_sha256": "a4fc86c528233c1d78061f2e1a93afb0509960d63f12bb01697d38a54217fe4f"
+      },
+      {
+        "id": "long-cycle-experiment-plan",
+        "passed": true,
+        "exit_code": 0,
+        "error_code": null,
+        "tests": null,
+        "passed_tests": null,
+        "failed_tests": null,
+        "skipped_tests": null,
+        "elapsed_ms": 26,
+        "log_sha256": "e658b65515aba85a8731ece538acd31b7312f7e0acf20e29991e626ff5992d3d"
+      }
+    ],
+    "source_files": [
+      {
+        "file": "agent-observation.browser.test.mjs",
+        "sha256": "a30b180b49a1b70646cdaf46abc6c62745b405db39d6cf8de64ef869e8d17d6a"
+      },
+      {
+        "file": "agent-protocol.mjs",
+        "sha256": "3d6756a5152adbed44f113ece5899fada27a9a252ba81a85543175019bb19744"
+      },
+      {
+        "file": "agent-protocol.test.mjs",
+        "sha256": "a56673e19f7d98959135684b448c3c1866aa5388dda4845115bd4dc4926b263e"
+      },
+      {
+        "file": "ata-verdict-contract.mjs",
+        "sha256": "9b3cb8d3354bd6b08ea797b449b861abeda25d4342f2ca881db827b94da54473"
+      },
+      {
+        "file": "ata-verdict-contract.test.mjs",
+        "sha256": "312dc34caff7df9898f9ddc9b09c2c20f4edefad8c38c7f1772bc479ca7c9703"
+      },
+      {
+        "file": "benchmark-contract.mjs",
+        "sha256": "79da4bfedbf84874ec915a6bb1870ee883fe05edb104ef35c5e76c0adea8c62d"
+      },
+      {
+        "file": "benchmark-contract.test.mjs",
+        "sha256": "f4e33e4daa388298b12e720f560d4b7757a8925c117ddfa455a40b16d80461e0"
+      },
+      {
+        "file": "benchmark-runner.mjs",
+        "sha256": "42bbd59b93df0613cbcb94fb3d57d3c84fa7688f269e336e31b296006ea1a5b6"
+      },
+      {
+        "file": "benchmark-script.mjs",
+        "sha256": "74e116dba5408fc86799bdefe8836b5227e0da607dda09436f7a6d64d8d92b63"
+      },
+      {
+        "file": "boundary.test.mjs",
+        "sha256": "701f9456c1fcd386150426dfbd2882652b360248a68365a172c0d714fc6d0ea8"
+      },
+      {
+        "file": "conformance-audit.mjs",
+        "sha256": "becac11b8be7d1074b3eec0f14262a7916478f4a8dd5f5dbefc28bafdfb008b5"
+      },
+      {
+        "file": "environment-probe.mjs",
+        "sha256": "6495d267c9c68591ab81094d02273f1f5c0aad281a93da7add96535a4dcaabdf"
+      },
+      {
+        "file": "environment-probe.test.mjs",
+        "sha256": "e28e9b6da6bd2e14970e1670bebd57f7dcb2c45f5ac3604422595af80a9aa87f"
+      },
+      {
+        "file": "execution-gate.mjs",
+        "sha256": "5a1fda9404cacf2f7f09c05022a7841facd024e8149761350c6503182d880757"
+      },
+      {
+        "file": "execution-gate.test.mjs",
+        "sha256": "e0063f1eb2dbb735db8cd9a7eb619bbda66986e6dc2172ac1b4f29e715234afc"
+      },
+      {
+        "file": "expansion-progress.mjs",
+        "sha256": "42de00de8f23c97f45e1c4f6cb9ce724b7a1bc49aa9e3729dfa4eda2fac62dd4"
+      },
+      {
+        "file": "export-reset-evidence.mjs",
+        "sha256": "a1a447d5afd6452e485657f4bd1e14bf0f46f9a8fdee9f2cc61c3980c7cec995"
+      },
+      {
+        "file": "export-sponsor-evidence.mjs",
+        "sha256": "ab9d3176a4299c2da21a97926552fb71308de586e1a6aa6e4bbebe931df9ec80"
+      },
+      {
+        "file": "local-resumption-summary.mjs",
+        "sha256": "272bf6b67b3637198013821975cef64c9f478baa8918c88f11e5933ac5d72a45"
+      },
+      {
+        "file": "lock.mjs",
+        "sha256": "49484a398a578bf2320b91c01f8a5797b0c714fb0dec3e9bbf9805d36676c6ac"
+      },
+      {
+        "file": "lock.test.mjs",
+        "sha256": "392c31430b173a2266cf7d783320a83a70eaa223e419aa3149e3cd5aefdf2192"
+      },
+      {
+        "file": "metrics.mjs",
+        "sha256": "51c46fd81a5e9c7a2b81551269510cf17ee2288817285f77be3cbc70529346d8"
+      },
+      {
+        "file": "metrics.test.mjs",
+        "sha256": "e173449de51a9c9403cbb3b1801b9d6aab93f254d808fbf2a0f295accc97e5a0"
+      },
+      {
+        "file": "paper-metrics.mjs",
+        "sha256": "86b3c56dfbf65c1f3f14356c497a3c94905fae6938e6e7ab1cebf7248e7f2ebc"
+      },
+      {
+        "file": "paper-metrics.test.mjs",
+        "sha256": "67e91cb333d5dcfa8a0758952e16520f6efdef8757d405e08b3f7300857d58ab"
+      },
+      {
+        "file": "prepare-vwa.mjs",
+        "sha256": "3515fc415359e8a9a059956c4dac95e606ac89e979ffd8d04d9fa62cb45a0bf5"
+      },
+      {
+        "file": "probe-benchmark.mjs",
+        "sha256": "a6b8f4b6dc48f584787f5eddfbdd418a5693e884f5ccae0bd9acbcd7b01d6772"
+      },
+      {
+        "file": "provider-smoke.mjs",
+        "sha256": "27620f631a2788478c100c2a3cd4bd3219cba1dcc63f1433ff00c099ebd96dd1"
+      },
+      {
+        "file": "provider.mjs",
+        "sha256": "e8122f3426e02f194542f030523919430a984224b38e167a7901eaa53872122f"
+      },
+      {
+        "file": "provider.test.mjs",
+        "sha256": "1a822fc578210472b5affe6b8c4909b4029cce8e80389d816c3363bfa1e8dcf6"
+      },
+      {
+        "file": "provisioning-contract.mjs",
+        "sha256": "9126c010d874bd1a777779126ae3f238dd30a31cda877c95c89cb349fabfdbae"
+      },
+      {
+        "file": "provisioning-contract.test.mjs",
+        "sha256": "4fbddf0a32264c02f4a48bc31f8169f1dbe6403b380190f3b5affcaea9d6a88c"
+      },
+      {
+        "file": "reset-evidence.mjs",
+        "sha256": "4f4734d3d62c8cd3f62c3a9cfc45ff70d0cdb93f743fb1e34a132720fa73f99f"
+      },
+      {
+        "file": "reset-evidence.test.mjs",
+        "sha256": "55cd1dc10f1772dbdd81240447f4ef89bffffed465c87712777940966aa947bb"
+      },
+      {
+        "file": "runner.mjs",
+        "sha256": "3d3a99b95d796598714662183fc5af651e6f6f21d4405abd7a698fc6f8243355"
+      },
+      {
+        "file": "runtime-env.mjs",
+        "sha256": "ccb45b0c8ae9114295d494759d8cfd68870dc953695e016d37d47a51df1b253b"
+      },
+      {
+        "file": "server.mjs",
+        "sha256": "a1b80640eb8cabde53bc3650111162caf47c396972b7fc693c1e1ed845cdb790"
+      },
+      {
+        "file": "sponsor-console.test.mjs",
+        "sha256": "562bd5e5ca1cf434d5db1e48fec2e76c2cf1138bebd9c9f42f098a08f3e7f11d"
+      },
+      {
+        "file": "sponsor-preflight.mjs",
+        "sha256": "c3174f12bf4c695cb4715c76efd9cf58c8683b6a81fafd97448f54d7f03eb6da"
+      },
+      {
+        "file": "sponsor-verify.mjs",
+        "sha256": "2591772e0a256a4b7156f3232f5932c3b30ba1c56660076fc3adfe45b94f18a5"
+      },
+      {
+        "file": "validate-benchmark.mjs",
+        "sha256": "56cf8e8e3b2fc5508905ba5f4b1813e43b8b367024616c34a4c9dab986b64c5f"
+      },
+      {
+        "file": "validate.mjs",
+        "sha256": "ba10039c61f9e624aaea40893a56df1f27c36537796bb94285def4f67af9eeb9"
+      },
+      {
+        "file": "vwa-capacity-preflight.mjs",
+        "sha256": "b3afc08c65970987f5adc3999fc47344174448154cb3e7a9adbc27fa9f5909e2"
+      },
+      {
+        "file": "wav-recovery-preflight.mjs",
+        "sha256": "d3308a062747265b905e68b0eb23d0829ab7420f133e42d5f30b6a4ca910a203"
+      },
+      {
+        "file": "wav-reset-preflight.mjs",
+        "sha256": "334321527083d2b35dfe3a326ad7712f976349a55f8169f25c75d1d5b4feb9dd"
+      }
+    ],
+    "finished_at": "2026-09-21T12:53:10.284Z",
+    "passed": true
+  },
+  "execution_gate": {
+    "allowed": false,
+    "reasons": [
+      "Benchmark reset/evaluator/adapter admission gates remain open",
+      "Current runner has no verified per-arm database reset; a fresh browser context is not reset"
+    ],
+    "confirmatory_authorized": false,
+    "scope": "local-benchmark-execution",
+    "checked_at": "2026-09-21T12:53:14.111Z"
+  },
+  "adapter_capabilities": {
+    "per_arm_state_reset": false
+  },
+  "benchmark_gates_snapshot": {
+    "observed_at": "2026-09-21T12:19:48.248Z",
+    "benchmarks": [
+      {
+        "id": "webarena-verified",
+        "admitted": false,
+        "open_gates": [
+          "Extend the verified six-review-table reset proof to exact task dependencies and implement per-arm reset in the runner; no full fixture admission yet",
+          "Environment dependency closure for the frozen task set; only Shopping is presently integrated",
+          "Resolve preregistered handling of reproduced answer-dependent native evaluator errors; no silent evaluator patch or exclusion",
+          "Adapters beyond the exposed read-only retrieval development subset"
+        ]
+      },
+      {
+        "id": "visualwebarena",
+        "admitted": false,
+        "open_gates": [
+          "Per-task official site/fixture/asset dependencies, URL rewriting and login parity",
+          "Digest-pinned deployment and three reset cycles; downloaded images alone do not pass",
+          "VQA/LLM-judge runtime, native CLEAR action defects and torch wheel metadata discrepancy; base Python/browser installed only",
+          "Official task reference-image delivery with hashes, distinct from live browser screenshots",
+          "Three-arm adapter and replay evidence; DOM-derived SoM cannot enter the pixel-only arm"
+        ]
+      },
+      {
+        "id": "autonomous-tester-agent-benchmark",
+        "admitted": false,
+        "open_gates": [
+          "Approve versioned amendment from 112 marker count to 113 officially parsed candidates; adjudicate duplicate source step indices",
+          "Local fixture/reset equivalence to published PASS/FAIL labels; do not dispatch upstream GitHub reset workflows",
+          "Separate artifact-bundled evaluator from independently pinned PinATA checkout",
+          "Live specification-only adapters and independent verdict/failed-step correctness checks"
+        ]
+      }
+    ],
+    "common_open_gates": [
+      "Two independent human eligibility reviews and adjudication; AI audit is not a replacement",
+      "Freeze included/excluded task IDs and development/confirmatory separation before arm outcomes",
+      "Blinded Traditional authoring, two semantic reviewers, engineering-cost and deployment-failure ledger",
+      "Dynamic information-boundary audit of inputs AND control flow on every adapter",
+      "Freeze models/frameworks/prompts/budgets, pilot-derived repetition plan and analysis version",
+      "Explicit confirmatory authorization; high agent success is not a gate"
+    ]
+  },
+  "only_api_key_missing": false,
+  "ready_for_benchmark": false,
+  "live_gpt_verified": false,
+  "confirmatory_authorized": false,
+  "model_requests": 0,
+  "benchmark_executions": 0,
+  "limitations": [
+    "Readiness report cannot authorize execution",
+    "OpenAI access/model vision support still require opt-in live synthetic smoke",
+    "Official environment task/reset/evaluator gates and human study approvals are independent of model connectivity"
+  ],
+  "source_sha256": "c3174f12bf4c695cb4715c76efd9cf58c8683b6a81fafd97448f54d7f03eb6da"
+}

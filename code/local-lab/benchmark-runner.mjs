@@ -3,7 +3,8 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import dotenv from "dotenv";
+import {loadRuntimeEnv} from './runtime-env.mjs';
+import {resolveProvider,publicProvider,buildProviderRequest,callProvider} from './provider.mjs';
 import { chromium } from "playwright";
 import { acquireLock } from "./lock.mjs";
 import { currentExecutionGate } from './execution-gate.mjs';
@@ -11,19 +12,17 @@ import { summarize } from "./metrics.mjs";
 import { runReviewScript } from "./benchmark-script.mjs";
 import { retrievalResponse, evaluatorSummary } from "./benchmark-contract.mjs";
 import { PROTOCOL, OBSERVATION_POLICY, MAX_CONSECUTIVE_PROTOCOL_ERRORS,
-  resolveModel, observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks, responseFormat,
+  observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks,
   ACTION_CONVENTIONS, coordinateToPixels } from "./agent-protocol.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
 const admission = currentExecutionGate();
 if (!admission.allowed) throw new Error('Benchmark execution blocked: ' + admission.reasons.join('; '));
-dotenv.config({ path: path.join(code, ".env"), quiet: true });
-const modelConfig = resolveModel(process.env);
-const model = modelConfig.model;
-if (process.env.CUA_PROVIDER !== "aliyun" || !process.env.CUA_API_KEY)
-  throw new Error("Qwen credentials are not configured");
-if (process.env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
+const env = loadRuntimeEnv();
+const providerConfig = resolveProvider(env);
+const model = providerConfig.model;
+if (env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
   throw new Error("Diagnostic protocol requires explicit PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN=1; no automatic batches");
 const store = path.join(code, "artifacts/local-runtime"),
   id = process.argv[2] || `local-benchmark-${Date.now()}`;
@@ -39,7 +38,7 @@ const sha = (x) => crypto.createHash("sha256").update(x).digest("hex"),
 const selection = JSON.parse(
   fs.readFileSync(path.join(root, "benchmark-selection.json")),
 );
-const selectedTaskIds = diagnosticTasks(selection.task_ids, process.env.PSS_LOCAL_TASK_IDS);
+const selectedTaskIds = diagnosticTasks(selection.task_ids, env.PSS_LOCAL_TASK_IDS);
 const sourceCommit = execFileSync(
   "git",
   [
@@ -61,6 +60,9 @@ for (const file of [
   "benchmark-script.mjs",
   "benchmark-contract.mjs",
   "agent-protocol.mjs",
+  "provider.mjs",
+  "runtime-env.mjs",
+  "execution-gate.mjs",
   "benchmark-selection.json",
   "benchmark-config.json",
 ])
@@ -93,16 +95,18 @@ const batch = {
   benchmark: "webarena-verified",
   source_commit: selection.source_commit,
   task_ids: selectedTaskIds,
-  development_subset: process.env.PSS_LOCAL_TASK_IDS || null,
+  development_subset: env.PSS_LOCAL_TASK_IDS || null,
   tasks,
   model,
-  model_configuration_source: modelConfig.source,
-  provider: "aliyun",
+  model_configuration_source: providerConfig.model_source,
+  provider: providerConfig.provider,
+  provider_configuration: publicProvider(providerConfig),
+  provider_source_sha256: sha(fs.readFileSync(path.join(root,'provider.mjs'))),
   framework: "PSS benchmark adapter",
   local_protocol: PROTOCOL,
   intent: "Official review retrieval tasks",
   protocol_change:
-    "v6 explicitly documents normalized coordinates and signed CSS-pixel scrolling, calibrates the unchanged actuator mapping, and separates preparation from unverified benchmark reset. No target hints or action correction. Separate diagnostic stratum.",
+    "v7 introduces explicit vendor/API transport and terminal-response validation. Observation, action mapping, task budgets and reset gate remain unchanged. Never pool with earlier diagnostic protocols.",
   observation_policy: OBSERVATION_POLICY,
   protocol_sha256: sha(fs.readFileSync(path.join(root, "agent-protocol.mjs"))),
   information_boundary: { visual: "screenshots and own action feedback only", hybrid: "screenshots plus visible control list; NOT full DOM or AX tree" },
@@ -163,7 +167,7 @@ function emit(type, details = {}) {
 }
 const clean = (e) =>
   String(e?.message || e)
-    .replaceAll(process.env.CUA_API_KEY, "[REDACTED]")
+    .replaceAll(providerConfig.apiKey, "[REDACTED]")
     .slice(0, 600);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 emit("batch-start");
@@ -350,14 +354,10 @@ if (!batch.environment_ready) {
               controls = controls.map(c => ({ ...c, target_id: `o${step}-${c.target_id}` }));
             }
             const instructions = `You execute an official WebArena-Verified task. Task: ${task.intent}\nRetrieve exactly the items specified in the task (reviewer names or review titles). Read all relevant reviews and pages before answering. Use only the provided screenshots${arm === "hybrid" ? " and current visible controls" : ""}. No external knowledge or guessed names.\nReturn exactly one JSON object. Actions: {"action":"click","x":500,"y":500}${arm === "hybrid" ? ` or {"action":"click","target_id":"o${step}-c2"}` : ""}, {"action":"scroll","delta_y":500}, {"action":"keypress","key":"Enter"}, {"action":"type","text":"text"}, {"action":"wait"}. Use integer scroll distances. To finish: {"action":"done","answer":["retrieved text"]}. Click coordinates are normalized to 0..1000 on EACH axis (image 1280x720). Preserve the requested text exactly as displayed; return an empty answer array only if no matching items were found after examination. A quiet screenshot does not prove loading is complete; wait when needed. If you need to keep reading, scroll rather than claiming done. Your recent accepted actions and visual notes: ${JSON.stringify(history.slice(-12))}. Historical target IDs cannot be reused. Include a short "note" (at most 2000 characters) of observed matching items and remaining work to preserve cross-screen evidence; never invent unseen facts. Recent protocol feedback: ${JSON.stringify(feedback.slice(-3))}.${candidateAnswer !== null ? `\nYou proposed answer ${JSON.stringify(candidateAnswer)}. Check the new current screenshot before repeating done to confirm, or continue reading/correct the answer.` : ""}${arm === "hybrid" ? "\nObservation-local controls: " + JSON.stringify(controls) : ""}`;
-            const body = {
-              model,
-              temperature: 0,
-              enable_thinking: false,
-              max_tokens: 1024,
-              response_format: responseFormat(model, controls, arm),
+            const body = buildProviderRequest(providerConfig, {
+              controls, arm,
               messages: modelMessages(instructions + "\n" + ACTION_CONVENTIONS, previousImages, image),
-            };
+            });
             const request = {
               step,
               status: "pending",
@@ -365,7 +365,9 @@ if (!batch.environment_ready) {
               input_digest: sha(JSON.stringify(body)),
               prompt_text: instructions + "\n" + ACTION_CONVENTIONS,
               model_requested: model,
-              response_format: body.response_format,
+              response_format: body.response_format || body.text?.format,
+              provider: providerConfig.provider,
+              api_mode: providerConfig.api,
               input_frame_files: [...previousImages.slice(-2).map(f => f.file), r.frames.at(-1).file],
               controls: arm === "hybrid" ? controls : undefined,
             };
@@ -376,38 +378,19 @@ if (!batch.environment_ready) {
             let decision;
             const begin = Date.now();
             try {
-              const response = await fetch(
-                process.env.CUA_BASE_URL.replace(/\/$/, "") +
-                  "/chat/completions",
-                {
-                  method: "POST",
-                  headers: {
-                    Authorization: `Bearer ${process.env.CUA_API_KEY}`,
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify(body),
-                  signal: AbortSignal.timeout(
-                    Math.min(
-                      45000,
-                      Math.max(1, 240000 - (Date.now() - agentStart)),
-                    ),
-                  ),
-                },
-              );
-              const payload = await response.json();
-              request.http_status = response.status;
-              request.model_returned = payload.model || null;
-              request.provider_request_id = payload.id || null;
-              request.usage = payload.usage || null;
-              request.finish_reason = payload.choices?.[0]?.finish_reason;
-              request.output = payload.choices?.[0]?.message?.content || null;
-              if (!response.ok)
-                throw new Error(`Provider HTTP ${response.status}`);
+              Object.assign(request, await callProvider(providerConfig, body, {
+                timeoutMs: Math.min(batch.budget.request_timeout_ms,
+                  Math.max(1,batch.budget.agent_timeout_ms-(Date.now()-agentStart))),
+              }));
+              if (request.failure_class) {
+                r.failure_class=request.failure_class;
+                throw new Error(request.failure_class);
+              }
               request.status = "received";
             } catch (e) {
               request.status = "error";
               request.error = clean(e);
-              r.failure_class = /timeout|abort/i.test(request.error) ? "provider-timeout" : "provider-http-or-response";
+              r.failure_class ||= /timeout|abort/i.test(request.error) ? "provider-timeout" : "provider-http-or-response";
               throw e;
             } finally {
               request.latency_ms = Date.now() - begin;

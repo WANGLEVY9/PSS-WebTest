@@ -4,6 +4,10 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "sponsor:verify": "node local-lab/sponsor-verify.mjs",
+    "sponsor:preflight": "node local-lab/sponsor-preflight.mjs --live-environment --write",
+    "sponsor:smoke": "node local-lab/provider-smoke.mjs",
+    "sponsor:console": "node local-lab/server.mjs",
     "test:traditional": "playwright test --project=chromium",
     "test:traditional:ui": "playwright test --ui",
     "report": "playwright show-report",

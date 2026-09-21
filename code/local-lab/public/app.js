@@ -111,6 +111,19 @@ function render() {
     if(r.homepage) list.append(el('li',`Last homepage: HTTP ${r.homepage.status}, ${r.homepage.elapsed_ms} ms`));
     details.append(list);admission.append(details);
   }
+  if(state.provider_configuration) {
+    const p=state.provider_configuration, card=el('details');
+    card.append(el('summary',`Next-run provider · ${p.provider || 'not configured'} · ${p.model || 'model required'}`),
+      el('p',p.error || `API: ${p.api}. Key configured: ${p.configured?'yes':'no'}. Configuration is not live connectivity or benchmark admission.`));
+    admission.append(card);
+  }
+  if(state.sponsor_readiness) {
+    const r=state.sponsor_readiness, card=el('details'), list=el('ul');
+    card.append(el('summary','Sponsor handoff · benchmark setup incomplete'),
+      el('p',`Read-only audit: ${r.observed_at}. Live GPT verified: ${r.live_gpt_verified?'yes':'no'}. Adding a key does not bypass study gates.`));
+    list.append(...r.checks.filter(c=>!c.passed).map(c=>el('li',`${c.id}: ${typeof c.detail==='string'?c.detail:'not verified'}`)));
+    card.append(list);admission.append(card);
+  }
   admission.title = `Readiness observed: ${state.expansion?.observed_at || "unavailable"}. Not confirmatory authorization.`;
   const batches = state.batches.filter(
     (b) => b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",
@@ -459,7 +472,7 @@ document.addEventListener("keydown", (e) => {
 $("start").onclick = async () => {
   if (
     !confirm(
-      `Run the pinned official WebArena-Verified selection with three strategies? Local screenshots will be sent to Qwen. Task IDs: ${state.selection?.task_ids?.join(", ") || "see pinned selection"}.`,
+      `Run the pinned official WebArena-Verified selection with three strategies? Local screenshots (plus visible controls for Hybrid) will be sent to ${state.provider} / ${state.model}. Task IDs: ${state.selection?.task_ids?.join(", ") || "see pinned selection"}.`,
     )
   )
     return;

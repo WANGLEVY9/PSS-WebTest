@@ -19,7 +19,17 @@ test('missing, stale, changed and unadmitted evidence always fail closed',()=>{
 });
 test('CLI checks admission before credentials or task export; API and UI use same decision',()=>{
   const runner=fs.readFileSync(new URL('./benchmark-runner.mjs',import.meta.url),'utf8');
-  assert.ok(runner.indexOf('if (!admission.allowed)')<runner.indexOf('dotenv.config('));
+  const load=runner.indexOf('const env = loadRuntimeEnv()');
+  assert.ok(load>0 && runner.indexOf('if (!admission.allowed)')<load);
   assert.match(fs.readFileSync(new URL('./server.mjs',import.meta.url),'utf8'),/if \(!admission.allowed\)/);
   assert.match(fs.readFileSync(new URL('./public/app.js',import.meta.url),'utf8'),/state\.execution_gate\?\.allowed !== true/);
+});
+test('live runner and console both use explicit provider config, never a Qwen-only route',()=>{
+  const runner=fs.readFileSync(new URL('./benchmark-runner.mjs',import.meta.url),'utf8');
+  assert.match(runner,/buildProviderRequest\(providerConfig/);
+  assert.match(runner,/callProvider\(providerConfig/);
+  assert.doesNotMatch(runner,/CUA_BASE_URL|enable_thinking|provider: "aliyun"/);
+  const server=fs.readFileSync(new URL('./server.mjs',import.meta.url),'utf8');
+  assert.match(server,/resolveProvider\(runtimeEnv/);
+  assert.doesNotMatch(server,/provider: "aliyun"/);
 });

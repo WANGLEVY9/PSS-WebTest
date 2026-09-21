@@ -2,6 +2,8 @@
 
 An English, local-first console for **official benchmark integration runs**. The current selection uses unmodified WebArena-Verified tasks **163–167**, template 136, source commit `6473f72db5dcefc97b5725b59e734504edc28a21`; earlier task-21/22 records remain available. It invokes the **stock WebArena-Verified 1.2.3 evaluator**, not a replacement page assertion. This is not confirmatory collection.
 
+**Current status: task execution is blocked.** OpenAI transport and offline regression are implemented, but per-arm state reset and benchmark admission are not complete. See [SPONSOR-HANDOFF.md](./SPONSOR-HANDOFF.md) for the audited acceptance checklist, API configuration and explicit remaining work. A configured API key is not an execution authorization.
+
 ## Start the environment and console
 
 ```bash
@@ -12,17 +14,18 @@ node local-lab/probe-benchmark.mjs
 node local-lab/server.mjs
 ```
 
-Open <http://127.0.0.1:4173/>. **Run benchmark** starts the pinned selection shown in its confirmation dialog. The current development tranche is tasks 163–167 (template 136), fifteen executions across three strategies; previous task-21/22 batches remain available. Same-origin token and a runner lock protect the local launch endpoint. The server binds to loopback only. Runs persist on disk if the browser tab closes. Ctrl-C stops the server, not necessarily its already launched runner; do not start a second legacy runner against the same site.
+Open <http://127.0.0.1:4173/>. **Collection paused** is intentional: CLI, API and UI share a fail-closed execution gate. The pinned development selection is tasks 163–167 (template 136), fifteen scheduled executions across three strategies if admitted; earlier records remain available. Same-origin token and a runner lock protect the local launch endpoint. The server binds to loopback only, although the existing Shopping container has wildcard host bindings that still need isolation. Runs persist on disk if the browser tab closes. Ctrl-C stops the server, not necessarily its already launched runner; do not start a second legacy runner against the same site.
 
-See [EXPANSION-PLAN.md](./EXPANSION-PLAN.md) for all three core benchmarks, stage gates, source anomalies, denominators and continuation limits. No background schedule is currently installed. The current v3 prompt generalizes from reviewer names to the requested review text; never pool it with v1/v2 repetitions.
+See [EXPANSION-PLAN.md](./EXPANSION-PLAN.md) for all three core benchmarks, stage gates, source anomalies, denominators and continuation limits. No background schedule is currently installed. The next protocol is `wav-retrieval-json-v7-provider-diagnostic`; no v7 empirical outcome is claimed. Provider transport and terminal-response validation changed; never pool this version with earlier repetitions.
 
-Existing `code/.env` supplies the Alibaba API key and compatible base URL. The local default is **qwen3-vl-flash**, without overwriting the global model. `PSS_LOCAL_MODEL` overrides only this console. No keys are printed or checked in.
+Existing `code/.env` supplies the legacy Alibaba configuration with an explicit `CUA_MODEL` (no hidden model default). For GPT, use an isolated ignored `code/.env.openai`, set `PSS_LOCAL_ENV_FILE=.env.openai`, and specify `OPENAI_MODEL`. The OpenAI branch never inherits a CUA key/model/base URL. Both Responses and Chat Completions are supported explicitly; no API fallback is attempted. No keys are printed or checked in.
 
 Prerequisites, if absent:
 
 ```bash
 npm ci
 npx playwright install chromium
+# Only create this venv if absent; do not replace a validated environment.
 uv venv .venv-benchmark --python 3.12
 uv pip install --python .venv-benchmark/bin/python ./artifacts/benchmark-snapshots/webarena-verified
 ```
@@ -51,7 +54,7 @@ Official `agent-input-get` exports model-facing inputs without reference answers
 
 Protocol `wav-retrieval-json-v1` incorrectly serialized an empty completed retrieval as SUCCESS. `v2` corrects the general public response contract to NOT_FOUND_ERROR. The same semantic script and task selection remain unchanged. Old results are retained; **do not pool the two protocol versions as repetitions**. A response-induced evaluator schema exception is unresolved, not proof of external infrastructure failure or agent incapability.
 
-This adapter is a native PSS integration runner, not an AgentLab/Browser Use result. Two tasks from one template cannot establish comparative capability or replace outcome-blind screening and formal benchmark admission. VisualWebArena and ATA are not silently marked as running.
+This adapter is a native PSS integration runner, not an AgentLab/Browser Use or OpenAI native computer-use-tool result. Seven exposed development tasks across the retained batches cannot establish comparative capability or replace outcome-blind screening and formal benchmark admission. VisualWebArena and ATA are not silently marked as running.
 
 ## Evidence and verification
 
@@ -65,6 +68,8 @@ Private artifacts: `code/artifacts/local-runtime/<batch>/`:
 node --test local-lab/*.test.mjs
 npm run test:contracts
 node local-lab/validate-benchmark.mjs --export-public
+node local-lab/sponsor-verify.mjs
+node local-lab/sponsor-preflight.mjs --live-environment --write
 ```
 
 The public summary exports credential-free counts, digests and official statuses only. HAR, prompts, screenshots and reference answers remain ignored. Monetary cost is unavailable; actual reported tokens are not converted into invented charges. Previous self-authored Juice Shop smoke data is retained as `LIVE_ENGINEERING`, excluded from the benchmark console and validated separately by `validate.mjs`. `runner.mjs` is the legacy smoke entrypoint and is **not** launched by this console.

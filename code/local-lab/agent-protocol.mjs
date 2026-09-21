@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 
-export const PROTOCOL = "wav-retrieval-json-v6-diagnostic";
+export const PROTOCOL = "wav-retrieval-json-v7-provider-diagnostic";
 // Generic actuator semantics only. No target hints or benchmark state.
 export const ACTION_CONVENTIONS = "Click x and y are integers normalized independently to 0..1000: x increases rightward, y increases downward; top-left is (0,0), center is (500,500), bottom-right is (1000,1000). Convert a screenshot pixel (px,py) using x=round(1000*px/width), y=round(1000*py/height). Scroll delta_y is in CSS pixels, NOT normalized: positive scrolls DOWN, negative scrolls UP, zero does not move. Actions are executed exactly; coordinates and scroll signs are never inferred or corrected.";
 
@@ -35,6 +35,10 @@ export function diagnosticTasks(allowed, value) {
 // https://help.aliyun.com/zh/model-studio/qwen-structured-output
 export function responseFormat(model, controls, arm) {
   if (!/^qwen3\.7-flash(?:-|$)/.test(model)) return {type:"json_object"};
+  return actionResponseFormat(controls, arm);
+}
+
+export function actionResponseFormat(controls, arm) {
   const properties = {
     action: {type:"string",enum:["click","scroll","keypress","type","wait","done"]},
     x: {type:["integer","null"],description:"Normalized horizontal coordinate: 0 left, 1000 right; not pixels."},

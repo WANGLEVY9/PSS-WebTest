@@ -24,6 +24,8 @@ for (const id of fs
     errors.push(`${id}: scope`);
   if (b.protocol_sha256 && sha(fs.readFileSync(path.join(dir, "agent-protocol.mjs"))) !== b.protocol_sha256)
     errors.push(`${id}: protocol source digest`);
+  if (b.provider_source_sha256 && sha(fs.readFileSync(path.join(dir,'provider.mjs'))) !== b.provider_source_sha256)
+    errors.push(`${id}: provider source digest`);
   const inputs = JSON.parse(
     fs.readFileSync(path.join(dir, "agent-inputs.json")),
   );
@@ -58,7 +60,7 @@ for (const id of fs
     const preparationDigest = r => r.preparation_digest ?? r.reset_digest;
     if (prepared.some(r => preparationDigest(r) !== preparationDigest(prepared[0])))
       errors.push(`${id}: context preparation mismatch`);
-    if (b.local_protocol === 'wav-retrieval-json-v6-diagnostic' &&
+    if (['wav-retrieval-json-v6-diagnostic','wav-retrieval-json-v7-provider-diagnostic'].includes(b.local_protocol) &&
         records.some(r => r.reset_passed !== null || r.reset_digest !== null))
       errors.push(`${id}: unsupported benchmark-reset claim`);
   }

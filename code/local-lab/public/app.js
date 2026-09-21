@@ -75,6 +75,12 @@ function render() {
       const id=b.id==='ata'?'autonomous-tester-agent-benchmark':b.id;
       const audit=state.conformance?.benchmarks?.find(x=>x.id===id);
       if(audit) {
+        if(audit.component_evidence?.length) {
+          const evidence=el('details'), items=el('ul');
+          evidence.append(el('summary','Engineering checks · not task success'));
+          items.append(...audit.component_evidence.map(item=>el('li',item)));
+          evidence.append(items); card.append(evidence);
+        }
         const details=el('details'), list=el('ul');
         details.append(el('summary',`Not admitted · ${audit.open_gates.length} open benchmark gates`));
         list.append(...audit.open_gates.map(g=>el('li',g)));

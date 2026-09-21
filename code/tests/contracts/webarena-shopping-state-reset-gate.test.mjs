@@ -16,7 +16,7 @@ test('state-reset gate is fail-closed without explicit recreate authorization', 
   assert.equal(result.study_execution_allowed, false);
 });
 
-test('state-reset gate compares image, mounts, and deterministic database fingerprints', async () => {
+test('cardinality/schema repeatability never proves restored task-state contents', async () => {
   const calls = [];
   const result = await probeWebArenaShoppingStateResetGate({
     manifest,
@@ -35,8 +35,10 @@ test('state-reset gate compares image, mounts, and deterministic database finger
     sleep: async () => {},
     now: () => '2026-09-14T00:00:00.000Z'
   });
-  assert.equal(result.ready, true);
-  assert.equal(result.state_reset_verified, true);
+  assert.equal(result.ready, false);
+  assert.equal(result.state_reset_verified, false);
+  assert.equal(result.cardinality_repeatability_verified, true);
+  assert.equal(result.classification, 'cardinality-repeatability-only');
   assert.equal(result.state_digest_stable, true);
   assert.equal(result.no_persistent_mounts, true);
   assert.equal(result.cycle_results.length, 3);

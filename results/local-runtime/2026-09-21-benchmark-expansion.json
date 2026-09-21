@@ -1,19 +1,36 @@
 {
-  "observed_at": "2026-09-21T07:44:14.832Z",
+  "observed_at": "2026-09-21T09:57:31.733Z",
   "confirmatory_authorized": false,
   "benchmarks": [
     {
       "id": "webarena-verified",
       "name": "WebArena-Verified",
       "state": "Integration only",
-      "detail": "7 unique development tasks / 27 completed executions. Protocol strata remain separate.",
-      "latest_batch": "local-benchmark-1789975817877"
+      "detail": "7 unique development tasks / 33 completed executions. Protocol strata remain separate.",
+      "latest_batch": "local-benchmark-v5-schema-20260921-t167"
     },
     {
       "id": "visualwebarena",
       "name": "VisualWebArena",
       "state": "Environment preparation",
-      "detail": "Official Classifieds archive verified. Image pull reached its 10-minute limit; service not started. Reset, fixture and original-evaluator gates remain open.",
+      "detail": "Official Classifieds archive verified. Image provisioning blocked: below-compressed-size-lower-bound. Compressed image 76.9 GB; VM available 10.1 GB. Reset, fixture and original-evaluator gates remain open.",
+      "capacity": {
+        "kind": "VWA_PROVISIONING_CAPACITY_PREFLIGHT",
+        "observed_at": "2026-09-21T09:49:58.903Z",
+        "confirmatory_authorized": false,
+        "reference": "jykoh/classifieds:latest",
+        "allowed": false,
+        "resolved_digest": "sha256:a2a794da92f62a8d7ffd02314e4fab40ba6c7fc08f568371608f88f0ef605e43",
+        "platform": {
+          "architecture": "amd64",
+          "os": "linux"
+        },
+        "compressed_bytes": 76861304894,
+        "available_bytes": 10062282752,
+        "engineering_reserve_bytes": 153722609788,
+        "reason": "below-compressed-size-lower-bound",
+        "policy": "2x compressed bytes is only a provisioning reserve; unpacked size and runtime working space still need validation. No image substitution or disk cleanup is performed."
+      },
       "images": [],
       "classifieds": {
         "http_status": null
@@ -42,7 +59,8 @@
   ],
   "human_review": "Included, excluded and Traditional-adaptation ledgers are not yet completed; AI audit does not replace independent reviewers.",
   "next": [
-    "Diagnose output-contract failures before more API batches",
+    "Complete isolated WAV content-reset and native evaluator edge-case gates before more API batches",
+    "Resolve VWA VM capacity or select a sufficiently provisioned host",
     "Finish isolated VWA Classifieds deployment and three reset cycles",
     "Resolve ATA inventory and step-index anomalies",
     "Freeze screened disjoint populations and blinded adaptation",

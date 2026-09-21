@@ -30,18 +30,18 @@ const openGates={
   'webarena-verified':[
     'Three verified reset cycles and task-state fingerprints; browser context is insufficient',
     'Environment dependency closure for the frozen task set; only Shopping is presently integrated',
-    'Native evaluator semantic edge-case audit, including answer-dependent null-schema errors',
+    'Resolve preregistered handling of reproduced answer-dependent native evaluator errors; no silent evaluator patch or exclusion',
     'Adapters beyond the exposed read-only retrieval development subset',
   ],
   visualwebarena:[
     'Per-task official site/fixture/asset dependencies, URL rewriting and login parity',
     'Digest-pinned deployment and three reset cycles; downloaded images alone do not pass',
-    'Python 3.10/3.11 runtime and unchanged native evaluator dependencies, including VQA where applicable',
+    'VQA/LLM-judge runtime, native CLEAR action defects and torch wheel metadata discrepancy; base Python/browser installed only',
     'Official task reference-image delivery with hashes, distinct from live browser screenshots',
     'Three-arm adapter and replay evidence; DOM-derived SoM cannot enter the pixel-only arm',
   ],
   'autonomous-tester-agent-benchmark':[
-    'Resolve 112 marker count versus 113 parsed headers and duplicate source step indices without changing frozen population silently',
+    'Approve versioned amendment from 112 marker count to 113 officially parsed candidates; adjudicate duplicate source step indices',
     'Local fixture/reset equivalence to published PASS/FAIL labels; do not dispatch upstream GitHub reset workflows',
     'Separate artifact-bundled evaluator from independently pinned PinATA checkout',
     'Live specification-only adapters and independent verdict/failed-step correctness checks',
@@ -59,14 +59,32 @@ const ata=readJSON(path.join(code,'artifacts/local-runtime/ata-preparation/summa
 const runtime=path.join(code,'artifacts/local-runtime');
 const lastPull=fs.readdirSync(runtime).filter(n=>/^vwa-pull-\d+\.json$/.test(n)).sort().at(-1);
 const pull=lastPull?readJSON(path.join(runtime,lastPull)):null;
+const preflight=readJSON(path.join(runtime,'preflight-summary.json'));
+const completedChecks={
+  'webarena-verified':preflight?.wav?[
+    `Native evaluator/response tests: ${preflight.wav.native_tests?.passed ?? 'unknown'} passed, ${preflight.wav.native_tests?.skipped ?? 'unknown'} skipped`,
+    `Installed source comparison: ${preflight.wav.installed_source_files_compared} files, match=${preflight.wav.installed_matches_source}`,
+    'Native null-schema error reproduced with synthetic wrong answers; preserved as unresolved',
+  ]:[],
+  visualwebarena:preflight?.vwa?[
+    `Pinned native runtime: Python ${preflight.vwa.runtime?.python}, Playwright ${preflight.vwa.runtime?.playwright}, Chromium ${preflight.vwa.runtime?.chromium}`,
+    `Synthetic components: ${preflight.vwa.synthetic_checks_passed}/${preflight.vwa.synthetic_checks_total}; official action tests: ${preflight.vwa.official_action_tests?.failures} failed (not suppressed)`,
+    `VM capacity gate: ${preflight.vwa.capacity?.reason || 'unknown'}`,
+  ]:[],
+  'autonomous-tester-agent-benchmark':preflight?.ata?[
+    `Native CSV parser: ${preflight.ata.official_parsed_candidates} candidates, six-file parity=${preflight.ata.six_csv_parser_parity}`,
+    `Formula checks: ${preflight.ata.metric_parity?.defined_metric_comparisons} defined comparisons, ${preflight.ata.metric_parity?.mismatches?.length} mismatches; undefined-rate convention differs explicitly`,
+  ]:[],
+};
 const report={kind:'BENCHMARK_CONFORMANCE_AUDIT',observed_at:new Date().toISOString(),
   confirmatory_authorized:false,authorization_capability:'none',
   manifest_sha256:sha(fs.readFileSync(path.join(code,'config/benchmark-artifact-manifest.v1.0.json'))),
   common_open_gates:common,
+  preflight_evidence_observed_at:preflight?.observed_at||null,
   vwa_last_pull:pull?{job:pull.job,started:pull.started,finished:pull.finished,exit_code:pull.exit_code,error_code:pull.error_code}:null,
   benchmarks:manifest.mandatory_core.map(b=>({id:b.id,admitted:false,source:gitSource(b),
     official_reference:b.repository,published_artifact:b.published_artifact?.doi||null,
-    open_gates:openGates[b.id],
+    open_gates:openGates[b.id],component_evidence:completedChecks[b.id],
     ...(b.id==='autonomous-tester-agent-benchmark'?{parsed_candidates:ata?.published_tasks??null,frozen_marker_inventory:b.task_artifact.source_record_count}:{}),
   })),
   local_images:[image('am1n3e/webarena-verified-shopping:latest'),image('jykoh/classifieds:latest'),image('mysql:8.1')],

@@ -21,6 +21,7 @@ const records = batches.flatMap((b) => b.records),
     .sort((a, b) => a.started_at.localeCompare(b.started_at))
     .at(-1);
 const ata = read(path.join(store, "ata-preparation/summary.json"));
+const capacity = read(path.join(store, "vwa-capacity-preflight.json"));
 let images = [];
 try {
   images = JSON.parse(
@@ -63,7 +64,8 @@ const progress = {
       id: "visualwebarena",
       name: "VisualWebArena",
       state: "Environment preparation",
-      detail: `Official Classifieds archive verified. ${images.length === 2 ? "Container images downloaded." : read(path.join(store, "vwa-deployment.json"))?.pull_error === "ETIMEDOUT" ? "Image pull reached its 10-minute limit; service not started." : "Container image download pending."} Reset, fixture and original-evaluator gates remain open.`,
+      detail: `Official Classifieds archive verified. ${images.length === 2 ? "Container images downloaded." : capacity?.allowed === false ? `Image provisioning blocked: ${capacity.reason}. ${Number.isFinite(capacity.compressed_bytes) && Number.isFinite(capacity.available_bytes) ? `Compressed image ${(capacity.compressed_bytes / 1e9).toFixed(1)} GB; VM available ${(capacity.available_bytes / 1e9).toFixed(1)} GB.` : "VM capacity unverified."}` : "Container image download pending."} Reset, fixture and original-evaluator gates remain open.`,
+      capacity,
       images,
       classifieds,
     },
@@ -79,7 +81,8 @@ const progress = {
   human_review:
     "Included, excluded and Traditional-adaptation ledgers are not yet completed; AI audit does not replace independent reviewers.",
   next: [
-    "Diagnose output-contract failures before more API batches",
+    "Complete isolated WAV content-reset and native evaluator edge-case gates before more API batches",
+    "Resolve VWA VM capacity or select a sufficiently provisioned host",
     "Finish isolated VWA Classifieds deployment and three reset cycles",
     "Resolve ATA inventory and step-index anomalies",
     "Freeze screened disjoint populations and blinded adaptation",

@@ -139,8 +139,12 @@ export async function probeWebArenaShoppingStateResetGate({
     reset_cycles: resetCycles, cycle_results: cycleResults, image_matches: imageMatches,
     no_persistent_mounts: noPersistentMounts, state_digest_stable: stateStable,
     baseline_state_digest: stateStable ? states[0] : null,
-    ready, classification: ready ? 'state-reset-ready' : 'infrastructure-gate-failed',
-    state_reset_verified: ready, study_execution_allowed: false
+    // Cardinality/schema repeatability cannot detect changed values in existing rows.
+    // Preserve the observation, but never promote it to verified task-state reset.
+    ready: false, classification: ready ? 'cardinality-repeatability-only' : 'infrastructure-gate-failed',
+    cardinality_repeatability_verified: ready,
+    state_reset_verified: false, study_execution_allowed: false,
+    missing_evidence: ['controlled task-state mutation', 'restored row-content fingerprint', 'unmodified neighboring instance']
   };
 }
 

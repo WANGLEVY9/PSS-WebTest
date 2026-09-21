@@ -1,11 +1,15 @@
 {
   "benchmark": "webarena-verified",
   "source_commit": "6473f72db5dcefc97b5725b59e734504edc28a21",
-  "task_ids": [21, 22],
-  "selection_rule": "The two lowest numeric task IDs in the shopping-only reviewer-name retrieval family; selected before any arm execution or reference-answer inspection.",
+  "task_ids": [163, 164, 165, 166, 167],
+  "selection_rule": "All five tasks in shopping-only official RETRIEVE template 136, identified from official agent-input-get export before any execution of these tasks; no outcome selection.",
   "scope": "official-benchmark-integration",
   "confirmatory_eligible": false,
   "task_intent_modification": "none",
-  "script_authoring": "AI-assisted public-UI adaptation; no reference answers or agent outcomes available during authoring",
-  "environment_policy": "Read-only review retrieval; new browser context for every arm; server image and product/review fixtures verified. No claim of full database reset or formal admission."
+  "script_authoring": "AI-assisted public UI; rating convention fixed before template 136 outcomes; separate from future blinded human baseline",
+  "environment_policy": "Fresh anonymous contexts, blocked write requests; read-only tasks only; no full database reset or admission claim.",
+  "repetition": 1,
+  "scheduled_executions": 15,
+  "automatic_retry": false,
+  "future_confirmatory_role": "development-exposed; exclude from primary confirmatory pool unless an explicit design amendment permits otherwise"
 }

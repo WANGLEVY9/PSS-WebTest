@@ -1,0 +1,20 @@
+{
+  "scope": "official-visualwebarena-environment-preparation",
+  "observed_on": "2026-09-21",
+  "context": "colima-webarena-x86",
+  "compose_project": "pss-vwa-classifieds",
+  "official_archive_md5": "cf4fe746f22efa4e6102ac08fe76d4db",
+  "archive_verified": true,
+  "mysql_image_downloaded": true,
+  "classifieds_image_downloaded": false,
+  "pull_exit_code": 130,
+  "pull_error": "ETIMEDOUT",
+  "timeout_ms": 600000,
+  "automatic_retry": false,
+  "service_started": false,
+  "reset_verified": false,
+  "evaluator_verified": false,
+  "experiment_executions": 0,
+  "confirmatory_eligible": false,
+  "next": "Resume the partial official image download in an explicitly bounded later deployment step; then pin actual image digests before isolated startup. Do not treat this deployment timeout as an arm failure."
+}

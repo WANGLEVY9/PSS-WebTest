@@ -80,6 +80,17 @@ const server = http.createServer((req, res) => {
         provider: "aliyun",
         configured: Boolean(process.env.CUA_API_KEY),
         benchmark,
+        selection: JSON.parse(
+          fs.readFileSync(path.join(root, "benchmark-selection.json"), "utf8"),
+        ),
+        expansion: fs.existsSync(path.join(store, "benchmark-expansion.json"))
+          ? JSON.parse(
+              fs.readFileSync(
+                path.join(store, "benchmark-expansion.json"),
+                "utf8",
+              ),
+            )
+          : null,
         batches: batches(),
       });
     }

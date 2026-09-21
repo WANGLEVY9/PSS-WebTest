@@ -1,0 +1,73 @@
+{
+  "kind": "ATA_ARTIFACT_PREPARATION",
+  "executions": 0,
+  "confirmatory_eligible": false,
+  "published_tasks": 113,
+  "counts": {
+    "classifieds:F": 15,
+    "classifieds:P": 15,
+    "onestopshop:F": 20,
+    "onestopshop:P": 29,
+    "postmill:F": 16,
+    "postmill:P": 18
+  },
+  "files": [
+    {
+      "file": "classifieds_failing.csv",
+      "sha256": "45cf3d9668c38f1bdd1e6f84cc5a3bfc6e200d5f5b3c2f7c9bd6d18cec0cfa46",
+      "cases": 15
+    },
+    {
+      "file": "classifieds_passing.csv",
+      "sha256": "d170262362c2bea0c79203e5626e13f5714f576be612463b0ec3e917c9d1393d",
+      "cases": 15
+    },
+    {
+      "file": "onestopshop_failing.csv",
+      "sha256": "b934c6c3a5d4ea53eed217262879dd9c5cbe5fd0e054120695f6d6f04b5bf8f7",
+      "cases": 20
+    },
+    {
+      "file": "onestopshop_passing.csv",
+      "sha256": "095c0b730ed9fc32d7249b76df6c8d65f785350d9662f3339eb297c2cb197fbd",
+      "cases": 29
+    },
+    {
+      "file": "postmill_failing.csv",
+      "sha256": "b6ec3559b1cda40eebaee870bf5f8ae478111eb8a1afc2cf4e8ce755394f21e9",
+      "cases": 16
+    },
+    {
+      "file": "postmill_passing.csv",
+      "sha256": "2f24bc09f11f645f2a6d755902b17c08be37cccb9555752587dea4ce61bc785d",
+      "cases": 18
+    }
+  ],
+  "warnings": [
+    {
+      "task_id": "ata-482b6ac672c0c1345973",
+      "issue": "non-contiguous official step indices"
+    },
+    {
+      "issue": "frozen-v1 marker inventory differs from parsed task headers",
+      "frozen_v1_count": 112,
+      "parsed_count": 113,
+      "source": "postmill_failing.csv:1 uses \u00ed instead of \u25ba; original task header remains valid",
+      "action": "quarantine population revision pending adjudication; do not overwrite frozen manifests"
+    }
+  ],
+  "gold_authority": "Published P/F identifiers and Expected Failure column, not an agent verdict",
+  "not_verified": [
+    "live environment reproduces labels",
+    "reset equivalence",
+    "human eligibility review",
+    "live adapter"
+  ],
+  "public_input_fields": [
+    "task_id",
+    "site",
+    "title",
+    "steps"
+  ],
+  "leakage_audit": "Stock TestCase.__str__ includes P/F in full_name; PSS inputs instead use opaque IDs. Assertions remain legitimate task specifications."
+}

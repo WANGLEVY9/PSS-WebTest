@@ -58,6 +58,24 @@ function status(r) {
       : r.status.charAt(0).toUpperCase() + r.status.slice(1);
 }
 function render() {
+  let admission = document.getElementById("admission");
+  if (!admission) {
+    admission = el("section", undefined, "protocol");
+    admission.id = "admission";
+    document.getElementById("protocol").before(admission);
+  }
+  admission.replaceChildren(
+    ...(state.expansion?.benchmarks || []).map((b) => {
+      const card = el("div");
+      card.append(
+        el("span", b.state.toUpperCase(), "eyebrow"),
+        el("h3", b.name),
+        el("p", b.detail),
+      );
+      return card;
+    }),
+  );
+  admission.title = `Readiness observed: ${state.expansion?.observed_at || "unavailable"}. Not confirmatory authorization.`;
   const batches = state.batches.filter(
     (b) => b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",
   );
@@ -93,11 +111,11 @@ function render() {
     ? "Benchmark running…"
     : "Run benchmark ↗";
   $("task-title").textContent = task
-    ? `Task ${task.task_id} · Retrieve reviewer names`
+    ? `Task ${task.task_id} · ${task.intent_template_id === 136 ? "Retrieve review titles" : "Retrieve reviewer names"}`
     : "Official benchmark tasks";
   $("intent").textContent =
     task?.intent ||
-    "Tasks 21 and 22 are pinned from the official WebArena-Verified release.";
+    "Task selection is pinned from the official WebArena-Verified release.";
   $("source").textContent = "WEBARENA-VERIFIED / SHOPPING / RETRIEVE";
   $("source-pin").textContent =
     `Source ${(batch?.source_commit || "6473f72db5dc").slice(0, 12)} · template ${task?.intent_template_id || "—"} · ${batch?.model || state.model}`;
@@ -393,7 +411,7 @@ document.addEventListener("keydown", (e) => {
 $("start").onclick = async () => {
   if (
     !confirm(
-      "Run official WebArena-Verified tasks 21 and 22 with all three strategies? Local screenshots will be sent to the configured Qwen endpoint. This creates six bounded integration executions.",
+      `Run the pinned official WebArena-Verified selection with three strategies? Local screenshots will be sent to Qwen. Task IDs: ${state.selection?.task_ids?.join(", ") || "see pinned selection"}.`,
     )
   )
     return;

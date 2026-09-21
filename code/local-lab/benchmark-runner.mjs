@@ -81,10 +81,10 @@ const batch = {
   model,
   provider: "aliyun",
   framework: "PSS benchmark adapter",
-  local_protocol: "wav-retrieval-json-v2",
-  intent: "Official reviewer-name retrieval tasks",
+  local_protocol: "wav-retrieval-json-v3",
+  intent: "Official review retrieval tasks",
   protocol_change:
-    "Public output-contract correction: empty completed retrieval maps to NOT_FOUND_ERROR; no task-specific semantic matching or gold changes.",
+    "Adds preselected template 136 with public rating/title extraction; generalized retrieval prompt. No gold or outcome-based task selection.",
   selection_sha256: sha(
     fs.readFileSync(path.join(root, "benchmark-selection.json")),
   ),
@@ -301,7 +301,7 @@ if (!batch.environment_ready) {
                   .slice(0, 100)
                   .map((e, i) => ({ ...e, target_id: `c${i}` })),
               );
-            const instructions = `You execute an official WebArena-Verified task. Task: ${task.intent}\nThe task requires retrieving reviewer names from the website, not rating a test. Read all relevant reviews and pages before answering. Use only the provided screenshot${arm === "hybrid" ? " and visible controls" : ""}. No external knowledge or guessed names.\nReturn exactly one JSON object. Actions: {"action":"click","x":500,"y":500}${arm === "hybrid" ? ' or {"action":"click","target_id":"c2"}' : ""}, {"action":"scroll","delta_y":500}, {"action":"keypress","key":"Enter"}, {"action":"type","text":"text"}, {"action":"wait"}. To finish: {"action":"done","answer":["reviewer name"]}. Click coordinates are normalized to 0..1000 on EACH axis (image 1280x720). Preserve names exactly as displayed. If you need to keep reading, scroll rather than claiming done. Your recent accepted actions and visual notes: ${JSON.stringify(history.slice(-12))}. You may include a short "note" of visible facts for your next turn; never invent unseen facts.${arm === "hybrid" ? "\nObservation-local controls (IDs may change each turn): " + JSON.stringify(controls) : ""}`;
+            const instructions = `You execute an official WebArena-Verified task. Task: ${task.intent}\nRetrieve exactly the items specified in the task (reviewer names or review titles). Read all relevant reviews and pages before answering. Use only the provided screenshot${arm === "hybrid" ? " and visible controls" : ""}. No external knowledge or guessed names.\nReturn exactly one JSON object. Actions: {"action":"click","x":500,"y":500}${arm === "hybrid" ? ' or {"action":"click","target_id":"c2"}' : ""}, {"action":"scroll","delta_y":500}, {"action":"keypress","key":"Enter"}, {"action":"type","text":"text"}, {"action":"wait"}. To finish: {"action":"done","answer":["retrieved text"]}. Click coordinates are normalized to 0..1000 on EACH axis (image 1280x720). Preserve the requested text exactly as displayed; return an empty answer array only if no matching items were found after examination. If you need to keep reading, scroll rather than claiming done. Your recent accepted actions and visual notes: ${JSON.stringify(history.slice(-12))}. You may include a short "note" of visible facts for your next turn; never invent unseen facts.${arm === "hybrid" ? "\nObservation-local controls (IDs may change each turn): " + JSON.stringify(controls) : ""}`;
             const body = {
               model,
               temperature: 0,

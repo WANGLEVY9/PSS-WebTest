@@ -1,6 +1,6 @@
 # Benchmark observatory
 
-An English, local-first console for **official benchmark integration runs**. The default experiment uses unmodified WebArena-Verified tasks **21 and 22**, template 222, source commit `6473f72db5dcefc97b5725b59e734504edc28a21`. It invokes the **stock WebArena-Verified 1.2.3 evaluator**, not a replacement page assertion. This is not confirmatory collection.
+An English, local-first console for **official benchmark integration runs**. The current selection uses unmodified WebArena-Verified tasks **163–167**, template 136, source commit `6473f72db5dcefc97b5725b59e734504edc28a21`; earlier task-21/22 records remain available. It invokes the **stock WebArena-Verified 1.2.3 evaluator**, not a replacement page assertion. This is not confirmatory collection.
 
 ## Start the environment and console
 
@@ -12,7 +12,9 @@ node local-lab/probe-benchmark.mjs
 node local-lab/server.mjs
 ```
 
-Open <http://127.0.0.1:4173/>. **Run benchmark** starts six bounded executions (two official tasks × three strategies). Same-origin token and a runner lock protect the local launch endpoint. The server binds to loopback only. Runs persist on disk if the browser tab closes. Ctrl-C stops the server, not necessarily its already launched runner; do not start a second legacy runner against the same site.
+Open <http://127.0.0.1:4173/>. **Run benchmark** starts the pinned selection shown in its confirmation dialog. The current development tranche is tasks 163–167 (template 136), fifteen executions across three strategies; previous task-21/22 batches remain available. Same-origin token and a runner lock protect the local launch endpoint. The server binds to loopback only. Runs persist on disk if the browser tab closes. Ctrl-C stops the server, not necessarily its already launched runner; do not start a second legacy runner against the same site.
+
+See [EXPANSION-PLAN.md](./EXPANSION-PLAN.md) for all three core benchmarks, stage gates, source anomalies, denominators and continuation limits. No background schedule is currently installed. The current v3 prompt generalizes from reviewer names to the requested review text; never pool it with v1/v2 repetitions.
 
 Existing `code/.env` supplies the Alibaba API key and compatible base URL. The local default is **qwen3-vl-flash**, without overwriting the global model. `PSS_LOCAL_MODEL` overrides only this console. No keys are printed or checked in.
 

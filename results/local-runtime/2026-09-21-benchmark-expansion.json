@@ -1,0 +1,51 @@
+{
+  "observed_at": "2026-09-21T07:44:14.832Z",
+  "confirmatory_authorized": false,
+  "benchmarks": [
+    {
+      "id": "webarena-verified",
+      "name": "WebArena-Verified",
+      "state": "Integration only",
+      "detail": "7 unique development tasks / 27 completed executions. Protocol strata remain separate.",
+      "latest_batch": "local-benchmark-1789975817877"
+    },
+    {
+      "id": "visualwebarena",
+      "name": "VisualWebArena",
+      "state": "Environment preparation",
+      "detail": "Official Classifieds archive verified. Image pull reached its 10-minute limit; service not started. Reset, fixture and original-evaluator gates remain open.",
+      "images": [],
+      "classifieds": {
+        "http_status": null
+      }
+    },
+    {
+      "id": "ata",
+      "name": "ATA Benchmark",
+      "state": "Artifact audit / blocked",
+      "detail": "113 parsed candidates; v1 inventory has 112. Label separation implemented; population amendment and live fixture-label equivalence unresolved.",
+      "audit_warnings": [
+        {
+          "task_id": "ata-482b6ac672c0c1345973",
+          "issue": "non-contiguous official step indices"
+        },
+        {
+          "issue": "frozen-v1 marker inventory differs from parsed task headers",
+          "frozen_v1_count": 112,
+          "parsed_count": 113,
+          "source": "postmill_failing.csv:1 uses í instead of ►; original task header remains valid",
+          "action": "quarantine population revision pending adjudication; do not overwrite frozen manifests"
+        }
+      ],
+      "executions": 0
+    }
+  ],
+  "human_review": "Included, excluded and Traditional-adaptation ledgers are not yet completed; AI audit does not replace independent reviewers.",
+  "next": [
+    "Diagnose output-contract failures before more API batches",
+    "Finish isolated VWA Classifieds deployment and three reset cycles",
+    "Resolve ATA inventory and step-index anomalies",
+    "Freeze screened disjoint populations and blinded adaptation",
+    "Run stratified pilot and power simulation before formal authorization"
+  ]
+}

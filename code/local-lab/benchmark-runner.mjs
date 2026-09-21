@@ -10,7 +10,8 @@ import { summarize } from "./metrics.mjs";
 import { runReviewScript } from "./benchmark-script.mjs";
 import { retrievalResponse, evaluatorSummary } from "./benchmark-contract.mjs";
 import { PROTOCOL, OBSERVATION_POLICY, MAX_CONSECUTIVE_PROTOCOL_ERRORS,
-  resolveModel, observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks, responseFormat } from "./agent-protocol.mjs";
+  resolveModel, observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks, responseFormat,
+  ACTION_CONVENTIONS, coordinateToPixels } from "./agent-protocol.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, "..");
@@ -48,6 +49,9 @@ const sourceCommit = execFileSync(
 ).trim();
 if (sourceCommit !== selection.source_commit)
   throw new Error("Official benchmark checkout differs from pinned selection");
+if (execFileSync('git', ['-C', path.join(code,'artifacts/benchmark-snapshots/webarena-verified'),
+  'status','--porcelain','--untracked-files=no'], {encoding:'utf8'}).trim())
+  throw new Error("Official benchmark tracked source has local modifications");
 // Preserve executable source for later replay; no secrets or evaluator gold are copied.
 for (const file of [
   "benchmark-runner.mjs",
@@ -95,7 +99,7 @@ const batch = {
   local_protocol: PROTOCOL,
   intent: "Official review retrieval tasks",
   protocol_change:
-    "v5 adds model-capability-gated strict JSON Schema to v4 remediation. No guessed missing actions or coerced coordinates. Not a single-factor model comparison against v3.",
+    "v6 explicitly documents normalized coordinates and signed CSS-pixel scrolling, calibrates the unchanged actuator mapping, and separates preparation from unverified benchmark reset. No target hints or action correction. Separate diagnostic stratum.",
   observation_policy: OBSERVATION_POLICY,
   protocol_sha256: sha(fs.readFileSync(path.join(root, "agent-protocol.mjs"))),
   information_boundary: { visual: "screenshots and own action feedback only", hybrid: "screenshots plus visible control list; NOT full DOM or AX tree" },
@@ -129,6 +133,10 @@ const batch = {
       oracle: null,
       strict_pass: false,
       operational_correctness: null,
+      preparation_passed: false,
+      reset_passed: null,
+      reset_digest: null,
+      reset_evidence: "not-verified-no-database-reset",
     })),
   ),
 };
@@ -222,8 +230,8 @@ if (!batch.environment_ready) {
           waitUntil: "networkidle",
           timeout: 60000,
         });
-        r.reset_passed = true;
-        r.reset_digest = sha(
+        r.preparation_passed = true;
+        r.preparation_digest = sha(
           JSON.stringify({
             start: task.start_urls[0],
             source_commit: selection.source_commit,
@@ -345,14 +353,14 @@ if (!batch.environment_ready) {
               enable_thinking: false,
               max_tokens: 1024,
               response_format: responseFormat(model, controls, arm),
-              messages: modelMessages(instructions, previousImages, image),
+              messages: modelMessages(instructions + "\n" + ACTION_CONVENTIONS, previousImages, image),
             };
             const request = {
               step,
               status: "pending",
               at: now(),
               input_digest: sha(JSON.stringify(body)),
-              prompt_text: instructions,
+              prompt_text: instructions + "\n" + ACTION_CONVENTIONS,
               model_requested: model,
               response_format: body.response_format,
               input_frame_files: [...previousImages.slice(-2).map(f => f.file), r.frames.at(-1).file],
@@ -452,8 +460,7 @@ if (!batch.environment_ready) {
                   decision.y > 1000
                 )
                   throw new Error("Malformed normalized coordinates");
-                x = Math.min(1279, Math.round(decision.x * 1.28));
-                y = Math.min(719, Math.round(decision.y * 0.72));
+                ({ x, y } = coordinateToPixels(decision.x, decision.y, {width:1280,height:720}));
               }
               await page.mouse.click(x, y);
             } else if (decision.action === "scroll") {

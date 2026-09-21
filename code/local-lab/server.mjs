@@ -83,6 +83,8 @@ const server = http.createServer((req, res) => {
         provider: "aliyun",
         configured: Boolean(process.env.CUA_API_KEY),
         benchmark,
+        conformance: fs.existsSync(path.join(store,'benchmark-conformance.json'))
+          ? JSON.parse(fs.readFileSync(path.join(store,'benchmark-conformance.json'),'utf8')) : null,
         selection: JSON.parse(
           fs.readFileSync(path.join(root, "benchmark-selection.json"), "utf8"),
         ),

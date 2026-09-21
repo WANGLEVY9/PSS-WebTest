@@ -1,6 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveModel, observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks, responseFormat } from "./agent-protocol.mjs";
+import { resolveModel, observePixels, parseDecision, modelMessages, confirmAnswer, diagnosticTasks, responseFormat, coordinateToPixels, ACTION_CONVENTIONS } from "./agent-protocol.mjs";
+
+test("actuator coordinates use independent axes, never infer pixel units", () => {
+  assert.deepEqual(coordinateToPixels(695,431,{width:1280,height:720}),{x:890,y:310});
+  assert.deepEqual(coordinateToPixels(500,500,{width:1280,height:720}),{x:640,y:360});
+  assert.deepEqual(coordinateToPixels(1000,1000,{width:1280,height:720}),{x:1279,y:719});
+  for (const x of [-1,1001,0.1,'500',null]) assert.throws(()=>coordinateToPixels(x,1,{width:1280,height:720}));
+  assert.match(ACTION_CONVENTIONS,/positive scrolls DOWN, negative scrolls UP/);
+  assert.equal(parseDecision('{"action":"scroll","delta_y":-500}',{arm:'visual'}).delta_y,-500);
+});
 
 test("model uses configured value, explicit override only, no silent legacy fallback", () => {
   assert.deepEqual(resolveModel({ CUA_MODEL: "qwen3.7-flash" }), {model:"qwen3.7-flash",source:"CUA_MODEL"});

@@ -53,16 +53,14 @@ for (const id of fs
         .join(",") !== "hybrid,playwright,visual"
     )
       errors.push(`${id}: arm coverage`);
-    if (
-      records
-        .filter((r) => r.reset_passed)
-        .some(
-          (r) =>
-            r.reset_digest !==
-            records.find((x) => x.reset_passed)?.reset_digest,
-        )
-    )
+    // Legacy fields described context preparation, not verified database reset.
+    const prepared = records.filter(r => r.preparation_passed ?? r.reset_passed);
+    const preparationDigest = r => r.preparation_digest ?? r.reset_digest;
+    if (prepared.some(r => preparationDigest(r) !== preparationDigest(prepared[0])))
       errors.push(`${id}: context preparation mismatch`);
+    if (b.local_protocol === 'wav-retrieval-json-v6-diagnostic' &&
+        records.some(r => r.reset_passed !== null || r.reset_digest !== null))
+      errors.push(`${id}: unsupported benchmark-reset claim`);
   }
   const rows = [];
   for (const r of b.records) {

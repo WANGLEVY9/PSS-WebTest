@@ -72,9 +72,25 @@ function render() {
         el("h3", b.name),
         el("p", b.detail),
       );
+      const id=b.id==='ata'?'autonomous-tester-agent-benchmark':b.id;
+      const audit=state.conformance?.benchmarks?.find(x=>x.id===id);
+      if(audit) {
+        const details=el('details'), list=el('ul');
+        details.append(el('summary',`Not admitted · ${audit.open_gates.length} open benchmark gates`));
+        list.append(...audit.open_gates.map(g=>el('li',g)));
+        details.append(el('p',`Source pin: ${audit.source.pin_matches && audit.source.tracked_clean ? 'verified, tracked files unchanged' : 'unverified or changed'}`),list);
+        card.append(details);
+      }
       return card;
     }),
   );
+  if(state.conformance) {
+    const details=el('details'), list=el('ul');
+    details.append(el('summary','Shared study gates · collection remains paused'));
+    list.append(...state.conformance.common_open_gates.map(g=>el('li',g)));
+    details.append(list,el('p',`Audit: ${state.conformance.observed_at}. Agent success rate does not determine admission.`));
+    admission.append(details);
+  }
   admission.title = `Readiness observed: ${state.expansion?.observed_at || "unavailable"}. Not confirmatory authorization.`;
   const batches = state.batches.filter(
     (b) => b.data_kind === "OFFICIAL_BENCHMARK_INTEGRATION",
@@ -318,7 +334,10 @@ function render() {
           "Execution diagnostics",
           {
             error: r.error,
-            reset: r.reset_digest,
+            preparation_passed: r.preparation_passed ?? r.reset_passed ?? null,
+            preparation_digest: r.preparation_digest ?? r.reset_digest ?? null,
+            benchmark_reset_verified: r.reset_evidence ? r.reset_passed : null,
+            reset_evidence: r.reset_evidence || 'Legacy preparation fields are not proof of database reset',
             reset_contract: batch?.reset_contract,
             protocol: batch?.local_protocol,
             model_configuration_source: batch?.model_configuration_source,

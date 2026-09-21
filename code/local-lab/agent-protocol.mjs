@@ -1,6 +1,16 @@
 import crypto from "node:crypto";
 
-export const PROTOCOL = "wav-retrieval-json-v5-diagnostic";
+export const PROTOCOL = "wav-retrieval-json-v6-diagnostic";
+// Generic actuator semantics only. No target hints or benchmark state.
+export const ACTION_CONVENTIONS = "Click x and y are integers normalized independently to 0..1000: x increases rightward, y increases downward; top-left is (0,0), center is (500,500), bottom-right is (1000,1000). Convert a screenshot pixel (px,py) using x=round(1000*px/width), y=round(1000*py/height). Scroll delta_y is in CSS pixels, NOT normalized: positive scrolls DOWN, negative scrolls UP, zero does not move. Actions are executed exactly; coordinates and scroll signs are never inferred or corrected.";
+
+export function coordinateToPixels(x, y, { width, height }) {
+  if (![x,y].every(n=>Number.isInteger(n) && n>=0 && n<=1000) ||
+      ![width,height].every(n=>Number.isInteger(n) && n>0))
+    throw new Error("Invalid normalized coordinate or viewport");
+  return { x:Math.min(width-1,Math.round(x*width/1000)),
+    y:Math.min(height-1,Math.round(y*height/1000)) };
+}
 export const OBSERVATION_POLICY = Object.freeze({
   min_ms: 2000, quiet_ms: 750, poll_ms: 250, max_ms: 6000,
   signal: "screenshot-bytes-only", semantic_readiness_claim: false,
@@ -27,8 +37,9 @@ export function responseFormat(model, controls, arm) {
   if (!/^qwen3\.7-flash(?:-|$)/.test(model)) return {type:"json_object"};
   const properties = {
     action: {type:"string",enum:["click","scroll","keypress","type","wait","done"]},
-    x: {type:["integer","null"]}, y: {type:["integer","null"]},
-    delta_y: {type:["integer","null"]},
+    x: {type:["integer","null"],description:"Normalized horizontal coordinate: 0 left, 1000 right; not pixels."},
+    y: {type:["integer","null"],description:"Normalized vertical coordinate: 0 top, 1000 bottom; not pixels."},
+    delta_y: {type:["integer","null"],description:"CSS pixel wheel distance: positive DOWN, negative UP, zero no movement. Not normalized."},
     key: {type:["string","null"],enum:[null,"Enter","Tab","Escape","ArrowDown","ArrowUp","PageDown","PageUp"]},
     text: {type:["string","null"]},
     target_id: {type:["string","null"],enum:[null,...(arm==='hybrid'?controls.map(c=>c.target_id):[])]},

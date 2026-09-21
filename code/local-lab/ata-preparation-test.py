@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import csv
+import json
 import runpy
 import tempfile
 import unittest
@@ -8,6 +9,19 @@ from pathlib import Path
 MODULE = runpy.run_path(str(Path(__file__).with_name('prepare-ata.py')))
 
 class PreparationTests(unittest.TestCase):
+    def test_nested_gold_and_source_metadata_cannot_enter_actor_packet(self):
+        case={'task_id':'ata-opaque','site':'fixture','title':'Fixture only',
+              'label':'F','source_file':'SECRET_FAILING.csv','failures':['SECRET_GOLD'],
+              'steps':[{'step':1,'action':'Open fixture','expectedResult':'Visible',
+                        'gold':'SECRET_GOLD','source_line':99}]}
+        packet=MODULE['agent_payload'](case)
+        self.assertEqual(set(packet),{'task_id','site','title','steps'})
+        self.assertEqual(set(packet['steps'][0]),{'step','action','expectedResult'})
+        self.assertNotIn('SECRET',json.dumps(packet))
+        case['label']='P'
+        case['failures']=[]
+        self.assertEqual(packet,MODULE['agent_payload'](case))
+
     def test_nonstandard_marker_does_not_drop_valid_task(self):
         with tempfile.TemporaryDirectory() as directory:
             path=Path(directory)/'fixture_failing.csv'

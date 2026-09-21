@@ -1,4 +1,4 @@
-# Diagnostic runner remediation (v4 / v5)
+# Diagnostic runner remediation (v4 / v5 / v6)
 
 Status: engineering verification, NOT benchmark success evidence. No confirmatory admission.
 
@@ -49,3 +49,7 @@ From code/: `node --test local-lab/*.test.mjs`. The browser regression uses a sy
 v5 made 27 model requests (24 Visual, 3 Hybrid), with zero action-contract errors. Hybrid's repeated done answer passed the untouched official evaluator. Visual repeatedly used click (695,431) in the normalized contract and negative scroll deltas while describing downward scrolling; the schema cannot correct grounding or semantic action errors. Do not flip scroll signs or reinterpret coordinates after seeing a failure. Next calibration must explicitly test coordinate units and scroll direction on non-benchmark fixtures, then freeze any revised schema descriptions/prompt as a new protocol. No claim that Visual's remaining failures are solely model limitations.
 
 These are two bounded diagnostic runs, six executions of one already exposed task, not independent confirmatory replications. The v4 failures and all older records remain intact. No VWA/ATA admission or evaluator patch is claimed. The console displays the selected historical model separately from the next configured model and disables collection by default.
+
+## Follow-up v6: interface calibration, not success tuning
+
+See `BENCHMARK-CONFORMANCE-2026-09-21.md`. v6 adds explicit coordinate/scroll conventions, retains the same mapping and exact action execution, and stops reporting browser preparation as a verified database reset. Synthetic Chromium actuator calibration passed; no new benchmark outcome or paid model call was collected. Source-drift rejection and nested ATA specification filtering were added. Node local tests 32/32, existing contracts 287/287, ATA tests 3/3. All three formal benchmark gates remain open.

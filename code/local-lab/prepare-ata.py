@@ -41,6 +41,13 @@ def parse_file(source):
     return cases
 
 
+def agent_payload(case):
+    """Strict nested allowlist: specifications only, never published outcomes."""
+    return {**{k: case[k] for k in ['task_id', 'site', 'title']},
+            'steps': [{k: step[k] for k in ['step', 'action', 'expectedResult']}
+                      for step in case['steps']]}
+
+
 def main():
     (OUT / 'agent-inputs').mkdir(parents=True, exist_ok=True)
     gold, warnings, counts, files = {}, [], Counter(), []
@@ -52,7 +59,7 @@ def main():
             if key in gold:
                 raise ValueError('duplicate task ID')
             # No original TC-*-P/F name, source filename or failure annotation enters the input.
-            payload = {k: case[k] for k in ['task_id', 'site', 'title', 'steps']}
+            payload = agent_payload(case)
             (OUT / 'agent-inputs' / (key + '.json')).write_text(json.dumps(payload, ensure_ascii=False, indent=2))
             gold[key] = {k: case[k] for k in ['label', 'source_file', 'source_line', 'failures']}
             gold[key]['input_sha256'] = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()

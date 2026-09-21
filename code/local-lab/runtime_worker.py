@@ -14,6 +14,7 @@ import signal
 import subprocess
 import time
 from runtime_store import Store, canonical
+from runtime_identity import verify_bound_input
 
 
 class AdapterReceiptError(ValueError):
@@ -22,7 +23,7 @@ class AdapterReceiptError(ValueError):
 
 def verify_receipt(receipt, identity):
     if not isinstance(receipt, dict) or any(receipt.get(k) != identity[k] for k in
-            ('opportunity_id', 'environment_id', 'configuration_sha256')):
+            ('opportunity_id', 'environment_id', 'configuration_sha256', 'lease_token', 'task_manifest_sha256')):
         raise AdapterReceiptError('Adapter receipt identity mismatch')
 
 
@@ -100,16 +101,19 @@ def execute_one(store, binding, invoke=run_command):
         raise ValueError('Formal execution requires benchmark-specific admission; this worker is diagnostic')
     if op['environment_id'] != binding['environment_id'] or op.get('configuration_sha256') != binding['configuration_sha256'] or op.get('config_id') != binding.get('config_id'):
         raise ValueError('Opportunity/runtime binding mismatch')
-    if op.get('runtime_binding_sha256') != hashlib.sha256(canonical(binding).encode()).hexdigest():
+    if op.get('runtime_binding_sha256') != hashlib.sha256(canonical(binding).encode()).hexdigest() or op.get('executor_binding_sha256') != op.get('runtime_binding_sha256'):
         raise ValueError('Full runtime binding is not frozen into opportunity')
     if op.get('model_binding') != binding.get('model_binding'):
         raise ValueError('Opportunity actor identity is not frozen into the request ledger')
+    task = verify_bound_input(op)
+    if op.get('cost_policy') != binding.get('cost_policy'):
+        raise ValueError('Opportunity cost policy drift')
     store.start(oid, token)
     heartbeat = lambda: store.heartbeat(oid, token)
     base = {'opportunity_id': oid, 'environment_id': op['environment_id'], 'lease_token': token,
-            'configuration_sha256': binding['configuration_sha256']}
+            'configuration_sha256': binding['configuration_sha256'], 'task_manifest_sha256': op['task_manifest_sha256']}
     result = {'terminal_status': 'reset-error', 'assessment_status': 'unresolved', 'native_score': None, 'verdict': None,
-              'runtime_protocol': 'diagnostic-receipts-v2', 'actor_started': False, 'actor_terminal_status': None,
+              'runtime_protocol': 'diagnostic-task-bound-v3', 'actor_started': False, 'actor_terminal_status': None,
               'budget_met': None, 'protocol_completed': False, 'operational_correctness': None,
               'phase_timings_ms': {}, 'reset_receipt': None, 'framework': binding['framework'], 'framework_revision': binding['framework_revision']}
     uncertain = False
@@ -126,6 +130,8 @@ def execute_one(store, binding, invoke=run_command):
         phase_start = time.monotonic()
         stage = 'actor'
         result['actor_started'] = True
+        with store.transaction():
+            store.event(oid, 'actor_started', {'lease_token': token})
         # Only the separate, outcome-free input is delivered to the framework.
         actor_command = {**binding['commands']['actor'], 'timeout_ms': min(binding['commands']['actor']['timeout_ms'], binding['budget']['task_timeout_ms'])}
         actor = invoke(actor_command, {**base, 'input': op['agent_input'],
@@ -151,9 +157,13 @@ def execute_one(store, binding, invoke=run_command):
         result['protocol_completed'] = actor['terminal_status'] == 'completed' and result['budget_met']
         phase_start = time.monotonic()
         stage = 'evaluate'
+        verify_bound_input(op)  # Recheck evaluator bytes after the actor has run.
         evaluated = invoke(binding['commands']['evaluate'], {**base, 'actor_result': actor,
-                           'evaluation_ref': op['evaluation_ref']}, heartbeat)
+                           'evaluation_ref': op['evaluation_ref'], 'evaluation_file': op['evaluation_file'],
+                           'evaluation_sha256': task['evaluation_sha256']}, heartbeat)
         verify_receipt(evaluated, base)
+        if evaluated.get('evaluation_ref') != op['evaluation_ref'] or evaluated.get('evaluation_sha256') != task['evaluation_sha256']:
+            raise AdapterReceiptError('Evaluator artifact/reference mismatch')
         if evaluated.get('assessment_status') not in ('valid', 'unresolved'):
             raise AdapterReceiptError('Invalid evaluator assessment')
         score = evaluated.get('native_score')
@@ -161,6 +171,17 @@ def execute_one(store, binding, invoke=run_command):
             raise AdapterReceiptError('Invalid native endpoint')
         if evaluated['assessment_status'] == 'unresolved' and (evaluated.get('native_score') is not None or evaluated.get('verdict') is not None):
             raise AdapterReceiptError('Unresolved evaluator cannot supply outcomes')
+        if op['benchmark'] == 'ata':
+            if score is not None:
+                raise AdapterReceiptError('ATA endpoint must be a verdict')
+            if evaluated.get('verdict') == 'FAIL' and task.get('expected') == 'FAIL':
+                if evaluated.get('step_class') not in ('AFB', 'AFC', 'AFA', 'Ustep'):
+                    raise AdapterReceiptError('Audited ATA step alignment required')
+                result['step_class'] = evaluated['step_class']
+        elif evaluated.get('verdict') is not None:
+            raise AdapterReceiptError('Task-success benchmark cannot return ATA verdict')
+        elif evaluated['assessment_status'] == 'valid' and score is None:
+            raise AdapterReceiptError('Valid task-success assessment requires a binary score')
         result.update({k: evaluated.get(k) for k in ('assessment_status', 'native_score', 'verdict')})
         result['terminal_status'] = ('evaluator-error' if evaluated['assessment_status'] != 'valid'
             else 'timeout' if actor['terminal_status'] == 'completed' and not result['budget_met']

@@ -69,6 +69,8 @@ The doctor does not assume Colima or a developer home directory. It never substi
 
 ## 5. Scientific acceptance that still must run
 
+The development team must pass [the release acceptance plan](./SPONSOR-ACCEPTANCE-PLAN.md) **before** delivering this as a runnable full-study release. Sponsor-side verification repeats an already demonstrated path; it is not the first integration/debugging environment. An offline-green artifact without real framework/native-benchmark acceptance is a development package only.
+
 | Gate | Required evidence | What does not suffice |
 |---|---|---|
 | Official selection | Official task/source IDs and attachments; outcome-blind screening; fixed selected population | Counts or an automatically generated mock task list |
@@ -85,9 +87,9 @@ After these checks, use a small nonformal **official** development selection on 
 
 ### Diagnostic worker receipt contract
 
-`runtime_worker.py` now emits `runtime_protocol=diagnostic-receipts-v2`. All four adapter receipts must echo `opportunity_id`, `environment_id` and `configuration_sha256`. Reset additionally attests the expected baseline; cleanup attests cleanup. The actor adapter must provide a recognized terminal status, boolean `budget_met` and integer `action_count`; the binding must specify positive wall-time and action budgets. Supervisor timing and action-count checks can reject an actor's claimed completion. These are trusted adapter receipts, **not fields to accept directly from a model response**.
+`runtime_worker.py` now emits `runtime_protocol=diagnostic-task-bound-v3`. All four adapter receipts must echo `opportunity_id`, `environment_id`, `configuration_sha256`, `lease_token` and `task_manifest_sha256`. Evaluation also echoes `evaluation_ref` and `evaluation_sha256`. Reset additionally attests the expected baseline; cleanup attests cleanup. The actor adapter must provide a recognized terminal status, boolean `budget_met` and integer `action_count`; the binding must specify positive wall-time and action budgets. Supervisor timing and action-count checks can reject an actor's claimed completion. These are trusted adapter receipts, **not fields to accept directly from a model response**.
 
-An actor timeout or provider error remains that failure even when independent evaluation returns native score 1. Native score, actor termination, budget compliance, assessment validity and cleanup remain separate. Invalid or mismatched receipts quarantine the opportunity/environment. Identity echoes alone do not prove correct actions: the adapter still needs action-journal, observation-boundary and evaluator integration tests. The current binder's full task-input-to-frozen-schedule correspondence remains an outstanding acceptance issue; do not enable formal collection on the strength of diagnostic worker tests.
+An actor timeout or provider error remains that failure even when independent evaluation returns native score 1. Native score, actor termination, budget compliance, assessment validity and cleanup remain separate. Invalid or mismatched receipts quarantine the opportunity/environment. The binder now requires task/source/input/evaluator hashes and executable bindings to be frozen into the plan before execution. Identity echoes and byte binding do not prove correct official input projection or actual actions: native task projection, action-journal, observation-boundary and evaluator integration tests are still required. Do not enable formal collection on diagnostic worker tests alone.
 
 ## 6. Data and access
 

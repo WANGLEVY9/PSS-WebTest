@@ -7,6 +7,7 @@ import sys
 import hashlib
 from runtime_store import Store, digest
 from runtime_worker import execute_one, validate_commands
+from runtime_test_fixture import bound_fixture, receipt_identity
 
 
 class ReceiptTests(unittest.TestCase):
@@ -22,17 +23,14 @@ class ReceiptTests(unittest.TestCase):
                 'cost_policy': {'cap_micro_usd': 1000, 'request_reservation_micro_usd': 100},
                 'commands': {s: {**cmd, 'stage': s} for s in ('reset', 'actor', 'evaluate', 'cleanup')}}
             store = Store(str(Path(tmp) / 'ledger.sqlite'))
-            op = {'opportunity_id': 'one', 'scope': 'synthetic', 'schedule_sha256': 'd'*64,
-                  'config_id': 'v1', 'environment_id': 'fixture', 'configuration_sha256': 'a'*64,
-                  'runtime_binding_sha256': digest(binding), 'model_binding': binding['model_binding'],
-                  'agent_input': {'intent': 'synthetic'}, 'evaluation_ref': 'EVALUATOR_ONLY'}
+            op = bound_fixture(tmp, binding)
             store.enqueue([op])
             clock = [0.0]
             calls = []
             def invoke(command, payload, heartbeat):
                 heartbeat()
                 stage = command['stage']; calls.append(stage)
-                out = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256')}
+                out = receipt_identity(payload)
                 if stage == 'reset': out.update(restored=True, baseline_sha256=payload['baseline_sha256'])
                 elif stage == 'actor':
                     self.assertNotIn('evaluation_ref', payload)
@@ -81,7 +79,7 @@ class ReceiptTests(unittest.TestCase):
 
     def test_every_receipt_checks_task_environment_and_configuration_identity(self):
         for stage in ('reset', 'actor', 'evaluate', 'cleanup'):
-            for field in ('opportunity_id', 'environment_id', 'configuration_sha256'):
+            for field in ('opportunity_id', 'environment_id', 'configuration_sha256', 'lease_token', 'task_manifest_sha256'):
                 with self.subTest(stage=stage, field=field):
                     result, ledger, _ = self.scenario(wrong_stage=stage, wrong_field=field)
                     self.assertEqual(ledger['states'], {'uncertain': 1})
@@ -108,6 +106,13 @@ class ReceiptTests(unittest.TestCase):
         self.assertTrue(result['budget_met'])
         self.assertIsNone(result['operational_correctness'])
         self.assertEqual(ledger['states'], {'terminal': 1})
+
+    def test_wrong_oracle_reference_or_bytes_are_quarantined(self):
+        for field in ('evaluation_ref', 'evaluation_sha256'):
+            result, ledger, _ = self.scenario(evaluator_override={field: 'WRONG'})
+            self.assertEqual(result['terminal_status'], 'evaluator-error')
+            self.assertIsNone(result['native_score'])
+            self.assertEqual(ledger['states'], {'uncertain': 1})
 
 
 if __name__ == '__main__': unittest.main()

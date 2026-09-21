@@ -5,6 +5,7 @@ import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {loadRuntimeEnv} from './runtime-env.mjs';
 import {resolveProvider,publicProvider,buildProviderRequest,callProvider} from './provider.mjs';
+import {actorRoute} from './model-routing.mjs';
 import { chromium } from "playwright";
 import { acquireLock } from "./lock.mjs";
 import { currentExecutionGate } from './execution-gate.mjs';
@@ -21,6 +22,7 @@ const admission = currentExecutionGate();
 if (!admission.allowed) throw new Error('Benchmark execution blocked: ' + admission.reasons.join('; '));
 const env = loadRuntimeEnv();
 const providerConfig = resolveProvider(env);
+const routing = actorRoute(providerConfig);
 const model = providerConfig.model;
 if (env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
   throw new Error("Diagnostic protocol requires explicit PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN=1; no automatic batches");
@@ -61,12 +63,17 @@ for (const file of [
   "benchmark-contract.mjs",
   "agent-protocol.mjs",
   "provider.mjs",
+  "model-routing.mjs",
+  "metrics.mjs",
+  "public/resource-accounting.mjs",
   "runtime-env.mjs",
   "execution-gate.mjs",
   "benchmark-selection.json",
   "benchmark-config.json",
-])
+]) {
+  fs.mkdirSync(path.dirname(path.join(dir,file)),{recursive:true});
   fs.copyFileSync(path.join(root, file), path.join(dir, file));
+}
 const cli = path.join(code, ".venv-benchmark/bin/webarena-verified");
 const config = path.join(root, "benchmark-config.json");
 // Official export is the only source of model-facing task inputs. No eval fields are loaded here.
@@ -101,6 +108,7 @@ const batch = {
   model_configuration_source: providerConfig.model_source,
   provider: providerConfig.provider,
   provider_configuration: publicProvider(providerConfig),
+  model_routing: routing,
   provider_source_sha256: sha(fs.readFileSync(path.join(root,'provider.mjs'))),
   framework: "PSS benchmark adapter",
   local_protocol: PROTOCOL,
@@ -205,6 +213,9 @@ if (!batch.environment_ready) {
         work = path.join(dir, arm, String(task.task_id));
       fs.mkdirSync(work, { recursive: true });
       r.started_at = now();
+      const caseStart=performance.now();
+      let actorClock=null;
+      r.phase_timings={clock:'monotonic-performance-now',preparation_ms:null,agent_ms:null,cleanup_ms:null,evaluator_ms:null,total_ms:null};
       r.status = "preparing";
       emit("case-start", { record_id: r.record_id });
       let browser,
@@ -249,6 +260,8 @@ if (!batch.environment_ready) {
         r.status = "running";
         r.agent_started_at = now();
         agentStart = Date.now();
+        actorClock=performance.now();
+        r.phase_timings.preparation_ms=actorClock-caseStart;
         emit("ready", { record_id: r.record_id });
         capture = async (phase, step) => {
           const image = await page.screenshot({
@@ -365,6 +378,7 @@ if (!batch.environment_ready) {
               input_digest: sha(JSON.stringify(body)),
               prompt_text: instructions + "\n" + ACTION_CONVENTIONS,
               model_requested: model,
+              model_routing: routing,
               response_format: body.response_format || body.text?.format,
               provider: providerConfig.provider,
               api_mode: providerConfig.api,
@@ -507,6 +521,9 @@ if (!batch.environment_ready) {
                 ? "model-output-contract"
                 : "execution";
       } finally {
+        const cleanupStart=performance.now();
+        if(actorClock!==null) r.phase_timings.agent_ms=cleanupStart-actorClock;
+        else r.phase_timings.preparation_ms=cleanupStart-caseStart;
         if (agentStart) r.agent_wall_ms = Date.now() - agentStart;
         if (capture)
           try {
@@ -523,6 +540,7 @@ if (!batch.environment_ready) {
           await context.close();
         }
         await browser?.close();
+        r.phase_timings.cleanup_ms=performance.now()-cleanupStart;
         r.protocol_completed = completed;
         r.execution_failure_class = r.failure_class || null;
         r.answer = answer;
@@ -538,6 +556,7 @@ if (!batch.environment_ready) {
         r.status = "evaluating";
         emit("evaluation-start", { record_id: r.record_id });
         // The stock evaluator runs only after this arm's browser and provider loop are closed.
+        const evaluatorStart=performance.now();
         const result = spawnSync(
           cli,
           [
@@ -551,6 +570,7 @@ if (!batch.environment_ready) {
           ],
           { encoding: "utf8", timeout: 60000 },
         );
+        r.phase_timings.evaluator_ms=performance.now()-evaluatorStart;
         fs.writeFileSync(
           path.join(work, "evaluator.log"),
           (result.stdout || "") + (result.stderr || ""),
@@ -575,6 +595,7 @@ if (!batch.environment_ready) {
         const unresolved = ["environment", "evaluator"].includes(
           r.failure_class,
         );
+        r.phase_timings.total_ms=performance.now()-caseStart;
         r.strict_pass =
           completed && r.oracle?.passed === true && !r.failure_class;
         if (completed && r.oracle?.passed === false && !r.failure_class)

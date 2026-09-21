@@ -2,6 +2,8 @@
 
 Status (2026-09-21): **OpenAI transport implemented and offline-tested; full benchmark handoff NOT ready.**
 
+Metric alignment and cost routing are documented in [ANALYSIS-AND-ROUTING.md](./ANALYSIS-AND-ROUTING.md). A newer private design revision differs from the tracked v1.0 plan. The new analysis functions are **candidate implementations, not a protocol amendment**. Resolve the design version before generating a formal schedule; do not infer that passing old contract validators establishes agreement with the newer revision.
+
 This is the handoff for `code/local-lab`, the current official-benchmark observatory. The older `code/dashboard` and legacy five-application runners are engineering assets, not interchangeable official-benchmark entrypoints. No GPT capability result, confirmatory task result, or complete three-benchmark reproduction is claimed here.
 
 ## 1. What the sponsor supplies

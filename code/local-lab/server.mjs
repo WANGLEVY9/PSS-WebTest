@@ -172,7 +172,7 @@ const server = http.createServer((req, res) => {
     let target;
     if (artifact) target = path.join(store, artifact[1], artifact[2]);
     else if (
-      ["/", "/index.html", "/app.js", "/style.css"].includes(url.pathname)
+      ["/", "/index.html", "/app.js", "/style.css", "/resource-accounting.mjs"].includes(url.pathname)
     )
       target = path.join(
         root,
@@ -184,6 +184,7 @@ const server = http.createServer((req, res) => {
     const types = {
       ".html": "text/html; charset=utf-8",
       ".js": "text/javascript",
+      ".mjs": "text/javascript",
       ".css": "text/css",
       ".jpg": "image/jpeg",
       ".json": "application/json",

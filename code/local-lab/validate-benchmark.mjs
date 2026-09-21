@@ -3,6 +3,8 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { evaluatorSummary } from "./benchmark-contract.mjs";
+import {requestUsage} from './public/resource-accounting.mjs';
+import {auditActorRouting} from './model-routing.mjs';
 const code = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."),
   root = path.join(code, "artifacts/local-runtime");
 const sha = (x) => crypto.createHash("sha256").update(x).digest("hex"),
@@ -64,6 +66,8 @@ for (const id of fs
         records.some(r => r.reset_passed !== null || r.reset_digest !== null))
       errors.push(`${id}: unsupported benchmark-reset claim`);
   }
+  const routingAudit=auditActorRouting(b);
+  errors.push(...routingAudit.errors.map(e=>`${id}: ${e}`));
   const rows = [];
   for (const r of b.records) {
     if (b.protocol_sha256) {
@@ -118,7 +122,8 @@ for (const id of fs
       frames: r.frames.length,
       actions: r.actions.length,
       requests: r.requests.length,
-      tokens: r.requests.reduce((n, q) => n + (q.usage?.total_tokens || 0), 0),
+      tokens: requestUsage(r.requests).total,
+      token_accounting: requestUsage(r.requests),
       agent_wall_ms: r.agent_wall_ms ?? null,
       failure_class: r.failure_class || null,
       exception: r.error || null,
@@ -130,6 +135,7 @@ for (const id of fs
   }
   batches.push({
     id,
+    routing_audit: routingAudit.status,
     source_commit: b.source_commit,
     task_ids: b.task_ids,
     model: b.model,

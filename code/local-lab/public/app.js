@@ -1,3 +1,4 @@
+import {requestUsage,tokenLabel} from './resource-accounting.mjs';
 const $ = (id) => document.getElementById(id),
   el = (tag, text, cls) => {
     const n = document.createElement(tag);
@@ -189,9 +190,8 @@ function render() {
         r.oracle?.status !== "error" && typeof r.oracle?.score === "number",
     ).length,
     passed = rows.filter((r) => r.strict_pass).length,
-    tokens = rows
-      .flatMap((r) => r.requests)
-      .reduce((n, q) => n + (q.usage?.total_tokens || 0), 0);
+    requests = rows.flatMap((r) => r.requests || []),
+    usage = requestUsage(requests);
   $("metrics").replaceChildren(
     metric(
       "EXECUTION PROGRESS",
@@ -210,8 +210,8 @@ function render() {
     ),
     metric(
       "MODEL USAGE",
-      tokens.toLocaleString("en-US"),
-      "Reported tokens · monetary cost unavailable",
+      tokenLabel(requests),
+      `${usage.reported}/${usage.expected} calls report usage · cost unavailable`,
     ),
   );
   $("arms").replaceChildren(
@@ -374,6 +374,9 @@ function render() {
             reset_contract: batch?.reset_contract,
             protocol: batch?.local_protocol,
             model_configuration_source: batch?.model_configuration_source,
+            model_routing: batch?.model_routing || 'Legacy run: route policy was not recorded',
+            token_accounting: requestUsage(r.requests),
+            phase_timings: r.phase_timings || 'Legacy run: phase timings unavailable',
             observation_policy: batch?.observation_policy,
             observations: r.observations,
             protocol_errors: r.protocol_errors,
@@ -422,9 +425,7 @@ function render() {
         status(r),
         score(r),
         String(r.actions.length),
-        r.requests
-          .reduce((n, q) => n + (q.usage?.total_tokens || 0), 0)
-          .toLocaleString("en-US"),
+        tokenLabel(r.requests),
         r.agent_wall_ms === undefined
           ? "—"
           : `${(r.agent_wall_ms / 1000).toFixed(1)} s`,

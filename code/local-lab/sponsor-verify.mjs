@@ -15,6 +15,7 @@ const steps=[
 ];
 const report={kind:'SPONSOR_OFFLINE_VERIFICATION',started_at:new Date().toISOString(),model_requests:0,benchmark_executions:0,confirmatory_authorized:false,checks:[]};
 report.source_files=fs.readdirSync(path.join(code,'local-lab')).filter(f=>f.endsWith('.mjs')).sort().map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')}));
+report.source_files.push(...['public/app.js','public/resource-accounting.mjs','public/index.html'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')})));
 const dest=path.join(code,'artifacts/local-runtime',`sponsor-verify-${Date.now()}`);
 fs.mkdirSync(dest,{recursive:true,mode:0o700});
 for(const step of steps) {

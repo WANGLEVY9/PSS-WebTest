@@ -89,9 +89,10 @@ test('isolated sponsor env file excludes inherited model, key and run switches',
   const dir=fs.mkdtempSync(path.join(os.tmpdir(),'pss-env-test-')),file=path.join(dir,'.env');
   try {
     fs.writeFileSync(file,'PSS_LOCAL_PROVIDER=openai\nOPENAI_MODEL=fixture\n');
-    const loaded=loadRuntimeEnv({PSS_LOCAL_ENV_FILE:file,CUA_API_KEY:'old',OPENAI_API_KEY:'old',PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN:'1',PATH:'/bin'});
+    const loaded=loadRuntimeEnv({PSS_LOCAL_ENV_FILE:file,CUA_API_KEY:'old',OPENAI_API_KEY:'old',PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN:'1',PSS_AUX_ENABLED:'1',PSS_AUX_MODEL:'inherited',PATH:'/bin'});
     assert.equal(loaded.CUA_API_KEY,undefined);assert.equal(loaded.OPENAI_API_KEY,undefined);
     assert.equal(loaded.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN,undefined);assert.equal(loaded.PATH,'/bin');
     assert.equal(loaded.OPENAI_MODEL,'fixture');
+    assert.equal(loaded.PSS_AUX_ENABLED,undefined);assert.equal(loaded.PSS_AUX_MODEL,undefined);
   } finally {fs.rmSync(dir,{recursive:true});}
 });

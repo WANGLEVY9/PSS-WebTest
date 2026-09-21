@@ -1,6 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { assess, summarize } from "./metrics.mjs";
+import {tokenLabel,reportedTotal} from './public/resource-accounting.mjs';
+test('partial and absent provider usage are not reported as complete totals',()=>{
+  const s=summarize([{arm:'visual',finished_at:'now',requests:[{usage:{total_tokens:4}},{usage:null}]}])[0];
+  assert.equal(s.tokens,null);assert.equal(s.token_accounting.reported_subtotal,4);assert.equal(s.token_accounting.coverage,.5);assert.equal(s.latency_ms,null);
+  assert.equal(tokenLabel([{usage:null}]),'Unavailable');assert.equal(tokenLabel([{usage:{total_tokens:4}},{}]),'4 (partial)');
+  assert.equal(tokenLabel([]),'0');assert.equal(reportedTotal([NaN,Infinity,-1]).total,null);
+});
 test("oracle reach without valid completion is not strict success", () =>
   assert.deepEqual(
     assess({

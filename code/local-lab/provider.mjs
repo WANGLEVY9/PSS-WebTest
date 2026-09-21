@@ -35,7 +35,7 @@ export function resolveProvider(env, {requireKey=true}={}) {
   const api=gpt ? env.OPENAI_API_MODE || 'responses' : 'chat-completions';
   if (!['responses','chat-completions'].includes(api)) throw Error('OPENAI_API_MODE must be responses or chat-completions');
   const effort=gpt ? env.PSS_OPENAI_REASONING_EFFORT || null : null;
-  if (effort && !['none','minimal','low','medium','high','xhigh'].includes(effort)) throw Error('Invalid reasoning effort');
+  if (effort && !['none','minimal','low','medium','high','xhigh','max'].includes(effort)) throw Error('Invalid reasoning effort');
   const config={provider,model,api,base_url:base.href.replace(/\/$/,''),
     max_output_tokens:positiveInt(env.PSS_LOCAL_MAX_OUTPUT_TOKENS,1024),reasoning_effort:effort,
     model_source:gpt?'OPENAI_MODEL':env.PSS_LOCAL_MODEL?'PSS_LOCAL_MODEL':'CUA_MODEL',

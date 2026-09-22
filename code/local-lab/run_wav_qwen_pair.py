@@ -74,6 +74,15 @@ console.log('Provider configuration and shared pricing ready; no network calls')
     pre=subprocess.run(['node','--input-type=module','-e',preflight],cwd=code,env=env,capture_output=True,text=True)
     (root/'preflight.log').write_text(pre.stdout+pre.stderr)
     if pre.returncode:raise SystemExit('Preflight blocked; no benchmark started')
+    # Do not spend another container startup just to discover a missing native
+    # framework import. This is a deployment gate, not an agent outcome.
+    for framework in ('agentlab-browsergym','browser-use-restricted'):
+        executable=repo/'third_party/frameworks'/('h-browser-use' if framework=='browser-use-restricted' else 'h-agentlab')/'bin/python'
+        module='browser_use' if framework=='browser-use-restricted' else 'playwright'
+        probe=subprocess.run([str(executable),'-c',f'import {module}; print({module}.__file__)'],cwd=repo,env=env,capture_output=True,text=True)
+        (root/f'preflight-{framework}.log').write_text(probe.stdout+probe.stderr)
+        if probe.returncode:
+            raise SystemExit(f'{framework} dependency preflight blocked: import {module}')
     completed=[];blocked=None
     for index,job in enumerate(plan['jobs']):
         if source_fingerprint(code)!=fingerprint or any(sha(ref['file'])!=ref['sha256'] for ref in refs.values()):

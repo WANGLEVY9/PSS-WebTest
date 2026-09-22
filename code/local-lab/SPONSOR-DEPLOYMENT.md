@@ -1,5 +1,11 @@
 # Sponsor deployment and acceptance
 
+For sponsor operators provisioning cloud machines, use the detailed
+[cloud dependency and installation runbook](./cloud-handoff/README.md), its
+machine-readable dependency inventory, private VWA environment template and
+acceptance receipt. It separates capacity blockers from unfinished adapters and
+does not treat a larger cloud VM as proof of live benchmark acceptance.
+
 This guide is for a **new, separately identified sponsor campaign**. Previous cloud data is not a prerequisite for installing, checking or developing this environment. Do not merge new and historical results without a later provenance reconciliation. No historical result is deleted or declared nonexistent.
 
 Use `config/active-study-design.json` as the execution-design pointer. At this revision it selects the corrected v2.1 population: WAV 600, VWA 700, ATA 113 (62 PASS / 51 FAIL); 19 configurations; D1–D2 and V1–V10; 322,164 selected execution opportunities. These are planned denominators, not counts produced by the deployment tools. The paper stays private and is not needed to install the public artifact.

@@ -47,8 +47,10 @@ the same as for the other study arms.
 
 ## Installation and accounting
 
-The historical [candidate lock](../../../code/config/frameworks/h-browser-use.lock)
-contains macOS-only packages. Resolve and review a Linux lock with the frozen
+The current local [journaled-actuator candidate lock](../../../code/config/frameworks/h-browser-use-journaled-actuator.lock)
+includes the actuator dependencies as well as macOS-only packages. The older
+`h-browser-use.lock` omits greenlet, Playwright and pyee; it cannot describe this
+expanded environment. Resolve and review a Linux lock with the frozen
 framework version, plus the outer actuator's Playwright/browser dependencies.
 Do not infer browser readiness from successful Browser Use import.
 

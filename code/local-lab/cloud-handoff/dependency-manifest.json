@@ -38,9 +38,9 @@
       "sha256": "0629ef67c2b595f0025bce83f1486fa9fc221335c9247c0fc38b5fe7ced6d990"
     },
     {
-      "group": "browser-use-candidate",
-      "source": "config/frameworks/h-browser-use.lock",
-      "sha256": "fb5bb559df50b02f7650dac610201497a84ac33a7e98eab9ad342009788c2e17"
+      "group": "browser-use-journaled-actuator-candidate",
+      "source": "config/frameworks/h-browser-use-journaled-actuator.lock",
+      "sha256": "b14911b5fdb2047503e232ad0a39bde8e2313c057c56d2701bdd71fa0bff6a8c"
     },
     {
       "group": "vwa-upstream-declared",
@@ -53,8 +53,8 @@
       "sha256": "f5fd7fd0c3d6594f0819490af8704a91a241f09e679e28dd668f0844015fe520"
     }
   ],
-  "package_rows": 846,
-  "inventory_sha256": "367a18f2a1357cdf6797513e5843cc616bc8996f5b51d069f38486727f84d585",
+  "package_rows": 849,
+  "inventory_sha256": "061851db437c0f92e9e7b58afc16e7dbff1ee7bb60932cd4f300694900cfa83b",
   "runtime_requirements": {
     "os": "native Linux x86_64",
     "node": ">=20, exact version to freeze",

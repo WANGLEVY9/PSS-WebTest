@@ -1,5 +1,7 @@
 # Technical documentation
 
+For experiment operators, the [comprehensive Chinese README](../../README-EXPERIMENT-OPERATORS.zh-CN.md) connects these specifications into an ordered GPT API acceptance and execution workflow.
+
 [Project](../../README.md) · [Research design](../RESEARCH.md) · [Evidence status](../STATUS.md)
 
 Documentation baseline: committed runtime `de93d32`, reviewed 22 September 2026.

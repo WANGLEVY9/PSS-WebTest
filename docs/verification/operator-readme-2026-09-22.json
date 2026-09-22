@@ -1,0 +1,49 @@
+{
+  "bash_blocks_syntax_checked": 18,
+  "python_cli_help_checked": 10,
+  "python_context": "existing developer AgentLab environment; not sponsor installation",
+  "workload_arithmetic": "PASS",
+  "model_requests": 0,
+  "inline_provider_configuration": "PASS with synthetic noncredential and fetch forbidden; missing-key negative control passed",
+  "schema": "pss-operator-readme-verification-v1",
+  "date": "2026-09-22",
+  "runtime_baseline": "d21231d1d337929c5d688318e86074b94a140e9d",
+  "documentation_checks": {
+    "status": "PASS",
+    "markdown_files": 34,
+    "local_links": 338,
+    "active_protocol": "pss-manuscript-v2.1",
+    "planned_opportunities": 322164,
+    "dependency_rows": 849,
+    "scope": "local links/headings, documented npm commands, design consistency, dependency inventory hashes, presentation metadata; no live execution, external-asset verification or full CFF schema validation"
+  },
+  "mermaid": {
+    "mermaid": "11.12.0",
+    "diagrams": [
+      {
+        "file": "README-EXPERIMENT-OPERATORS.zh-CN.md",
+        "index": 0,
+        "status": "rendered"
+      }
+    ]
+  },
+  "official_benchmark_executions": 0,
+  "confirmatory_authorized": false,
+  "cloud_install_verified": false,
+  "scope": "operator documentation; source and no-call checks, not actual API/benchmark acceptance",
+  "files": {
+    "CHANGELOG.md": "510301d210ffd55413d249f89018326df7be369d329266a5f48ea0362ee21163",
+    "README-EXPERIMENT-OPERATORS.zh-CN.md": "fc0164b2b7dcc0eb31de921e140affb3f62dfab9b94ad4885f9d4cb5ffcf5cd6",
+    "README.md": "a09f11690f365eec5b1b794270eed16a9a9a4f8ea1376baa2c8a15dee5413ee7",
+    "README.zh-CN.md": "97848e40b7c0853135beb96f355aae2cea77be11a103895eb676ba3fdeb8becd",
+    "code/README.md": "4de8c641ae7a66d1a450ba6a5edc899eb65a55bd134e35a67f574ff34e6db314",
+    "code/local-lab/cloud-handoff/README.md": "66fe5a1535bad128acaab827a9b7a88785c53642bc250eb84d72c526adc8bb1d",
+    "code/local-lab/cloud-handoff/dependency-manifest.json": "5d079cf9e8743adf2928e7593f76debb1887bc29351d37eba412162b4b76dd6f",
+    "code/local-lab/cloud-handoff/dependency-packages.csv": "061851db437c0f92e9e7b58afc16e7dbff1ee7bb60932cd4f300694900cfa83b",
+    "code/local-lab/cloud-handoff/export-dependencies.py": "6efbd9066bbcb10b13c6f5e2287ebf01cd65e98fe042bac2b13c9508749a8a5c",
+    "docs/STATUS.md": "b4a9dbfbe9fdb70d973a79fec95183d775f56d1ff016e6f84b0b7bf2999bd4d2",
+    "docs/technical/README.md": "5293d6ac1d28eedc5fbb9bad8c56e46dbbcbd657f34499b0c930de5c9d04f945",
+    "docs/technical/frameworks/BROWSER_USE.md": "ae47295dfb872590bc0d6d28f41194fd3612ba605402d328d4db96278ca6b973",
+    "scripts/check-docs.mjs": "61bf44e070734bdc36e35d524798b5a3bb8d157887def2414f136d1a0ed9c19e"
+  }
+}

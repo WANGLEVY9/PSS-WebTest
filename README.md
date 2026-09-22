@@ -14,6 +14,8 @@
 
 </div>
 
+**Running experiments with GPT API resources?** Start with the comprehensive [experiment operator README (中文)](README-EXPERIMENT-OPERATORS.zh-CN.md): target experiment matrix, API setup, CNY budget controls, staged acceptance, dispatch limitations, recovery and evidence handoff.
+
 PSS-WebTest is an open-source research infrastructure project for comparing **screenshot-only CUAs, structure-assisted CUAs, and human-authored Playwright scripts** on public Web benchmarks. It connects native benchmark outcomes with repeated correctness, preparation effort, fresh verdicts on previously misjudged cases, and the additional coverage obtained by combining executors.
 
 The practical question is: **when should a recurring Web test use another execution of the same agent, a different agent configuration, or a prepared script?**

@@ -27,7 +27,7 @@ def main():
     for group, relative, raw in [
         ('wav-local-macos-candidate', 'config/frameworks/wav-local-macos-arm64-py312.lock', (code/'config/frameworks/wav-local-macos-arm64-py312.lock').read_bytes()),
         ('agentlab-candidate', 'config/frameworks/h-agentlab.lock', (code/'config/frameworks/h-agentlab.lock').read_bytes()),
-        ('browser-use-candidate', 'config/frameworks/h-browser-use.lock', (code/'config/frameworks/h-browser-use.lock').read_bytes()),
+        ('browser-use-journaled-actuator-candidate', 'config/frameworks/h-browser-use-journaled-actuator.lock', (code/'config/frameworks/h-browser-use-journaled-actuator.lock').read_bytes()),
         ('vwa-upstream-declared', 'visualwebarena/requirements.txt', raw_vwa),
     ]:
         digest = hashlib.sha256(raw).hexdigest()

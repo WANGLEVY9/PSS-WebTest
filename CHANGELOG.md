@@ -2,6 +2,13 @@
 
 This file records design and public-artifact milestones. It is not a list of published software releases.
 
+## Unreleased — GPT experiment operator handoff, 2026-09-22
+
+- Add a comprehensive Chinese operator README covering GPT configuration identities, API setup, shared-budget requirements, staged official-task acceptance, D/V execution, recovery, analysis and evidence return.
+- Document missing GPT cohort dispatch/formal admission without presenting Qwen probes or diagnostic workers as ready formal GPT entry points.
+- Correct the dependency inventory to the complete Browser Use journaled-actuator candidate lock; retain the older 846-row receipt as historical verification.
+- Validate command syntax, Python CLI entry points, the no-call provider configuration example, workload arithmetic and the operator flowchart.
+
 ## Unreleased — native workflow documentation, 2026-09-22
 
 - Add version-grounded input/output, testing-paradigm, benchmark and framework specifications, with upstream-to-code traceability and lifecycle diagrams.

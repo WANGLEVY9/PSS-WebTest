@@ -1,5 +1,7 @@
 # PSS-WebTest code
 
+Sponsor operators should start with the [GPT experiment operator README (中文)](../README-EXPERIMENT-OPERATORS.zh-CN.md) before configuring a paid run.
+
 Current interface and implementation documentation: [technical index](../docs/technical/README.md), [inputs/outputs](../docs/technical/INPUT_OUTPUT.md), [native workflow traceability](../docs/technical/UPSTREAM_TRACEABILITY.md), and [cloud installation/dependency handoff](local-lab/cloud-handoff/README.md). Read these with the active v2.1 contract before adapting a runner.
 
 [Project overview](../README.md) · [Research design](../docs/RESEARCH.md) · [Reproduction guide](../docs/REPRODUCIBILITY.md)

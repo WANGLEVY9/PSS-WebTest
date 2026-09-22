@@ -63,6 +63,17 @@ negative controls, and rendering of 13 Mermaid diagrams. No model calls, officia
 benchmark executions or cloud installations were performed for this documentation
 change. This is separate from runtime or empirical acceptance.
 
+## GPT operator handoff
+
+The [operator README](../README-EXPERIMENT-OPERATORS.zh-CN.md) documents runtime
+baseline `d21231d`, including the later Qwen checkpoint, exact GPT workflow
+limitations and outstanding dispatch/budget/admission work. The earlier technical
+receipt remains tied to its original files. The current dependency inventory uses
+the complete Browser Use journaled-actuator candidate and contains 849 rows.
+[Operator-document verification](verification/operator-readme-2026-09-22.json)
+records no-call configuration checks, command syntax, CLI help and diagram checks;
+it is not a GPT API or sponsor-host acceptance result.
+
 ## Important corrections
 
 - **ATA:** the published population used by v2.1 is 113 cases, 62 PASS / 51 FAIL. Earlier 112 and 56/56 descriptions are superseded. Preserve acquisition-time protocols and reconcile identities; never add a fabricated row or reassign labels to make totals match.

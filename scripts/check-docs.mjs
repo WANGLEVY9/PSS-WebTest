@@ -10,7 +10,7 @@ const markdownUnder=dir=>fs.readdirSync(path.join(root,dir),{withFileTypes:true}
     entry.name.endsWith('.md')?[`${dir}/${entry.name}`]:[]);
 // Dated receipts remain historical. Check the maintained operator entry points
 // and all nested technical pages so newly added specifications cannot go dark.
-const files=['README.md','README.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','CHANGELOG.md','code/README.md',
+const files=['README.md','README.zh-CN.md','README-EXPERIMENT-OPERATORS.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','CHANGELOG.md','code/README.md',
   'research/DESIGN-AUTHORITY.md',
   ...markdownUnder('docs'),...markdownUnder('code/local-lab/cloud-handoff'),
   ...['README.md','ANALYSIS-AND-ROUTING.md','SPEND-CONTROLS.md','ACCEPTANCE-RUNBOOK.md',

@@ -1,5 +1,7 @@
 # 云主机安装、依赖交付与实验验收手册
 
+实验执行总入口：[GPT API 接入与实验操作手册](../../../README-EXPERIMENT-OPERATORS.zh-CN.md)。本文件专注主机/资产安装；实验矩阵、分批调度、成本值守和交回流程按总手册执行。
+
 维护日期：2026-09-22。用途：赞助商实验人员在独立 Linux 主机部署、检查和执行新研究批次。
 
 **当前交付级别：部署与验收准备材料，尚非已完成真实端到端验收的实验发行版。** 本地无法承载全部环境时，环境验收转移到赞助商云机；项目组仍负责部署适配、失败诊断与验收闭环。不能让赞助商通过大规模付费试跑发现代码问题。
@@ -54,7 +56,7 @@ free -h
 
 ## 3. 依赖总表与固定来源
 
-机器可读总表见 `dependency-manifest.json`，逐包声明见 `dependency-packages.csv`（本次导出846条，按环境保留重复包）。CSV是**源码/候选锁声明的库存**，不是已在Linux解析成功的最终安装锁。可在 `code/` 目录重新生成到新目录：
+机器可读总表见 `dependency-manifest.json`，逐包声明见 `dependency-packages.csv`（本次导出849条，按环境保留重复包）。CSV是**源码/候选锁声明的库存**，不是已在Linux解析成功的最终安装锁。可在 `code/` 目录重新生成到新目录：
 
 ```bash
 python3 local-lab/cloud-handoff/export-dependencies.py \
@@ -71,7 +73,7 @@ python3 local-lab/cloud-handoff/export-dependencies.py \
 | VWA原生环境/评测 | web-arena-x/visualwebarena @ `89f5af29305c3d1e9f97ce4421462060a70c9a03` | Python3.10或3.11，不能直接装进3.12；其Playwright为1.37.0 |
 | ATA来源 | Smartesting/pinata @ `650b9edaa055915cb27d2498f379a66430cc3e02`；Zenodo DOI 10.5281/zenodo.15198569 | 发布ZIP及六个CSV分别校验；远程Actor/Assertor流程不等于已验证的独立oracle |
 | AgentLab / BrowserGym | 0.4.2 / 0.14.2，`config/frameworks/h-agentlab.lock` | 候选Python3.12独立venv；锁内Playwright1.44.0；Linux完整解析仍需验收 |
-| Browser Use | 0.13.10，`config/frameworks/h-browser-use.lock` | 候选Python3.12独立venv；现有锁含pyobjc，不能原样当Linux锁安装 |
+| Browser Use | 0.13.10，`config/frameworks/h-browser-use-journaled-actuator.lock` | 候选Python3.12独立venv；现有锁含pyobjc，不能原样当Linux锁安装 |
 | GPT调用 | 私有provider配置、已核验价格表 | key与模型ID不写入依赖包；没有价格与上下界不得付费运行 |
 
 Linux锁的制作是交付工作：在目标OS/Python上保留目标框架版本，单独解析平台条件与依赖冲突，输出完整精确版本及可用的wheel哈希、`pip check`、导入/浏览器验证记录。不能删除pyobjc行后就宣称等价，也不能用最新版替换不兼容包而不记录补丁。原VWA requirements的历史依赖组合也需实际resolver验证；报错应归入依赖适配，不属于“只差增加内存”。

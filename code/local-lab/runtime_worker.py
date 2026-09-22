@@ -14,7 +14,8 @@ import signal
 import subprocess
 import time
 from runtime_store import Store, canonical
-from runtime_inputs import verify_bound_input, materialize_actor_input
+from runtime_inputs import materialize_actor_input
+from runtime_identity import verify_bound_input
 from lifecycle_timing import POLICY, envelope_budget, verify_timing
 
 
@@ -24,7 +25,7 @@ class AdapterReceiptError(ValueError):
 
 def verify_receipt(receipt, identity):
     if not isinstance(receipt, dict) or any(receipt.get(k) != identity[k] for k in
-            ('opportunity_id', 'environment_id', 'configuration_sha256')):
+            ('opportunity_id', 'environment_id', 'configuration_sha256') + tuple(k for k in ('lease_token', 'task_manifest_sha256') if k in identity)):
         raise AdapterReceiptError('Adapter receipt identity mismatch')
     for key in ('scope', 'data_kind'):
         if key in identity and receipt.get(key) != identity[key]:
@@ -154,19 +155,21 @@ def execute_one(store, binding, invoke=run_command):
         raise ValueError('New diagnostic runs require explicit frozen lifecycle timing policy')
     if op['environment_id'] != binding['environment_id'] or op.get('configuration_sha256') != binding['configuration_sha256'] or op.get('config_id') != binding.get('config_id'):
         raise ValueError('Opportunity/runtime binding mismatch')
-    if op.get('runtime_binding_sha256') != hashlib.sha256(canonical(binding).encode()).hexdigest():
+    if op.get('runtime_binding_sha256') != hashlib.sha256(canonical(binding).encode()).hexdigest() or op.get('executor_binding_sha256') != op.get('runtime_binding_sha256'):
         raise ValueError('Full runtime binding is not frozen into opportunity')
     if op.get('model_binding') != binding.get('model_binding'):
         raise ValueError('Opportunity actor identity is not frozen into the request ledger')
-    verify_bound_input(op)
+    task = verify_bound_input(op)
+    if op.get('cost_policy') != binding.get('cost_policy'):
+        raise ValueError('Opportunity cost policy drift')
     actor_input = materialize_actor_input(op['agent_input'])
     store.start(oid, token)
     heartbeat = lambda: store.heartbeat(oid, token)
     base = {'opportunity_id': oid, 'environment_id': op['environment_id'], 'lease_token': token,
-            'configuration_sha256': binding['configuration_sha256'], 'scope': op['scope'],
+            'configuration_sha256': binding['configuration_sha256'], 'task_manifest_sha256': op['task_manifest_sha256'], 'scope': op['scope'],
             'data_kind': 'MEASURED' if op['scope']=='diagnostic' else 'SYNTHETIC_TEST'}
     result = {'terminal_status': 'reset-error', 'assessment_status': 'unresolved', 'native_score': None, 'verdict': None,
-              'runtime_protocol': 'diagnostic-receipts-v2', 'actor_started': False, 'actor_terminal_status': None,
+              'runtime_protocol': 'diagnostic-task-bound-v3', 'actor_started': False, 'actor_terminal_status': None,
               'budget_met': None, 'protocol_completed': False, 'lifecycle_completed': False,
               'operational_correctness': None,
               'phase_timings_ms': {}, 'reset_receipt': None, 'framework': binding['framework'], 'framework_revision': binding['framework_revision']}
@@ -185,6 +188,8 @@ def execute_one(store, binding, invoke=run_command):
         phase_start = time.monotonic()
         stage = 'actor'
         result['actor_started'] = True
+        with store.transaction():
+            store.event(oid, 'actor_started', {'lease_token': token})
         # Only the separate, outcome-free input is delivered to the framework.
         actor_command = dict(binding['commands']['actor'])
         if binding.get('timing_policy')!=POLICY:
@@ -245,10 +250,14 @@ def execute_one(store, binding, invoke=run_command):
         result['protocol_completed'] = actor['terminal_status'] == 'completed' and result['budget_met']
         phase_start = time.monotonic()
         stage = 'evaluate'
+        verify_bound_input(op)  # Recheck evaluator bytes after the actor has run.
         evaluated = invoke(binding['commands']['evaluate'], {**base, 'actor_result': actor,
-                           'evaluation_ref': op['evaluation_ref'],
+                           'evaluation_ref': op['evaluation_ref'], 'evaluation_file': op['evaluation_file'],
+                           'evaluation_sha256': task['evaluation_sha256'],
                            **({'actor_lifecycle_ref': actor_lifecycle_ref} if actor_lifecycle_ref else {})}, heartbeat)
         verify_receipt(evaluated, base)
+        if evaluated.get('evaluation_ref') != op['evaluation_ref'] or evaluated.get('evaluation_sha256') != task['evaluation_sha256']:
+            raise AdapterReceiptError('Evaluator artifact/reference mismatch')
         if evaluated.get('assessment_status') not in ('valid', 'unresolved'):
             raise AdapterReceiptError('Invalid evaluator assessment')
         score = evaluated.get('native_score')

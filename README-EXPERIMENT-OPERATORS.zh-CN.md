@@ -4,13 +4,13 @@
 
 **文档日期：**2026-09-22。**研究协议：**`pss-manuscript-v2.1`。
 
-**代码基线：**已提交运行实现 `d21231d`；配套文档从 `7400c86` 继续完善。后续发行版应填写完整 commit，不能仅写“最新版”。
+**代码基线：**`0263f5f` 加本次预算与调度分支整合（原分支终点 `95c537d`）；运行身份升级为 `diagnostic-task-bound-v3`。后续发行版应填写完整 commit，不能仅写“最新版”。
 
 **本次目标：**用受控成本验证真实实验链路，再补齐获得授权且通过准入的 GPT 实验单元，交回可复核的原始证据和分析输入。
 
 [项目首页](README.zh-CN.md) · [技术文档](docs/technical/README.md) · [当前证据状态](docs/STATUS.md) · [云主机详细安装](code/local-lab/cloud-handoff/README.md) · [原生开发验收协议](code/local-lab/ACCEPTANCE-RUNBOOK.md)
 
-> **请先读：接入 API key 不等于可以直接启动正式实验。** 当前公开基线可以进行离线检查、输入准备、框架组件检查及受条件限制的诊断运行；三套 benchmark 的完整环境/评测验收、统一人民币预算接入和正式调度准入仍有待交付项。本手册把“现在可以执行的命令”“需要真实交付材料才能执行的命令”“尚未具备的一键入口”分开。不要为了让命令跑起来而修改 `confirmatory_authorized`、删除校验或把 `formal` 改成 `diagnostic`。
+> **请先读：接入 API key 不等于可以直接启动正式实验。** 当前公开基线可以进行离线检查、输入准备、框架组件检查及受条件限制的诊断运行；共享预算已接入控制台和原生框架传输，但三套 benchmark 的完整环境/评测验收、全部计费路径核验和正式调度准入仍有待交付项。本手册把“现在可以执行的命令”“需要真实交付材料才能执行的命令”“尚未具备的一键入口”分开。不要为了让命令跑起来而修改 `confirmatory_authorized`、删除校验或把 `formal` 改成 `diagnostic`。
 
 ## 目录
 
@@ -118,7 +118,7 @@ RQ1–RQ4 通常分析同一套已核验 D/V 执行，不是四套各自再跑�
 | 项目 | 当前基线情况 | 开始相应付费批次之前必须具备 |
 |---|---|---|
 | GPT 传输 | 支持显式 OpenAI / 兼容服务配置；原生框架经 Python→Node bridge 调用 | 准确 API 身份、真实请求验证、价格与全路径预算接入 |
-| 人民币共享总预算 | 独立工程分支 `codex/sponsor-acceptance-bound-input` 的 `0b7301a` 实现 | 与本次原生框架/评测/辅助调用合并并重新验证 |
+| 人民币共享总预算 | 已整合共享 guard、控制台和原生框架 Node bridge；缺价格即阻止 | 核验真实价格/账单、judge与辅助请求覆盖、云端并发验收 |
 | 当前主线成本记录 | 原生请求有 campaign SQLite 预留 | 不得将单库 USD 预留误认为跨批次 CNY 1500 总限额或已核实账单 |
 | WAV | shopping owned lifecycle 与特定官方任务探针 | 选定任务全部站点、认证、完整状态恢复和各配置验收 |
 | VWA | 最终 live page 上的确定性原生评测路径 | 全站点依赖、reset；judge/VQA 任务的原生依赖接入与预算 |
@@ -202,7 +202,7 @@ git rev-parse HEAD
 git status --short
 ```
 
-核对源码 commit、发行哈希和工作区是否有未解释修改。文档 PR 尚未合并时，默认主线未必含本手册；项目组应提供已发布且可获取的完整发行 commit 或带校验的 Git bundle，不让实验人员从几个工作区拼文件。
+核对源码 commit、发行哈希和工作区是否有未解释修改。本手册已进入主线；项目组应提供已发布且可获取的完整发行 commit 或带校验的 Git bundle，不让实验人员从几个工作区拼文件。
 
 ### 3.4 安装依赖
 
@@ -316,7 +316,7 @@ JS
 | 动作数 | 30 | 老诊断链的24步可能更严格；不能混用默认值 |
 | 共享 guard 单请求上限 | 45秒 | 原生 `LedgerModel` 当前默认30秒，且受剩余 actor 时间约束 |
 
-这些值来自[共享预算工程规格](code/local-lab/SPEND-CONTROLS.md)，**当前代码基线没有把这套总账本完整接入原生框架**。配置文件中填写这些数不会自动完成接线。项目组要交付合并后的 guard、策略文件、所有请求路径测试和对应控制台，才能宣称它们已生效。
+这些值来自[共享预算工程规格](code/local-lab/SPEND-CONTROLS.md)。**共享 guard、控制台告警及原生框架 Node bridge 已整合**；Python 使用同一 opportunity ID 关联共享账本。真实价格表、平台账单、原生 judge 和所有辅助/直接 SDK 路径仍需验证；不能据离线通过宣称整个平台已完成费用闭环。
 
 金额上限与性能分析不同：要记录预算中断，不得把它包装为模型能力失败或把这些任务从分母删除。正式实验的 matched budgets 由开发证据前置确定，不能依据正式题的难易度临时变化。
 
@@ -324,7 +324,7 @@ JS
 
 价格必须绑定实际 provider/model/base URL、来源、核验/过期时间，以及输入、缓存输入、输出价格和可计费输入输出上界。图像、推理、服务等级、长上下文和税费不能遗漏；未知价格不能当0。默认价格表为空时应阻止付费派发。
 
-8 CNY/USD 只是独立预算分支的保守规划参数，不是当天汇率。资源负责人应核验账单折算及费用口径。使用专用 API 项目，避免同 key 的其他程序消耗未进入本项目账本的费用。
+8 CNY/USD 只是默认预算策略的保守规划参数，不是当天汇率。资源负责人应核验账单折算及费用口径。使用专用 API 项目，避免同 key 的其他程序消耗未进入本项目账本的费用。
 
 `framework_model.py` 当前会预留每次请求，但结算调用保留未知成本；它并没有凭 token 自动生成已核实人民币账单。不能将“usage 存在”解释为“成本已闭环”。需要保留请求ID、usage、价格版本、预留与结算、资源方对账证据，并核对缺失覆盖。
 
@@ -554,6 +554,8 @@ A1/S1/S2 是开发验收标签，不能改名为 D1/D2/V1。`runtime_bindings_fr
 
 当前planner没有 `--models gpt`、`--round A1`、`--limit 24` 等参数；不要照着概念自行添加命令。当前binder要求完整19×12的冻结计划，且只接受diagnostic/synthetic。正式待补GPT白名单派发是必须另行交付并验收的功能，不能靠截断JSONL伪造“通过了freeze校验”。
 
+当前执行身份同时绑定 schedule、完整 task manifest、executor binding、task key、configuration 和 round。任务清单新增 `evaluation_sha256`、`evaluation_ref_sha256`；有 setup 时还冻结 `setup_ref_sha256`。在生成计划前填入 `executor_binding_sha256_by_benchmark`。旧身份不得改名复用或直接重新入队。
+
 ### 10.2 只生成研究计划，不执行
 
 项目组已提供合法 `protocol_id/scope/tasks/bindings` bundle 后，可从 `code/` 使用：
@@ -659,7 +661,7 @@ ssh -N -L 4173:127.0.0.1:4173 EXPERIMENT_USER@CLOUD_HOST
 
 旧主界面主要展示WAV检索诊断，并不会因切换显示名称自动变成原生AgentLab/Browser Use三benchmark调度器。当前`Collection paused`可能是正确的gate状态。新增正式收据/开发coverage以哈希绑定的acceptance pointer发布，界面只读显示不等于派发已开放。
 
-共享人民币预算面板、暂停和告警在独立预算分支；未集成时不可假设当前页面已有该能力。发行版需逐项核验：
+共享人民币预算面板、暂停和告警已整合，并与开发 coverage 面板同时保留。它显示接入同一 guard 的费用，不代表其他进程或平台全部开销。发行版需逐项核验：
 
 | 界面项 | 显示要求 |
 |---|---|
@@ -731,7 +733,7 @@ python3 local-lab/runtime_worker.py status \
 | 私有setup | 可信session wrapper | reset/路由/认证文件、私有起始状态 |
 | 私有evaluation | 原生/参考评测 | 原始答案、标签、断言配置和隐藏证据 |
 
-提交一次执行前要绑定task key、official ID、source/input/setup/evaluation哈希、config/round、opportunity/environment、候选版本和实际租约。当前v2收据与独立预算分支更强的v3收据字段不能混用；合并发行版需明确迁移方案。
+提交一次执行前要绑定task key、official ID、source/input/setup/evaluation哈希、config/round、opportunity/environment、候选版本和实际租约。当前worker采用v3收据，仍保留原生生命周期计时；历史v2记录保持原样，必须显式核对，不能改字段冒充新版本。
 
 ### 14.2 输出清单
 

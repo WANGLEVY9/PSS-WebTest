@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
@@ -6,7 +7,7 @@ import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
 import { executionVariant } from '../src/execution-variant.mjs';
 
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
 const manifest = JSON.parse(fs.readFileSync(`${codeRoot}/config/phase2-application-admission-manifest.v0.1.json`, 'utf8'));
 // Historical runners used two ledger roots.  Scan both explicitly rather than

@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const snapshotRoot = path.join(codeRoot, 'artifacts', 'benchmark-snapshots');
 const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.v1.0.json');
 const outputPath = path.join(snapshotRoot, 'audit-v1.0.json');

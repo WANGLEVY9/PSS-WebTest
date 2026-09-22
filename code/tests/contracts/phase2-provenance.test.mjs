@@ -1,10 +1,11 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import path from 'node:path';
 import test from 'node:test';
 import { createPhase2Provenance, imageDigestFromTaskManifest, sha256 } from '../../src/phase2-provenance.mjs';
 import { loadConfigurationRegistry } from '../../src/configuration-registry.mjs';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const registry = loadConfigurationRegistry();
 const runManifestPath = path.join(codeRoot, 'config/bookstack-navigation-run-manifest.v0.2.json');
 const taskManifestPath = path.join(codeRoot, 'manifests/task-manifest.v0.1.json');

@@ -7,6 +7,7 @@ are selected here. stdout is one JSON lifecycle envelope; other output is stderr
 import argparse
 import contextlib
 import json
+from runtime_identity import receipt_binding
 from pathlib import Path
 import sys
 from runtime_store import Store, digest, canonical
@@ -15,7 +16,7 @@ from runtime_worker import validate_commands
 
 SUPERVISOR_SOURCES=('benchmark_session_wrapper.py','benchmark_actor_lifecycle.py',
     'benchmark_task_session.py','session_auth.py','lifecycle_timing.py','runtime_worker.py',
-    'runtime_inputs.py','runtime_store.py','replay_audit.py')
+    'runtime_inputs.py','runtime_store.py','runtime_identity.py','replay_audit.py')
 
 
 def validate_request(request, manifest_ref):
@@ -53,8 +54,12 @@ def validate_request(request, manifest_ref):
         if reset_event is None or json.loads(reset_event['payload'])!={'lease_token':op['lease_token'],'reset_sha256':digest(reset)}:
             raise ValueError('Reset not attested by owning worker')
     finally:store.close()
+    if op.get('identity_schema') == 'task-bound-opportunity-v1':
+        from runtime_identity import verify_bound_input as verify_identity
+        verify_identity(op)
     verify_bound_input(op)
     base={k:op[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','lease_token')}
+    base.update(receipt_binding(op))
     base['data_kind']='MEASURED' if op['scope']=='diagnostic' else 'SYNTHETIC_TEST'
     expected={**base,'input':materialize_actor_input(op['agent_input']),
         'coordinate_space':binding.get('coordinate_space','css-pixels'),
@@ -100,7 +105,7 @@ def execute(request, manifest_ref):
         from vwa_native_evaluate import evaluate_live
         evaluate=lambda actor,page:evaluate_live({**{k:payload[k] for k in
             ('opportunity_id','environment_id','configuration_sha256','scope','data_kind')},
-            'actor_result':actor,'evaluation_ref':op['evaluation_ref']},manifest['native_evaluator_ref'],page)
+            **receipt_binding(payload), 'actor_result':actor,'evaluation_ref':op['evaluation_ref']},manifest['native_evaluator_ref'],page)
     directory=Path(manifest['artifact_root'])/digest({'op':op['opportunity_id'],'lease':op['lease_token']})
     with sync_playwright() as pw:
         browser=pw.chromium.launch(headless=True)

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const read = (name) => JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', name), 'utf8'));
 const contract = read('study-design-contract.v1.0.json');
 const plan = read('long-cycle-experiment-plan.v1.0.json');

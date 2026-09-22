@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const defaultPlanPath = path.join(codeRoot, 'config/exploratory-500-block-campaign.v0.1.json');
 
 export function validateExploratoryBatchPlan(plan) {
@@ -32,7 +33,7 @@ export function validateExploratoryBatchPlan(plan) {
   return errors;
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(new URL(import.meta.url)))) {
   const planPath = process.argv[2] ? path.resolve(process.argv[2]) : defaultPlanPath;
   const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
   const errors = validateExploratoryBatchPlan(plan);

@@ -11,6 +11,7 @@ import importlib.metadata
 import os
 from pathlib import Path
 import time
+from runtime_identity import receipt_binding
 from concurrent.futures import ThreadPoolExecutor
 from framework_actions import agentlab_action, browser_use_action, to_css, coordinate_contract
 from framework_model import LedgerModel, ProviderFailure, agentlab_args, browser_use_model
@@ -43,7 +44,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     sources={}
     for name in ('native_framework_driver.py','framework_actions.py','framework_model.py','journaled_browser.py',
                  'framework_agentlab.py','framework_browser_use.py','framework_boundary.py','benchmark_output_contract.py','runtime_inputs.py',
-                 'runtime_store.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs','lifecycle_timing.py'):
+                 'runtime_store.py','runtime_identity.py','spend-guard.mjs','spend_guard.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs','lifecycle_timing.py'):
         raw=Path(__file__).with_name(name).read_bytes()
         sources[name]=journal.artifact('source-'+name+'.txt',raw)
     versions={name:importlib.metadata.version(name) for name in
@@ -126,6 +127,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     ended_ns = time.monotonic_ns()
     elapsed = (ended_ns-started_ns)/1_000_000
     receipt = {k:payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256')}
+    receipt.update(receipt_binding(payload))
     receipt.update(terminal_status=terminal, failure_class=failure, action_count=len(actions),
                    scope=payload['scope'], data_kind='MEASURED' if payload['scope']=='diagnostic' else 'SYNTHETIC_TEST',
                    provider_requests=backend.requests, final_answer=final_answer,

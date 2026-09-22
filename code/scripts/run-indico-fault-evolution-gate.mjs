@@ -1,8 +1,9 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const baseURL = process.env.INDICO_BASE_URL ?? 'http://localhost:8080';
 const reportPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.join(repositoryRoot, 'results/phase2/2026-09-13-indico-fault-evolution-gate.md'));

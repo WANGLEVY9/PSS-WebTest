@@ -9,6 +9,7 @@ port bindings are permitted. Source/manifest/data are supervisor-only.
 import argparse
 import hashlib
 import json
+from runtime_identity import receipt_binding
 import os
 from pathlib import Path
 import re
@@ -126,6 +127,7 @@ class OwnedLifecycle:
         if payload['environment_id'] != self.m['environment_id']:
             raise ValueError('Environment binding mismatch')
         self.identity = {k: payload[k] for k in IDENTITY}
+        self.identity.update(receipt_binding(payload))
         if 'lease_token' in payload:
             if not isinstance(payload['lease_token'],str) or not payload['lease_token']:
                 raise ValueError('Nonempty lease token required')

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const planPath = path.join(codeRoot, 'config', 'long-cycle-experiment-plan.v1.0.json');
 
 export function validateLongCycleExperimentPlan(plan) {

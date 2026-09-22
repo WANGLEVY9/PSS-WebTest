@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import { readFile } from 'node:fs/promises';
 import { spawn } from 'node:child_process';
 import { resolve } from 'node:path';
@@ -8,7 +9,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const action = process.argv[2];
-const codeRoot = resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = resolve(codeRoot, '..');
 const webTestPilotRoot = resolve(process.env.WEBTESTPILOT_ROOT ?? resolve(repositoryRoot, 'third_party/WebTestPilot'));
 const applicationDirectory = resolve(webTestPilotRoot, 'webapps/indico');

@@ -46,6 +46,13 @@ import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {requestLedger} from './runtime-ledger.mjs';
+test('billing quota 429 is terminal, never retried like a transient rate limit',async()=>{
+ let calls=0;
+ const result=await accountedProvider(config,{model:'fixture'},{ledger:ledger(),reservationMicroUsd:100,maxAttempts:3,deadlineMs:1000,
+   fetchImpl:async()=>{calls++;return {...response(429),json:async()=>({error:{code:'project_spend_limit_exceeded',message:'private body'}})};}});
+ assert.equal(calls,1);assert.equal(result.failure_class,'provider-budget');
+ assert.doesNotMatch(JSON.stringify(result),/private body/);
+});
 test('provider attempts persist through the real Node/Python SQLite bridge',async()=>{
  const temp=fs.mkdtempSync(path.join(os.tmpdir(),'pss-request-ledger-')),database=path.join(temp,'ledger.sqlite');
  const cwd=fileURLToPath(new URL('.',import.meta.url));

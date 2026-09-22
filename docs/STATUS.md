@@ -1,5 +1,22 @@
 # Evidence status and roadmap
 
+
+## Pending-branch integration, 2026-09-22
+
+The four local commits through `95c537d` are integrated with main `0263f5f`:
+portable file URLs, task/executor-bound scheduling and exports, shared CNY guard,
+console alerts, and cloud handoff. Conflict resolution preserves the newer native
+input projection, owned session, lifecycle timing, acceptance coverage UI and
+849-row dependency inventory. The native Node bridge uses the shared guard with
+the Python opportunity ID. Missing prices fail before network dispatch.
+
+[Integration verification](verification/pending-branch-integration-2026-09-22.json): **599 portable checks passed**, plus **40 native/synthetic browser controls** across the pinned developer environments. No paid model request or official task execution occurred. The [portable source-hash receipt](verification/pending-runtime-offline-2026-09-22.json) records the tested source.
+
+Current worker receipts use `diagnostic-task-bound-v3`; old plans cannot be silently
+reused. All official benchmark acceptance, real pricing reconciliation and formal
+admission gates remain open. The earlier source-hashed reports below describe
+those earlier snapshots, not a certification of the integrated source.
+
 **Snapshot: 22 September 2026.** [Project home](../README.md) · [Reproduce](REPRODUCIBILITY.md)
 
 The active authority is [`pss-manuscript-v2.1`](../code/config/study-design-contract.v2.1.json). This page summarizes what repository artifacts support; it does not infer global collection completeness from local visibility.
@@ -35,9 +52,8 @@ bounded official task-260 probe and a 100-task Shopping development selection.
 Its 400 planned opportunities are not a completed-run count or full workload
 admission; its targeted reset probes do not certify all mutable state.
 
-The CNY 1,500 shared-budget implementation and stronger task-bound receipts are
-on the separate `codex/sponsor-acceptance-bound-input` branch. They are **not
-integrated** into this runtime baseline. The [cost integration matrix](technical/RUNTIME.md)
+At the historical baseline described here, the CNY 1,500 shared guard and task-bound
+receipts were separate. The integration update above supersedes that source status. The [cost integration matrix](technical/RUNTIME.md)
 records that gap; before any sponsor release, all provider and evaluator requests
 must pass the unified budget gate. The [cloud handoff](../code/local-lab/cloud-handoff/README.md)
 contains installation, dependency and evidence-return requirements, not a passed

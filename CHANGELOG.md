@@ -2,6 +2,14 @@
 
 This file records design and public-artifact milestones. It is not a list of published software releases.
 
+## Unreleased — pending runtime branch integration, 2026-09-22
+
+- Integrate the four previously local commits through `95c537d`, preserving mainline native lifecycle, task projection and updated dependency inventory.
+- Carry frozen task/executor identities through worker, native receipts and diagnostic export; preserve legacy records without automatic migration.
+- Connect native framework dispatch to the shared CNY guard and preserve both budget and development-coverage console panels.
+- Fix nested inventory output creation and clarify checkout/runbook ordering.
+- Keep live benchmark, pricing and formal admission explicitly unverified.
+
 ## Unreleased — GPT experiment operator handoff, 2026-09-22
 
 - Add a comprehensive Chinese operator README covering GPT configuration identities, API setup, shared-budget requirements, staged official-task acceptance, D/V execution, recovery, analysis and evidence return.

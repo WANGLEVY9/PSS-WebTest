@@ -1,11 +1,10 @@
 # Shared API spending controls
 
-> **Integration specification, not active mainline enforcement.** The implementation
-> described below belongs to `codex/sponsor-acceptance-bound-input` at `0b7301a`.
-> It is not included in runtime baseline `de93d32`. File names and environment
-> variables below refer to that implementation branch; setting them in mainline
-> does not activate the guard. See [the runtime integration matrix](../../docs/technical/RUNTIME.md).
-> Integrate and verify every native provider/evaluator path before paid acceptance.
+> **Integrated transport guard; live acceptance remains open.** The shared CNY guard
+> is now part of the source tree. All real Node provider dispatch requires it;
+> direct SDKs and benchmark judge paths still require separate coverage verification.
+> Missing prices block dispatch. Offline checks do not establish real billing or
+> native benchmark readiness. See [runtime design](../../docs/technical/RUNTIME.md).
 
 The development acceptance budget is **CNY 1,500 total**, not a monthly refill or
 an estimate that the entire planned study can finish for this amount. The ledger
@@ -72,9 +71,10 @@ raise limits, delete accounting or manufacture verified prices.
 1. `provider.mjs` requires the shared guard for real fetch calls. The diagnostic
    runner provides a stable batch/record identity; `accountedProvider` accepts
    the same guard and opportunity identity. Injected test transports are only
-   a unit-test seam. Legacy scripts outside this transport and direct Python
-   SDK calls are **not covered**; official framework adapters remain blocked
-   until their requests, including SDK retries, pass the same accounting gate.
+   a unit-test seam. The native Python framework model now passes its opportunity
+   ID to the Node bridge and the same shared guard. Legacy scripts outside this
+   transport, direct Python SDKs and benchmark judges remain **unverified**;
+   real price/usage and complete path coverage are still paid-acceptance gates.
 2. A SQLite `BEGIN IMMEDIATE` transaction reserves the worst-case billable cost
    before dispatch, atomically checking total exposure, per-execution cost,
    request count, time and pause state. Unknown or in-flight cost continues to

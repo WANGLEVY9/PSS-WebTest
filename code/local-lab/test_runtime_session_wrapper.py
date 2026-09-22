@@ -39,9 +39,27 @@ def fixture(root,routes=None):
         'schedule_sha256':'c'*64,'runtime_binding_sha256':digest(binding),'model_binding':None,
         'benchmark':'wav','agent_input':{'benchmark':'wav','intent':'SYNTHETIC CONTROL','task_images':[]},
         'setup_ref':ref(setup),'setup_binding_sha256':digest(ref(setup)), 'evaluation_ref':ref(proof)}
+    # A real worker now requires the frozen v3 identity even for synthetic controls.
+    from runtime_identity import sha, array_hash
+    binding['config_id']='s'
+    actor_file=root/'actor-input.json';actor_file.write_text(json.dumps(op['agent_input']))
+    original=root/'source.json';original.write_text('SYNTHETIC_TEST')
+    task={'task_key':'wav:synthetic-wrapper','benchmark':'wav','official_task_id':'synthetic',
+        'application':'synthetic','template_id':'synthetic','source_sha256':sha(original.read_bytes()),
+        'agent_input_sha256':sha(actor_file.read_bytes()),'evaluation_sha256':op['evaluation_ref']['sha256'],
+        'evaluation_ref_sha256':digest(op['evaluation_ref']),'setup_ref_sha256':digest(op['setup_ref'])}
+    raw=json.dumps(task,ensure_ascii=False,separators=(',',':'))
+    op.update(task_key=task['task_key'],config_id='s',round='D1',phase='discovery',
+        protocol_id='pss-manuscript-v2.1',identity_schema='task-bound-opportunity-v1',
+        task_manifest_json=raw,task_manifest_sha256=sha(raw.encode()),
+        executor_binding_sha256=digest(binding),runtime_binding_sha256=digest(binding),
+        agent_input_json=actor_file.read_text(),source_file=str(original.resolve()),
+        evaluation_file=str(proof.resolve()),cost_policy=None)
+    op['opportunity_id']=array_hash([op['schedule_sha256'],op['task_manifest_sha256'],
+        op['executor_binding_sha256'],op['task_key'],op['config_id'],op['round']])
     store=Store(str(root/'ledger.sqlite'));store.enqueue([op]);op=store.claim()
     store.start(op['opportunity_id'],op['lease_token'])
-    base={k:op[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','lease_token')}
+    base={k:op[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','lease_token','task_manifest_sha256')}
     base['data_kind']='SYNTHETIC_TEST'
     reset={**base,'restored':True,'baseline_sha256':'b'*64,'closure_sites':['shopping'],'reset_evidence_ref':ref(proof)}
     payload={**base,'input':op['agent_input'],'coordinate_space':'css-pixels','model_binding':None,

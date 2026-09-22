@@ -12,6 +12,7 @@ reset/admission gate; a source label alone proves no live defect.
 import argparse
 import hashlib
 import json
+from runtime_identity import receipt_binding
 import os
 from pathlib import Path
 import re
@@ -169,6 +170,7 @@ def evaluate(payload, manifest_ref):
             or manifest['scope'] not in ('synthetic', 'diagnostic')):
         raise ValueError('Pinned diagnostic ATA evaluator manifest required')
     identity = {key: payload.get(key) for key in IDENTITY}
+    identity.update(receipt_binding(payload))
     if not all(isinstance(v, str) and v.strip() for v in identity.values()) or not re.fullmatch('[0-9a-f]{64}', identity['configuration_sha256']):
         raise ValueError('Execution identity and configuration digest required')
     scope = manifest['scope']
@@ -212,7 +214,7 @@ def evaluate(payload, manifest_ref):
         'official_task_id': case['task_id'], 'reference_verdict': official['expected'],
         'source_step_labels': [step['step'] for step in case['steps']], 'source_failures': case['failures'],
         'source_hashes': source_hashes, 'source_archive_sha256': ARCHIVE_SHA256,
-        'source_catalog_sha256': CATALOG_SHA256, 'evaluation_ref': gold_ref,
+        'source_catalog_sha256': CATALOG_SHA256, 'evaluation_ref': gold_ref, 'evaluation_sha256': gold_ref['sha256'],
         'actor_lifecycle_ref': lifecycle_ref, 'evaluator_manifest_ref': manifest_ref,
         'reference_authority': 'published-ATA-CSV-not-agent-verdict',
         'live_fixture_label_parity_verified': False, 'confirmatory_authorized': False}
@@ -224,7 +226,7 @@ def evaluate(payload, manifest_ref):
         'official_task_id': case['task_id'], 'source_archive_sha256': ARCHIVE_SHA256,
         'source_catalog_sha256': CATALOG_SHA256, 'source_hashes': source_hashes,
         'native_result_ref': native_ref, 'actor_answer_ref': answer_ref,
-        'actor_lifecycle_ref': lifecycle_ref, 'evaluation_ref': gold_ref,
+        'actor_lifecycle_ref': lifecycle_ref, 'evaluation_ref': gold_ref, 'evaluation_sha256': gold_ref['sha256'],
         'evaluator_manifest_ref': manifest_ref, 'live_fixture_label_parity_verified': False,
         'operational_correctness': None, 'confirmatory_authorized': False}
 

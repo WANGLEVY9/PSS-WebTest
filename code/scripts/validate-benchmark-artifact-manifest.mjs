@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.v1.0.json');
 const SHA1 = /^[a-f0-9]{40}$/;
 const HTTP_URL = /^https:\/\//;

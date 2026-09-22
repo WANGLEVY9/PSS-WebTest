@@ -57,17 +57,17 @@ completion with native score 0 is not an infrastructure failure by definition.
 |---|---|---|
 | Mainline framework transport | [framework_model.py](../../code/local-lab/framework_model.py) reserves each actual attempt in the campaign SQLite ledger; no SDK retry/fallback | A per-database bound is not a shared allowance across all campaigns |
 | Mainline live Qwen controls | Explicit live invocation, bounded synthetic-site diagnostics and a separate official task-260 probe | Keep synthetic and official evidence separate; neither certifies all selected tasks or verified actual billing |
-| Separate acceptance branch `0b7301a` | CNY1500 shared guard, 80/90/95% thresholds, task caps, console alerts | Not integrated with this mainline native transport; do not assume its fields/UI exist here |
+| Integrated shared guard | CNY1500, 80/90/95% thresholds, task caps and console alerts; native Node bridge reserves with the Python opportunity ID | Missing prices block dispatch; real billing, judge and direct-SDK coverage remain acceptance requirements |
 | Provider account settings | External project/organization enforcement | Not set by local configuration files or inferred from an API key |
 
 The [cloud handoff](../../code/local-lab/cloud-handoff/README.md) carries the
-budget branch's deployment requirements as **pending integration**. A complete
+integrated budget's deployment requirements; live coverage remains unverified. A complete
 release must wire every actor, evaluator model and auxiliary request to the same
 budget authority before claiming global enforcement. Never reset allowance by
 creating a new DB. Unknown cost retains reservation; measured usage and billing
 coverage must remain explicit. Multi-host dispatch requires a common authority.
 
-Prospective CNY defaults are 1500 total, warnings at 1200/1350, stop new tasks at
+Configured CNY defaults are 1500 total, warnings at 1200/1350, stop new tasks at
 1425, per-execution 15 and 30 requests/240 seconds. These are development defaults,
 not historical study settings or evidence that the planned study fits the budget.
 Price/FX provenance, output caps and billable input bounds must be validated.

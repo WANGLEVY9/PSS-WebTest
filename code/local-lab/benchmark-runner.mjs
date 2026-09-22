@@ -4,6 +4,7 @@ import crypto from "node:crypto";
 import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import {loadRuntimeEnv} from './runtime-env.mjs';
+import {spendGuard} from './spend-guard.mjs';
 import {resolveProvider,publicProvider,buildProviderRequest,callProvider} from './provider.mjs';
 import {actorRoute} from './model-routing.mjs';
 import { chromium } from "playwright";
@@ -22,6 +23,8 @@ const admission = currentExecutionGate();
 if (!admission.allowed) throw new Error('Benchmark execution blocked: ' + admission.reasons.join('; '));
 const env = loadRuntimeEnv();
 const providerConfig = resolveProvider(env);
+const spending = spendGuard(env);
+if(!spending.status(providerConfig).ready) throw Error('Shared budget or pricing is not ready');
 const routing = actorRoute(providerConfig);
 const model = providerConfig.model;
 if (env.PSS_LOCAL_ALLOW_DIAGNOSTIC_RUN !== "1")
@@ -128,9 +131,10 @@ const batch = {
   script_authoring:
     "AI-assisted, public UI, frozen before official evaluation and agent execution; not a human-authored baseline claim",
   budget: {
-    max_decisions: 24,
-    agent_timeout_ms: 240000,
-    request_timeout_ms: 45000,
+    max_decisions: Math.min(24,spending.policy.task_max_actions),
+    agent_timeout_ms: Math.min(240000,spending.policy.task_timeout_ms),
+    request_timeout_ms: Math.min(45000,spending.policy.request_timeout_ms),
+    spend_policy: spending.policy,
     max_consecutive_protocol_errors: MAX_CONSECUTIVE_PROTOCOL_ERRORS,
     retry_accounting: "All attempts consume decision, wall-time and token budgets; no HTTP retries",
   },
@@ -393,6 +397,7 @@ if (!batch.environment_ready) {
             const begin = Date.now();
             try {
               Object.assign(request, await callProvider(providerConfig, body, {
+                budgetGuard: spending, taskId: `${id}/${r.record_id}`,
                 timeoutMs: Math.min(batch.budget.request_timeout_ms,
                   Math.max(1,batch.budget.agent_timeout_ms-(Date.now()-agentStart))),
               }));
@@ -404,7 +409,7 @@ if (!batch.environment_ready) {
             } catch (e) {
               request.status = "error";
               request.error = clean(e);
-              r.failure_class ||= /timeout|abort/i.test(request.error) ? "provider-timeout" : "provider-http-or-response";
+              r.failure_class ||= e.code==='PSS_SPEND_BLOCKED' ? 'execution-budget' : /timeout|abort/i.test(request.error) ? "provider-timeout" : "provider-http-or-response";
               throw e;
             } finally {
               request.latency_ms = Date.now() - begin;

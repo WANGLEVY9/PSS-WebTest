@@ -59,6 +59,29 @@ function status(r) {
       : r.status.charAt(0).toUpperCase() + r.status.slice(1);
 }
 function render() {
+  let coverage=document.getElementById('development-coverage');
+  if(!coverage){coverage=el('section',undefined,'ledger-section');coverage.id='development-coverage';document.querySelector('.selectors').before(coverage);}
+  const acceptance=state.development_acceptance;
+  const heading=el('div',undefined,'section-heading');
+  heading.append(el('h2','Development acceptance'),el('span','60 official tasks · four profiles · not confirmatory','muted'));
+  coverage.replaceChildren(heading);
+  if(acceptance?.status==='published'){
+    const cards=el('div',undefined,'metrics');
+    cards.append(metric('PLANNED OPPORTUNITIES',acceptance.planned,'240 base + 120 stability repeats'),
+      metric('EXECUTION RECEIPTS',acceptance.received,'Not a count of successful tasks'),
+      metric('EVIDENCE READY',acceptance.evidence_ready,'Valid failures may count; external faults do not'),
+      metric('FIXTURE CELLS',`${acceptance.fixture_ready} / 12`,'Reset, isolation, boundaries and native evaluation'));
+    coverage.append(cards);
+    const details=el('details'),table=el('table'),head=el('thead'),hr=el('tr'),body=el('tbody');
+    details.append(el('summary',`Inspect coverage · ${acceptance.campaign_id} · ${acceptance.candidate_version}`));
+    ['Benchmark','AgentLab visual','AgentLab hybrid','Browser Use hybrid','Playwright'].forEach(v=>hr.append(el('th',v)));
+    head.append(hr);table.append(head,body);
+    for(const b of acceptance.benchmarks){const row=el('tr');row.append(el('th',b.benchmark.toUpperCase()));for(const p of b.profiles)row.append(el('td',`${p.ready} / ${p.planned}`));body.append(row);}
+    const wrap=el('div',undefined,'table-wrap');wrap.append(table);details.append(wrap,
+      el('p',`${acceptance.note} Snapshot: ${acceptance.published_at}`,'muted'));coverage.append(details);
+  }else coverage.append(el('p',acceptance?.status==='invalid-or-drifted'
+      ?'Coverage snapshot failed integrity checks. No readiness claim is available.'
+      :'No measured development coverage snapshot has been published. Planned tasks are not completed experiments.','muted'));
   let admission = document.getElementById("admission");
   if (!admission) {
     admission = el("section", undefined, "protocol");

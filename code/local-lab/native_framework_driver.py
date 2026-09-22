@@ -19,6 +19,8 @@ from runtime_store import Store
 
 def run_actor(context, page, payload, journal, framework, mode, node,
               viewport=(1280, 720), backend=None):
+    if payload.get('scope') not in ('synthetic', 'diagnostic'):
+        raise ValueError('Explicit diagnostic or synthetic scope required; formal admission is separate')
     if framework not in ('agentlab-browsergym', 'browser-use-restricted') or mode not in ('visual', 'hybrid'):
         raise ValueError('Unknown framework or mode')
     if framework == 'browser-use-restricted' and mode != 'hybrid':
@@ -34,7 +36,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     backend = backend or LedgerModel(payload, journal, node, deadline)
     sources={}
     for name in ('native_framework_driver.py','framework_actions.py','framework_model.py','journaled_browser.py',
-                 'framework_agentlab.py','framework_browser_use.py','framework_boundary.py','runtime_inputs.py',
+                 'framework_agentlab.py','framework_browser_use.py','framework_boundary.py','benchmark_output_contract.py','runtime_inputs.py',
                  'runtime_store.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs'):
         raw=Path(__file__).with_name(name).read_bytes()
         sources[name]=journal.artifact('source-'+name+'.txt',raw)
@@ -110,6 +112,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     elapsed = (time.monotonic()-started)*1000
     receipt = {k:payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256')}
     receipt.update(terminal_status=terminal, failure_class=failure, action_count=len(actions),
+                   scope=payload['scope'], data_kind='MEASURED' if payload['scope']=='diagnostic' else 'SYNTHETIC_TEST',
                    provider_requests=backend.requests, final_answer=final_answer,
                    budget_met=terminal!='timeout' and elapsed<=budget['task_timeout_ms'],
                    elapsed_ms=elapsed, framework=framework, mode=mode,

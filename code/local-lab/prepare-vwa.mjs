@@ -1,78 +1,62 @@
-import fs from "node:fs";
-import path from "node:path";
-import crypto from "node:crypto";
-import { fileURLToPath } from "node:url";
-import { spawnSync } from "node:child_process";
-import { probeVwaCapacity } from './vwa-capacity-preflight.mjs';
-const root = path.dirname(fileURLToPath(import.meta.url)),
-  code = path.resolve(root, "..");
-const destination = path.join(code, "artifacts/local-runtime/vwa-runtime.env");
-if (!fs.existsSync(destination)) {
-  fs.mkdirSync(path.dirname(destination), { recursive: true });
-  // The official application expects the fixture's database password. Host port is not published.
-  fs.writeFileSync(
-    destination,
-    `PSS_VWA_CLASSIFIEDS_RESET_TOKEN=${crypto.randomBytes(24).toString("hex")}\nPSS_VWA_DB_PASSWORD=password\n`,
-    { mode: 0o600, flag: "wx" },
-  );
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import {fileURLToPath} from 'node:url';
+import {spawnSync} from 'node:child_process';
+import {readVwaProvisionProfile,assertVwaDaemon,validateVwaPullCapacity,vwaComposeInvocation} from './vwa-fixture-config.mjs';
+
+const root = path.dirname(fileURLToPath(import.meta.url));
+const argv = process.argv.slice(2);
+if (argv.length !== 3 || !['config','ps','pull','up'].includes(argv[0]) || argv[1] !== '--profile') {
+  console.error('Usage: node local-lab/prepare-vwa.mjs <config|ps|pull|up> --profile PRIVATE_JSON');
+  process.exit(2);
 }
-const action = process.argv[2] || "config";
-if (!["pull", "up", "ps", "config"].includes(action))
-  throw Error("Unsupported deployment action");
-if(action==='pull') {
-  const capacity=probeVwaCapacity();
-  if(!capacity.allowed) {
-    console.error(JSON.stringify(capacity));
-    throw Error('VWA pull blocked by VM capacity preflight; extending timeout cannot fix insufficient disk');
+const action = argv[0];
+// No API credentials, ambient DOCKER_HOST or implicit environment selection.
+const env = Object.fromEntries(['PATH','HOME','USER','TMPDIR','SYSTEMROOT','DOCKER_CONFIG','SSH_AUTH_SOCK'].filter(k => process.env[k]).map(k => [k,process.env[k]]));
+const read = args => {
+  const r = spawnSync('docker', args, {encoding:'utf8', env, timeout:30000, maxBuffer:4*1024*1024});
+  if (r.status !== 0) throw Error('docker-probe-unavailable');
+  return JSON.parse(r.stdout);
+};
+let receipt, output;
+try {
+  const loaded = readVwaProvisionProfile(path.resolve(argv[2]));
+  const p = loaded.profile;
+  const job = `vwa-${action}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
+  output = path.join(p.output_dir, `${job}.json`);
+  receipt = {kind:'VWA_EXPLICIT_PROVISIONING',job,action,started:new Date().toISOString(),profile_sha256:loaded.profile_sha256,confirmatory_authorized:false};
+  const [context] = read(['context','inspect',p.docker_context]);
+  const daemon = read(['--context',p.docker_context,'info','--format','{{json .}}']);
+  assertVwaDaemon(p,context,daemon);
+  receipt.docker_context = p.docker_context;
+  if (action === 'pull') {
+    const manifests = {};
+    for (const role of ['web','db']) manifests[role] = read(['--context',p.docker_context,'manifest','inspect','--verbose',p.images[role]]);
+    receipt.capacity = validateVwaPullCapacity(p,context,daemon,manifests);
   }
+  if (action === 'up') {
+    for (const role of ['web','db']) {
+      const [image] = read(['--context',p.docker_context,'image','inspect',p.images[role]]);
+      if (image.Os !== 'linux' || image.Architecture !== 'amd64' || !image.RepoDigests?.includes(p.images[role])) throw Error('pinned-local-image-unavailable');
+    }
+  }
+  // Revalidate fixture bytes immediately before deployment; never trust an old probe.
+  if (readVwaProvisionProfile(path.resolve(argv[2])).profile_sha256 !== loaded.profile_sha256) throw Error('profile-changed-during-preflight');
+  const invocation = vwaComposeInvocation(p,path.join(root,'vwa-classifieds.compose.yaml'),action);
+  const log = path.join(p.output_dir, `${job}.log`);
+  const fd = fs.openSync(log,'wx',0o600);
+  let result;
+  try { result = spawnSync(invocation.command,invocation.args,{stdio:['ignore',fd,fd],env:{...env,...invocation.env},timeout:600000}); }
+  finally { fs.closeSync(fd); }
+  Object.assign(receipt,{finished:new Date().toISOString(),exit_code:result.status,error_code:result.error?.code || null,private_log:log});
+  fs.writeFileSync(output,JSON.stringify(receipt,null,2)+'\n',{flag:'wx',mode:0o600});
+  console.log(JSON.stringify({job,action,exit_code:result.status,receipt:output,confirmatory_authorized:false}));
+  process.exitCode = result.status ?? 1;
+} catch (error) {
+  // Do not echo parser/file/daemon error text, which may contain secrets.
+  const safe = /^[a-z][a-z0-9-]{1,100}$/.test(error.message) ? error.message : 'invalid-profile-or-runtime';
+  if (receipt && output && !fs.existsSync(output)) fs.writeFileSync(output,JSON.stringify({...receipt,finished:new Date().toISOString(),exit_code:2,error_code:safe},null,2)+'\n',{flag:'wx',mode:0o600});
+  console.error(JSON.stringify({status:'blocked',reason:safe,receipt:output || null,confirmatory_authorized:false}));
+  process.exitCode = 2;
 }
-// Image download time is provisioning time, never an agent budget increase.
-const timeoutMs = action === 'pull'
-  ? Number(process.env.PSS_VWA_PULL_TIMEOUT_MS || 600000) : 600000;
-if (!Number.isInteger(timeoutMs) || timeoutMs < 60000 || timeoutMs > 3600000)
-  throw Error('Image pull timeout must be 60000..3600000 milliseconds');
-const args = [
-  "--project-name",
-  "pss-vwa-classifieds",
-  "--env-file",
-  destination,
-  "-f",
-  path.join(root, "vwa-classifieds.compose.yaml"),
-];
-if (action === "config") args.push("config", "--quiet");
-// Missing images must go through the capacity-checked pull path, not implicit up downloads.
-else if (action === "up") args.push("up", "--pull", "never", "-d");
-else args.push(action);
-const started = new Date().toISOString(),
-  job = `vwa-${action}-${Date.now()}`,
-  log = path.join(code, "artifacts/local-runtime", `${job}.log`);
-const descriptor = fs.openSync(log, "wx", 0o600);
-console.log(
-  JSON.stringify({ job, pid: process.pid, started, log, timeout_ms: timeoutMs }),
-);
-const r = spawnSync("docker-compose", args, {
-  stdio: ["ignore", descriptor, descriptor],
-  timeout: timeoutMs,
-  env: { ...process.env, DOCKER_CONTEXT: "colima-webarena-x86" },
-});
-fs.closeSync(descriptor);
-fs.writeFileSync(
-  path.join(code, "artifacts/local-runtime", `${job}.json`),
-  JSON.stringify(
-    {
-      job,
-      action,
-      timeout_ms: timeoutMs,
-      pid: process.pid,
-      started,
-      finished: new Date().toISOString(),
-      exit_code: r.status,
-      error_code: r.error?.code || null,
-      log,
-    },
-    null,
-    2,
-  ),
-);
-if (r.error) console.error(r.error.code || "deployment-process-error");
-process.exitCode = r.status ?? 1;

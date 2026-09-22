@@ -57,8 +57,9 @@ From `/Users/laurantwang/PSS-WebTest`:
 ```bash
 node code/local-lab/benchmark-runner.mjs
 node code/local-lab/validate-benchmark.mjs --export-public
-node code/local-lab/prepare-vwa.mjs pull
-node code/local-lab/prepare-vwa.mjs up
+node code/local-lab/prepare-vwa.mjs config --profile /ABSOLUTE/PRIVATE/vwa-provision.json
+node code/local-lab/prepare-vwa.mjs pull --profile /ABSOLUTE/PRIVATE/vwa-provision.json
+node code/local-lab/prepare-vwa.mjs up --profile /ABSOLUTE/PRIVATE/vwa-provision.json
 code/.venv-benchmark/bin/python code/local-lab/prepare-ata.py
 node --test code/local-lab/*.test.mjs
 ```

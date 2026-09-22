@@ -11,7 +11,7 @@
     "wav": {"executable": ".venv-benchmark/bin/python", "lock_file": null},
     "vwa": {"executable": ".venv-vwa/bin/python", "lock_file": null},
     "agentlab": {"executable": "../third_party/frameworks/h-agentlab/bin/python", "lock_file": "config/frameworks/h-agentlab.lock"},
-    "browser_use": {"executable": "../third_party/frameworks/h-browser-use/bin/python", "lock_file": "config/frameworks/h-browser-use.lock"}
+    "browser_use": {"executable": "../third_party/frameworks/h-browser-use/bin/python", "lock_file": "config/frameworks/h-browser-use-journaled-actuator.lock"}
   },
   "storage": {
     "docker_filesystem_path": null,

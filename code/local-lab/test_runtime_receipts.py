@@ -6,11 +6,45 @@ from unittest.mock import patch
 import sys
 import hashlib
 from runtime_store import Store, digest
-from runtime_worker import execute_one, validate_commands
+from runtime_worker import execute_one, validate_commands, run_command, AdapterReceiptError, unpack_actor_envelope, verify_receipt
 
 
 class ReceiptTests(unittest.TestCase):
-    def scenario(self, actor_override=None, wrong_stage=None, wrong_field='opportunity_id', evaluator_override=None, delayed=False):
+    def test_component_provenance_must_match_trusted_opportunity(self):
+        identity={'opportunity_id':'SYNTHETIC_CONTROL','environment_id':'fixture',
+                  'configuration_sha256':'a'*64,'scope':'diagnostic','data_kind':'MEASURED'}
+        for change in ({'scope':'synthetic'}, {'data_kind':'SYNTHETIC_TEST'}, {'scope':None}, {'data_kind':None}):
+            with self.subTest(change=change),self.assertRaises(AdapterReceiptError):
+                verify_receipt({**identity,**change},identity)
+        with self.assertRaises(AdapterReceiptError):
+            unpack_actor_envelope({**identity,'scope':'synthetic','data_kind':'SYNTHETIC_TEST'},identity)
+        with self.assertRaises(AdapterReceiptError):
+            unpack_actor_envelope({'actor_result':{**identity,'scope':'synthetic'},
+                                  'actor_lifecycle_ref':{'file':'/no-read','sha256':'b'*64}},identity)
+
+    def test_supervisor_envelope_never_changes_actor_receipt(self):
+        identity={'opportunity_id':'SYNTHETIC_TEST','environment_id':'fixture','configuration_sha256':'a'*64}
+        actor={**identity,'final_answer':'unchanged'}
+        ref={'file':'/synthetic-only/no-real-file','sha256':'b'*64}
+        with patch('benchmark_actor_lifecycle.verify_lifecycle',return_value={'scope':'synthetic'}) as verify:
+            output,seal=unpack_actor_envelope({'actor_result':actor,'actor_lifecycle_ref':ref},identity)
+            self.assertIs(output,actor)
+            self.assertEqual(seal,ref)
+            self.assertNotIn('actor_lifecycle_ref',actor)
+            verify.assert_called_once_with(ref,actor)
+        with self.assertRaises(AdapterReceiptError):
+            unpack_actor_envelope({'actor_result':actor},identity)
+        with patch('benchmark_actor_lifecycle.verify_lifecycle',side_effect=ValueError('drift')):
+            with self.assertRaises(AdapterReceiptError):
+                unpack_actor_envelope({'actor_result':actor,'actor_lifecycle_ref':ref},identity)
+
+    def test_malformed_subprocess_receipt_is_untrusted_not_ordinary_failure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            script=Path(tmp)/'invalid.py';script.write_text('print("not-json")\n')
+            with self.assertRaises(AdapterReceiptError):
+                run_command({'argv':[sys.executable,str(script)],'timeout_ms':1000},{},lambda:None)
+
+    def scenario(self, actor_override=None, wrong_stage=None, wrong_field='opportunity_id', evaluator_override=None, delayed=False, coordinate_space='css-pixels'):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / 'fixture.py'
             script.write_text('# SYNTHETIC_TEST\n')
@@ -18,6 +52,7 @@ class ReceiptTests(unittest.TestCase):
             binding = {'config_id': 'v1', 'framework': 'agentlab-browsergym', 'framework_revision': 'synthetic-test',
                 'configuration_sha256': 'a'*64, 'boundary_audit_sha256': 'b'*64, 'baseline_sha256': 'c'*64,
                 'environment_id': 'fixture', 'model_binding': {'provider': 'fixture', 'model': 'fixture'},
+                'coordinate_space': coordinate_space,
                 'budget': {'task_timeout_ms': 1000, 'max_actions': 3}, 'sdk_max_retries': 0,
                 'cost_policy': {'cap_micro_usd': 1000, 'request_reservation_micro_usd': 100},
                 'commands': {s: {**cmd, 'stage': s} for s in ('reset', 'actor', 'evaluate', 'cleanup')}}
@@ -32,10 +67,11 @@ class ReceiptTests(unittest.TestCase):
             def invoke(command, payload, heartbeat):
                 heartbeat()
                 stage = command['stage']; calls.append(stage)
-                out = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256')}
+                out = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256', 'scope', 'data_kind')}
                 if stage == 'reset': out.update(restored=True, baseline_sha256=payload['baseline_sha256'])
                 elif stage == 'actor':
                     self.assertNotIn('evaluation_ref', payload)
+                    self.assertEqual(payload['coordinate_space'], coordinate_space)
                     out.update(terminal_status='completed', budget_met=True, action_count=2)
                     out.update(actor_override or {})
                     if delayed: clock[0] += 2
@@ -57,8 +93,15 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(result['terminal_status'], 'timeout')
         self.assertFalse(result['protocol_completed'])
         self.assertFalse(result['budget_met'])
+        self.assertTrue(result['lifecycle_completed'])
         self.assertEqual(ledger['states'], {'terminal': 1})
         self.assertEqual(calls, ['reset', 'actor', 'evaluate', 'cleanup'])
+
+    def test_frozen_normalized_coordinate_units_reach_actor(self):
+        result, _, _ = self.scenario(coordinate_space='qwen-0-999')
+        self.assertTrue(result['protocol_completed'])
+        with self.assertRaisesRegex(ValueError, 'coordinate'):
+            self.scenario(coordinate_space='normalized-unknown')
 
     def test_reported_timeout_overrules_contradictory_budget_claim(self):
         result, _, _ = self.scenario({'terminal_status': 'timeout', 'budget_met': True})
@@ -89,6 +132,7 @@ class ReceiptTests(unittest.TestCase):
                         self.assertIsNone(result['native_score'])
                         self.assertEqual(result['assessment_status'], 'unresolved')
                     else: self.assertEqual(result['cleanup_status'], 'unverified')
+                    self.assertFalse(result['lifecycle_completed'])
 
     def test_invalid_actor_and_evaluator_outputs_remain_unresolved(self):
         for override in [{'terminal_status': None}, {'budget_met': None}, {'action_count': True}, {'action_count': -1}]:

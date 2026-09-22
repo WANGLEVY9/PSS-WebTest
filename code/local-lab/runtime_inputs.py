@@ -32,19 +32,21 @@ def task_projection(envelope, benchmark):
         raise ValueError('Task envelope benchmark/schema mismatch')
     if not isinstance(envelope['intent'], str) or not envelope['intent'].strip():
         raise ValueError('Nonempty official intent required')
-    result = {'intent': envelope['intent']}
+    result = {'intent': envelope['intent'], 'benchmark': benchmark}
     if benchmark == 'ata':
         steps = envelope.get('steps')
         if not isinstance(steps, list) or not steps:
             raise ValueError('ATA public steps and assertions required')
-        seen = set()
         for step in steps:
             exact_keys(step, ('step', 'action', 'expectedResult'), ('step', 'action', 'expectedResult'))
-            if type(step['step']) is not int or step['step'] < 1 or step['step'] in seen:
-                raise ValueError('Unique positive official step indices required')
+            # The official ATA release contains repeated display indices in
+            # one case. Preserve list order AND original labels; do not invent
+            # a renumbering or exclude the task. Positional failure matching is
+            # an evaluator concern requiring explicit ambiguity review.
+            if type(step['step']) is not int or step['step'] < 1:
+                raise ValueError('Positive official step labels required')
             if not all(isinstance(step[k], str) for k in ('action', 'expectedResult')):
                 raise ValueError('Public step text required')
-            seen.add(step['step'])
         result['steps'] = steps
     elif benchmark not in ('wav', 'vwa') or 'steps' in envelope:
         raise ValueError('Unexpected benchmark/steps')

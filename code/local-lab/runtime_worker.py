@@ -25,6 +25,28 @@ def verify_receipt(receipt, identity):
     if not isinstance(receipt, dict) or any(receipt.get(k) != identity[k] for k in
             ('opportunity_id', 'environment_id', 'configuration_sha256')):
         raise AdapterReceiptError('Adapter receipt identity mismatch')
+    for key in ('scope', 'data_kind'):
+        if key in identity and receipt.get(key) != identity[key]:
+            raise AdapterReceiptError('Adapter receipt provenance differs from trusted opportunity')
+
+
+def unpack_actor_envelope(value, identity):
+    """Keep immutable actor-end separate from supervisor-only closed HAR proof."""
+    if not isinstance(value, dict):
+        raise AdapterReceiptError('Actor receipt object required')
+    if 'actor_result' not in value and 'actor_lifecycle_ref' not in value:
+        verify_receipt(value, identity)
+        return value, None  # Legacy diagnostic adapters; not WAV lifecycle admission.
+    if set(value) != {'actor_result', 'actor_lifecycle_ref'}:
+        raise AdapterReceiptError('Exact actor lifecycle envelope required')
+    actor = value['actor_result']
+    verify_receipt(actor, identity)
+    from benchmark_actor_lifecycle import verify_lifecycle
+    try:
+        verify_lifecycle(value['actor_lifecycle_ref'], actor)
+    except (ValueError, KeyError, TypeError, OSError):
+        raise AdapterReceiptError('Invalid supervisor actor lifecycle proof') from None
+    return actor, value['actor_lifecycle_ref']
 
 
 def verify_native_endpoint(benchmark, evaluated):
@@ -43,6 +65,8 @@ def verify_native_endpoint(benchmark, evaluated):
 def validate_commands(binding):
     if binding.get('framework') not in ('agentlab-browsergym', 'browser-use-restricted', 'playwright'):
         raise ValueError('Unsupported framework binding')
+    if binding.get('coordinate_space', 'css-pixels') not in ('css-pixels', 'qwen-0-999'):
+        raise ValueError('Explicit supported coordinate units required')
     for field in ('framework_revision', 'configuration_sha256', 'boundary_audit_sha256', 'baseline_sha256', 'environment_id'):
         if not binding.get(field):
             raise ValueError('Missing binding: ' + field)
@@ -70,6 +94,8 @@ def validate_commands(binding):
             raise ValueError('Adapter source drift: ' + stage)
         if not isinstance(command['timeout_ms'], int) or command['timeout_ms'] <= 0:
             raise ValueError('Positive command deadline required')
+        if stage == 'actor' and command['timeout_ms'] < binding['budget']['task_timeout_ms']:
+            raise ValueError('Actor command cannot silently shorten the frozen task budget')
 
 
 def run_command(command, payload, heartbeat):
@@ -89,7 +115,10 @@ def run_command(command, payload, heartbeat):
                 stdout, _ = p.communicate(canonical(payload) if first else None, timeout=min(5, remaining))
                 if p.returncode:
                     raise RuntimeError('Adapter process failed')
-                return json.loads(stdout)
+                try:
+                    return json.loads(stdout)
+                except json.JSONDecodeError:
+                    raise AdapterReceiptError('Adapter returned invalid JSON receipt') from None
             except subprocess.TimeoutExpired:
                 first = False
     finally:
@@ -123,10 +152,12 @@ def execute_one(store, binding, invoke=run_command):
     store.start(oid, token)
     heartbeat = lambda: store.heartbeat(oid, token)
     base = {'opportunity_id': oid, 'environment_id': op['environment_id'], 'lease_token': token,
-            'configuration_sha256': binding['configuration_sha256']}
+            'configuration_sha256': binding['configuration_sha256'], 'scope': op['scope'],
+            'data_kind': 'MEASURED' if op['scope']=='diagnostic' else 'SYNTHETIC_TEST'}
     result = {'terminal_status': 'reset-error', 'assessment_status': 'unresolved', 'native_score': None, 'verdict': None,
               'runtime_protocol': 'diagnostic-receipts-v2', 'actor_started': False, 'actor_terminal_status': None,
-              'budget_met': None, 'protocol_completed': False, 'operational_correctness': None,
+              'budget_met': None, 'protocol_completed': False, 'lifecycle_completed': False,
+              'operational_correctness': None,
               'phase_timings_ms': {}, 'reset_receipt': None, 'framework': binding['framework'], 'framework_revision': binding['framework_revision']}
     uncertain = False
     stage = 'reset'
@@ -145,13 +176,16 @@ def execute_one(store, binding, invoke=run_command):
         result['actor_started'] = True
         # Only the separate, outcome-free input is delivered to the framework.
         actor_command = {**binding['commands']['actor'], 'timeout_ms': min(binding['commands']['actor']['timeout_ms'], binding['budget']['task_timeout_ms'])}
-        actor = invoke(actor_command, {**base, 'input': actor_input,
+        actor_output = invoke(actor_command, {**base, 'input': actor_input,
+                       'coordinate_space': binding.get('coordinate_space', 'css-pixels'),
                        'configuration_sha256': binding['configuration_sha256'],
                        'model_binding': binding.get('model_binding'), 'budget': binding['budget'],
                        'request_ledger': {'database': store.filename, 'opportunityId': oid, 'leaseToken': token,
                                           'capMicroUsd': binding.get('cost_policy',{}).get('cap_micro_usd')},
                        'cost_policy': binding.get('cost_policy')}, heartbeat)
-        verify_receipt(actor, base)
+        actor, actor_lifecycle_ref = unpack_actor_envelope(actor_output, base)
+        if actor_lifecycle_ref is not None:
+            result['actor_lifecycle_ref'] = actor_lifecycle_ref
         if actor.get('terminal_status') not in ('completed', 'failed', 'timeout', 'provider-error', 'no-verdict', 'execution-error'):
             raise AdapterReceiptError('Explicit actor terminal status required')
         if type(actor.get('budget_met')) is not bool or type(actor.get('action_count')) is not int or actor['action_count'] < 0:
@@ -161,6 +195,7 @@ def execute_one(store, binding, invoke=run_command):
         # The actor's receipt is necessary but not sufficient: supervisor wall time and
         # action count are checked too. Actual action-journal conformance is still a gate.
         result['actor_terminal_status'] = actor['terminal_status']
+        result['actor_failure_class'] = actor.get('failure_class')
         result['action_count'] = actor['action_count']
         result['budget_met'] = (actor['budget_met'] and actor['terminal_status'] != 'timeout'
             and result['phase_timings_ms']['actor'] <= binding['budget']['task_timeout_ms']
@@ -169,7 +204,8 @@ def execute_one(store, binding, invoke=run_command):
         phase_start = time.monotonic()
         stage = 'evaluate'
         evaluated = invoke(binding['commands']['evaluate'], {**base, 'actor_result': actor,
-                           'evaluation_ref': op['evaluation_ref']}, heartbeat)
+                           'evaluation_ref': op['evaluation_ref'],
+                           **({'actor_lifecycle_ref': actor_lifecycle_ref} if actor_lifecycle_ref else {})}, heartbeat)
         verify_receipt(evaluated, base)
         if evaluated.get('assessment_status') not in ('valid', 'unresolved'):
             raise AdapterReceiptError('Invalid evaluator assessment')
@@ -189,7 +225,10 @@ def execute_one(store, binding, invoke=run_command):
     except Exception as exc:
         result['terminal_status'] = {'reset': 'reset-error', 'actor': 'execution-error', 'evaluate': 'evaluator-error'}[stage]
         result['error_type'] = type(exc).__name__  # Never persist exception text or provider payloads.
-        uncertain = isinstance(exc, (TimeoutError, RuntimeError, AdapterReceiptError))
+        # Once reset/actor/evaluation has started, any exception can hide a
+        # partial side effect. Do not release an environment merely because the
+        # producer raised ValueError rather than a transport exception.
+        uncertain = True
         if stage == 'actor' and isinstance(exc, TimeoutError):
             result['terminal_status'] = 'timeout'
             result['actor_terminal_status'] = 'timeout'
@@ -208,6 +247,11 @@ def execute_one(store, binding, invoke=run_command):
             uncertain = True
         result['phase_timings_ms']['cleanup'] = (time.monotonic()-cleanup_start)*1000
         result['phase_timings_ms']['total'] = (time.monotonic()-start)*1000
+    # Lifecycle completion is receipt/cleanup completion, not capability success.
+    # A provider error can complete a lifecycle but is not usable capability evidence.
+    result['lifecycle_completed'] = (not uncertain and result['cleanup_status'] == 'verified'
+        and result['actor_terminal_status'] is not None and stage == 'evaluate'
+        and 'error_type' not in result)
     if uncertain:
         store.quarantine(oid, token, result)
     else:

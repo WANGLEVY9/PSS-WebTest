@@ -58,9 +58,28 @@ export function parseExactPins(contents) {
   must(Object.keys(pins).length>0,'Dependency lock cannot be empty');
   return pins;
 }
+export function indexInstalledDistributions(entries) {
+  must(Array.isArray(entries),'Distribution inventory must preserve individual entries');
+  const indexed=Object.create(null);
+  for(const entry of entries) {
+    must(Array.isArray(entry)&&entry.length===2,'Invalid distribution entry');
+    const [rawName,version]=entry;
+    must(typeof rawName==='string'&&/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(rawName)&&text(version)&&!/[\s;]/.test(version),'Invalid distribution name or version');
+    const name=rawName.toLowerCase().replace(/[-_.]+/g,'-');
+    must(!Object.hasOwn(indexed,name),'Duplicate normalized installed distribution');
+    indexed[name]=version;
+  }
+  return indexed;
+}
 export function compareExactPins(pins,installed) {
-  return Object.entries(pins).filter(([name,version])=>installed[name]!==version)
-    .map(([name,expected])=>({name,expected,actual:installed[name]??null}));
+  must(object(pins)&&object(installed),'Expected complete dependency maps');
+  const expected=indexInstalledDistributions(Object.entries(pins));
+  const actual=indexInstalledDistributions(Object.entries(installed));
+  // Full set equality, including tooling packages. A matching subset is not a lock.
+  return [...new Set([...Object.keys(expected),...Object.keys(actual)])].sort()
+    .filter(name=>expected[name]!==actual[name])
+    .map(name=>({name,expected:expected[name]??null,actual:actual[name]??null,
+      reason:!Object.hasOwn(expected,name)?'unlocked':!Object.hasOwn(actual,name)?'missing':'version-mismatch'}));
 }
 export function inspectContainer(info,expectedDigest) {
   const bindings=Object.values(info?.HostConfig?.PortBindings||{}).flat().filter(Boolean);

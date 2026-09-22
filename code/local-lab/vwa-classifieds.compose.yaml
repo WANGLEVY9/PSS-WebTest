@@ -1,6 +1,6 @@
 services:
   web:
-    image: jykoh/classifieds:latest
+    image: ${PSS_VWA_CLASSIFIEDS_IMAGE:?explicit immutable web image required}
     platform: linux/amd64
     ports:
       - "127.0.0.1:9980:9980"
@@ -10,13 +10,18 @@ services:
       CLASSIFIEDS: http://127.0.0.1:9980/
       RESET_TOKEN: ${PSS_VWA_CLASSIFIEDS_RESET_TOKEN:?local reset token required}
   db:
-    image: mysql:8.1
+    image: ${PSS_VWA_DB_IMAGE:?explicit immutable database image required}
     platform: linux/amd64
     environment:
       MYSQL_ROOT_PASSWORD: ${PSS_VWA_DB_PASSWORD:?local database password required}
       MYSQL_DATABASE: osclass
     volumes:
-      - ../artifacts/benchmark-snapshots/visualwebarena/environment_docker/classifieds_docker_compose/mysql:/docker-entrypoint-initdb.d:ro
+      - type: bind
+        source: ${PSS_VWA_FIXTURE_MYSQL:?explicit hash-verified fixture directory required}
+        target: /docker-entrypoint-initdb.d
+        read_only: true
+        bind:
+          create_host_path: false
       - db_data:/var/lib/mysql
 volumes:
   db_data: {}

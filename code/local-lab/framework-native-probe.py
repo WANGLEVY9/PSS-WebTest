@@ -34,7 +34,7 @@ def agentlab_probe():
                'visible_controls': [{'role': 'button', 'name': 'VISIBLE_BUTTON_SENTINEL',
                                      'box': [10, 10, 20, 20], 'visible': True, 'in_viewport': True}]}
         for index in range(2):
-            action, _ = get_action(agent, raw, mode, {'intent': 'Synthetic boundary check'}, index, [64, 64])
+            action, _ = get_action(agent, raw, mode, {'intent': 'Synthetic boundary check', 'benchmark':'wav'}, index, [64, 64])
             assert action == 'mouse_click(20, 20)', action
             text = json.dumps(captured[-1])
             assert 'FORBIDDEN_' not in text
@@ -42,6 +42,7 @@ def agentlab_probe():
             assert 'data:image/' in text
             assert '<action>' in text and '</action>' in text, 'Native parser grammar must be disclosed in the prompt'
             assert 'mouse_upload_file' not in text
+            assert all(field in text for field in ('task_type','retrieved_data','error_details','NOT_FOUND_ERROR'))
         counts[mode] = 2
         for forbidden in ('goto("http://example.test")', 'upload_file("1", "/tmp/file")', 'page.evaluate("1")'):
             try:
@@ -90,10 +91,11 @@ def browser_use_probe():
         raw = {'screenshot': image.getvalue(), 'url': 'FORBIDDEN_URL_SENTINEL',
                'dom_object': 'FORBIDDEN_DOM_SENTINEL', 'visible_controls': [
                    {'role': 'button', 'name': 'VISIBLE_BUTTON_SENTINEL', 'box': [10,10,20,20], 'visible': True, 'in_viewport': True}]}
-        action, _ = await get_action(agent, raw, {'intent': 'Synthetic boundary check'}, 0, [64,64])
+        action, _ = await get_action(agent, raw, {'intent': 'Synthetic boundary check', 'benchmark':'wav'}, 0, [64,64])
         assert action == {'pss_click': {'x': 20, 'y': 20}}, action
         sent = json.dumps(captured[-1])
         assert 'FORBIDDEN_' not in sent and 'VISIBLE_BUTTON_SENTINEL' in sent and 'data:image/png' in sent
+        assert all(field in sent for field in ('task_type','retrieved_data','error_details','NOT_FOUND_ERROR'))
         assert set(agent.tools.registry.registry.actions) == {'pss_click', 'pss_type', 'pss_scroll', 'pss_key', 'done',
             'pss_upload', 'pss_tab_focus', 'pss_tab_close', 'pss_back', 'pss_forward', 'pss_wait'}
         try: await agent.run()

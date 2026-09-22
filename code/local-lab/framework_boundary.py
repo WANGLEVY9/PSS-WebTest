@@ -6,6 +6,7 @@ verify visibility/occlusion; passing this schema alone is NOT that live audit.
 import json
 import math
 from framework_actions import coordinate_contract
+from benchmark_output_contract import public_output_instruction
 
 ERRORS = {'action-rejected', 'action-timeout', 'target-unavailable', 'browser-error'}
 
@@ -42,6 +43,7 @@ def project_observation(raw, mode, task, index, viewport, coordinate_space='css-
     # Do not inspect URL, DOM, AX, reward, goal or termination flags, even for
     # progress/stopping decisions. The intent comes from the pinned task input.
     result = {'screenshot': raw['screenshot'], 'intent': task['intent'],
+              'benchmark': task.get('benchmark'),
               'task_images': task.get('task_images', []), 'steps': task.get('steps', []),
               'observation_index': index, 'viewport': list(viewport), 'coordinate_space':coordinate_space,
               'action_error': raw.get('action_error') if raw.get('action_error') in ERRORS else None}
@@ -55,6 +57,7 @@ def project_observation(raw, mode, task, index, viewport, coordinate_space='css-
 
 def public_task_text(projected):
     text = projected['intent']
+    text += public_output_instruction(projected.get('benchmark'))
     if projected['steps']:
         text += '\nOfficial test steps and expected behavior:\n' + json.dumps(projected['steps'], ensure_ascii=False)
     if projected['task_images']:

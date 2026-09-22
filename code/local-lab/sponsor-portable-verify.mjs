@@ -23,6 +23,12 @@ const list=dir=>fs.readdirSync(path.join(code,dir)).filter(f=>f.endsWith('.test.
 // Keep them explicit, executable on request and distinct from portable code tests.
 const artifactTests=['benchmark-artifact-snapshot','llm-screening-simulation','outcome-blind-task-candidates','screening-ledger-template']
   .map(n=>`tests/contracts/${n}.test.mjs`);
+// Native evaluator and real Chromium lifecycle suites require their own pinned
+// environments. Do not treat skipped integration tests as portable passes.
+const nativePythonSuites=['test_runtime_wav_evaluate','test_runtime_actor_lifecycle'];
+const portablePythonSuites=fs.readdirSync(path.join(code,'local-lab'))
+  .filter(f=>/^test_runtime.*\.py$/.test(f)&&!nativePythonSuites.includes(f.slice(0,-3)))
+  .sort().map(f=>f.slice(0,-3));
 function sources() {
   const all=[];
   const walk=dir=>{for(const e of fs.readdirSync(path.join(code,dir),{withFileTypes:true})) {
@@ -39,7 +45,7 @@ const before=sources(),steps=[
   {id:'active-design',cmd:process.execPath,args:['local-lab/validate-active-study.mjs']},
   {id:'local-node-and-browser',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('local-lab')]},
   {id:'source-only-contract-regression',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('tests/contracts').filter(f=>!artifactTests.includes(f))]},
-  {id:'runtime-python',tests:true,cmd:o.python,args:['-m','unittest','discover','-s','local-lab','-p','test_runtime*.py','-v']},
+  {id:'runtime-python',tests:true,pythonpath:'local-lab',cmd:o.python,args:['-m','unittest',...portablePythonSuites,'-v']},
   {id:'ata-input-projection',tests:true,cmd:o.python,args:['local-lab/ata-preparation-test.py']}
 ];
 if(o.artifacts)steps.push({id:'historical-artifact-integration',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...artifactTests]});
@@ -50,12 +56,19 @@ if(o['framework-profile']) {
       args:['local-lab/framework-native-probe.py','--framework',name]});
   steps.push({id:'journaled-chromium-actuator',actuator:true,cmd:profile.python_environments.agentlab.executable,
     args:['local-lab/journaled-browser-probe.py','--output',path.join(dest,'actuator-proof')]});
+  steps.push({id:'native-wav-evaluator-controls',tests:true,pythonpath:'local-lab',env:{PSS_WAV_SOURCE:profile.sources.wav},
+    cmd:profile.python_environments.wav.executable,args:['-m','unittest','test_runtime_wav_evaluate','-v']});
+  if(fs.existsSync(path.join(code,'local-lab/test_runtime_actor_lifecycle.py')))
+    steps.push({id:'chromium-har-lifecycle',tests:true,pythonpath:'local-lab',cmd:profile.python_environments.agentlab.executable,
+      args:['-m','unittest','test_runtime_actor_lifecycle','-v']});
 }
 const report={kind:'SPONSOR_PORTABLE_OFFLINE_VERIFICATION',started_at:new Date().toISOString(),
   source_files:before,source_tree_sha256:sha(JSON.stringify(before)),checks:[],
   historical_data_required:false,model_requests:0,benchmark_executions:0,confirmatory_authorized:false,
   artifact_integration:{requested:Boolean(o.artifacts),status:o.artifacts?'pending':'not-run',test_files:artifactTests,
-    note:'Explicit historical-source integration group. Not-run is not passed; v1 inventory checks are not current scientific admission.'}};
+    note:'Explicit historical-source integration group. Not-run is not passed; v1 inventory checks are not current scientific admission.'},
+  native_python_integration:{requested:Boolean(o['framework-profile']),status:o['framework-profile']?'pending':'not-run',
+    test_modules:nativePythonSuites,note:'Explicit native dependency/source checks. No official task execution; not-run is not passed.'}};
 // Avoid leaking inherited paid-provider credentials to an offline verification child.
 const env=Object.fromEntries(Object.entries(process.env).filter(([k])=>!(/^(CUA_|OPENAI_|PSS_|ANTHROPIC_|AZURE_|DEEPSEEK_|DASHSCOPE_|ARK_|GOOGLE_API_KEY|GEMINI_API_KEY)/.test(k)||/(API_KEY|ACCESS_TOKEN|SECRET_KEY)$/.test(k))));
 env.PYTHONDONTWRITEBYTECODE='1';
@@ -63,7 +76,8 @@ env.ANONYMIZED_TELEMETRY='false';env.BROWSER_USE_VERSION_CHECK='false';
 env.LITELLM_LOCAL_MODEL_COST_MAP='True';
 for(const step of steps) {
   console.log(`Checking ${step.id} ...`);
-  const start=Date.now(),r=spawnSync(step.cmd,step.args,{cwd:code,env,encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024});
+  const start=Date.now(),r=spawnSync(step.cmd,step.args,{cwd:code,env:{...env,...step.env,
+    ...(step.pythonpath?{PYTHONPATH:path.join(code,step.pythonpath)}:{})},encoding:'utf8',timeout:60000,maxBuffer:16*1024*1024});
   const raw=(r.stdout||'')+(r.stderr||'');fs.writeFileSync(path.join(dest,`${step.id}.log`),raw,{mode:0o600,flag:'wx'});
   const count=kind=>{const m=raw.match(new RegExp(`^# ${kind} (\\d+)$`,'m'));return m?Number(m[1]):null;};
   const py=raw.match(/Ran (\d+) tests? in /)?.[1];
@@ -81,6 +95,8 @@ for(const step of steps) {
 }
 report.finished_at=new Date().toISOString();
 if(o.artifacts)report.artifact_integration.status=report.checks.find(c=>c.id==='historical-artifact-integration')?.passed?'passed':'failed';
+if(o['framework-profile'])report.native_python_integration.status=['native-wav-evaluator-controls','chromium-har-lifecycle']
+  .every(id=>report.checks.find(c=>c.id===id)?.passed)?'passed':'failed';
 report.source_tree_unchanged=JSON.stringify(before)===JSON.stringify(sources());
 report.passed=report.source_tree_unchanged&&report.checks.every(c=>c.passed);
 report.scope='Offline engineering regression; synthetic fixtures are not official benchmark executions. Sponsor runtime, framework boundaries and reset/evaluator acceptance remain separate.';

@@ -5,7 +5,7 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {readDeploymentProfile,parseExactPins,compareExactPins,inspectContainer,deploymentSummary} from './sponsor-portable-config.mjs';
+import {readDeploymentProfile,parseExactPins,indexInstalledDistributions,compareExactPins,inspectContainer,deploymentSummary} from './sponsor-portable-config.mjs';
 
 const code=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
@@ -66,12 +66,16 @@ attempt('official-source-manifest',()=>{
 });
 for(const [name,e] of Object.entries(p.python_environments)) {
   attempt(`${name}-python`,()=>{
-    const script='import json,sys,importlib.metadata as m,re; print(json.dumps({"python":sys.version.split()[0],"packages":{re.sub(r"[-_.]+","-",d.metadata["Name"].lower()):d.version for d in m.distributions() if d.metadata["Name"]}}))';
+    // Preserve records until normalization; dict comprehensions conceal duplicates.
+    const script='import json,sys,importlib.metadata as m; print(json.dumps({"python":sys.version.split()[0],"distributions":[[d.metadata["Name"],d.version] for d in m.distributions()]}))';
     const installed=JSON.parse(run(e.executable,['-I','-c',script]));
-    add(`${name}-python`,'passed',{python:installed.python,installed_distributions:Object.keys(installed.packages).length});
+    const packages=indexInstalledDistributions(installed.distributions);
+    add(`${name}-python`,'passed',{python:installed.python,installed_distributions:Object.keys(packages).length});
     if(e.lock_file===null) {add(`${name}-pins`,'unverified','No exact dependency lock bound; installing successfully does not establish replication');return;}
-    const raw=fs.readFileSync(e.lock_file,'utf8'),pins=parseExactPins(raw),mismatches=compareExactPins(pins,installed.packages);
-    check(`${name}-pins`,mismatches.length===0,{lock_sha256:hash(raw),checked:Object.keys(pins).length,mismatches});
+    const raw=fs.readFileSync(e.lock_file,'utf8'),pins=parseExactPins(raw),mismatches=compareExactPins(pins,packages);
+    check(`${name}-pins`,mismatches.length===0,{lock_sha256:hash(raw),comparison:'complete-distribution-set-and-exact-versions',
+      locked_distributions:Object.keys(pins).length,installed_distributions:Object.keys(packages).length,
+      checked:new Set([...Object.keys(pins),...Object.keys(packages)]).size,mismatches});
   });
   attempt(`${name}-dependency-consistency`,()=>{run('uv',['--no-cache','pip','check','--python',e.executable]);add(`${name}-dependency-consistency`,'passed','uv pip check (no persistent cache); not a module-inference smoke');});
 }

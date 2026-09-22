@@ -1,5 +1,10 @@
 # Sponsor deployment and acceptance
 
+Current operational checklist: [official development acceptance runbook](ACCEPTANCE-RUNBOOK.md).
+It defines the 60-task / four-profile / 360-opportunity development gate, public
+output protocols, source mapping and measured receipt contracts. It explicitly
+does not claim that the full live benchmark lifecycle is already delivered.
+
 Update 2026-09-22: see [adapter remediation status](SPONSOR-ADAPTER-PROGRESS-2026-09-22.md)
 for the implemented frozen-input correspondence checks and real-framework
 component probes. The former binder gap below is historical; full native
@@ -34,7 +39,7 @@ npx playwright install --with-deps chromium
 
 Use Node >=20 (record its exact version), Python 3 and `uv`. Keep benchmark/framework Python environments separate: upstream constraints differ. Follow the pinned upstream setup for sites, assets, native evaluation and Python dependencies. Do not install an unrelated latest version merely to make `pip check` green.
 
-For existing environments, audit before installing. The legacy `frameworks:build` helper can rewrite locks; **do not use it as a frozen sponsor provisioning command**. Current framework candidate locks are `config/frameworks/h-agentlab.lock` and `h-browser-use.lock`. Reproduction must compare *all* locked distributions and run import/inference checks on the sponsor OS; those previously exported locks are not proof of portable installation or a conformant task adapter.
+For existing environments, audit before installing. The legacy `frameworks:build` helper can rewrite locks; **do not use it as a frozen sponsor provisioning command**. Current framework candidate locks are `config/frameworks/h-agentlab.lock` and `h-browser-use-journaled-actuator.lock`. The older Browser Use lock omits three actuator dependencies. Reproduction must compare the complete installed distribution set and versions, not a matching subset, and run import/inference checks on the sponsor OS. These local locks are not proof of portable installation or a conformant task adapter. See `DEPENDENCY-LOCK-GATE.md`.
 
 ## 3. Run offline acceptance without old data or a model key
 
@@ -92,7 +97,7 @@ After these checks, use a small nonformal **official** development selection on 
 
 `runtime_worker.py` now emits `runtime_protocol=diagnostic-receipts-v2`. All four adapter receipts must echo `opportunity_id`, `environment_id` and `configuration_sha256`. Reset additionally attests the expected baseline; cleanup attests cleanup. The actor adapter must provide a recognized terminal status, boolean `budget_met` and integer `action_count`; the binding must specify positive wall-time and action budgets. Supervisor timing and action-count checks can reject an actor's claimed completion. These are trusted adapter receipts, **not fields to accept directly from a model response**.
 
-An actor timeout or provider error remains that failure even when independent evaluation returns native score 1. Native score, actor termination, budget compliance, assessment validity and cleanup remain separate. Invalid or mismatched receipts quarantine the opportunity/environment. Identity echoes alone do not prove correct actions: the adapter still needs action-journal, observation-boundary and evaluator integration tests. The current binder's full task-input-to-frozen-schedule correspondence remains an outstanding acceptance issue; do not enable formal collection on the strength of diagnostic worker tests.
+An actor timeout or provider error remains that failure even when independent evaluation returns native score 1. Native score, actor termination, budget compliance, assessment validity and cleanup remain separate. Invalid or mismatched receipts quarantine the opportunity/environment. Identity echoes alone do not prove correct actions: the adapter still needs action-journal, observation-boundary and evaluator integration tests. Frozen task correspondence is implemented (see the adapter remediation report), but complete benchmark lifecycle and sponsor-host acceptance remain open. The additive `lifecycle_completed` field records a completed receipt/cleanup chain without asserting task success; it does not redefine `protocol_completed`. Do not enable formal collection on the strength of diagnostic worker tests.
 
 ## 6. Data and access
 

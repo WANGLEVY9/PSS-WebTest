@@ -160,7 +160,7 @@ class RuntimeTests(unittest.TestCase):
     def binding(self):
         script = Path(self.temp.name) / 'adapter.py'
         script.write_text('import json,sys\np=json.load(sys.stdin)\nprint(json.dumps(p))\n')
-        command = {'argv': [sys.executable, str(script)], 'source': str(script), 'sha256': hashlib.sha256(script.read_bytes()).hexdigest(), 'timeout_ms': 500}
+        command = {'argv': [sys.executable, str(script)], 'source': str(script), 'sha256': hashlib.sha256(script.read_bytes()).hexdigest(), 'timeout_ms': 1000}
         return {'config_id': 'v1', 'framework': 'agentlab-browsergym', 'framework_revision': 'synthetic-test-only',
                 'configuration_sha256': 'c'*64, 'boundary_audit_sha256': 'd'*64, 'environment_id': 'isolated-test',
                 'baseline_sha256': 'e'*64, 'model_binding': {'provider':'fixture','model':'fixture'},
@@ -175,7 +175,7 @@ class RuntimeTests(unittest.TestCase):
             heartbeat()
             stage = command['stage']
             calls.append(stage)
-            receipt = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256')}
+            receipt = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256', 'scope', 'data_kind')}
             if stage == 'reset':
                 return {**payload, 'restored': True}
             if stage == 'actor':
@@ -188,6 +188,13 @@ class RuntimeTests(unittest.TestCase):
             self.assertEqual(execute_one(self.store, binding, invoke)['native_score'], 1)
         self.assertEqual(calls, ['reset', 'actor', 'evaluate', 'cleanup']*2)
         self.assertEqual(self.store.summary()['states'], {'terminal': 2})
+
+    def test_actor_command_cannot_shorten_frozen_budget(self):
+        from runtime_worker import validate_commands
+        binding = self.binding()
+        binding['commands']['actor']['timeout_ms'] = 999
+        with self.assertRaisesRegex(ValueError, 'shorten'):
+            validate_commands(binding)
 
     def test_timeout_cleanup_and_quarantine_never_loses_terminal_event(self):
         b = self.binding()

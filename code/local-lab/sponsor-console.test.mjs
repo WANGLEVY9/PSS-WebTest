@@ -27,6 +27,7 @@ test('real console exposes OpenAI config without key and refuses task launch eve
     assert.equal(state.provider_configuration.api,'responses');assert.equal(state.configured,true);
     assert.equal(state.execution_gate.allowed,false);
     assert.equal(state.study_design.protocol_id,'pss-manuscript-v2.1');assert.equal(state.study_design.configuration_count,19);
+    assert.equal(state.development_acceptance.confirmatory_authorized,false);
     const accounting=await fetch(`${origin}/resource-accounting.mjs`);
     assert.equal(accounting.status,200);assert.match(accounting.headers.get('content-type'),/javascript/);
     browser=await chromium.launch({headless:true});
@@ -34,6 +35,7 @@ test('real console exposes OpenAI config without key and refuses task launch eve
     await page.goto(origin);
     await page.waitForFunction(()=>document.querySelector('#connection')?.textContent.includes('Local service online'));
     await page.waitForFunction(()=>document.querySelector('#metrics')?.textContent.includes('calls report usage'));
+    assert.match(await page.locator('#development-coverage').innerText(),/Development acceptance/);
     assert.equal(await page.locator('#start').isDisabled(),true);
     assert.deepEqual(errors,[]);
     const result=await fetch(`${origin}/api/start`,{method:'POST',headers:{origin,'x-local-token':state.token}});

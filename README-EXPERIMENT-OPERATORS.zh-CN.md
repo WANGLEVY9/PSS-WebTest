@@ -4,7 +4,7 @@
 
 **文档日期：**2026-09-22。**研究协议：**`pss-manuscript-v2.1`。
 
-**代码基线：**`0263f5f` 加本次预算与调度分支整合（原分支终点 `95c537d`）；运行身份升级为 `diagnostic-task-bound-v3`。后续发行版应填写完整 commit，不能仅写“最新版”。
+**代码基线：**`8796b8b` 加本次预算与调度分支整合（原分支终点 `95c537d`）；运行身份升级为 `diagnostic-task-bound-v3`。后续发行版应填写完整 commit，不能仅写“最新版”。
 
 **本次目标：**用受控成本验证真实实验链路，再补齐获得授权且通过准入的 GPT 实验单元，交回可复核的原始证据和分析输入。
 
@@ -125,7 +125,7 @@ RQ1–RQ4 通常分析同一套已核验 D/V 执行，不是四套各自再跑�
 | ATA | 发布标签/步骤参考比较器 | 原应用状态、reset 与参考标签一致性；比较器不是独立运行时真值机 |
 | 正式调度 | 通用 worker/binder 目前拒绝正式 scope | 经过审核的正式准入和按待补清单执行的发行入口 |
 
-特别注意：[WAV 官方 260/274 探针](code/local-lab/wav_official_acceptance_probe.py)当前基线写死 `aliyun/qwen3.8-max`；[WAV100](code/local-lab/WAV100-QWEN38MAX-PLAN.md)也是独立 Qwen 诊断计划。**二者不能通过更换 `.env` 密钥直接当作 GPT 实验入口。** 新基线还明确拒绝该探针的显式环境配置覆盖。已有[Qwen 官方 260/274 诊断证据](results/local-runtime/2026-09-22-wav100-acceptance.md)仅覆盖局部任务，不能替代 GPT 或完整 benchmark 验收。
+特别注意：[WAV 官方 260/261/274 探针](code/local-lab/wav_official_acceptance_probe.py)当前基线写死 `aliyun/qwen3.8-max`；[WAV100](code/local-lab/WAV100-QWEN38MAX-PLAN.md)也是独立 Qwen 诊断计划。**二者不能通过更换 `.env` 密钥直接当作 GPT 实验入口。** 新基线还明确拒绝该探针的显式环境配置覆盖。已有[Qwen 官方 260/274 诊断证据](results/local-runtime/2026-09-22-wav100-acceptance.md)仅覆盖局部任务，不能替代 GPT 或完整 benchmark 验收。
 
 ### 2.2 角色分工
 

@@ -4,7 +4,7 @@ For experiment operators, the [comprehensive Chinese README](../../README-EXPERI
 
 [Project](../../README.md) · [Research design](../RESEARCH.md) · [Evidence status](../STATUS.md)
 
-Documentation baseline: `0263f5f` plus the integration of the committed acceptance
+Documentation baseline: `8796b8b` plus the integration of the committed acceptance
 branch through `95c537d`, reviewed 22 September 2026. Uncommitted experiments are not part
 of that implementation. This documentation describes a restricted comparative
 study, not a reproduction of every upstream default agent or leaderboard score.

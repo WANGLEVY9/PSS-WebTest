@@ -13,7 +13,7 @@
   "other_remote_branch": "codex/docs-native-benchmarks (already merged via PR 1)",
   "stashes": 0,
   "conflicted_files_resolved": 16,
-  "portable_tests_passed": 599,
+  "portable_tests_passed": 606,
   "portable_receipt": "pending-runtime-offline-2026-09-22.json",
   "native_controls": [
     {
@@ -48,7 +48,7 @@
     "status_at_audit": "active",
     "tracked_modified": 1,
     "untracked_files": 23,
-    "action": "Retained in the original workspace; not auto-staged, discarded or treated as release-ready. Includes active WAV authoring/probes, internal manuscript notes and historical local reports."
+    "action": "Internal manuscript review/editing notes and tests, one modified historical conformance report and two unverified local pilot notes retained in the original workspace. Active diagnostic code published separately as 87fe915 is included through main 8796b8b."
   },
   "model_requests": 0,
   "official_benchmark_executions": 0,
@@ -63,5 +63,12 @@
     "integration-check-1: sandbox denied Chromium/local ports; no false pass",
     "native integration initial attempts: missing source mapping and wrong environment; not counted",
     "lifecycle first attempt: merge integration regressions fixed and rerun"
-  ]
+  ],
+  "latest_main_included": "8796b8beea31449c52ded58f91e081f2d2878405",
+  "documentation_checks": {
+    "passed": true,
+    "markdown_files": 34,
+    "local_links": 342,
+    "dependency_rows": 849
+  }
 }

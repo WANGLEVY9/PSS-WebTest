@@ -1,6 +1,6 @@
 {
   "kind": "SPONSOR_PORTABLE_OFFLINE_VERIFICATION",
-  "started_at": "2026-09-22T06:58:52.377Z",
+  "started_at": "2026-09-22T07:02:13.965Z",
   "source_files": [
     {
       "file": "config/active-study-design.json",
@@ -239,8 +239,24 @@
       "sha256": "c4e887f64ce8f3fddfa6ee0b2bce882fc8849a8ffcb69d86c7979bec36bffa7f"
     },
     {
+      "file": "config/traditional-proposals/wav261-category-repair-v2.py",
+      "sha256": "971e197a2901113bb073ab7798072b2b0a8b7515eb4a22aa850870ba41aab32f"
+    },
+    {
+      "file": "config/traditional-proposals/wav261-category-repair-v3.py",
+      "sha256": "a4dfab2109b1d57d12dae05fd9d9a899c8d0c47db149233ff6c925694a309c4f"
+    },
+    {
+      "file": "config/traditional-proposals/wav261-category-repair-v4.py",
+      "sha256": "17fa09df0bf8354a182ee102d1471be5619814f078bfaf2d72e568873267ca60"
+    },
+    {
       "file": "config/wav-qwen38max-100-development.v1.json",
       "sha256": "b4d17990c7fe826eeea6dc3ce6058fea0aad7151d6c6402854391317f7ddcb28"
+    },
+    {
+      "file": "config/wav100-ai-authoring-authorization.v1.json",
+      "sha256": "6e3b5850dce248c42ae9f80c4e2ed8cd74ed959d3e5352c3044f594b055f2a95"
     },
     {
       "file": "local-lab/acceptance_coverage.py",
@@ -547,6 +563,10 @@
       "sha256": "3b8f740a6fc9e574d0b8484b5c92b492b8bf4abb66006845540b88ae1179de49"
     },
     {
+      "file": "local-lab/prepare_wav100_ai_scripts.py",
+      "sha256": "09de66e2a9aa0ae1ec01dd1216cf76e0917a35e5d3d9f68534d5d5b92f39bdd1"
+    },
+    {
       "file": "local-lab/prepare_wav100_authoring.py",
       "sha256": "461faa63606690ce2a24f6cb71b5b03144addd7875ce528fda0327ce91ebc7b4"
     },
@@ -767,6 +787,10 @@
       "sha256": "f70614f757e71ae082e2c4e5ab00edf76df554a036a4168529b9c4d55f9e9400"
     },
     {
+      "file": "local-lab/test_runtime_ai_authoring.py",
+      "sha256": "5a28bb3a6688333f88ad8110022e903c905b6604596aaf84b37e14363c4f1361"
+    },
+    {
       "file": "local-lab/test_runtime_ata_evaluate.py",
       "sha256": "a966868e0b5b1590744db503ee4a6be99bf7e0d3013f3efdc55fd1e753ac04e3"
     },
@@ -820,7 +844,7 @@
     },
     {
       "file": "local-lab/test_runtime_official_probe.py",
-      "sha256": "1df7a40adc9ec1b4c11b6dd2dfd12bd6ffd78b8c2611c4f04c5e7dedb8dd8a7b"
+      "sha256": "735ec6125eccadb94bf0260ee53601382fc291275dbdc05892d4f6d15e668ef0"
     },
     {
       "file": "local-lab/test_runtime_output_contract.py",
@@ -880,7 +904,7 @@
     },
     {
       "file": "local-lab/traditional_actor.py",
-      "sha256": "0482dbc224a2702153d08b4f966b733872c3c224639cdc62f553be6b4b093cec"
+      "sha256": "3c18f9c1537c54ea1f4a263100080de467007bbfe4d486193092baef988427b3"
     },
     {
       "file": "local-lab/triage-failure.mjs",
@@ -936,7 +960,7 @@
     },
     {
       "file": "local-lab/wav_official_acceptance_probe.py",
-      "sha256": "d3cff9645a1055065b39b0e00fa825f8e346f1a0539de8a4a4894e0a465fac2f"
+      "sha256": "d98c2c0b863c6eb4d6185bd70240a88e05482c44c920194956954e2ab4d3544e"
     },
     {
       "file": "local-lab/wav_owned_lifecycle.py",
@@ -2067,7 +2091,7 @@
       "sha256": "ed382ad0401a4e8e4c89d707c4823b5a6d5ae7284d665e542255ae15aa9fbf6c"
     }
   ],
-  "source_tree_sha256": "45cd2ab1e95b4178f104f2cbd3e9032df4be244332a0eebdd18e985f29732caa",
+  "source_tree_sha256": "7df926d68441750eeac84e0a57846322fcb54811da4b3139180646ae83248773",
   "checks": [
     {
       "id": "installed-node-dependencies",
@@ -2077,7 +2101,7 @@
       "tests": null,
       "passed_tests": null,
       "skipped_tests": null,
-      "elapsed_ms": 327,
+      "elapsed_ms": 335,
       "log_sha256": "bfcc7a2796b6505e436d455caed1b80e665fa2556af5b3ca639c1faaebdff6da"
     },
     {
@@ -2088,7 +2112,7 @@
       "tests": null,
       "passed_tests": null,
       "skipped_tests": null,
-      "elapsed_ms": 27,
+      "elapsed_ms": 28,
       "log_sha256": "067b0bcd1f50215541c4fd810de909291702c3fcbdaf7a02c22cd63ab450ad25"
     },
     {
@@ -2099,8 +2123,8 @@
       "tests": 142,
       "passed_tests": 142,
       "skipped_tests": 0,
-      "elapsed_ms": 3917,
-      "log_sha256": "a3390f179a3bcf5c25d4d48f5021bcebcc9365b84a2d916958f4b87cc2d0d3be"
+      "elapsed_ms": 3856,
+      "log_sha256": "cdef0da94a262a08a657add6f87cbd1a4dfefa0511a30feb15357e675d13082b"
     },
     {
       "id": "source-only-contract-regression",
@@ -2110,19 +2134,19 @@
       "tests": 287,
       "passed_tests": 287,
       "skipped_tests": 0,
-      "elapsed_ms": 324,
-      "log_sha256": "22425f24340a3820adb861302f15a481ae92736869955d72f24daefade0ba9aa"
+      "elapsed_ms": 316,
+      "log_sha256": "5b03cdfc8f9bef6908adbaf9130ef452b022838268b191c870352970751724bd"
     },
     {
       "id": "runtime-python",
       "passed": true,
       "exit_code": 0,
       "error_code": null,
-      "tests": 159,
-      "passed_tests": 159,
+      "tests": 166,
+      "passed_tests": 166,
       "skipped_tests": 0,
-      "elapsed_ms": 4575,
-      "log_sha256": "e4e721c1588ad8a61c78222517d6767f415355e04da947ea26a1d0bf76147842"
+      "elapsed_ms": 4404,
+      "log_sha256": "4b8c9c227b573bd5e535c1cf7cf4d137fc7047de4ddb2fdf6a2c1bf2396fd925"
     },
     {
       "id": "shared-budget-python",
@@ -2132,8 +2156,8 @@
       "tests": 8,
       "passed_tests": 8,
       "skipped_tests": 0,
-      "elapsed_ms": 119,
-      "log_sha256": "3f68b7a9a906c4ddf3215f8ad2a8ad705045b374a63eb2450992010c81976b68"
+      "elapsed_ms": 141,
+      "log_sha256": "4584df82a3f3b99847e94246854c0b1be021e8fe6eb8ef94866a75f8d4c74b3e"
     },
     {
       "id": "ata-input-projection",
@@ -2143,7 +2167,7 @@
       "tests": 3,
       "passed_tests": 3,
       "skipped_tests": 0,
-      "elapsed_ms": 53,
+      "elapsed_ms": 44,
       "log_sha256": "199ba496f288116d36c62f29346d4fbf0bd75745a1c893abfcbdaa4c6d5b1033"
     }
   ],
@@ -2173,7 +2197,7 @@
     ],
     "note": "Explicit native dependency/source checks. No official task execution; not-run is not passed."
   },
-  "finished_at": "2026-09-22T06:59:01.721Z",
+  "finished_at": "2026-09-22T07:02:23.093Z",
   "source_tree_unchanged": true,
   "passed": true,
   "scope": "Offline engineering regression; synthetic fixtures are not official benchmark executions. Sponsor runtime, framework boundaries and reset/evaluator acceptance remain separate."

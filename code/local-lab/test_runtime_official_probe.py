@@ -18,5 +18,12 @@ class OfficialProbeGuards(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             output=Path(tmp)/'not-created';r=subprocess.run(self.command(output)+['--live'],capture_output=True,text=True,timeout=20)
             self.assertNotEqual(r.returncode,0);self.assertFalse(output.exists())
+    def test_new_ai_task_requires_pinned_authorization_before_fixture(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)/'not-created'
+            r=subprocess.run(self.command(output)+['--task-id','261','--live'],capture_output=True,text=True,timeout=20)
+            self.assertNotEqual(r.returncode,0)
+            self.assertIn('requires pinned AI-authoring authorization',r.stderr)
+            self.assertFalse(output.exists())
 
 if __name__=='__main__':unittest.main()

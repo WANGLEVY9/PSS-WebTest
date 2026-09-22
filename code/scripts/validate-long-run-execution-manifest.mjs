@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const manifestPath = path.join(codeRoot, 'config', 'phase2-long-run-execution-manifest.v0.1.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const errors = [];

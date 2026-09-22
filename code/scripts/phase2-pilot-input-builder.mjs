@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Construct the single, auditable pilot input used by the variance/power
 // planning stage. This is not a confirmatory dataset and it never authorizes
 // collection. Invalid records remain counted and are excluded from cells.
@@ -9,7 +10,7 @@ import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 import { readDeduplicatedJsonl } from '../src/ledger-files.mjs';
 import { executionVariant } from '../src/execution-variant.mjs';
 
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
 const args = process.argv.slice(2);
 const arg = (flag, fallback = null) => {

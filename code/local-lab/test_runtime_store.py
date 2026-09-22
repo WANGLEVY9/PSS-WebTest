@@ -6,6 +6,7 @@ import unittest
 from pathlib import Path
 from runtime_store import Store, digest
 from runtime_worker import execute_one, run_command
+from runtime_test_fixture import bound_fixture, fixture_package, receipt_identity
 from ata_mapping import audit_mapping
 import hashlib
 import sys
@@ -135,11 +136,8 @@ class RuntimeTests(unittest.TestCase):
     def test_plan_binder_freezes_model_and_rejects_changed_agent_input(self):
         from bind_runtime_plan import bind
         b = self.binding()
+        op, package = fixture_package(self.temp.name, b)
         spec = Path(self.temp.name) / 'input.json'
-        spec.write_text('{"intent":"synthetic"}')
-        task = {'agent_input_file': str(spec), 'agent_input_sha256': hashlib.sha256(spec.read_bytes()).hexdigest(), 'evaluation_ref': 'private-evaluator-ref'}
-        package = {'executors': {'v1': {'wav': b}}, 'tasks': {'t': task}}
-        op = {**self.op(), 'protocol_id': 'pss-manuscript-v2.1', 'config_id':'v1', 'benchmark':'wav', 'task_key':'t'}
         bound = list(bind([op], package))[0]
         self.assertEqual(bound['model_binding'], b['model_binding'])
         self.assertEqual(bound['runtime_binding_sha256'], digest(b))
@@ -169,13 +167,13 @@ class RuntimeTests(unittest.TestCase):
 
     def test_worker_resets_every_arm_and_keeps_gold_out_of_actor(self):
         binding = self.binding()
-        self.store.enqueue([{**self.op(i), 'config_id': 'v1', 'configuration_sha256': 'c'*64, 'runtime_binding_sha256': digest(binding), 'model_binding': binding['model_binding'], 'agent_input': {'intent': 'synthetic'}, 'evaluation_ref': 'SECRET_GOLD'} for i in (1, 2)])
+        self.store.enqueue([bound_fixture(self.temp.name, binding, f'D{i}') for i in (1, 2)])
         calls = []
         def invoke(command, payload, heartbeat):
             heartbeat()
             stage = command['stage']
             calls.append(stage)
-            receipt = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256', 'scope', 'data_kind')}
+            receipt = receipt_identity(payload)
             if stage == 'reset':
                 return {**payload, 'restored': True}
             if stage == 'actor':
@@ -198,7 +196,7 @@ class RuntimeTests(unittest.TestCase):
 
     def test_timeout_cleanup_and_quarantine_never_loses_terminal_event(self):
         b = self.binding()
-        self.store.enqueue([{**self.op(), 'config_id': 'v1', 'configuration_sha256': 'c'*64, 'runtime_binding_sha256': digest(b), 'model_binding': b['model_binding'], 'agent_input': {}, 'evaluation_ref': None}])
+        self.store.enqueue([bound_fixture(self.temp.name, b)])
         calls = []
         def invoke(command, payload, heartbeat):
             calls.append(command['stage'])

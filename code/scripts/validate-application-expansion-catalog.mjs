@@ -1,7 +1,8 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const catalogPath = path.resolve(codeRoot, 'config/application-expansion-catalog.v0.1.json');
 const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
 const errors = [];

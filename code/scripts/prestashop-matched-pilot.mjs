@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // PrestaShop matched three-arm pilot orchestrator.
 //
 // For every provider stratum it resets the SUT before each arm, runs the three
@@ -15,7 +16,7 @@ import dotenv from 'dotenv';
 import { loadProviderProfileManifest } from '../src/provider-profile.mjs';
 import { createRunRecord } from '../src/run-records.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const artifactRoot = path.join(repositoryRoot, 'artifacts', 'phase2');
 const recordsDir = path.join(artifactRoot, 'run-records');

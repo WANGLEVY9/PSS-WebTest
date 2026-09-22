@@ -52,7 +52,7 @@ must be separately reviewed; a developer import is not installation acceptance.
 [framework_model.py](../../../code/local-lab/framework_model.py) uses a durable
 request reservation and one real transport attempt. Requested/returned model
 identity and actual usage remain evidence, not inferred from a display label.
-Read [runtime accounting](../RUNTIME.md) for the separate shared-CNY budget branch.
+Read [runtime accounting](../RUNTIME.md) for the integrated shared-CNY guard and its remaining live coverage requirements.
 
 Agent initialization, observation, model request and actions consume the actor
 monotonic budget. Reset/setup, native evaluation and finalization have their own

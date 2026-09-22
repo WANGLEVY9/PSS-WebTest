@@ -2,6 +2,7 @@
 // The Python caller reserves each request in the durable ledger BEFORE dispatch.
 import fs from 'node:fs';
 import {pathToFileURL} from 'node:url';
+import {spendGuard} from './spend-guard.mjs';
 import {loadRuntimeEnv} from './runtime-env.mjs';
 import {resolveProvider,publicProvider,callProvider} from './provider.mjs';
 
@@ -30,12 +31,17 @@ export function frameworkBody(config, request) {
     ...(request.schema?{response_format:{type:'json_schema',json_schema:{name:'native_framework_action',strict:false,schema:request.schema}}}:{})};
 }
 
+export function dispatchFramework(config,input,{budgetGuard,fetchImpl}={}) {
+  return callProvider(config,frameworkBody(config,input),{timeoutMs:input.timeout_ms,includeRaw:true,
+    budgetGuard,taskId:input.spend_task_id,...(fetchImpl?{fetchImpl}:{})});
+}
+
 if(process.argv[1] && import.meta.url===pathToFileURL(process.argv[1]).href) {
   try {
     const input=JSON.parse(fs.readFileSync(0,'utf8'));
-    const config=resolveProvider(loadRuntimeEnv());
-    const body=frameworkBody(config,input);
-    const result=await callProvider(config,body,{timeoutMs:input.timeout_ms,includeRaw:true});
+    const env=loadRuntimeEnv();
+    const config=resolveProvider(env);
+    const result=await dispatchFramework(config,input,{budgetGuard:spendGuard(env)});
     // stdout is a private IPC stream captured by the actor, not console output.
     console.log(JSON.stringify({...result,configuration:publicProvider(config)}));
   } catch {console.log(JSON.stringify({failure_class:'provider-bridge-configuration',output:null,usage:null}));process.exitCode=2;}

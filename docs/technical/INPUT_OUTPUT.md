@@ -19,9 +19,12 @@ The current [planner](../../code/local-lab/study-pipeline.mjs) and
 `schedule-freeze.json`. [bind_runtime_plan.py](../../code/local-lab/bind_runtime_plan.py)
 verifies the freeze digest, exact plan bytes, opportunity identity, task/source
 correspondence, input hash and evaluator mapping before producing private JSONL.
-The bound setup reference has a separate digest. The current opportunity recipe
-uses schedule hash, task key, configuration ID and round; stronger task/executor
-identity changes on the separate acceptance branch are **not this schema**.
+The `task-bound-opportunity-v1` identity includes schedule hash, task-manifest
+hash, executor-binding hash, task key, configuration ID and round. The task
+manifest freezes source/input/evaluator bytes and evaluator-reference digest;
+when setup exists, `setup_ref_sha256` freezes it before scheduling. Official
+projection and full schedule-freeze checks remain required alongside byte binding.
+Legacy identities require explicit reconciliation; do not relabel or re-enqueue them.
 
 VWA IDs require a site namespace, such as `reddit:33`; a bare numeric ID is not
 globally unique. WAV template identity is retained for macro averaging. ATA
@@ -81,11 +84,12 @@ conversion or gold-guided retry is allowed. See
 
 ## Runtime outputs and null semantics
 
-The current worker emits `runtime_protocol=diagnostic-receipts-v2`; receipts bind
-opportunity, environment and configuration, while reset/session and sealed native
-evidence carry additional lease/source identities. See
-[runtime_worker.py](../../code/local-lab/runtime_worker.py) for exact validation.
-Do not substitute the separate branch's `diagnostic-task-bound-v3` field contract.
+The current worker emits `runtime_protocol=diagnostic-task-bound-v3`. Every
+stage echoes opportunity, environment, configuration, lease token, task-manifest
+hash, scope and data kind. Evaluation additionally binds its reference and file
+hash. Native lifecycle/timing and public-input restrictions remain in force.
+See [runtime_worker.py](../../code/local-lab/runtime_worker.py). Standalone older
+component receipts are historical controls, not valid v3 worker receipts.
 
 | Output | Meaning |
 |---|---|

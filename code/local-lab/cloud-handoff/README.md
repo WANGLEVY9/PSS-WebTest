@@ -58,7 +58,7 @@ free -h
 
 ## 3. 依赖总表与固定来源
 
-机器可读总表见 `dependency-manifest.json`，逐包声明见 `dependency-packages.csv`（本次导出849条，按环境保留重复包）。CSV是**源码/候选锁声明的库存**，不是已在Linux解析成功的最终安装锁。可在 `code/` 目录重新生成到新目录：
+机器可读总表见 `dependency-manifest.json`，逐包声明见 `dependency-packages.csv`（本次导出849条，按环境保留重复包）。CSV是**源码/候选锁声明的库存**，不是已在Linux解析成功的最终安装锁。先完成第4节的源码克隆与固定版本 checkout，再在 `code/` 目录重新生成到新目录：
 
 ```bash
 python3 local-lab/cloud-handoff/export-dependencies.py \

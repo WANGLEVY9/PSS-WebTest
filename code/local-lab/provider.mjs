@@ -82,7 +82,9 @@ export function parseProviderResponse(api,payload,{httpStatus=200,requestId=null
   const record={http_status:httpStatus,provider_request_id:requestId,provider_response_id:payload?.id||null,
     model_returned:payload?.model||null,usage:normalizedUsage,finish_reason:null,output:null,failure_class:null};
   if(httpStatus<200 || httpStatus>=300) {
-    record.failure_class=httpStatus===429?'provider-rate-limit':httpStatus===401||httpStatus===403?'provider-auth':httpStatus>=500?'provider-service':'provider-http';
+    const billingCodes=['insufficient_quota','credit_balance_exhausted','organization_spend_limit_exceeded','project_spend_limit_exceeded','organization_usage_limit_exceeded'];
+    const billing=billingCodes.includes(payload?.error?.code)||payload?.error?.type==='insufficient_quota';
+    record.failure_class=billing?'provider-budget':httpStatus===429?'provider-rate-limit':httpStatus===401||httpStatus===403?'provider-auth':httpStatus>=500?'provider-service':'provider-http';
     return record; // Never copy a provider error body: it may echo secrets or request data.
   }
   if(api==='responses') {
@@ -102,14 +104,20 @@ export function parseProviderResponse(api,payload,{httpStatus=200,requestId=null
   return record;
 }
 
-export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch,includeRaw=false}={}) {
+export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch,includeRaw=false,budgetGuard,taskId}={}) {
   if(!config.apiKey) throw Error('Provider key is required');
   if(!Number.isInteger(timeoutMs) || timeoutMs<1) throw Error('Positive request time budget required');
+  // Test transports can inject a fake fetch. Every real transport must reserve
+  // from the deployment-wide ledger before any network side effect.
+  if(fetchImpl===fetch&&!budgetGuard) throw Error('Shared spend guard required for live provider dispatch');
+  const reservation=budgetGuard?.reserve(config,body,taskId);
+  if(reservation) timeoutMs=Math.min(timeoutMs,reservation.remaining_ms,budgetGuard.policy.request_timeout_ms);
+  const settle=response=>reservation?{...response,spend:reservation.settle(response)}:response;
   const start=Date.now(),controller=new AbortController();
-  let timer;
+  let timer,result;
   const expired=new Promise((_,reject)=>{timer=setTimeout(()=>{controller.abort();reject(new DOMException('Request deadline exceeded','TimeoutError'));},timeoutMs);});
   try {
-    return await Promise.race([expired,(async()=>{
+    result=await Promise.race([expired,(async()=>{
     const res=await fetchImpl(`${config.base_url}/${config.api==='responses'?'responses':'chat/completions'}`,{
       method:'POST',redirect:'error',headers:{Authorization:`Bearer ${config.apiKey}`,'Content-Type':'application/json'},
       body:JSON.stringify(body),signal:controller.signal,
@@ -129,7 +137,13 @@ export async function callProvider(config,body,{timeoutMs,fetchImpl=fetch,includ
       retry_after_ms:Number.isFinite(retryAfterMs)?retryAfterMs:null,latency_ms:Date.now()-start};
     })()]);
   } catch(e) {
-    return {failure_class:/timeout|abort/i.test(e?.name)?'provider-timeout':'provider-network',
+    result={failure_class:/timeout|abort/i.test(e?.name)?'provider-timeout':'provider-network',
       http_status:null,usage:null,output:null,latency_ms:Date.now()-start};
   } finally {clearTimeout(timer);}
+  if(reservation&&!result.failure_class&&result.model_returned!==config.model) {
+    result.failure_class='provider-model-identity-unverified';
+    result.output=null;
+  }
+  // Ledger errors propagate; they must not become retryable provider failures.
+  return settle(result);
 }

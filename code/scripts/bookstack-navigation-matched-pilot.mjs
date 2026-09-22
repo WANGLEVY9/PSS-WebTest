@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
@@ -7,7 +8,7 @@ import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 const explicitEnv = { ...process.env };
 dotenv.config();
 
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const repositoryRoot = `${root}/..`;
 const repetitions = Number.parseInt(process.env.PSS_MATCHED_REPETITIONS ?? '1', 10);
 const taskId = process.env.PSS_BOOKSTACK_TASK_ID ?? 'bookstack-open-book';

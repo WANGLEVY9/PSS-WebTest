@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const repoRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const repoRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const protocolRoot = path.join(repoRoot, 'research', 'protocol');
 const includedPath = path.join(protocolRoot, 'included_tasks.csv');
 const adaptationPath = path.join(protocolRoot, 'traditional_adaptation_ledger.csv');

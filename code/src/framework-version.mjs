@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -14,7 +15,7 @@ import path from 'node:path';
  * version comes from the actual distribution, and a mismatch fails closed.
  */
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 export const frameworkManifestPath = path.join(codeRoot, 'config', 'frameworks', 'framework-environment-manifest.v0.1.json');
 

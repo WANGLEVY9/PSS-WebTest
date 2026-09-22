@@ -15,6 +15,7 @@
         ><a href="#comparison"><span>02</span>Trajectories</a
         ><a href="#ledger"><span>03</span>Run ledger</a
         ><a href="#protocol"><span>04</span>Protocol</a>
+        <a href="#spending"><span>05</span>Budget & alerts</a>
       </nav>
       <div class="rail-bottom">
         <span class="live-dot"></span>LOCAL LAB<br /><small
@@ -53,6 +54,17 @@
           study claims.</span
         >
       </div>
+      <section id="spending" class="spending" aria-labelledby="spend-title">
+        <div class="section-heading"><div><div class="eyebrow">API SPENDING / SHARED ACROSS RUNS</div><h2 id="spend-title">Budget & alerts</h2></div>
+          <button id="pause-spend" class="secondary" disabled>Pause new requests</button></div>
+        <p id="spend-status" role="status">Reading the spending ledger. Launch is disabled.</p>
+        <div id="spend-metrics" class="spend-metrics"></div>
+        <progress id="spend-progress" max="1500" value="0" aria-label="Budget committed"></progress>
+        <div id="spend-thresholds" class="spend-thresholds"></div>
+        <p id="spend-limits"></p>
+        <details><summary>Alerts and recent task spending</summary><ul id="spend-alerts"></ul><ul id="spend-tasks"></ul></details>
+        <p class="muted">Scope: requests in this host's shared ledger. In-flight requests may still incur charges; unknown usage retains its reservation. Other programs using the same API key are outside this ledger.</p>
+      </section>
       <section class="selectors" aria-label="Experiment selection">
         <div>
           <label for="batch">EXPERIMENT</label

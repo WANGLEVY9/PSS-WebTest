@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.v1.0.json');
 const defaultServices = {
   classifieds: process.env.PSS_ATA_CLASSIFIEDS_URL ?? 'http://www.vtaas-benchmark.com:9980/',

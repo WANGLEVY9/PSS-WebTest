@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import 'dotenv/config';
 import { spawn } from 'node:child_process';
 
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 
 function run(command, args, env = {}) {
   return new Promise((resolve) => {

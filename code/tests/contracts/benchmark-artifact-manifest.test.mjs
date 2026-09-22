@@ -1,10 +1,11 @@
+import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { validateBenchmarkArtifactManifest } from '../../scripts/validate-benchmark-artifact-manifest.mjs';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const manifest = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'benchmark-artifact-manifest.v1.0.json'), 'utf8'));
 
 test('official benchmark sources are pinned without prematurely admitting any benchmark', () => {

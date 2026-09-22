@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Framework readiness gate: importable AND version-exact AND browser-resolvable.
 //
 // The previous version only asked "is the package importable?". That is not
@@ -11,7 +12,7 @@ import { spawnSync } from 'node:child_process';
 import { FRAMEWORK_VARIANTS } from '../src/framework-variants.mjs';
 import { loadFrameworkManifest, probeNodeFrameworkVersion } from '../src/framework-version.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const manifest = loadFrameworkManifest();
 

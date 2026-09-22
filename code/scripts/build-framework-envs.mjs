@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Build the isolated external-framework environments declared in
 // config/frameworks/framework-environment-manifest.v0.1.json.
 //
@@ -15,7 +16,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const manifestPath = path.join(codeRoot, 'config', 'frameworks', 'framework-environment-manifest.v0.1.json');
 

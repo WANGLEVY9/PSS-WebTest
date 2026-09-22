@@ -1,10 +1,11 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 import { validateRunRecordAgainstRegistry } from '../src/run-records.mjs';
 
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const manifest = JSON.parse(fs.readFileSync(`${root}/manifests/task-manifest.v0.1.json`, 'utf8'));
 const application = manifest.applications.find((entry) => entry.id === 'juice-shop');
 const tasks = application?.tasks?.map((task) => task.id) ?? [];

@@ -8,6 +8,7 @@ supervisor files; only intent and explicitly published task images reach actors.
 import argparse
 import hashlib
 import json
+from runtime_store import digest
 from pathlib import Path
 import subprocess
 from prepare_official_runtime import save
@@ -85,7 +86,9 @@ def prepare(benchmark,source,destination):
             actor_hash=save(actor_file,actor)
             gold_hash=save(gold_file,{**identity,'official_config':t,'source_commit':head})
             setup_hash=save(setup_file,{**identity,**setup})
-            rows.append({**identity,'task_key':key,'agent_input_sha256':actor_hash})
+            rows.append({**identity,'task_key':key,'agent_input_sha256':actor_hash,
+                         'setup_ref_sha256':digest({'file':str(setup_file),'sha256':setup_hash}),
+                         'evaluation_sha256':gold_hash,'evaluation_ref_sha256':digest({'file':str(gold_file),'sha256':gold_hash})})
             bindings[key]={**identity,'source_file':str(file),'agent_input_file':str(actor_file),
                            'agent_input_sha256':actor_hash,'evaluation_ref':{'file':str(gold_file),'sha256':gold_hash},
                            'setup_ref':{'file':str(setup_file),'sha256':setup_hash}}

@@ -27,6 +27,7 @@ test('preparation is counted once and separate from measured cash or unreported 
 test('runtime binding checks enforce matched budgets and shared models across input/framework arms',()=>{
   const profile={task_timeout_ms:100,max_actions:2,browser_revision:'synthetic-browser',viewport:{width:1280,height:720},locale:'en-US',timezone:'UTC'};
   const b={protocol_id:design.protocol_id,budget_profiles:{same:profile},configurations:Object.fromEntries(configurations(design).map(c=>[c.id,{framework:c.framework,framework_revision:'synthetic-version',model_api_id:c.model_id,provider:c.model_id?'synthetic-provider':null,configuration_sha256:'a'.repeat(64),action_schema_sha256:'a'.repeat(64),boundary_audit_sha256:'a'.repeat(64),prompt_sha256:'a'.repeat(64),image_settings_sha256:'a'.repeat(64),model_settings_sha256:'a'.repeat(64),script_manifest_sha256:'a'.repeat(64),blind_authoring_evidence_sha256:'a'.repeat(64),budget_profile_by_benchmark:{wav:'same',vwa:'same',ata:'same'}}]))};
+  for(const value of Object.values(b.configurations)) value.executor_binding_sha256_by_benchmark={wav:'b'.repeat(64),vwa:'c'.repeat(64),ata:'d'.repeat(64)};
   assert.equal(bindingReadiness(design,b).ready,true);
   b.configurations.h1.model_api_id='other';assert.ok(bindingReadiness(design,b).errors.some(e=>e.includes('same model')));b.configurations.h1.model_api_id='m1';
   b.budget_profiles.other={...profile,max_actions:99};b.configurations.h1.budget_profile_by_benchmark.wav='other';assert.ok(bindingReadiness(design,b).errors.some(e=>e.includes('settings differ')));
@@ -91,4 +92,24 @@ test('published ATA class imbalance is required and old balanced contracts/recor
   ts.find(t=>t.benchmark==='ata'&&t.expected==='PASS').expected='FAIL';
   assert.throws(()=>validateTasks(design,ts),/published benchmark/);
   assert.throws(()=>validateRecords(design,tasks(),[{...rows()[0],protocol_id:'pss-manuscript-v2.0'}]),/Historical acquisition/);
+});
+
+test('original execution cannot populate two arms and schedule drift is rejected',()=>{
+  const r=rows();
+  assert.throws(()=>validateRecords(design,tasks(),[r[0],{...r[1],source_opportunity_id:r[0].source_opportunity_id}]),/Original execution reused/);
+  assert.throws(()=>validateRecords(design,tasks(),[{...r[0],schedule_sha256:'f'.repeat(64)}]),/schedule identity/);
+  const other=schedulePlan(design,tasks(),{scope:'synthetic',seed:'other-campaign'});
+  const op=[...other.opportunities()][0];
+  assert.throws(()=>recordsToAnalysis(design,tasks(),[{...r[0],...op}],{scope:'synthetic'}),/selected campaign/);
+});
+
+test('known actor timeout is operational zero even if native evaluation is unresolved',()=>{
+  const r={...rows().find(r=>r.benchmark==='wav'),native_score:null,verdict:null,assessment_status:'unresolved',terminal_status:'evaluator-error',actor_terminal_status:'timeout',budget_met:false};
+  const {input}=recordsToAnalysis(design,tasks(),[r],{scope:'synthetic'});
+  const s=input.strata.find(s=>s.benchmark===r.benchmark&&s.configuration_id===r.config_id);
+  assert.equal(s.operational.rows[0].correctness,0);
+  assert.equal(s.native_rows[0].success,null);
+  const unknown={...r,actor_terminal_status:null,budget_met:null};
+  const next=recordsToAnalysis(design,tasks(),[unknown],{scope:'synthetic'}).input;
+  assert.equal(next.strata.find(s=>s.benchmark===r.benchmark&&s.configuration_id===r.config_id).operational.rows[0].correctness,null);
 });

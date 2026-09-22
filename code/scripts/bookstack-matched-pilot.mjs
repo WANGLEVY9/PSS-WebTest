@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import 'dotenv/config';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
@@ -15,7 +16,7 @@ const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
 const pilotRunTag = process.env.PSS_PILOT_RUN_TAG ?? null;
 const maxResetAttempts = Number.parseInt(process.env.PSS_RESET_MAX_ATTEMPTS ?? '2', 10);
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const conditionSlug = condition.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') || 'condition';
 const modelSlug = model ? `${provider ?? 'provider'}-${model}`.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : 'unconfigured';
 const runTagSlug = pilotRunTag ? pilotRunTag.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '') : null;

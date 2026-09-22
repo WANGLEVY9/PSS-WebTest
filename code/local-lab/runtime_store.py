@@ -47,6 +47,8 @@ class Store:
         CREATE TABLE IF NOT EXISTS requests(
           id TEXT PRIMARY KEY, opportunity TEXT NOT NULL REFERENCES opportunities(id),
           identity TEXT NOT NULL, reservation INTEGER NOT NULL, response TEXT, charge INTEGER);
+        CREATE INDEX IF NOT EXISTS queue_config ON opportunities(state, json_extract(payload,'$.config_id'), environment);
+        CREATE INDEX IF NOT EXISTS discovery_barrier ON opportunities(json_extract(payload,'$.phase'), state, json_extract(payload,'$.schedule_sha256'));
         ''')
 
     def close(self):
@@ -94,20 +96,15 @@ class Store:
         if lease_seconds <= 0:
             raise ValueError('Positive lease required')
         with self.transaction():
-            candidates = self.db.execute("SELECT * FROM opportunities WHERE state='queued' AND environment NOT IN (SELECT environment FROM environment_locks) ORDER BY rowid").fetchall()
-            row = None
-            for candidate in candidates:
-                payload = json.loads(candidate['payload'])
-                if config_id is not None and payload.get('config_id') != config_id:
-                    continue
-                if environment_id is not None and payload.get('environment_id') != environment_id:
-                    continue
-                if payload.get('phase') == 'validation':
-                    pending = self.db.execute("SELECT 1 FROM opportunities WHERE state!='terminal' AND json_extract(payload,'$.phase')='discovery' AND json_extract(payload,'$.schedule_sha256')=? LIMIT 1", (payload['schedule_sha256'],)).fetchone()
-                    if pending:
-                        continue
-                row = candidate
-                break
+            filters, params = ["state='queued'", 'environment NOT IN (SELECT environment FROM environment_locks)'], []
+            for field, value in [("json_extract(payload,'$.config_id')", config_id), ('environment', environment_id)]:
+                if value is not None:
+                    filters.append(field + '=?'); params.append(value)
+            filters.append("""(COALESCE(json_extract(payload,'$.phase'),'')!='validation' OR
+                json_extract(payload,'$.schedule_sha256') NOT IN
+                (SELECT DISTINCT json_extract(payload,'$.schedule_sha256') FROM opportunities
+                 WHERE state!='terminal' AND json_extract(payload,'$.phase')='discovery'))""")
+            row = self.db.execute('SELECT * FROM opportunities WHERE ' + ' AND '.join(filters) + ' ORDER BY rowid LIMIT 1', params).fetchone()
             if not row:
                 return None
             token = uuid.uuid4().hex
@@ -170,7 +167,11 @@ class Store:
             raise ValueError('Nonnegative integer cost bounds required')
         with self.transaction():
             owned = self.owned(op, token, ('running',))
-            binding = json.loads(owned['payload']).get('model_binding')
+            payload = json.loads(owned['payload'])
+            binding = payload.get('model_binding')
+            policy = payload.get('cost_policy')
+            if policy and (policy.get('cap_micro_usd') != cap_micro_usd or policy.get('request_reservation_micro_usd') != maximum_micro_usd):
+                raise ValueError('Request cost bounds differ from frozen opportunity policy')
             if binding and (identity.get('provider') != binding.get('provider') or identity.get('model') != binding.get('model')):
                 raise ValueError('Request identity changed frozen actor')
             if self.db.execute('SELECT 1 FROM requests WHERE id=?', (request_id,)).fetchone():

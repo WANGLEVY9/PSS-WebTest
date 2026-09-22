@@ -1,10 +1,11 @@
+import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { sanitizeProviderSummary, sanitizeReplayAction, sanitizeReplayState } from '../../src/replay-artifacts.mjs';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 
 test('provider summaries keep only bounded metadata, never raw content', () => {
   const summary = sanitizeProviderSummary({

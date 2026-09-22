@@ -1,7 +1,8 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const errors = [];
 const read = (name) => JSON.parse(fs.readFileSync(path.join(root, 'config', name), 'utf8'));
 const references = read('benchmark-reference-matrix.v0.1.json');

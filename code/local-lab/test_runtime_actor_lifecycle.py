@@ -161,9 +161,10 @@ class ActorLifecycleChromiumTests(unittest.TestCase):
         def invoke(command,payload,heartbeat):
             heartbeat();stage=('reset','actor','evaluate','cleanup')[len(calls)];calls.append(stage)
             if stage=='actor':return run_command(command,payload,heartbeat)
-            identity={k:payload[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','data_kind','lease_token')}
+            identity={k:payload[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','data_kind','lease_token','task_manifest_sha256')}
             if stage=='reset':return {**request['reset_receipt'],**identity}
-            if stage=='evaluate':return {**identity,'assessment_status':'valid','native_score':0,'verdict':None}
+            if stage=='evaluate':return {**identity,'evaluation_ref':payload['evaluation_ref'],
+                'evaluation_sha256':payload['evaluation_sha256'],'assessment_status':'valid','native_score':0,'verdict':None}
             return {**identity,'cleaned':True}
         result=execute_one(store,request['binding'],invoke)
         self.assertEqual(calls,['reset','actor','evaluate','cleanup'])

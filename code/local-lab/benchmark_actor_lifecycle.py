@@ -201,7 +201,7 @@ def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
         raise ValueError('Actor payload provenance differs from trusted opportunity')
     if payload.get('model_binding')!=op.get('model_binding'):
         raise ValueError('Actor model differs from frozen opportunity')
-    public_keys=set(IDENTITY)|{'input','lease_token','model_binding','budget','request_ledger',
+    public_keys=set(IDENTITY)|{'input','task_manifest_sha256','lease_token','model_binding','budget','request_ledger',
                               'cost_policy','coordinate_space','observation_timeout_ms','action_timeout_ms','scope','data_kind'}
     if set(payload)-public_keys:
         raise ValueError('Unexpected supervisor data in actor payload')

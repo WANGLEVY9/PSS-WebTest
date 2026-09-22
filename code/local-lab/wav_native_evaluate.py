@@ -19,6 +19,7 @@ import argparse
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 import hashlib
 import json
+from runtime_identity import receipt_binding
 import logging
 import os
 from pathlib import Path
@@ -114,6 +115,7 @@ def validate_identity(payload):
     if not isinstance(payload, dict):
         raise ValueError('Worker payload required')
     identity = {k: payload.get(k) for k in IDENTITY}
+    identity.update(receipt_binding(payload))
     if not all(isinstance(v, str) and v.strip() for v in identity.values()):
         raise ValueError('Nonempty worker identities required')
     if not re.fullmatch('[0-9a-f]{64}', identity['configuration_sha256']):
@@ -123,7 +125,7 @@ def validate_identity(payload):
     if scope not in ('synthetic','diagnostic') or payload.get('data_kind')!=kind:
         raise ValueError('Explicit worker provenance required')
     actor = payload.get('actor_result')
-    if not isinstance(actor, dict) or any(actor.get(k) != identity[k] for k in IDENTITY):
+    if not isinstance(actor, dict) or any(actor.get(k) != identity[k] for k in identity):
         raise ValueError('Actor result belongs to another execution')
     if actor.get('scope')!=scope or actor.get('data_kind')!=kind:
         raise ValueError('Actor provenance differs from trusted worker payload')
@@ -223,7 +225,7 @@ def evaluate(payload, manifest_ref):
     return {**identity, **endpoint, 'schema': SCHEMA, 'benchmark': 'wav',
             'official_task_id': official_id, 'source_commit': PINS['wav'],
             'source_sha256': sha(dataset_raw), 'installed_source_tree_sha256': source_tree_sha,
-            'evaluation_ref': evaluation_ref, 'manifest_sha256': manifest_ref['sha256'],
+            'evaluation_ref': evaluation_ref, 'evaluation_sha256': evaluation_ref['sha256'], 'manifest_sha256': manifest_ref['sha256'],
             'actor_lifecycle_ref': lifecycle_ref, 'source_network_trace_sha256': trace_ref['sha256'],
             'environment_config_sha256': sha(config_raw), 'network_trace_ref': sealed_trace,
             'actor_answer_ref': answer_ref, 'native_result_ref': result_ref,

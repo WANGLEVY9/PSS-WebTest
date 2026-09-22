@@ -60,6 +60,19 @@ within the unchanged total cap before running it. Account for any service-tier
 or long-context premium in the reviewed rates. Only text/image requests without
 unpriced tools/audio/background jobs are accepted.
 
+For native CNY tariffs, set `currency: "CNY"` and use
+`input_cny_per_million`, `cached_input_cny_per_million`, and
+`output_cny_per_million` instead of the three USD fields. Mixed currency fields
+are rejected. The internal conversion cancels the FX multiplier, so a published
+Beijing CNY price is not presented as a USD quotation. Costs derived from usage
+remain list-price estimates, not reconciled invoices.
+
+`prepare-qwen38-spend.mjs NEW_PRIVATE_POLICY.json` binds the existing Beijing
+workspace endpoint to the officially checked 2026-09-22 Qwen3.8 Max/Flash
+text/image tariffs. It creates no model requests and refuses overwriting files.
+Its rates expire on 2026-09-24 UTC; reverify before renewal and preserve existing
+ledger exposure. Both models share the default host ledger, not per-model funds.
+
 After the first reservation the complete policy is frozen in the ledger. Editing
 the cap, FX or prices requires a reviewed migration that preserves all prior
 exposure; restarting is not a migration. Before the first reservation the empty

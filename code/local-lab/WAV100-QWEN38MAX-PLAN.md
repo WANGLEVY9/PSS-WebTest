@@ -1,5 +1,45 @@
 # Qwen3.8-Max: 100 official WAV tasks per execution profile
 
+## 2026-09-22 paired Max/Flash acceptance update
+
+The operator campaign is now WAV-only; ATA/VWA sections below are historical
+context, not deployment instructions. `wav_official_acceptance_probe.py` accepts
+an explicit `--model qwen3.8-max` or `--model qwen3.8-flash`. The configuration,
+request binding and report retain the chosen identity; there is no model fallback.
+
+`run_wav_qwen_pair.py` prepares a bounded diagnostic sequence for official tasks
+260 and 274: two models × three agent configurations, plus one model-free shared
+Playwright baseline per task, totaling 14 planned executions. This is not the
+100-task campaign and does not change its closed admission gates. Model API
+aliases are recorded as aliases, not immutable snapshots. A source/input digest
+change stops later dispatch; every process uses a new owned fixture and output
+directory. External/provider or engineering failure stops the batch; native
+score zero alone does not. There are no automatic retries or task substitutions.
+
+From `code/`, prepare pricing without a model call:
+
+```bash
+node local-lab/prepare-qwen38-spend.mjs artifacts/private/qwen38-policy.json
+```
+
+Run the paired driver from repository root with actual validated private inputs:
+
+```bash
+python3 code/local-lab/run_wav_qwen_pair.py \
+  --manifest /absolute/private/owned-fixture-manifest.json \
+  --peer-proof /absolute/private/measured-peer-report.json \
+  --bindings /absolute/private/official-wav-task-bindings.json \
+  --spend-policy /absolute/private/qwen38-policy.json \
+  --output /absolute/private/new-paired-output
+```
+
+Default is plan-only. Adding `--live` provisions fixtures and may charge API usage;
+it requires validated local inputs and explicit authorization. `plan.json`,
+append-only `events.jsonl`, per-execution `report.json`/trajectories, and final
+`summary.json` retain attempts and blocked/unstarted cells. A partial batch is
+never reported as complete. Shared-script evidence is referenced by both model
+comparisons but never counted as two independent script executions.
+
 This is a requested **development/diagnostic** campaign, not a replacement of
 the manuscript's 19-configuration/12-round design and not confirmatory collection.
 The shared set contains 100 different official task IDs, not 100 retries.

@@ -43,6 +43,7 @@ def main():
     p.add_argument('--framework',choices=['agentlab-browsergym','browser-use-restricted','playwright'],required=True)
     p.add_argument('--task-id',type=int,choices=sorted(PUBLIC_TASKS),default=260)
     p.add_argument('--mode',choices=['visual','hybrid','traditional'],required=True)
+    p.add_argument('--model',choices=['qwen3.8-max','qwen3.8-flash'],default='qwen3.8-max')
     p.add_argument('--manifest',required=True);p.add_argument('--manifest-sha256',required=True)
     p.add_argument('--peer-proof',required=True);p.add_argument('--peer-proof-sha256',required=True)
     p.add_argument('--bindings',required=True);p.add_argument('--output',required=True)
@@ -101,8 +102,8 @@ def main():
     m.update(namespace='pss-wav-official-'+str(time.time_ns()),environment_id='wav-official-'+str(a.task_id),artifact_root=str(root/'instances'))
     m['sites'][0].update(http_port=a.port_base,control_port=a.port_base+1)
     mr=write_new(root/'fixture-manifest.json',m)
-    os.environ.update(PSS_LOCAL_PROVIDER='aliyun',PSS_LOCAL_MODEL='qwen3.8-max',PSS_LOCAL_MAX_OUTPUT_TOKENS='2048')
-    model=None if a.mode=='traditional' else {'provider':'aliyun','model':'qwen3.8-max'}
+    os.environ.update(PSS_LOCAL_PROVIDER='aliyun',PSS_LOCAL_MODEL=a.model,PSS_LOCAL_MAX_OUTPUT_TOKENS='2048')
+    model=None if a.mode=='traditional' else {'provider':'aliyun','model':a.model}
     configuration={'framework':a.framework,'mode':a.mode,'model':model,'coordinate_space':a.coordinate_space,
         'ai_authoring_policy_ref':authoring_policy_ref,
         'traditional_script_override_ref':script_override_ref,

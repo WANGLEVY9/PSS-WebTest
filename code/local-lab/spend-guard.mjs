@@ -29,7 +29,18 @@ export function spendGuard(env=process.env) {
     if(!Number.isFinite(policy.fx_cny_per_usd)||policy.fx_cny_per_usd<=0) throw Error('Billing conversion unavailable');
     const rates=policy.rates?.filter(r=>r.provider===config.provider&&r.model===config.model&&r.base_url===config.base_url);
     if(rates?.length!==1) throw Error('Verified provider/model/endpoint rate card required');
-    const rate=rates[0];
+    let rate=rates[0];
+    // Native CNY tariffs avoid pretending a Beijing price is a USD quote.
+    // Convert to the guard's internal USD-equivalent unit; cny() cancels FX.
+    if(rate.currency==='CNY') {
+      rate={...rate};
+      for(const kind of ['input','cached_input','output']) {
+        const value=rate[`${kind}_cny_per_million`];
+        if(!Number.isFinite(value)||value<0) throw Error('Invalid CNY token pricing');
+        if(rate[`${kind}_usd_per_million`]!==undefined) throw Error('Ambiguous tariff currency');
+        rate[`${kind}_usd_per_million`]=value/policy.fx_cny_per_usd;
+      }
+    } else if(rate.currency!==undefined&&rate.currency!=='USD') throw Error('Unsupported tariff currency');
     if(!rate.source||!Number.isFinite(Date.parse(rate.verified_at))||Date.parse(rate.verified_at)>Date.now()||
       !Number.isFinite(Date.parse(rate.expires_at))||Date.parse(rate.expires_at)<=Date.now())
       throw Error('Rate provenance missing or expired');

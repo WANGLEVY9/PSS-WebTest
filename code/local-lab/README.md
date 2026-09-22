@@ -1,10 +1,10 @@
 # Benchmark observatory
 
-> **Scope:** this console documents the legacy WAV retrieval integration path and its retained diagnostic records. The current native AgentLab/Browser Use/Playwright lifecycle is specified in the [technical guide](../../docs/technical/README.md). It is not selected merely by changing this console’s strategy label. Shared budget panels and pause controls are integrated; verify live request coverage before paid acceptance; see [spend controls](SPEND-CONTROLS.md).
+> **Scope:** this console documents the legacy WAV retrieval integration path and its retained diagnostic records. The current native AgentLab/Browser Use/Playwright lifecycle is specified in the [technical guide](../../docs/technical/README.md). It is not selected merely by changing this console’s strategy label. Shared budget panels and pause controls are integrated; verify live request coverage before paid acceptance; see [spend controls](../docs/runbooks/SPEND-CONTROLS.md).
 
 An English, local-first console for **official benchmark integration runs**. The current selection uses unmodified WebArena-Verified tasks **163–167**, template 136, source commit `6473f72db5dcefc97b5725b59e734504edc28a21`; earlier task-21/22 records remain available. It invokes the **stock WebArena-Verified 1.2.3 evaluator**, not a replacement page assertion. This is not confirmatory collection.
 
-**Current status: task execution is blocked.** OpenAI transport and offline regression are implemented, but per-arm state reset and benchmark admission are not complete. See [SPONSOR-HANDOFF.md](./SPONSOR-HANDOFF.md) for the audited acceptance checklist, API configuration and explicit remaining work. A configured API key is not an execution authorization.
+**Current status: task execution is blocked.** OpenAI transport and offline regression are implemented, but per-arm state reset and benchmark admission are not complete. See [SPONSOR-HANDOFF.md](../docs/runbooks/SPONSOR-HANDOFF.md) for the audited acceptance checklist, API configuration and explicit remaining work. A configured API key is not an execution authorization.
 
 ## Start the environment and console
 
@@ -15,12 +15,12 @@ cd "$(git rev-parse --show-toplevel)/code"
 colima start webarena-x86 --activate=false
 docker --context colima-webarena-x86 start webarena-verified-shopping-x86
 node local-lab/probe-benchmark.mjs
-node local-lab/server.mjs
+node console/server.mjs
 ```
 
 Open <http://127.0.0.1:4173/>. **Collection paused** is intentional: CLI, API and UI share a fail-closed execution gate. The pinned development selection is tasks 163–167 (template 136), fifteen scheduled executions across three strategies if admitted; earlier records remain available. Same-origin token and a runner lock protect the local launch endpoint. The server binds to loopback only, although the existing Shopping container has wildcard host bindings that still need isolation. Runs persist on disk if the browser tab closes. Ctrl-C stops the server, not necessarily its already launched runner; do not start a second legacy runner against the same site.
 
-See [EXPANSION-PLAN.md](./EXPANSION-PLAN.md) for all three core benchmarks, stage gates, source anomalies, denominators and continuation limits. No background schedule is currently installed. The next protocol is `wav-retrieval-json-v7-provider-diagnostic`; no v7 empirical outcome is claimed. Provider transport and terminal-response validation changed; never pool this version with earlier repetitions.
+See [EXPANSION-PLAN.md](../docs/runbooks/EXPANSION-PLAN.md) for all three core benchmarks, stage gates, source anomalies, denominators and continuation limits. No background schedule is currently installed. The next protocol is `wav-retrieval-json-v7-provider-diagnostic`; no v7 empirical outcome is claimed. Provider transport and terminal-response validation changed; never pool this version with earlier repetitions.
 
 Existing `code/.env` supplies the legacy Alibaba configuration with an explicit `CUA_MODEL` (no hidden model default). For GPT, use an isolated ignored `code/.env.openai`, set `PSS_LOCAL_ENV_FILE=.env.openai`, and specify `OPENAI_MODEL`. The OpenAI branch never inherits a CUA key/model/base URL. Both Responses and Chat Completions are supported explicitly; no API fallback is attempted. No keys are printed or checked in.
 
@@ -69,7 +69,7 @@ Private artifacts: `code/artifacts/local-runtime/<batch>/`:
 - `<arm>/<task>/agent_response.json`, full HAR, original `eval_result.json` and evaluator log. Full evaluator results include references and must not be shown to active agents or exposed in the UI.
 
 ```bash
-node --test local-lab/*.test.mjs
+node --test tests/local-lab/*.test.mjs
 npm run test:contracts
 node local-lab/validate-benchmark.mjs --export-public
 node local-lab/sponsor-verify.mjs

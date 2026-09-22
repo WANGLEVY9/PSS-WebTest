@@ -62,10 +62,10 @@ const isAuthorizationTask = taskId === 'juice-shop-authorization-guard';
 const taskFamily = isAuthorizationTask ? 'authorization' : (taskId === 'juice-shop-add-to-basket' || isBasketQuantityTask) ? 'cross-page-state' : isBasketFeedbackTask ? 'runtime' : isPaginationTask ? 'pagination-filter' : 'search-navigation';
 const optimizationByArm = Object.fromEntries(['visual', 'hybrid'].map((arm) => [arm, resolveAgentOptimization({ env: { ...process.env, PSS_AGENT_PROFILE: providerEnv.PSS_AGENT_PROFILE }, arm, taskFamily })]));
 const taskManifestPath = `${root}/manifests/task-manifest.v0.1.json`;
-const runManifestPath = `${root}/config/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : isBasketQuantityTask ? 'juice-shop-basket-quantity-run-manifest.v0.1.json' : taskId === 'juice-shop-basket-feedback' ? 'juice-shop-basket-feedback-run-manifest.v0.1.json' : taskId === 'juice-shop-authorization-guard' ? 'juice-shop-authorization-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination-last-item' ? 'juice-shop-pagination-last-item-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination' ? 'juice-shop-pagination-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`;
+const runManifestPath = `${root}/config/archive/archive/${taskId === 'juice-shop-product-detail' ? 'juice-shop-product-detail-run-manifest.v0.1.json' : taskId === 'juice-shop-add-to-basket' ? 'juice-shop-basket-run-manifest.v0.1.json' : isBasketQuantityTask ? 'juice-shop-basket-quantity-run-manifest.v0.1.json' : taskId === 'juice-shop-basket-feedback' ? 'juice-shop-basket-feedback-run-manifest.v0.1.json' : taskId === 'juice-shop-authorization-guard' ? 'juice-shop-authorization-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination-last-item' ? 'juice-shop-pagination-last-item-run-manifest.v0.1.json' : taskId === 'juice-shop-pagination' ? 'juice-shop-pagination-run-manifest.v0.1.json' : 'juice-shop-product-search-run-manifest.v0.2.json'}`;
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
-const artifact = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
-const recordsPath = `${root}/../artifacts/phase2/juice-shop-three-arm-${runSlug}-records.jsonl`;
+const artifact = `${root}/../legacy/artifacts/phase2/juice-shop-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
+const recordsPath = `${root}/../legacy/artifacts/phase2/juice-shop-three-arm-${runSlug}-records.jsonl`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: root, env: { ...providerEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -87,7 +87,7 @@ const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((l
 const randomizationBlock = (repetition, arms) => `${taskId}-${experimentCondition.condition}-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
-  fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
+  fs.mkdirSync(`${root}/../legacy/artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({ application: 'juice-shop', task_id: taskId, condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 const createMissingAgentRecord = ({ arm, phase2Fields, executionCode }) => createRunRecord({

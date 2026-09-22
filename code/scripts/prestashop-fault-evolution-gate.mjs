@@ -13,7 +13,7 @@ const baseURL = process.env.PRESTASHOP_BASE_URL ?? 'http://localhost:8083';
 const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';
 const targetText = process.env.PSS_PRESTASHOP_TARGET_PRODUCT ?? 'Pack Mug + Framed poster';
 const dbContainer = process.env.PSS_PRESTASHOP_DB_CONTAINER ?? 'prestashop-db-1';
-const outputPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.resolve(fileURLToPath(new URL('../../results/phase2/2026-09-10-prestashop-fault-evolution-gate.md', import.meta.url))));
+const outputPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.resolve(fileURLToPath(new URL('../../legacy/results/phase2/2026-09-10-prestashop-fault-evolution-gate.md', import.meta.url))));
 
 async function dbSnapshot() {
   const sql = `SELECT id_product,name FROM ps_product_lang WHERE id_lang=1 AND (name='${targetText.replaceAll("'", "''")}' OR name='Framed Poster') ORDER BY id_product;`;

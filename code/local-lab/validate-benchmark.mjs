@@ -3,7 +3,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { evaluatorSummary } from "./benchmark-contract.mjs";
-import {requestUsage} from './public/resource-accounting.mjs';
+import {requestUsage} from '../console/public/resource-accounting.mjs';
 import {auditActorRouting} from './model-routing.mjs';
 const code = path.resolve(path.dirname(fileURLToPath(import.meta.url)), ".."),
   root = path.join(code, "artifacts/local-runtime");

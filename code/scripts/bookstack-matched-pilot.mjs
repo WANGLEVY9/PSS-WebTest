@@ -23,8 +23,8 @@ const runTagSlug = pilotRunTag ? pilotRunTag.replace(/[^a-zA-Z0-9._-]+/g, '-').r
 const runSlug = [conditionSlug, modelSlug, runTagSlug].filter(Boolean).join('-');
 const artifactName = `bookstack-three-arm-${runSlug}-pilot.json`;
 const recordsName = `bookstack-three-arm-${runSlug}-records.jsonl`;
-const artifact = `${root}/../artifacts/phase2/${artifactName}`;
-const recordsPath = `${root}/../artifacts/phase2/${recordsName}`;
+const artifact = `${root}/../legacy/artifacts/phase2/${artifactName}`;
+const recordsPath = `${root}/../legacy/artifacts/phase2/${recordsName}`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: root, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -56,7 +56,7 @@ const sanitizeTrace = (trace = []) => trace.map((entry) => {
   return { step: entry?.step ?? null, action: sanitizedAction, path };
 });
 const writeSummary = () => {
-  fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
+  fs.mkdirSync(`${root}/../legacy/artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: 'bookstack-create-page', condition, mutation, provider, model, model_slug: modelSlug, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 for (let repetition = 1; repetition <= repetitions; repetition += 1) {

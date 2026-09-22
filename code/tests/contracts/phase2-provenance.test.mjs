@@ -7,7 +7,7 @@ import { loadConfigurationRegistry } from '../../src/configuration-registry.mjs'
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const registry = loadConfigurationRegistry();
-const runManifestPath = path.join(codeRoot, 'config/bookstack-navigation-run-manifest.v0.2.json');
+const runManifestPath = path.join(codeRoot, 'config/archive/bookstack-navigation-run-manifest.v0.2.json');
 const taskManifestPath = path.join(codeRoot, 'manifests/task-manifest.v0.1.json');
 
 test('builds complete non-secret provenance for an implemented visual configuration', () => {

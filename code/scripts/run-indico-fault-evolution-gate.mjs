@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const baseURL = process.env.INDICO_BASE_URL ?? 'http://localhost:8080';
-const reportPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.join(repositoryRoot, 'results/phase2/2026-09-13-indico-fault-evolution-gate.md'));
+const reportPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.join(repositoryRoot, 'legacy/results/phase2/2026-09-13-indico-fault-evolution-gate.md'));
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: codeRoot, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });

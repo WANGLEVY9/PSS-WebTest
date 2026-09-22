@@ -4,7 +4,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const read = (name) => JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', name), 'utf8'));
+// These v1.0-era documents are superseded and now live in config/archive/.
+const read = (name) => JSON.parse(fs.readFileSync(
+  [path.join(codeRoot, 'config', name), path.join(codeRoot, 'config', 'archive', name)].find((p) => fs.existsSync(p)),
+  'utf8'));
 const contract = read('study-design-contract.v1.0.json');
 const plan = read('long-cycle-experiment-plan.v1.0.json');
 const metrics = read('metric-dictionary.v0.1.json');

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/prestashop-agent-500-batch.v0.1.json'), 'utf8'));
+const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/prestashop-agent-500-batch.v0.1.json'), 'utf8'));
 const expected = { simple: 200, medium: 175, complex: 125 };
 if (plan.target_executions_per_arm !== 500) throw new Error('target_executions_per_arm must remain 500');
 if (JSON.stringify(plan.complexity_distribution) !== JSON.stringify(expected)) throw new Error('complexity distribution must remain 200/175/125');

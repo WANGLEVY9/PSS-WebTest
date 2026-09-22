@@ -85,7 +85,7 @@ then evaluates fresh V1–V10 paired outcomes. RQ4 uses the same retained blocks
 for mixing and retry. These are PSS analyses, not upstream piñata default reporting.
 The [research guide](../../RESEARCH.md) defines the current estimands and bounds.
 
-The [dated local feasibility report](../../../code/local-lab/ATA-LOCAL-DEPLOYMENT-STATUS-20260922.md)
+The [dated local feasibility report](../../../code/docs/status/ATA-LOCAL-DEPLOYMENT-STATUS-20260922.md)
 records original-image access and capacity constraints. An inaccessible hosted
 reset repository does not prove local provisioning impossible. An optimized WAV
 Shopping image is a port candidate, not automatically the original ATA fixture.

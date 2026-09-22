@@ -75,7 +75,7 @@ full upstream leaderboard score. Cloud installation details are in the
 
 ## Separate WAV100 development campaign
 
-[WAV100-QWEN38MAX-PLAN.md](../../../code/local-lab/WAV100-QWEN38MAX-PLAN.md)
+[WAV100-QWEN38MAX-PLAN.md](../../../code/docs/runbooks/WAV100-QWEN38MAX-PLAN.md)
 records a separate 100-task Shopping-only development set, four profiles and a
 bounded task-260 acceptance probe. Its 400 opportunities are a target, not a
 completed-run count; it does not replace the 600-task research selection.

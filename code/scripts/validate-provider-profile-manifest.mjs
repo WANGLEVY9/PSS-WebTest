@@ -9,7 +9,7 @@ import { loadAgentOptimizationProfiles } from '../src/agent-optimization.mjs';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const registryPath = path.join(codeRoot, 'config', 'configuration-registry.v0.2.json');
+const registryPath = path.join(codeRoot, 'config', 'archive', 'configuration-registry.v0.2.json');
 
 const manifest = loadProviderProfileManifest();
 const result = validateProviderProfileManifest(manifest);

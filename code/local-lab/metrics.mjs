@@ -1,4 +1,4 @@
-import {requestUsage,reportedTotal} from './public/resource-accounting.mjs';
+import {requestUsage,reportedTotal} from '../console/public/resource-accounting.mjs';
 export const ARMS = ["visual", "hybrid", "playwright"];
 export function summarize(records) {
   return ARMS.map((arm) => {

@@ -11,7 +11,7 @@
     "sponsor:doctor:portable": "node local-lab/sponsor-portable-doctor.mjs",
     "sponsor:preflight": "node local-lab/sponsor-preflight.mjs --live-environment --write",
     "sponsor:smoke": "node local-lab/provider-smoke.mjs",
-    "sponsor:console": "node local-lab/server.mjs",
+    "sponsor:console": "node console/server.mjs",
     "test:traditional": "playwright test --project=chromium",
     "test:traditional:ui": "playwright test --ui",
     "report": "playwright show-report",
@@ -161,8 +161,8 @@
     "oracle:juice-shop": "node scripts/evaluate-juice-shop-search.mjs",
     "oracle:juice-shop:product-detail": "node scripts/evaluate-juice-shop-product-detail.mjs",
     "oracle:juice-shop:basket": "node scripts/evaluate-juice-shop-basket.mjs",
-    "test:runtime-reliability": "python3 -m unittest discover -s local-lab -p 'test_runtime*.py' -v && node --test local-lab/reliable-provider.test.mjs local-lab/model-routing.test.mjs local-lab/provider.test.mjs tests/contracts/provider-deadline-retry.test.mjs",
-    "test:study-analysis": "node --test local-lab/study-analysis.test.mjs local-lab/analysis-export.test.mjs local-lab/study-pipeline.test.mjs",
+    "test:runtime-reliability": "python3 -m unittest discover -s local-lab -p 'test_runtime*.py' -v && node --test tests/local-lab/reliable-provider.test.mjs tests/local-lab/model-routing.test.mjs tests/local-lab/provider.test.mjs tests/contracts/provider-deadline-retry.test.mjs",
+    "test:study-analysis": "node --test tests/local-lab/study-analysis.test.mjs tests/local-lab/analysis-export.test.mjs tests/local-lab/study-pipeline.test.mjs",
     "study:runtime": "python3 local-lab/runtime_worker.py"
   },
   "devDependencies": {

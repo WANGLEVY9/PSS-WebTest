@@ -4,12 +4,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const manifestPath = path.join(codeRoot, 'config', 'phase2-long-run-execution-manifest.v0.1.json');
+const manifestPath = path.join(codeRoot, 'config', 'archive', 'phase2-long-run-execution-manifest.v0.1.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const errors = [];
 const expected = manifest.target.applications * manifest.target.workflows_per_application * manifest.target.conditions.length * manifest.target.primary_arms.length * manifest.target.repetitions_per_cell;
 if (manifest.status !== 'paused-superseded-by-study-design-v1.0') errors.push('legacy long-run manifest must remain paused and superseded');
-if (manifest.superseded_by !== 'code/config/study-design-contract.v1.0.json') errors.push('legacy long-run manifest must point to study-design-contract.v1.0.json');
+if (manifest.superseded_by !== 'code/config/archive/study-design-contract.v1.0.json') errors.push('legacy long-run manifest must point to study-design-contract.v1.0.json');
 if (manifest.target.matched_cells !== manifest.target.applications * manifest.target.workflows_per_application * manifest.target.conditions.length * manifest.target.primary_arms.length *  manifest.target.repetitions_per_cell / manifest.target.repetitions_per_cell) errors.push('matched_cells must equal application × workflow × condition × arm');
 if (manifest.target.execution_units !== expected) errors.push(`execution_units=${manifest.target.execution_units} does not equal derived ${expected}`);
 const ids = new Set();

@@ -1,6 +1,6 @@
 # VisualWebArena technical design
 
-[Technical index](../README.md) · [Fixture runbook](../../../code/local-lab/VWA-FIXTURE-DEPLOYMENT.md)
+[Technical index](../README.md) · [Fixture runbook](../../../code/docs/runbooks/VWA-FIXTURE-DEPLOYMENT.md)
 
 ## Native authority
 

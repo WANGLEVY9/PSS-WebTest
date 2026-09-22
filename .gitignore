@@ -39,8 +39,11 @@ blob-report/
 .codebuddy/
 
 # Internal discussion data and private manuscript delivery archives
-/research/data-entry/
-/research/PSS-WebTest-Overleaf-*.zip
 /code/results/
 .workbuddy/
 .venv*/
+
+# Legacy phase2 payloads. Only the record files that were already tracked are kept in
+# git; the bulk replay, screenshot and browser-profile material behind them (about 2.6 GB)
+# stays out of the repository. Tracked files under an ignored path remain tracked.
+/legacy/artifacts/phase2/

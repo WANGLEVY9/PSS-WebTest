@@ -8,9 +8,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-2563eb.svg)](LICENSE)
 [![Study design](https://img.shields.io/badge/Study_design-v2.1-0f766e.svg)](code/config/active-study-design.json)
-[![Status](https://img.shields.io/badge/Research_artifact-in_development-b45309.svg)](docs/STATUS.md)
+![Status](https://img.shields.io/badge/Research_artifact-in_development-b45309.svg)
 
-[English](README.md) · [简体中文](README.zh-CN.md) · [Research design](docs/RESEARCH.md) · [Reproduce](docs/REPRODUCIBILITY.md) · [Status & roadmap](docs/STATUS.md) · [Cite](CITATION.cff)
+[English](README.md) · [简体中文](README.zh-CN.md) · [Research design](docs/RESEARCH.md) · [Reproduce](docs/REPRODUCIBILITY.md) · [Data availability](docs/DATA_AVAILABILITY.md) · [Cite](CITATION.cff)
 
 </div>
 
@@ -22,7 +22,7 @@ The practical question is: **when should a recurring Web test use another execut
 
 ![Study overview: official tasks feed visual, hybrid and scripted configurations; versioned execution evidence supports native evaluation and four research questions.](docs/assets/study-overview.svg)
 
-> **Status — 22 September 2026.** The active design is `pss-manuscript-v2.1`. Its 322,164 scheduled opportunities are a **planned denominator**, not a completed-run count. Offline analysis, provenance, runtime and framework-component checks are available. Full benchmark-adapter acceptance and sponsor-host validation remain open; the current engineering reports set `confirmatory_authorized=false`. [Read the evidence status.](docs/STATUS.md)
+> **Status — 22 September 2026.** The active design is `pss-manuscript-v2.1`. Its 322,164 scheduled opportunities are a **planned denominator**, not a completed-run count. Offline analysis, provenance, runtime and framework-component checks are available. Full benchmark-adapter acceptance and sponsor-host validation remain open; the current engineering reports set `confirmatory_authorized=false`.
 
 ## What you can use
 
@@ -137,8 +137,7 @@ framework paths. These are release gates, not installation steps to skip.
 | --- | --- |
 | Understand the scientific comparison | [Research design and metric map](docs/RESEARCH.md) |
 | Reproduce code and formula checks | [Reproducibility guide](docs/REPRODUCIBILITY.md) |
-| Understand what is implemented or still open | [Evidence status and roadmap](docs/STATUS.md) |
-| Deploy official benchmark fixtures | [Deployment and acceptance](code/local-lab/SPONSOR-DEPLOYMENT.md) |
+| Deploy official benchmark fixtures | [Deployment and acceptance](code/docs/runbooks/SPONSOR-DEPLOYMENT.md) |
 | Inspect the active contract or analysis code | [Design pointer](code/config/active-study-design.json) · [analysis implementation](code/local-lab/study-analysis.mjs) |
 | Use the local console | [Observatory guide](code/local-lab/README.md) |
 | Report a reproducibility problem | [Issue templates](https://github.com/WANGLEVY9/PSS-WebTest/issues/new/choose) |
@@ -150,8 +149,7 @@ code/src/                              Earlier harness and shared contracts
 code/tests/contracts/                  Contract and provenance regression tests
 docs/                                  Public research and reproduction guides
 results/local-runtime/                 Dated engineering evidence summaries
-results/phase2/                        Historical feasibility and pilot reports
-research/                              Design history and protocol notes
+legacy/results/phase2/                        Historical feasibility and pilot reports
 scripts/                               Documentation and public-boundary checks
 ```
 
@@ -159,7 +157,7 @@ Older local-application pilots remain useful engineering history. They are outsi
 
 ## Contribute and cite
 
-Contributions are welcome in benchmark acceptance, restricted framework adapters, evaluator controls, reproducible analysis and documentation. Start with [CONTRIBUTING.md](CONTRIBUTING.md), [the roadmap](docs/STATUS.md#roadmap), and [the code of conduct](CODE_OF_CONDUCT.md). Report sensitive issues through [SECURITY.md](SECURITY.md).
+Contributions are welcome in benchmark acceptance, restricted framework adapters, evaluator controls, reproducible analysis and documentation. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [the code of conduct](CODE_OF_CONDUCT.md). Report sensitive issues through [SECURITY.md](SECURITY.md).
 
 Use [CITATION.cff](CITATION.cff) to cite this software, and record the exact commit used. No release version or DOI is asserted by the citation file. The MIT license covers this repository's own code and documentation; benchmark data, applications and upstream frameworks retain their respective terms. See [third-party acknowledgments](docs/THIRD_PARTY.md).
 

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { validateLongCycleExperimentPlan } from '../../scripts/validate-long-cycle-experiment-plan.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'long-cycle-experiment-plan.v1.0.json'), 'utf8'));
+const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'archive', 'long-cycle-experiment-plan.v1.0.json'), 'utf8'));
 
 test('long-cycle plan is valid, paused, and blocks confirmatory collection', () => {
   assert.deepEqual(validateLongCycleExperimentPlan(plan), []);

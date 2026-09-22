@@ -1,6 +1,6 @@
 {
   "kind": "BENCHMARK_CONFORMANCE_AUDIT",
-  "observed_at": "2026-09-21T14:59:25.727Z",
+  "observed_at": "2026-09-21T15:32:52.704Z",
   "confirmatory_authorized": false,
   "authorization_capability": "none",
   "manifest_sha256": "3d8f0c45d78e2f6adf1ebad1555d0592feccfe18e1ed10f5d1e65d00f1e5ebdb",
@@ -9,7 +9,7 @@
     "Recover originally frozen included/excluded IDs and development/measurement separation; do not fabricate a pre-outcome freeze after collection",
     "Blinded Traditional authoring, two semantic reviewers, engineering-cost and deployment-failure ledger",
     "Dynamic information-boundary audit of inputs AND control flow on every adapter",
-    "Bind actual models/frameworks/prompts/budgets to adopted manuscript v2.0; fixed D1-D2 and V1-V10, with original collection provenance",
+    "Bind actual models/frameworks/prompts/budgets to benchmark-corrected design v2.1; fixed D1-D2 and V1-V10, with original collection provenance",
     "Explicit confirmatory authorization; high agent success is not a gate"
   ],
   "preflight_evidence_observed_at": "2026-09-21T09:51:03.376445+00:00",
@@ -116,7 +116,7 @@
       "official_reference": "https://github.com/Smartesting/pinata",
       "published_artifact": "10.5281/zenodo.15198569",
       "open_gates": [
-        "Map the adopted 112 selected ATA task IDs and 56/56 classes to the pinned artifact with 113 parsed candidates; preserve exclusion/duplicate-step evidence, do not change the selected denominator to 113",
+        "Verify the complete official ATA source mapping: 113 cases, 62 PASS/51 FAIL; preserve original step indices, reconcile legacy records, and verify live fixture labels without class balancing",
         "Local fixture/reset equivalence to published PASS/FAIL labels; do not dispatch upstream GitHub reset workflows",
         "Separate artifact-bundled evaluator from independently pinned PinATA checkout",
         "Live specification-only adapters and independent verdict/failed-step correctness checks"
@@ -126,7 +126,12 @@
         "Formula checks: 1359 defined comparisons, 0 mismatches; undefined-rate convention differs explicitly"
       ],
       "parsed_candidates": 113,
-      "frozen_marker_inventory": 112
+      "historical_v1_marker_inventory": 112,
+      "active_population": {
+        "tasks": 113,
+        "expected_pass": 62,
+        "expected_fail": 51
+      }
     }
   ],
   "local_images": [

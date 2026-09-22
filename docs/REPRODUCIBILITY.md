@@ -2,7 +2,7 @@
 
 For full environment preparation, use the [cloud installation handoff](../code/local-lab/cloud-handoff/README.md), [declared dependency inventory](../code/local-lab/cloud-handoff/dependency-manifest.json), and [acceptance receipt template](../code/local-lab/cloud-handoff/acceptance-receipt.example.json). Read the [input/output contract](technical/INPUT_OUTPUT.md) and benchmark/framework [technical index](technical/README.md) before running paid tasks. The CNY budget implementation remains an integration dependency, not an active guarantee for every mainline request path.
 
-[Project home](../README.md) · [Research design](RESEARCH.md) · [Evidence status](STATUS.md)
+[Project home](../README.md) · [Research design](RESEARCH.md)
 
 Choose the reproduction layer that matches your question. Code verification, analysis reproduction, environment acceptance and empirical replication require different inputs.
 
@@ -56,7 +56,7 @@ The public-boundary check inspects tracked/staged publication paths; it is not a
 
 ## 2. Reproduce analysis from your own source records
 
-Read the [input contract](../code/local-lab/ANALYSIS-AND-ROUTING.md). Keep configuration, selected task order, rounds and source/schedule digests explicit. Missing opportunities must remain visible. Rounded manuscript tables cannot be expanded into source executions.
+Read the [input contract](../code/docs/runbooks/ANALYSIS-AND-ROUTING.md). Keep configuration, selected task order, rounds and source/schedule digests explicit. Missing opportunities must remain visible. Rounded manuscript tables cannot be expanded into source executions.
 
 From `code/`, with your reviewed input file:
 
@@ -72,7 +72,7 @@ Current calculations are descriptive. They preserve task/round and shared-baseli
 
 ## 3. Prepare an official benchmark environment
 
-Follow [deployment and acceptance](../code/local-lab/SPONSOR-DEPLOYMENT.md), using a dedicated, resettable environment and an explicit private host profile. The current full deployment target is native Linux x86_64; support on that host must be demonstrated, not inferred from the developer workstation.
+Follow [deployment and acceptance](../code/docs/runbooks/SPONSOR-DEPLOYMENT.md), using a dedicated, resettable environment and an explicit private host profile. The current full deployment target is native Linux x86_64; support on that host must be demonstrated, not inferred from the developer workstation.
 
 Keep benchmark and framework Python environments separate. Use pinned sources, fixture/image identities and reviewed platform-compatible locks. The existing macOS framework locks are not proof of a working Linux installation. Avoid the legacy environment-building helper when it would rewrite a frozen lock.
 

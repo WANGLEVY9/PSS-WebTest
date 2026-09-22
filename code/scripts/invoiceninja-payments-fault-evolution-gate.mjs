@@ -11,7 +11,7 @@ dotenv.config({ path: process.env.PSS_INVOICENINJA_ENV ?? fileURLToPath(new URL(
 const baseURL = process.env.INVOICE_NINJA_BASE_URL ?? `http://127.0.0.1:${process.env.APP_PORT ?? '8082'}`;
 const username = process.env.PSS_INVOICENINJA_USERNAME ?? process.env.IN_USER_EMAIL; const password = process.env.PSS_INVOICENINJA_PASSWORD ?? process.env.IN_PASSWORD;
 if (!username || !password) throw new Error('Invoice Ninja credentials are missing');
-const output = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? fileURLToPath(new URL('../../results/phase2/2026-09-13-invoiceninja-payments-fault-evolution-gate.md', import.meta.url)));
+const output = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? fileURLToPath(new URL('../../legacy/results/phase2/2026-09-13-invoiceninja-payments-fault-evolution-gate.md', import.meta.url)));
 async function runVariant(mutationId = null) {
   const browser = await chromium.launch({ headless: true }); const context = await browser.newContext({ viewport: { width: 1280, height: 720 } }); const page = await context.newPage();
   if (mutationId === 'invoiceninja-visible-payment-omission') await installInvoiceNinjaPaymentMutation(page, mutationId); else if (mutationId === 'invoiceninja-layout-v1') await installInvoiceNinjaMutation(page, mutationId);

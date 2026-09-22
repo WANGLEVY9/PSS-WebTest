@@ -1,6 +1,6 @@
 # Contributing to PSS-WebTest
 
-Contributions should make the research comparison clearer, execution more reproducible, or measurement more reliable. See [the current design](docs/RESEARCH.md) and [roadmap](docs/STATUS.md#roadmap) before extending an older pilot path.
+Contributions should make the research comparison clearer, execution more reproducible, or measurement more reliable. See [the current design](docs/RESEARCH.md) before extending an older pilot path.
 
 ## Good first contributions
 

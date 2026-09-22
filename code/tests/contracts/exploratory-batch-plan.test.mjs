@@ -6,7 +6,7 @@ import test from 'node:test';
 import { validateExploratoryBatchPlan } from '../../scripts/validate-exploratory-batch-plan.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/exploratory-500-block-campaign.v0.1.json'), 'utf8'));
+const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/exploratory-500-block-campaign.v0.1.json'), 'utf8'));
 
 test('exploratory 500-block campaign preserves exact three-arm accounting and fail-closed guardrails', () => {
   assert.deepEqual(validateExploratoryBatchPlan(plan), []);

@@ -8,7 +8,7 @@ const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const read = (relative) => fs.readFileSync(path.join(codeRoot, relative), 'utf8');
 
 test('PrestaShop simple agent and Playwright runners use the same benchmark task id', () => {
-  const matrix = JSON.parse(read('config/benchmark-matrix.v0.1.json'));
+  const matrix = JSON.parse(read('config/archive/benchmark-matrix.v0.1.json'));
   const app = matrix.applications.find((entry) => entry.id === 'prestashop');
   const benchmarkTask = app.workflows.find((workflow) => workflow.id === 'prestashop-buyer-search-product');
   assert.ok(benchmarkTask, 'benchmark matrix must define the PrestaShop buyer search task');

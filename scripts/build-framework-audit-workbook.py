@@ -4,7 +4,7 @@
 Sources (all tracked or reproducible):
   - code/config/frameworks/framework-defect-matrix.v0.1.json
   - code/config/frameworks/framework-environment-manifest.v0.1.json
-  - artifacts/phase2/*-pilot.json (matched-pilot summaries)
+  - legacy/artifacts/phase2/*-pilot.json (matched-pilot summaries)
 
 Aggregates are Excel formulas over the raw cell sheet so they recalculate if the
 raw counts change.
@@ -176,7 +176,7 @@ def main():
         "No record here is confirmatory. Provider strata and framework tracks are never pooled.",
         "",
         "Framework defects: P0 = blocks scientific validity, P1 = correctness/reproducibility risk, P2 = quality.",
-        "Open rows are shaded. Full narrative: results/phase2/2026-09-12-framework-engineering-audit.md",
+        "Open rows are shaded. Full narrative: legacy/results/phase2/2026-09-12-framework-engineering-audit.md",
         "",
         "Track collapse: upstream latest equals the frozen version for browser-use (0.13.10) and agentlab (0.4.2),",
         "so only Stagehand has a genuine second track (3.0.8 vs 4.1.0). Collapsed rows are not strata.",

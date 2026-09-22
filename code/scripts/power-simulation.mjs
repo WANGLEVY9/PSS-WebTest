@@ -30,7 +30,7 @@ function argValue(flag, fallback = null) {
   const index = args.indexOf(flag);
   return index >= 0 && args[index + 1] ? args[index + 1] : fallback;
 }
-const inputPath = argValue('--input') ?? args.find((value) => !value.startsWith('--')) ?? '/Users/laurantwang/PSS-WebTest/artifacts/phase2/bookstack-three-arm-pilot.json';
+const inputPath = argValue('--input') ?? args.find((value) => !value.startsWith('--')) ?? '/Users/laurantwang/PSS-WebTest/legacy/artifacts/phase2/bookstack-three-arm-pilot.json';
 const mode = argValue('--mode', 'legacy');
 const draws = Number.parseInt(argValue('--draws', '2000'), 10);
 const alpha = Number.parseFloat(argValue('--alpha', '0.05'));

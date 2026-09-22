@@ -103,7 +103,7 @@ test('the executable scripted configuration declares the installed Playwright ve
   assert.ok(playwrightEnvironment, 'Playwright must be registered in the framework manifest');
   const installed = playwrightEnvironment.resolved?.version;
   assert.ok(installed, 'the Playwright environment must have a resolved version');
-  const registry = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'configuration-registry.v0.2.json'), 'utf8'));
+  const registry = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'archive', 'configuration-registry.v0.2.json'), 'utf8'));
   for (const configuration of registry.configurations) {
     if (configuration.family !== 'scripted' || configuration.status !== 'implemented') continue;
     assert.equal(configuration.framework.version, installed, `${configuration.configuration_id} must declare the installed Playwright ${installed}`);
@@ -111,7 +111,7 @@ test('the executable scripted configuration declares the installed Playwright ve
 });
 
 test('the configuration registry carries no placeholder framework versions', () => {
-  const registryPath = path.join(codeRoot, 'config', 'configuration-registry.v0.2.json');
+  const registryPath = path.join(codeRoot, 'config', 'archive', 'configuration-registry.v0.2.json');
   const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
   const placeholders = registry.configurations.filter((configuration) => /pending|tbd|external-adapter/i.test(String(configuration.framework?.version ?? '')));
   assert.deepEqual(placeholders.map((configuration) => configuration.configuration_id), []);

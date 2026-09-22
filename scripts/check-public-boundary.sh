@@ -8,7 +8,6 @@ cd "$repo_root"
 tracked_private=$(git ls-files -- \
   'paper/**' 'private-paper/**' 'submission/**' \
   '*.tex' '*.bib' '*.bst' '*.cls' '*.sty' \
-  'research/data-entry/**' 'research/PSS-WebTest-Overleaf-*.zip' \
   'code/results/**' '.workbuddy/**')
 
 if [ -n "$tracked_private" ]; then

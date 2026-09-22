@@ -111,7 +111,7 @@ started, scorable, lifecycle-completed and successful counts separately.
 `pss-analysis-input-v1` is a separate normalized interface with `data_kind`,
 schedule/source references, strata, operational grids, native rows and optional
 paired RQ policies. Its exact keys and denominators are documented in
-[ANALYSIS-AND-ROUTING.md](../../code/local-lab/ANALYSIS-AND-ROUTING.md).
+[ANALYSIS-AND-ROUTING.md](../../code/docs/runbooks/ANALYSIS-AND-ROUTING.md).
 `formal` scope or `CONFIRMATORY_CANDIDATE` is metadata, never permission to run.
 Reject duplicate/out-of-selection identities; preserve absent slots as unresolved.
 

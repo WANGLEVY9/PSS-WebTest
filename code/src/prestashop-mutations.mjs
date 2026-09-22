@@ -2,7 +2,7 @@ import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const configPath = path.resolve(fileURLToPath(new URL('../config/prestashop-mutations.v0.1.json', import.meta.url)));
+const configPath = path.resolve(fileURLToPath(new URL('../config/archive/prestashop-mutations.v0.1.json', import.meta.url)));
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 const definitions = new Map(config.mutations.map((mutation) => [mutation.id, mutation]));
 

@@ -3,8 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const catalog = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/application-expansion-catalog.v0.1.json'), 'utf8'));
-const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/application-workflow-blueprints.v0.1.json'), 'utf8'));
+const catalog = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/application-expansion-catalog.v0.1.json'), 'utf8'));
+const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/application-workflow-blueprints.v0.1.json'), 'utf8'));
 const errors = [];
 const countableIds = new Set((catalog.candidate_applications ?? [])
   .filter((application) => application.status !== 'role-only-not-an-application')

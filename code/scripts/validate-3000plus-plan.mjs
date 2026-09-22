@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const planPath = path.join(root, 'config', 'phase2-3000plus-multifactor-plan.v0.1.json');
+const planPath = path.join(root, 'config', 'archive', 'phase2-3000plus-multifactor-plan.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const errors = [];
 

@@ -6,7 +6,7 @@ import test from 'node:test';
 import { validateScalingPlan } from '../../scripts/validate-phase2-scaling-plan.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/phase2-scaling-plan.v0.1.json'), 'utf8'));
+const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/phase2-scaling-plan.v0.1.json'), 'utf8'));
 
 test('scaling plan keeps broad coverage and validates its run-count arithmetic', () => {
   assert.deepEqual(validateScalingPlan(plan), []);

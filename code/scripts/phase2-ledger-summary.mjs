@@ -20,7 +20,7 @@ const value = (flag, fallback = null) => {
 const applicationFilter = value('--application');
 const outputPath = value('--output');
 const legacyModels = new Set(['qwen3-vl-flash']);
-const roots = [path.join(repoRoot, 'artifacts/phase2'), path.join(codeRoot, 'artifacts/phase2')];
+const roots = [path.join(repoRoot, 'legacy/artifacts/phase2'), path.join(codeRoot, 'legacy/artifacts/phase2')];
 const registry = loadConfigurationRegistry();
 
 const strictPass = (record) => record.status === 'completed'

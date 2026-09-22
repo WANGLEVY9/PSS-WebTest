@@ -36,7 +36,7 @@ const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';
 // failure.
 let expectedProduct = process.env.PSS_PRESTASHOP_EXPECTED_PRODUCT ?? null;
 if (!expectedProduct && mutation) {
-  const mutationDocument = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'prestashop-mutations.v0.1.json'), 'utf8'));
+  const mutationDocument = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'archive', 'prestashop-mutations.v0.1.json'), 'utf8'));
   const definition = (mutationDocument.mutations ?? []).find((entry) => entry.id === mutation);
   if (!definition) throw new Error(`Unknown PSS_UI_MUTATION: ${mutation}`);
   expectedProduct = definition.target_text ?? null;
@@ -137,7 +137,7 @@ const profiles = manifest.profiles
 // A stratum that the readiness gate marked blocked (for example an account
 // quota limit) is recorded as blocked instead of burning SUT resets on calls
 // that cannot succeed. Set PSS_IGNORE_READINESS=1 to force a re-attempt.
-const readinessPath = path.join(codeRoot, 'config', 'provider-readiness.v0.1.json');
+const readinessPath = path.join(codeRoot, 'config', 'archive', 'provider-readiness.v0.1.json');
 const readinessByProfile = new Map();
 if (fs.existsSync(readinessPath)) {
   for (const entry of JSON.parse(fs.readFileSync(readinessPath, 'utf8')).profiles ?? []) {

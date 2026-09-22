@@ -7,8 +7,8 @@ import { deriveLargeScaleInventory, validateLargeScaleExpansionPlan } from '../.
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(codeRoot, relativePath), 'utf8'));
-const plan = readJson('config/phase2-large-scale-expansion.v0.1.json');
-const matrix = readJson('config/benchmark-matrix.v0.1.json');
+const plan = readJson('config/archive/phase2-large-scale-expansion.v0.1.json');
+const matrix = readJson('config/archive/benchmark-matrix.v0.1.json');
 const taskManifest = readJson('manifests/task-manifest.v0.1.json');
 
 test('large-scale target expands to 2,160 cells and 30,240 executions', () => {

@@ -12,7 +12,7 @@ const tasks = application?.tasks?.map((task) => task.id) ?? [];
 const conditions = ['clean-stable', 'functional-fault', 'ui-evolution'];
 const arms = ['visual', 'hybrid', 'playwright'];
 const minRepetitions = Number.parseInt(process.env.PSS_ADMISSION_MIN_REPETITIONS ?? '3', 10);
-const artifactRoot = path.resolve(root, '../artifacts/phase2');
+const artifactRoot = path.resolve(root, '../legacy/artifacts/phase2');
 const outputIndex = process.argv.indexOf('--output');
 const outputPath = outputIndex >= 0 ? process.argv[outputIndex + 1] : null;
 

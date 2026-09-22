@@ -2,7 +2,7 @@
 
 For experiment operators, the [comprehensive Chinese README](../../README-EXPERIMENT-OPERATORS.zh-CN.md) connects these specifications into an ordered GPT API acceptance and execution workflow.
 
-[Project](../../README.md) · [Research design](../RESEARCH.md) · [Evidence status](../STATUS.md)
+[Project](../../README.md) · [Research design](../RESEARCH.md)
 
 Documentation baseline: `8796b8b` plus the integration of the committed acceptance
 branch through `95c537d`, reviewed 22 September 2026. Uncommitted experiments are not part

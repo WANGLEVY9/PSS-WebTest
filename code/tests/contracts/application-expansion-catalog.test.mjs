@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const catalog = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/application-expansion-catalog.v0.1.json'), 'utf8'));
+const catalog = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/application-expansion-catalog.v0.1.json'), 'utf8'));
 
 test('application expansion catalog is fail-closed and broader than the current pilot inventory', () => {
   assert.equal(catalog.status, 'candidate-pool-not-admitted');

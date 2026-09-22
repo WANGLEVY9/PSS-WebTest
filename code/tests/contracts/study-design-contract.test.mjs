@@ -6,7 +6,7 @@ import path from 'node:path';
 import { validateStudyDesignContract } from '../../scripts/validate-study-design-contract.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const contract = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'study-design-contract.v1.0.json'), 'utf8'));
+const contract = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'archive', 'study-design-contract.v1.0.json'), 'utf8'));
 const metrics = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config', 'metric-dictionary.v1.0.json'), 'utf8'));
 
 test('human-confirmed final design is frozen, paused, and fail-closed', () => {

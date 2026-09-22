@@ -10,7 +10,7 @@ const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const baseURL = process.env.JUICE_SHOP_BASE_URL ?? 'http://127.0.0.1:3000';
 const query = process.env.PSS_JUICE_SHOP_QUERY ?? 'apple';
-const reportPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.join(repositoryRoot, 'results/phase2/2026-09-13-juice-shop-fault-evolution-gate.md'));
+const reportPath = path.resolve(process.env.PSS_GATE_RESULT_OUT ?? path.join(repositoryRoot, 'legacy/results/phase2/2026-09-13-juice-shop-fault-evolution-gate.md'));
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: codeRoot, env: { ...process.env, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });

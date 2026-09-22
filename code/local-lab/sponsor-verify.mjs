@@ -8,7 +8,7 @@ import {studyStatus} from './study-design.mjs';
 const code=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const files=dir=>fs.readdirSync(path.join(code,dir)).filter(f=>f.endsWith('.test.mjs')).sort().map(f=>`${dir}/${f}`);
 const steps=[
-  {id:'local-node-and-browser',cmd:process.execPath,args:['--test','--test-reporter=tap',...files('local-lab')]},
+  {id:'local-node-and-browser',cmd:process.execPath,args:['--test','--test-reporter=tap',...files('tests/local-lab')]},
   {id:'study-contracts',cmd:process.execPath,args:['--test','--test-reporter=tap',...files('tests/contracts')]},
   {id:'ata-preparation',cmd:path.join(code,'.venv-benchmark/bin/python'),args:['local-lab/ata-preparation-test.py']},
   {id:'historical-ledger',cmd:process.execPath,args:['local-lab/validate-benchmark.mjs']},
@@ -18,7 +18,7 @@ const steps=[
 const report={kind:'SPONSOR_OFFLINE_VERIFICATION',started_at:new Date().toISOString(),model_requests:0,benchmark_executions:0,confirmatory_authorized:false,checks:[]};
 report.active_study=studyStatus();
 report.source_files=fs.readdirSync(path.join(code,'local-lab')).filter(f=>f.endsWith('.mjs')).sort().map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')}));
-report.source_files.push(...['public/app.js','public/resource-accounting.mjs','public/index.html'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')})));
+report.source_files.push(...['public/app.js','public/resource-accounting.mjs','public/index.html','public/style.css'].map(file=>({file:`console/${file}`,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'console',file))).digest('hex')})));
 report.source_files.push(...['../config/active-study-design.json','../config/study-design-contract.v2.1.json','../config/ata-source-population.v1.json','../config/study-runtime-bindings.v2.1.example.json','../scripts/validate-study-design-contract.mjs','../scripts/validate-long-cycle-experiment-plan.mjs','../scripts/audit-study-design-compliance.mjs'].map(file=>({file,sha256:crypto.createHash('sha256').update(fs.readFileSync(path.join(code,'local-lab',file))).digest('hex')})));
 const dest=path.join(code,'artifacts/local-runtime',`sponsor-verify-${Date.now()}`);
 fs.mkdirSync(dest,{recursive:true,mode:0o700});

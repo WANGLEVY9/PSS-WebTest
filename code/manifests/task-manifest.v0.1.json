@@ -62,7 +62,7 @@
             "clean_matched_pilot": "3 repetitions x 3 arms passed on 2026-08-24",
             "evolution_pilot": "1 repetition x 3 arms passed under bookstack-layout-v1",
             "status": "non-confirmatory; repetition and power remain unfrozen",
-            "artifact": "artifacts/phase2/bookstack-navigation-pilot.json"
+            "artifact": "legacy/artifacts/phase2/bookstack-navigation-pilot.json"
           },
           "arms": ["visual", "hybrid", "playwright"]
         },
@@ -136,7 +136,7 @@
             "post_fix_clean_pilot": "Qwen 1 repetition: Playwright 1/1, Hybrid 1/1, Pure visual 0/1 step-budget; DeepSeek 1 repetition: Playwright 1/1, Hybrid 1/1, Pure visual 0/1 grounding-loop",
             "condition_pilot": "Qwen clean/fault/evolution: Playwright 3/3, Hybrid 3/3, visual 0/3; DeepSeek clean/fault/evolution: Playwright 3/3, Hybrid 2/3 with one oracle-only timeout, visual 0/3",
             "runner_repair": "mapped provider keypress return to Playwright Enter before the post-fix pilot",
-            "artifact": "results/phase2/2026-09-13-indico-search-pilot.md"
+            "artifact": "legacy/results/phase2/2026-09-13-indico-search-pilot.md"
           },
           "arms": ["visual", "hybrid", "playwright"]
         }
@@ -191,7 +191,7 @@
             "status": "pilot-only; no confirmatory inference",
             "runner": "shared matched runner with task-specific replay and independent oracle",
             "matched_pilot": "Qwen and DeepSeek, one repetition per condition: clean and UI evolution 3/3 for all arms; functional fault Playwright 1/1, visual 0/1 and hybrid 0/1 because both reached omission oracle but exhausted the agent step budget before emitting fault",
-            "artifact": "results/phase2/2026-09-13-juice-shop-product-detail-matched-pilot.md"
+            "artifact": "legacy/results/phase2/2026-09-13-juice-shop-product-detail-matched-pilot.md"
           },
           "arms": ["visual", "hybrid", "playwright"]
         },
@@ -209,7 +209,7 @@
             "status": "pilot-only; no confirmatory inference",
             "runner": "shared matched runner with browser-scoped mutation, replay, and independent oracle",
             "matched_pilot": "Qwen and DeepSeek, one repetition per condition: overall visual 1/6, hybrid 4/6, Playwright 6/6; agent fault cells reached the omission oracle but often failed to emit fault",
-            "artifact": "results/phase2/2026-09-13-juice-shop-basket-matched-pilot.md"
+            "artifact": "legacy/results/phase2/2026-09-13-juice-shop-basket-matched-pilot.md"
           },
           "arms": ["visual", "hybrid", "playwright"]
         },

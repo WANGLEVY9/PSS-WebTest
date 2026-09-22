@@ -39,14 +39,14 @@ function sources() {
     if(e.isDirectory())walk(f);
     else if(e.isFile()&&/\.(mjs|js|py|json|lock|html|css)$/.test(e.name))all.push({file:f,sha256:sha(fs.readFileSync(path.join(code,f)))});
   }};
-  for(const dir of ['local-lab','src','config','scripts','tests/contracts'])walk(dir);
+  for(const dir of ['local-lab','src','config','scripts','console','tests/contracts','tests/local-lab'])walk(dir);
   for(const file of ['package.json','package-lock.json'])all.push({file,sha256:sha(fs.readFileSync(path.join(code,file)))});
   return all.sort((a,b)=>a.file.localeCompare(b.file));
 }
 const before=sources(),steps=[
   {id:'installed-node-dependencies',cmd:'npm',args:['ls','--depth=0']},
   {id:'active-design',cmd:process.execPath,args:['local-lab/validate-active-study.mjs']},
-  {id:'local-node-and-browser',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('local-lab')]},
+  {id:'local-node-and-browser',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('tests/local-lab')]},
   {id:'source-only-contract-regression',tests:true,cmd:process.execPath,args:['--test','--test-reporter=tap',...list('tests/contracts').filter(f=>!artifactTests.includes(f))]},
   {id:'runtime-python',tests:true,pythonpath:'local-lab',cmd:o.python,args:['-m','unittest',...portablePythonSuites,'-v']},
   {id:'shared-budget-python',tests:true,cmd:o.python,args:['-m','unittest','discover','-s','local-lab','-p','test_spend*.py','-v']},

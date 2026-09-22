@@ -7,7 +7,7 @@ import process from 'node:process';
 const codeRoot = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = resolve(codeRoot, '..');
 const iterations = Number(process.env.PSS_PILOT_ITERATIONS ?? 10);
-const outputPath = resolve(repositoryRoot, 'artifacts/phase2/bookstack-reliability-pilot.json');
+const outputPath = resolve(repositoryRoot, 'legacy/artifacts/phase2/bookstack-reliability-pilot.json');
 
 function execute(command, args, { env = {}, allowFailure = false } = {}) {
   const startedAt = Date.now();
@@ -75,7 +75,7 @@ const summary = {
   records
 };
 
-await mkdir(resolve(repositoryRoot, 'artifacts/phase2'), { recursive: true });
+await mkdir(resolve(repositoryRoot, 'legacy/artifacts/phase2'), { recursive: true });
 await writeFile(outputPath, `${JSON.stringify(summary, null, 2)}\n`);
 console.log(JSON.stringify({ artifact: outputPath, status: summary.status, passed_iterations: summary.passed_iterations }));
 if (summary.status !== 'passed') process.exitCode = 1;

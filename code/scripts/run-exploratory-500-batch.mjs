@@ -10,7 +10,7 @@ const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const currentProfile = `${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`;
 const manifestPath = process.env.PSS_BATCH_MANIFEST
   ? path.resolve(process.env.PSS_BATCH_MANIFEST)
-  : path.join(codeRoot, '..', 'artifacts/phase2', `phase2-exploratory-500-blocks-v1-${currentProfile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
+  : path.join(codeRoot, '..', 'legacy/artifacts/phase2', `phase2-exploratory-500-blocks-v1-${currentProfile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
 if (!fs.existsSync(manifestPath)) throw new Error(`Prepared batch manifest not found: ${manifestPath}. Run npm run batch:prepare-500 first.`);
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const start = Number.parseInt(process.env.PSS_BATCH_START_BLOCK ?? '1', 10);
@@ -29,8 +29,8 @@ if (process.env.PSS_BATCH_ALLOW_CANDIDATE_TASKS !== '1') throw new Error('This m
 
 const progressPath = process.env.PSS_BATCH_PROGRESS_OUT
   ? path.resolve(process.env.PSS_BATCH_PROGRESS_OUT)
-  : path.join(codeRoot, '..', 'artifacts/phase2', `${manifest.campaign_id}-${currentProfile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-progress.jsonl`);
-const artifactRoot = path.join(codeRoot, '..', 'artifacts/phase2');
+  : path.join(codeRoot, '..', 'legacy/artifacts/phase2', `${manifest.campaign_id}-${currentProfile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-progress.jsonl`);
+const artifactRoot = path.join(codeRoot, '..', 'legacy/artifacts/phase2');
 fs.mkdirSync(path.dirname(progressPath), { recursive: true });
 const startedAt = Date.now();
 const guardrails = manifest.guardrails;

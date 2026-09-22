@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const defaultPlanPath = path.join(codeRoot, 'config/exploratory-500-block-campaign.v0.1.json');
+const defaultPlanPath = path.join(codeRoot, 'config/archive/exploratory-500-block-campaign.v0.1.json');
 
 export function validateExploratoryBatchPlan(plan) {
   const errors = [];

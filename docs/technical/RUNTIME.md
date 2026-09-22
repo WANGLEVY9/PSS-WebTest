@@ -1,6 +1,6 @@
 # Runtime, cost and acceptance design
 
-[Technical index](README.md) · [Lifecycle details](../../code/local-lab/LIFECYCLE-AND-NATIVE-EVALUATION.md)
+[Technical index](README.md) · [Lifecycle details](../../code/docs/runbooks/LIFECYCLE-AND-NATIVE-EVALUATION.md)
 
 ## Scheduling and recovery
 
@@ -76,7 +76,7 @@ cannot change actions, labels or official verdicts.
 
 ## Release acceptance
 
-Follow [ACCEPTANCE-RUNBOOK.md](../../code/local-lab/ACCEPTANCE-RUNBOOK.md): a fixed
+Follow [ACCEPTANCE-RUNBOOK.md](../../code/docs/runbooks/ACCEPTANCE-RUNBOOK.md): a fixed
 development cohort, nested 2→10→20 official tasks per benchmark, four profiles,
 and prespecified stability repeats. Keep all engineering failures and legitimate
 method failures; do not replace tasks based on outcomes or require a capability

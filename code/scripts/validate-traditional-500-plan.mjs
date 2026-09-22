@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const planPath = process.argv[2] ? path.resolve(process.argv[2]) : path.join(codeRoot, 'config/traditional-500-playwright.v0.1.json');
+const planPath = process.argv[2] ? path.resolve(process.argv[2]) : path.join(codeRoot, 'config/archive/traditional-500-playwright.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const errors = [];
 if (plan.schema_version !== '0.1') errors.push('schema_version must be 0.1');

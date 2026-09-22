@@ -6,8 +6,8 @@ import { deriveLargeScaleInventory, validateLargeScaleExpansionPlan } from '../s
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const readJson = (relativePath) => JSON.parse(fs.readFileSync(path.join(codeRoot, relativePath), 'utf8'));
-const plan = readJson('config/phase2-large-scale-expansion.v0.1.json');
-const benchmarkMatrix = readJson('config/benchmark-matrix.v0.1.json');
+const plan = readJson('config/archive/phase2-large-scale-expansion.v0.1.json');
+const benchmarkMatrix = readJson('config/archive/benchmark-matrix.v0.1.json');
 const taskManifest = readJson('manifests/task-manifest.v0.1.json');
 const errors = validateLargeScaleExpansionPlan(plan);
 if (errors.length) {

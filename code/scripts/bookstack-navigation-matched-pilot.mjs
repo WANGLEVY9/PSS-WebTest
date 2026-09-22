@@ -37,8 +37,8 @@ const runSlug = [conditionSlug, modelSlug, tagSlug].filter(Boolean).join('-');
 const taskSlug = isSearchTask ? 'bookstack-search-open-book2' : 'bookstack-navigation';
 const artifactName = `${taskSlug}-${runSlug}-pilot.json`;
 const recordsName = `${taskSlug}-${runSlug}-records.jsonl`;
-const artifact = `${repositoryRoot}/artifacts/phase2/${artifactName}`;
-const recordsPath = `${repositoryRoot}/artifacts/phase2/${recordsName}`;
+const artifact = `${repositoryRoot}/legacy/artifacts/phase2/${artifactName}`;
+const recordsPath = `${repositoryRoot}/legacy/artifacts/phase2/${recordsName}`;
 
 function readEnvFile(name) {
   const envPath = `${root}/${name}`;
@@ -95,7 +95,7 @@ async function resetWithRetry() {
 
 const records = [];
 const write = () => {
-  fs.mkdirSync(`${repositoryRoot}/artifacts/phase2`, { recursive: true });
+  fs.mkdirSync(`${repositoryRoot}/legacy/artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({ application: 'bookstack', task_id: taskId, condition, mutation, run_tag: runTag, protocol_version: protocolVersion, randomization_seed: randomizationSeed, provider, model, model_slug: modelSlug, repetitions, arms, records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 

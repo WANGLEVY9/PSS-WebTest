@@ -68,7 +68,7 @@ for (const file of [
   "provider.mjs",
   "model-routing.mjs",
   "metrics.mjs",
-  "public/resource-accounting.mjs",
+  "../console/public/resource-accounting.mjs",
   "runtime-env.mjs",
   "execution-gate.mjs",
   "benchmark-selection.json",

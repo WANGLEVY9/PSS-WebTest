@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const matrixPath = path.resolve(codeRoot, 'config/benchmark-matrix.v0.1.json');
+const matrixPath = path.resolve(codeRoot, 'config/archive/benchmark-matrix.v0.1.json');
 const matrix = JSON.parse(fs.readFileSync(matrixPath, 'utf8'));
 const errors = [];
 const allowedWorkflowStatus = new Set(['candidate', 'pilot-only', 'admitted-pilot-only']);

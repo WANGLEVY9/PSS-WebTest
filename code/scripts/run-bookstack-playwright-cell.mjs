@@ -24,7 +24,7 @@ const phase2Fields = phase2Protocol
   ? createPhase2Provenance({
     registry: loadConfigurationRegistry(),
     configurationId: process.env.PSS_CONFIGURATION_ID,
-    runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/bookstack-create-page-run-manifest.v0.2.json`,
+    runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${codeRoot}/config/archive/bookstack-create-page-run-manifest.v0.2.json`,
     taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${codeRoot}/manifests/task-manifest.v0.1.json`,
     applicationId: 'bookstack',
     resetDigest: process.env.PSS_RESET_DIGEST,

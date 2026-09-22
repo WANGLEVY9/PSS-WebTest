@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const configPath = process.argv[2] ? path.resolve(process.argv[2]) : path.join(codeRoot, 'config/prestashop-mutations.v0.1.json');
+const configPath = process.argv[2] ? path.resolve(process.argv[2]) : path.join(codeRoot, 'config/archive/prestashop-mutations.v0.1.json');
 const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 const errors = [];
 const ids = new Set();

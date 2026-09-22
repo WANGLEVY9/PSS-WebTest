@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const contractPath = path.join(codeRoot, 'config', 'study-design-contract.v1.0.json');
+const contractPath = path.join(codeRoot, 'config', 'archive', 'study-design-contract.v1.0.json');
 
 export function validateStudyDesignContract(contract) {
   const errors = [];

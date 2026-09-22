@@ -6,7 +6,7 @@ import path from 'node:path';
 import { validateExploratoryBatchPlan } from './validate-exploratory-batch-plan.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const planPath = path.join(codeRoot, 'config/exploratory-500-block-campaign.v0.1.json');
+const planPath = path.join(codeRoot, 'config/archive/exploratory-500-block-campaign.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const errors = validateExploratoryBatchPlan(plan);
 if (errors.length) throw new Error(`Invalid campaign plan:\n${errors.join('\n')}`);
@@ -55,7 +55,7 @@ const summary = {
 
 const outputPath = process.env.PSS_BATCH_MANIFEST_OUT
   ? path.resolve(process.env.PSS_BATCH_MANIFEST_OUT)
-  : path.join(codeRoot, '..', 'artifacts/phase2', `${plan.id}-${profile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
+  : path.join(codeRoot, '..', 'legacy/artifacts/phase2', `${plan.id}-${profile.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });
 fs.writeFileSync(outputPath, `${JSON.stringify(summary, null, 2)}\n`, { mode: 0o600 });
 

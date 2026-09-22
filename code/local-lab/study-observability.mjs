@@ -1,4 +1,4 @@
-import {reportedTotal} from './public/resource-accounting.mjs';
+import {reportedTotal} from '../console/public/resource-accounting.mjs';
 // No imputed billing rate or amortized labor. Shared preparation is represented once by prep_id.
 export function preparationSummary(rows=[]) {
   const seen=new Set(),groups=new Map();

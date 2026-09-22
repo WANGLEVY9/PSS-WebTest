@@ -9,12 +9,12 @@ import { executionVariant } from '../src/execution-variant.mjs';
 
 const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const repoRoot = path.resolve(codeRoot, '..');
-const manifest = JSON.parse(fs.readFileSync(`${codeRoot}/config/phase2-application-admission-manifest.v0.1.json`, 'utf8'));
+const manifest = JSON.parse(fs.readFileSync(`${codeRoot}/config/archive/phase2-application-admission-manifest.v0.1.json`, 'utf8'));
 // Historical runners used two ledger roots.  Scan both explicitly rather than
 // silently treating a migrated application as having zero evidence.
 const artifactRoots = [
-  path.join(repoRoot, 'artifacts/phase2'),
-  path.join(codeRoot, 'artifacts/phase2')
+  path.join(repoRoot, 'legacy/artifacts/phase2'),
+  path.join(codeRoot, 'legacy/artifacts/phase2')
 ];
 const outputIndex = process.argv.indexOf('--output');
 const outputPath = outputIndex >= 0 ? process.argv[outputIndex + 1] : null;
@@ -83,7 +83,7 @@ for (const app of manifest.applications) {
   result.push({
     application_id: app.id, status, planned_workflows: plannedWorkflows, implemented_workflows: app.implemented_tasks.length,
     missing_workflow_slots: Math.max(0, plannedWorkflows - app.implemented_tasks.length), records: appRecords.length,
-    invalid_records_excluded: invalid.filter((entry) => entry.file.includes('artifacts/phase2/')).length,
+    invalid_records_excluded: invalid.filter((entry) => entry.file.includes('legacy/artifacts/phase2/')).length,
     expected_cells: cells.length, missing_cells: missingCells, below_repetition_cells: belowCells,
     provider_strata: [...providerStrata.values()], live_provider_strata_below_min: liveProviderStrataBelowMin,
     strict_passes: cells.reduce((sum, cell) => sum + cell.strict_passes, 0), gates: app.gates, gate_failures: gateFailures,

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const planPath = path.join(codeRoot, 'config', 'long-cycle-experiment-plan.v1.0.json');
+const planPath = path.join(codeRoot, 'config', 'archive', 'long-cycle-experiment-plan.v1.0.json');
 
 export function validateLongCycleExperimentPlan(plan) {
   const errors = [];

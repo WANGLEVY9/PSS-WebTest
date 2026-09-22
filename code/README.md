@@ -38,30 +38,36 @@ The portable verifier runs the installed local Node/browser tests, source-only c
 | Analyze supplied input | `node local-lab/analyze-study.mjs INPUT.json NEW_REPORT.json` | See the input contract; does not validate underlying scientific truth |
 | Plan/import supplied bundle | `node local-lab/study-workflow.mjs plan INPUT.json NEW_DIRECTORY` or `import` | Choose one subcommand; no dispatch or implicit cloud access |
 
-Detailed input/round/metric semantics: [ANALYSIS-AND-ROUTING.md](local-lab/ANALYSIS-AND-ROUTING.md). Current changes and source/fixture constraints: [DESIGN-V2-MIGRATION.md](local-lab/DESIGN-V2-MIGRATION.md) and [adapter progress](local-lab/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md).
+Detailed input/round/metric semantics: [ANALYSIS-AND-ROUTING.md](docs/runbooks/ANALYSIS-AND-ROUTING.md). Current changes and source/fixture constraints: [DESIGN-V2-MIGRATION.md](docs/runbooks/DESIGN-V2-MIGRATION.md) and [adapter progress](docs/status/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md).
 
 ## Code map
 
 | Location | Responsibility |
 | --- | --- |
 | `config/active-study-design.json` | Sole active design pointer; older contracts are historical |
+| `config/` (top level) | Configuration in force for the active protocol only |
+| `config/archive/` | 42 superseded configuration documents (retired design contracts, metric dictionary v0.1, phase2 plans, local-application manifests). Preserved, never used for current execution |
+| `config/frameworks/` | Framework environment manifest, defect matrix and dependency locks |
 | `local-lab/study-analysis.mjs` | Native outcomes, operational bounds, error-conditioned controls and retry decomposition |
 | `local-lab/study-pipeline.mjs` | Schedule construction, import reconciliation and analysis conversion |
 | `local-lab/runtime_store.py` | Runtime ledger/recovery infrastructure |
 | `local-lab/runtime_worker.py` | Diagnostic worker and trusted adapter receipt handling |
 | `local-lab/runtime_inputs.py` | Restricted actor input and separate evaluator-reference preparation |
 | `local-lab/framework_agentlab.py` / `framework_browser_use.py` | Framework-specific restricted components; full benchmark acceptance separate |
-| `local-lab/server.mjs` | Local benchmark observatory |
+| `console/server.mjs` | Local benchmark observatory (loopback UI + API, no dispatch without gates) |
 | `tests/contracts/` | Shared contract/provenance checks and historical artifact integrations |
+| `tests/local-lab/` | Runtime, provider and console regression suites (Node). Python runtime tests stay next to their modules in `local-lab/test_*.py` and run with `python3 -m unittest discover -s local-lab` |
+| `docs/runbooks/` | Maintained engineering runbooks (deployment, acceptance, spend, analysis input) |
+| `docs/status/` | Dated engineering status reports; historical, superseded by newer entries |
 | `src/arms/`, `scripts/`, `manifests/` | Earlier local-SUT arms, lifecycle and pilot infrastructure |
 
 ## Prepare a new campaign
 
-Use [SPONSOR-DEPLOYMENT.md](local-lab/SPONSOR-DEPLOYMENT.md). Separate the public study contract, private deployment profile, private runtime bindings and credentials. Exact API identities, matched budgets, framework/benchmark pins and fixture acceptance must be recorded before measured execution. Do not silently fall back to another model or relabel a custom runner as a study framework.
+Use [SPONSOR-DEPLOYMENT.md](docs/runbooks/SPONSOR-DEPLOYMENT.md). Separate the public study contract, private deployment profile, private runtime bindings and credentials. Exact API identities, matched budgets, framework/benchmark pins and fixture acceptance must be recorded before measured execution. Do not silently fall back to another model or relabel a custom runner as a study framework.
 
 The active information boundary is stricter than generic screenshot-plus-DOM: hybrid receives only the allowed visible projection. Visual cannot use URL/DOM/AX for control-flow decisions. Evaluator truth and other-arm results are never actor inputs.
 
-The current default worker is diagnostic. Frozen schedule/input hashes and valid receipts prevent specific integrity failures; they do not by themselves authorize formal collection or prove reset/evaluator correctness. The [status page](../docs/STATUS.md) distinguishes implementation, component probes and accepted benchmark execution.
+The current default worker is diagnostic. Frozen schedule/input hashes and valid receipts prevent specific integrity failures; they do not by themselves authorize formal collection or prove reset/evaluator correctness. Implementation state, component probes and accepted benchmark execution are declared separately in the [deployment and acceptance runbook](docs/runbooks/SPONSOR-DEPLOYMENT.md).
 
 ## Historical harness
 

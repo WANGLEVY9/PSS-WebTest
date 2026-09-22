@@ -11,11 +11,11 @@ const markdownUnder=dir=>fs.readdirSync(path.join(root,dir),{withFileTypes:true}
 // Dated receipts remain historical. Check the maintained operator entry points
 // and all nested technical pages so newly added specifications cannot go dark.
 const files=['README.md','README.zh-CN.md','README-EXPERIMENT-OPERATORS.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','CHANGELOG.md','code/README.md',
-  'research/DESIGN-AUTHORITY.md',
   ...markdownUnder('docs'),...markdownUnder('code/local-lab/cloud-handoff'),
-  ...['README.md','ANALYSIS-AND-ROUTING.md','SPEND-CONTROLS.md','ACCEPTANCE-RUNBOOK.md',
+  ...['ANALYSIS-AND-ROUTING.md','SPEND-CONTROLS.md','ACCEPTANCE-RUNBOOK.md',
     'LIFECYCLE-AND-NATIVE-EVALUATION.md','SPONSOR-DEPLOYMENT.md']
-    .map(file=>`code/local-lab/${file}`)];
+    .map(file=>`code/docs/runbooks/${file}`),
+  'code/local-lab/README.md'];
 const errors=[];let links=0;
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const anchors=text=>{
@@ -58,7 +58,10 @@ for(const [file,text] of [['README.md',main],['README.zh-CN.md',zh]]){
 }
 const ata=design.benchmarks.find(x=>x.id==='ata');
 if(ata.selected_tasks!==ata.expected_pass+ata.expected_fail)errors.push('ATA reference classes do not partition selected cases');
-if(!read('research/DESIGN-AUTHORITY.md').includes(design.protocol_id))errors.push('Stale research design-authority entry');
+// The public research page is the maintained design reference; keep its planned
+// denominator reconciled with the active contract.
+if(!read('docs/RESEARCH.md').includes(design.scale.scheduled_opportunities.toLocaleString('en-US')))
+  errors.push('Stale planned denominator in docs/RESEARCH.md');
 const inventory=JSON.parse(read('code/local-lab/cloud-handoff/dependency-manifest.json'));
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
 const csv=fs.readFileSync(path.join(root,'code/local-lab/cloud-handoff/dependency-packages.csv'));

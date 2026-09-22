@@ -87,7 +87,7 @@ export function validateConfigurationRegistry(registry) {
   return registry;
 }
 
-export function loadConfigurationRegistry(registryPath = path.resolve(fileURLToPath(new URL('..', import.meta.url)), 'config/configuration-registry.v0.2.json')) {
+export function loadConfigurationRegistry(registryPath = path.resolve(fileURLToPath(new URL('..', import.meta.url)), 'config/archive/configuration-registry.v0.2.json')) {
   return validateConfigurationRegistry(JSON.parse(fs.readFileSync(registryPath, 'utf8')));
 }
 

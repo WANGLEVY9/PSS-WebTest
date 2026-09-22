@@ -5,7 +5,7 @@ import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
-const defaultArtifactsDir = path.join(repositoryRoot, 'artifacts/phase2');
+const defaultArtifactsDir = path.join(repositoryRoot, 'legacy/artifacts/phase2');
 const defaultOutput = path.join(repositoryRoot, 'research/phase2-experiment-data-2026-09-04.md');
 const CURRENT_NAVIGATION_NAME = /^bookstack-navigation-(clean-stable|ui-evolution-bookstack-layout-v1)-aliyun-qwen3-vl-flash-phase2-(clean|evolution)-v\d+-records\.jsonl$/;
 const CURRENT_CREATE_PAGE_FAULT_NAME = /^bookstack-create-page-functional-fault-persistence-mismatch-aliyun-qwen3-vl-flash-phase2-fault-v1-records\.jsonl$/;

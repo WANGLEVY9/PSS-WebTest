@@ -2,7 +2,7 @@
 
 Implementation companion: [testing paradigms](technical/TESTING_PARADIGMS.md), [input/output contracts](technical/INPUT_OUTPUT.md), and [upstream requirements matrix](technical/UPSTREAM_TRACEABILITY.md). Benchmark populations come from pinned sources; selected counts are design targets and require actual frozen IDs. Native endpoint compatibility does not imply comparability with a published score under a different task subset, actor, observation or budget.
 
-[Project home](../README.md) · [Reproduce](REPRODUCIBILITY.md) · [Status](STATUS.md)
+[Project home](../README.md) · [Reproduce](REPRODUCIBILITY.md)
 
 The current design is selected by [`active-study-design.json`](../code/config/active-study-design.json), which points to [`study-design-contract.v2.1.json`](../code/config/study-design-contract.v2.1.json). Earlier contracts are retained for history, not current execution authority. Adoption inside this repository is not external preregistration.
 
@@ -31,7 +31,7 @@ The script baseline is shared across comparisons; duplicating its rows per model
 | Hybrid | Visual inputs plus temporary target ID, role, accessible name, visible value/state and bounding box | Raw HTML, hidden/off-screen text, stable application IDs, CSS/XPath, private APIs, evaluator state |
 | Scripted | Public DOM/AX properties, visible state and normal browser events during blinded human preparation | Evaluator implementation, reference answers, private API/database truth, agent traces |
 
-A restricted framework adapter must enforce the contract even when upstream defaults expose more information. Valid schemas alone do not prove visibility, occlusion or full browser-action conformance. See [framework remediation](../code/local-lab/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md).
+A restricted framework adapter must enforce the contract even when upstream defaults expose more information. Valid schemas alone do not prove visibility, occlusion or full browser-action conformance. See [framework remediation](../code/docs/status/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md).
 
 ## RQ1: benchmark-native effectiveness
 
@@ -39,7 +39,7 @@ WAV uses a template-macro success rate per round, then equal weight across sched
 
 ATA treats **failure as the positive class**: TP is a correct fail verdict, FN is a false pass, TN a correct pass and FP a false alarm. Report binary coverage and unresolved/no-verdict outcomes beside accuracy, sensitivity and specificity. Correct fail verdicts additionally require step classification: earlier (`AFB`), exact (`AFC`), later (`AFA`) or unresolved alignment (`Ustep`). Correct verdicts do not imply correctly identified failure steps.
 
-Do not combine WAV/VWA task success and ATA verdict accuracy into a cross-benchmark success score. The [analysis implementation](../code/local-lab/study-analysis.mjs) and [input contract](../code/local-lab/ANALYSIS-AND-ROUTING.md) define concrete denominators.
+Do not combine WAV/VWA task success and ATA verdict accuracy into a cross-benchmark success score. The [analysis implementation](../code/local-lab/study-analysis.mjs) and [input contract](../code/docs/runbooks/ANALYSIS-AND-ROUTING.md) define concrete denominators.
 
 ## RQ2: the selected workload under repeated use
 

@@ -10,7 +10,7 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
-const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/prestashop-agent-500-batch.v0.1.json'), 'utf8'));
+const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/archive/prestashop-agent-500-batch.v0.1.json'), 'utf8'));
 const arm = process.env.PSS_AGENT_BATCH_ARM;
 if (!['visual', 'hybrid'].includes(arm)) throw new Error('PSS_AGENT_BATCH_ARM must be visual or hybrid');
 const total = Number.parseInt(process.env.PSS_AGENT_TOTAL ?? String(plan.target_executions_per_arm), 10);
@@ -24,8 +24,8 @@ const healthInterval = Math.max(Number.parseInt(process.env.PSS_AGENT_HEALTH_INT
 const baseURL = process.env.PRESTASHOP_BASE_URL ?? 'http://localhost:8083';
 const seed = process.env.PSS_AGENT_SEED ?? `${plan.id}|${arm}`;
 const runTag = process.env.PSS_AGENT_RUN_TAG ?? `prestashop-${arm}-agent-500-${Date.now()}`;
-const recordsOut = path.resolve(process.env.PSS_AGENT_RECORDS_OUT ?? path.join(repositoryRoot, 'artifacts/phase2/run-records', `${runTag}.jsonl`));
-const summaryOut = path.resolve(process.env.PSS_AGENT_SUMMARY_OUT ?? path.join(repositoryRoot, 'artifacts/phase2', `${runTag}-summary.json`));
+const recordsOut = path.resolve(process.env.PSS_AGENT_RECORDS_OUT ?? path.join(repositoryRoot, 'legacy/artifacts/phase2/run-records', `${runTag}.jsonl`));
+const summaryOut = path.resolve(process.env.PSS_AGENT_SUMMARY_OUT ?? path.join(repositoryRoot, 'legacy/artifacts/phase2', `${runTag}-summary.json`));
 fs.mkdirSync(path.dirname(recordsOut), { recursive: true });
 fs.mkdirSync(path.dirname(summaryOut), { recursive: true });
 

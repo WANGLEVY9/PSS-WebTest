@@ -52,5 +52,5 @@
   "sponsor_ready": false,
   "confirmatory_authorized": false,
   "historical_data_invalidated": false,
-  "handoff_document": "code/local-lab/SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md"
+  "handoff_document": "code/docs/runbooks/SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md"
 }

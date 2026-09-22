@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
-const planPath = path.join(codeRoot, 'config/traditional-500-playwright.v0.1.json');
+const planPath = path.join(codeRoot, 'config/archive/traditional-500-playwright.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));
 const total = Number.parseInt(process.env.PSS_TRADITIONAL_TOTAL ?? String(plan.target_executions), 10);
 const allowSubset = process.env.PSS_TRADITIONAL_ALLOW_SUBSET === '1';
@@ -15,8 +15,8 @@ if (!process.env.PSS_PRESTASHOP_USERNAME || !process.env.PSS_PRESTASHOP_PASSWORD
 const concurrency = Math.min(Math.max(Number.parseInt(process.env.PSS_TRADITIONAL_CONCURRENCY ?? String(plan.guardrails.max_concurrency), 10), 1), plan.guardrails.max_concurrency);
 const seed = process.env.PSS_TRADITIONAL_SEED ?? plan.id;
 const runTag = process.env.PSS_TRADITIONAL_RUN_TAG ?? `traditional-500-${Date.now()}`;
-const recordsOut = path.resolve(process.env.PSS_TRADITIONAL_RECORDS_OUT ?? path.join(repositoryRoot, 'artifacts/phase2/run-records', `${runTag}.jsonl`));
-const summaryOut = path.resolve(process.env.PSS_TRADITIONAL_SUMMARY_OUT ?? path.join(repositoryRoot, 'artifacts/phase2', `${runTag}-summary.json`));
+const recordsOut = path.resolve(process.env.PSS_TRADITIONAL_RECORDS_OUT ?? path.join(repositoryRoot, 'legacy/artifacts/phase2/run-records', `${runTag}.jsonl`));
+const summaryOut = path.resolve(process.env.PSS_TRADITIONAL_SUMMARY_OUT ?? path.join(repositoryRoot, 'legacy/artifacts/phase2', `${runTag}-summary.json`));
 fs.mkdirSync(path.dirname(recordsOut), { recursive: true });
 fs.mkdirSync(path.dirname(summaryOut), { recursive: true });
 

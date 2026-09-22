@@ -181,7 +181,7 @@ for (const condition of conditions) {
     lines.push(`| ${condition} | ${arm.id} | ${rows.length} | ${rows.filter(strictPass).length}/${rows.length} | ${rows.filter((row) => row.checkpoint_reached).length}/${rows.length} | ${rows.filter((row) => row.independent_oracle_passed).length}/${rows.length} | ${boundaries.length ? boundaries.map((value) => `\`${value}\``).join(', ') : 'none'} |`);
   }
 }
-lines.push('', '## Run-level audit notes', '', '- A missing or malformed run record remains `no-record` and is not converted into a success.', '- Provider/model strata are reported separately; no model pooling is performed.', `- The aggregate ledger is \`${path.relative(repoDir, aggregateOutputPath)}\`; audit it as one matched file before analysis.`, '- Raw screenshots, provider summaries, and JSONL records remain local under ignored `code/artifacts/phase2/`.', '');
+lines.push('', '## Run-level audit notes', '', '- A missing or malformed run record remains `no-record` and is not converted into a success.', '- Provider/model strata are reported separately; no model pooling is performed.', `- The aggregate ledger is \`${path.relative(repoDir, aggregateOutputPath)}\`; audit it as one matched file before analysis.`, '- Raw screenshots, provider summaries, and JSONL records remain local under ignored `code/legacy/artifacts/phase2/`.', '');
 const reportPath = path.join(repoDir, 'results', 'phase2', `${stamp}-invoiceninja-matched-pilot-${campaignTag}.md`);
 fs.mkdirSync(path.dirname(reportPath), { recursive: true });
 fs.writeFileSync(reportPath, `${lines.join('\n')}\n`);

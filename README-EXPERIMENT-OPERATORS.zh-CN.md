@@ -180,7 +180,7 @@ PSS_SPEND_DB=/srv/pss/private/shared-spend.sqlite
 | `max_input_tokens`、`max_output_tokens` | 接口允许计费的 token 上界，包含图像输入 |
 | `source`、`verified_at`、`expires_at` | 价格来源及核验、失效时间 |
 
-人民币计价的字段及格式见[费用配置说明](code/local-lab/SPEND-CONTROLS.md)。同时核对 `fx_cny_per_usd`；默认 8 是预算换算值。空价格表会阻止请求，不能用其他模型的价格代填。
+人民币计价的字段及格式见[费用配置说明](code/docs/runbooks/SPEND-CONTROLS.md)。同时核对 `fx_cny_per_usd`；默认 8 是预算换算值。空价格表会阻止请求，不能用其他模型的价格代填。
 
 | 控制项 | 默认值 |
 | --- | ---: |

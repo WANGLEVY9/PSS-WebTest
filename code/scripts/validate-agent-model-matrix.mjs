@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const file = process.env.PSS_AGENT_MODEL_MATRIX ?? path.join(root, 'config', 'prestashop-agent-model-matrix.v0.1.json');
+const file = process.env.PSS_AGENT_MODEL_MATRIX ?? path.join(root, 'config', 'archive', 'prestashop-agent-model-matrix.v0.1.json');
 const matrix = JSON.parse(fs.readFileSync(file, 'utf8'));
 const errors = [];
 if (matrix.schema_version !== '0.1') errors.push('schema_version must be 0.1');

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-export const providerProfileManifestPath = path.join(codeRoot, 'config', 'provider-profile-manifest.v0.1.json');
+export const providerProfileManifestPath = path.join(codeRoot, 'config', 'archive', 'provider-profile-manifest.v0.1.json');
 
 const ACTION_MODES = new Set(['tool', 'json']);
 const API_MODES = new Set(['chat', 'responses']);

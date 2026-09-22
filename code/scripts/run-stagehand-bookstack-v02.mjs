@@ -151,7 +151,7 @@ if (configuration) {
 const phase2 = createPhase2Provenance({
   registry,
   configurationId: configId,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${process.cwd()}/config/bookstack-navigation-run-manifest.v0.2.json`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${process.cwd()}/config/archive/bookstack-navigation-run-manifest.v0.2.json`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${process.cwd()}/manifests/task-manifest.v0.1.json`,
   applicationId: 'bookstack',
   resetDigest: process.env.PSS_RESET_DIGEST,

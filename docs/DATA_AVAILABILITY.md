@@ -1,6 +1,6 @@
 # Data and artifact availability
 
-[Project home](../README.md) · [Status](STATUS.md) · [Research design](RESEARCH.md)
+[Project home](../README.md) · [Research design](RESEARCH.md)
 
 | Artifact | Public status | What it supports |
 | --- | --- | --- |

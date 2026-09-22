@@ -44,8 +44,8 @@ const conditionSlug = slug(condition, 'condition');
 const modelSlug = model ? slug(`${provider ?? 'provider'}-${model}`, 'configured') : 'unconfigured';
 const tagSlug = runTag ? slug(runTag, '') : null;
 const runSlug = [conditionSlug, modelSlug, tagSlug].filter(Boolean).join('-');
-const artifact = `${repositoryRoot}/artifacts/phase2/bookstack-create-page-${runSlug}-pilot.json`;
-const recordsPath = `${repositoryRoot}/artifacts/phase2/bookstack-create-page-${runSlug}-records.jsonl`;
+const artifact = `${repositoryRoot}/legacy/artifacts/phase2/bookstack-create-page-${runSlug}-pilot.json`;
+const recordsPath = `${repositoryRoot}/legacy/artifacts/phase2/bookstack-create-page-${runSlug}-records.jsonl`;
 
 function run(command, args, env = {}) {
   return new Promise((resolve) => {
@@ -81,7 +81,7 @@ async function resetWithRetry() {
 
 const records = [];
 function writeSummary() {
-  fs.mkdirSync(`${repositoryRoot}/artifacts/phase2`, { recursive: true });
+  fs.mkdirSync(`${repositoryRoot}/legacy/artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({
     application: 'bookstack', task_id: taskId, condition, expected_verdict: conditionSpec.expectedVerdict,
     ui_mutation: conditionSpec.uiMutation, fault: conditionSpec.applyFault ? 'persistence-mismatch' : null,

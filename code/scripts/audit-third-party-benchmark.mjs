@@ -39,7 +39,7 @@ const appSummary = applications.map((application) => {
   return { application, case_count: cases.length, bug_count: bugs.length, cases, bugs };
 });
 
-const manifestPath = path.join(repoRoot, 'code', 'config', 'replication-subset.v0.1.json');
+const manifestPath = path.join(repoRoot, 'code', 'config', 'archive', 'replication-subset.v0.1.json');
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
 const manifestChecks = (manifest.replication_cases ?? []).map((entry) => {
   const localSource = entry.local_source ? path.join(repoRoot, entry.local_source) : null;

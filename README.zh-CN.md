@@ -4,7 +4,7 @@
 
 **超越任务完成率：研究 Computer-Use Agent 与脚本式 Web 测试的重复可靠性、反复错误和互补性。**
 
-[English](README.md) · [研究设计](docs/RESEARCH.md) · [复现指南](docs/REPRODUCIBILITY.md) · [状态与路线图](docs/STATUS.md) · [引用信息](CITATION.cff)
+[English](README.md) · [研究设计](docs/RESEARCH.md) · [复现指南](docs/REPRODUCIBILITY.md) · [数据与产物](docs/DATA_AVAILABILITY.md) · [引用信息](CITATION.cff)
 
 PSS-WebTest 比较截图型 CUA、结构辅助 CUA 与人工编写的 Playwright 脚本。我们关心：同一批 Web 测试长期重复执行时，何时值得重试当前配置，何时应更换配置，何时混合执行能够带来额外覆盖。
 
@@ -88,7 +88,6 @@ flowchart TB
 | --- | --- |
 | 研究设计、信息边界与指标 | [Research guide](docs/RESEARCH.md) |
 | 离线验证、数据导入、部署路径 | [Reproducibility guide](docs/REPRODUCIBILITY.md) |
-| 最新证据与待完成事项 | [Status & roadmap](docs/STATUS.md) |
 | 运行代码与命令 | [code/README.md](code/README.md) |
 | 本地控制台 | [Observatory guide](code/local-lab/README.md) |
 | 数据公开范围与 mock 隔离 | [Data availability](docs/DATA_AVAILABILITY.md) |

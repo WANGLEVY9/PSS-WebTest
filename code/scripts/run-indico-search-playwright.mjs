@@ -20,7 +20,7 @@ if (!username || !password) throw new Error('Indico credentials must be configur
 const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const phase2Fields = process.env.PSS_PROTOCOL_VERSION === '2.0-draft' ? createPhase2Provenance({
   registry: loadConfigurationRegistry(), configurationId: process.env.PSS_CONFIGURATION_ID,
-  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${root}/config/indico-search-events-run-manifest.v0.2.json`,
+  runManifestPath: process.env.PSS_RUN_MANIFEST_PATH ?? `${root}/config/archive/indico-search-events-run-manifest.v0.2.json`,
   taskManifestPath: process.env.PSS_TASK_MANIFEST_PATH ?? `${root}/manifests/task-manifest.v0.1.json`, applicationId: 'indico',
   resetDigest: process.env.PSS_RESET_DIGEST, randomizationBlock: process.env.PSS_RANDOMIZATION_BLOCK,
   environment: { runner: 'indico-search-playwright-v0.1', base_url: baseURL, browser: 'chromium', viewport: '1280x720', query }

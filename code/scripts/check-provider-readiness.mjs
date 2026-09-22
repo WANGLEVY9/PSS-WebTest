@@ -24,7 +24,7 @@ import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { loadProviderProfileManifest } from '../src/provider-profile.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const readinessPath = path.join(codeRoot, 'config', 'provider-readiness.v0.1.json');
+const readinessPath = path.join(codeRoot, 'config', 'archive', 'provider-readiness.v0.1.json');
 const baseURL = process.env.PRESTASHOP_BASE_URL ?? 'http://localhost:8083';
 const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';
 const viewport = { width: 1280, height: 720 };

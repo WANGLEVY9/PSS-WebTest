@@ -4,7 +4,10 @@ import path from 'node:path';
 
 const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const errors = [];
-const read = (name) => JSON.parse(fs.readFileSync(path.join(root, 'config', name), 'utf8'));
+// Active assets live in config/; superseded ones were relocated to config/archive/.
+const read = (name) => JSON.parse(fs.readFileSync(
+  [path.join(root, 'config', name), path.join(root, 'config', 'archive', name)].find((p) => fs.existsSync(p)),
+  'utf8'));
 const references = read('benchmark-reference-matrix.v0.1.json');
 const metrics = read('metric-dictionary.v0.1.json');
 const templates = read('task-template-library.v0.1.json');

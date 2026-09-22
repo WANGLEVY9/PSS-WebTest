@@ -65,8 +65,8 @@ const taskManifestPath = `${codeRoot}/manifests/task-manifest.v0.1.json`;
 const runManifestPath = `${codeRoot}/config/${taskId === 'indico-search-events' ? 'indico-search-events' : 'indico-create-event'}-run-manifest.v0.2.json`;
 const slug = (value) => String(value).replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-|-$/g, '');
 const runSlug = [provider && model ? `${provider}-${model}` : 'unconfigured', pilotRunTag && slug(pilotRunTag)].filter(Boolean).join('-');
-const artifact = `${root}/../artifacts/phase2/indico-${taskId}-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
-const recordsPath = `${root}/../artifacts/phase2/indico-three-arm-${runSlug}-records.jsonl`;
+const artifact = `${root}/../legacy/artifacts/phase2/indico-${taskId}-three-arm-${runSlug}-${experimentCondition.condition}-pilot.json`;
+const recordsPath = `${root}/../legacy/artifacts/phase2/indico-three-arm-${runSlug}-records.jsonl`;
 
 const run = (command, args, env = {}) => new Promise((resolve, reject) => {
   const child = spawn(command, args, { cwd: root, env: { ...providerEnv, ...env }, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -87,7 +87,7 @@ const scheduledArms = (repetition) => ['playwright', 'visual', 'hybrid'].sort((l
 const randomizationBlock = (repetition, arms) => `${taskId}-${experimentCondition.condition}-${pilotRunTag ?? 'untagged'}-r${String(repetition).padStart(2, '0')}-${arms.join('-')}`;
 const records = [];
 const writeSummary = () => {
-  fs.mkdirSync(`${root}/../artifacts/phase2`, { recursive: true });
+  fs.mkdirSync(`${root}/../legacy/artifacts/phase2`, { recursive: true });
   fs.writeFileSync(artifact, `${JSON.stringify({ application: 'indico', task_id: taskId, condition: experimentCondition.condition, expected_verdict: expectedVerdict, provider, model, pilot_run_tag: pilotRunTag, repetitions, arms: ['playwright', 'visual', 'hybrid'], max_steps: Number(maxSteps), timeout_ms: Number(timeoutMs), agent_wall_timeout_ms: Number(wallTimeoutMs), records, passed_cells: records.filter((r) => r.cell_passed).length, total_cells: records.length, confirmatory: false }, null, 2)}\n`, { mode: 0o600 });
 };
 const createMissingAgentRecord = ({ arm, phase2Fields, executionCode }) => createRunRecord({

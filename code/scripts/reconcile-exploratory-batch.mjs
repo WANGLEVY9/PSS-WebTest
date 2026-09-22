@@ -6,9 +6,9 @@ import { readBlockPilotSummary } from '../src/exploratory-batch-artifacts.mjs';
 import { classifyControllerBoundary } from '../src/exploratory-batch-guards.mjs';
 
 const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
-const manifestPath = process.env.PSS_BATCH_MANIFEST ? path.resolve(process.env.PSS_BATCH_MANIFEST) : path.join(codeRoot, '..', 'artifacts/phase2', `phase2-exploratory-500-blocks-v1-${`${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
+const manifestPath = process.env.PSS_BATCH_MANIFEST ? path.resolve(process.env.PSS_BATCH_MANIFEST) : path.join(codeRoot, '..', 'legacy/artifacts/phase2', `phase2-exploratory-500-blocks-v1-${`${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`.replace(/[^a-zA-Z0-9._-]+/g, '-')}-manifest.json`);
 const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-const artifactRoot = path.join(codeRoot, '..', 'artifacts/phase2');
+const artifactRoot = path.join(codeRoot, '..', 'legacy/artifacts/phase2');
 const runTagPrefix = process.env.PSS_BATCH_RUN_TAG_PREFIX ?? 'exploratory-500';
 if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(runTagPrefix)) throw new Error('PSS_BATCH_RUN_TAG_PREFIX must be a safe non-empty artifact-label prefix.');
 const observed = [];

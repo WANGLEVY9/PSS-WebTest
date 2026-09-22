@@ -6,14 +6,16 @@ Tab indices are user-requested creation-order ordinals, never URLs/titles/DOM ID
 """
 import ast
 import math
+from typing import Literal, get_args
 
 FIELDS = {'click': {'x', 'y'}, 'double_click': {'x', 'y'}, 'move': {'x', 'y'},
           'type': {'text'}, 'key': {'key'}, 'scroll': {'x', 'y', 'dx', 'dy'},
           'wait': set(), 'done': {'text'}, 'upload': {'x', 'y', 'asset_id'},
           'tab_focus': {'index'}, 'tab_close': set(), 'back': set(), 'forward': set()}
-KEYS = {'Enter', 'Tab', 'Shift+Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft',
+KeyName = Literal['Enter', 'Tab', 'Shift+Tab', 'Escape', 'ArrowUp', 'ArrowDown', 'ArrowLeft',
         'ArrowRight', 'PageUp', 'PageDown', 'Home', 'End', 'Backspace', 'Delete',
-        'ControlOrMeta+A', 'Control+A', 'Meta+A'}
+        'ControlOrMeta+A', 'Control+A', 'Meta+A']
+KEYS = set(get_args(KeyName))
 
 
 def coordinate_contract(value):

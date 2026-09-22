@@ -64,6 +64,8 @@ def verify_native_endpoint(benchmark, evaluated):
 
 
 def validate_commands(binding):
+    if binding.get('actor_protocol') not in (None,'owned-session-v1'):
+        raise ValueError('Unknown actor command protocol')
     if binding.get('timing_policy') not in (None,POLICY):
         raise ValueError('Unknown lifecycle timing policy')
     if binding.get('timing_policy')==POLICY:
@@ -188,13 +190,22 @@ def execute_one(store, binding, invoke=run_command):
         if binding.get('timing_policy')!=POLICY:
             # Historical synthetic controls only, not new diagnostic admission.
             actor_command['timeout_ms']=min(actor_command['timeout_ms'],binding['budget']['task_timeout_ms'])
-        actor_output = invoke(actor_command, {**base, 'input': actor_input,
+        actor_payload = {**base, 'input': actor_input,
                        'coordinate_space': binding.get('coordinate_space', 'css-pixels'),
                        'configuration_sha256': binding['configuration_sha256'],
                        'model_binding': binding.get('model_binding'), 'budget': binding['budget'],
                        'request_ledger': {'database': store.filename, 'opportunityId': oid, 'leaseToken': token,
                                           'capMicroUsd': binding.get('cost_policy',{}).get('cap_micro_usd')},
-                       'cost_policy': binding.get('cost_policy')}, heartbeat)
+                       'cost_policy': binding.get('cost_policy')}
+        if binding.get('actor_protocol')=='owned-session-v1':
+            # Only the trusted session wrapper receives setup/reset metadata.
+            # It reconstructs the actor's allowlisted input from the owned ledger.
+            store.event(oid,'owned-session-reset',{'lease_token':token,
+                'reset_sha256':hashlib.sha256(canonical(reset).encode()).hexdigest()})
+            command_payload={'schema':'pss-owned-session-request-v1','actor_payload':actor_payload,
+                             'binding':binding,'reset_receipt':reset}
+        else:command_payload=actor_payload
+        actor_output = invoke(actor_command,command_payload,heartbeat)
         actor, actor_lifecycle_ref = unpack_actor_envelope(actor_output, base)
         if actor_lifecycle_ref is not None:
             result['actor_lifecycle_ref'] = actor_lifecycle_ref

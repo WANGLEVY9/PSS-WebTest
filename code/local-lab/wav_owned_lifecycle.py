@@ -126,7 +126,12 @@ class OwnedLifecycle:
         if payload['environment_id'] != self.m['environment_id']:
             raise ValueError('Environment binding mismatch')
         self.identity = {k: payload[k] for k in IDENTITY}
-        self.token = digest((payload['opportunity_id']+'\0'+manifest_sha256).encode())[:16]
+        if 'lease_token' in payload:
+            if not isinstance(payload['lease_token'],str) or not payload['lease_token']:
+                raise ValueError('Nonempty lease token required')
+            self.identity['lease_token']=payload['lease_token']
+        self.token = digest((payload['opportunity_id']+'\0'+manifest_sha256+
+                             ('\0'+payload['lease_token'] if 'lease_token' in payload else '')).encode())[:16]
         self.owner = digest(json.dumps(self.identity, sort_keys=True).encode()+manifest_sha256.encode())
         self.network = self.m['namespace']+'-'+self.token
         self.names = {s['site']: self.network+'-'+s['site'] for s in self.m['sites']}

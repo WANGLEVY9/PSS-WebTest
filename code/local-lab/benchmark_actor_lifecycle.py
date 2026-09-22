@@ -184,7 +184,7 @@ def verify_lifecycle(ref,actor):
 def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
                       payload,framework,mode,node,viewport=(1280,720),locale='en-US',
                       timezone_id='UTC',storage_state_ref=None,synthetic_driver=None,
-                      native_evaluator=None,lifecycle_limits=None):
+                      native_evaluator=None,lifecycle_limits=None,traditional_script_ref=None):
     """Trusted setup → actor → optional live-page evaluation → trace/HAR seal.
 
     native_evaluator is supervisor-only and runs once after immutable actor-end.
@@ -219,8 +219,14 @@ def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
         if lifecycle_limits and (actor_start-setup_start)/1_000_000>lifecycle_limits['setup_ms']:
             raise TimeoutError('Session setup exceeded its administrative budget')
         if synthetic_driver is None:
-            from native_framework_driver import run_actor
-            driver=run_actor
+            if framework=='playwright':
+                from functools import partial
+                from traditional_actor import run_actor
+                if traditional_script_ref is None:raise ValueError('Frozen reviewed Traditional script required')
+                driver=partial(run_actor,script_ref=traditional_script_ref)
+            else:
+                from native_framework_driver import run_actor
+                driver=run_actor
         else:driver=synthetic_driver
         # Only the existing actor payload is supplied. No setup/reset refs, HAR,
         # lifecycle file, evaluator result, hidden URL or gold is added to it.

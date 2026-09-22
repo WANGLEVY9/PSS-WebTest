@@ -61,8 +61,11 @@ def replay_contents(evidence, actor, binding):
     if actor.get('source_tree_unchanged') is not True or len(snapshots)!=1:
         raise ValueError('Source stability evidence required')
     if binding['framework']=='playwright':
+        from traditional_actor import SOURCES
         script=binding['traditional_script_ref']
-        sources={Path(script['file']).name:script}
+        sources=binding.get('actor_source_refs',{})
+        if set(sources)!=set(SOURCES):raise ValueError('Full Traditional executor source set required')
+        sources={**sources,Path(script['file']).name:script}
     else:
         sources=binding['actor_source_refs']
         if set(sources)!=set(FRAMEWORK_SOURCES):raise ValueError('Full frozen actor source set required')

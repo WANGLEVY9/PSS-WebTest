@@ -4,7 +4,41 @@ Status: **engineering remediation, not sponsor-ready or confirmatory admission**
 This is a new prospective development campaign. Its empty execution count does
 not assert that historical local/cloud experiments are absent or invalid.
 
-## Continuation update (supersedes timing/component status below)
+## Session/isolation continuation (latest)
+
+Latest full offline verification: **576 tests passed, zero failed/skipped**,
+plus installed-framework probes and 14 actuator checks. Report `verification-009`:
+source tree SHA256 `bfac25f15a11a269c0cdd79de3e35179722f8a566e79138dbe9018ba1632b5a6`,
+480 source files unchanged during verification. No model requests or official
+task executions in this iteration. Four historical artifact suites were
+explicitly not requested, not counted as passed.
+
+- Traditional now has a reviewed-script Python executor with the common clock,
+  before/after frames, paired mutation events, separately counted reads and
+  source snapshots. Real Chromium synthetic controls cover popup/tab/read/done,
+  failure, budgets and sealed replay. Legacy JS task scripts are not silently
+  declared migrated; each official task still needs blinded adaptation.
+- The worker-to-wrapper subprocess path now verifies the running SQLite lease,
+  immutable binding/public input, source pins and the owning worker's reset
+  event. A synthetic end-to-end control retained native score 0 after successful
+  Traditional execution; no capability-success requirement was introduced.
+- Authentication now requires private reset/setup/baseline/lease-bound storage
+  and authenticated-health evidence, allowed origins, required sites and expiry.
+  Live site login/probes remain deployment responsibilities.
+- Fixture acceptance now requires the bidirectional cross-instance content
+  package. The verifier reads all declared component export bytes, checks
+  mutations/restores/peer stability and rejects incomplete coverage. **No new
+  real full-state isolation run was performed.** Inventory/exporter fidelity
+  and real per-profile deployment acceptance remain unverified.
+
+VWA/ATA are not marked deployed or admitted. Deployment-specific restore,
+original ATA defect/live-label parity, and the target Linux/API joint acceptance
+remain blockers. See `SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md` for implementation
+interfaces, required evidence schemas, commands and failure handling.
+
+Public summary: `results/local-runtime/2026-09-22-session-isolation-handoff.json`.
+
+## Earlier continuation (550-test source revision)
 
 Latest verification: **550 tests passed, zero skipped**, plus framework and
 14 actuator checks; verification-007 source SHA256

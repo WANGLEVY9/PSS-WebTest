@@ -93,6 +93,8 @@ class CoverageTests(unittest.TestCase):
             'timing_policy':POLICY,'lifecycle_limits':{'setup_ms':1000,'evaluation_ms':1000,'finalization_ms':1000,'transport_ms':1000},
             'commands':{s:command for s in ('reset','actor','evaluate','cleanup')}}
         binding['traditional_script_ref']={'file':str(script),'sha256':command['sha256']}
+        from traditional_actor import SOURCES
+        binding['actor_source_refs']={name:binding['traditional_script_ref'] for name in SOURCES}
         self.package['runtime_binding_refs']={t['benchmark']+'/'+profile:self.ref(binding)}
         # Deliberately model an admissible envelope to unit-test the checker.
         # These artificial claims exist only under TemporaryDirectory; never
@@ -137,7 +139,7 @@ class CoverageTests(unittest.TestCase):
         receipt['result'].update(timing_policy=POLICY,lifecycle_timing=timing,actor_elapsed_ms=actor['elapsed_ms'])
         actor['trajectory_directory']=str(journal.directory)
         source_refs=(binding['actor_source_refs'] if binding['framework']!='playwright' else
-                     {Path(binding['traditional_script_ref']['file']).name:binding['traditional_script_ref']})
+                     {**binding['actor_source_refs'],Path(binding['traditional_script_ref']['file']).name:binding['traditional_script_ref']})
         sources={name:journal.artifact('source-'+name+'.txt',Path(ref['file']).read_bytes())
                  for name,ref in source_refs.items()}
         journal.event('source-snapshot',sources=sources)

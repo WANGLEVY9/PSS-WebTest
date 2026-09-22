@@ -64,6 +64,17 @@ def audit(package):
                     if not peers or any(not p.get('environment_id') or not p.get('before_sha256') or p.get('before_sha256') != p.get('after_sha256') for p in peers):
                         errors.append('peer-isolation-not-demonstrated')
                 controls = r.get('evaluator_controls', {})
+                try:
+                    from isolation_evidence import audit as audit_isolation
+                    iso_ref=r['cross_instance_isolation_ref']
+                    iso=json.loads(read_pinned(iso_ref['file'],iso_ref['sha256']))
+                    if (any(iso.get(k)!=r.get(k) for k in ('host_id','campaign_id','benchmark','profile'))
+                        or iso.get('data_kind')!='MEASURED' or iso.get('scope')!='diagnostic'):
+                        raise ValueError('Isolation belongs to another cell or is not measured')
+                    if not audit_isolation(iso)['snapshot_contract_passed']:
+                        raise ValueError('Cross-instance content evidence failed')
+                except (OSError,ValueError,KeyError,TypeError):
+                    errors.append('full-cross-instance-content-proof-missing-or-invalid')
                 if controls != {'positive': 'correct', 'negative': 'incorrect', 'malformed': 'unresolved'}:
                     errors.append('native-evaluator-controls-incomplete')
                 if r.get('strict_success_required_for_admission') is not False:

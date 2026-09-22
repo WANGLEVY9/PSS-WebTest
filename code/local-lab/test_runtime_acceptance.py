@@ -35,7 +35,18 @@ class AcceptanceTests(unittest.TestCase):
                 sha = save(file, value)
                 return audit({'schema': 'pss-benchmark-acceptance-v1', **identity, 'receipts': [{'file': str(file), 'sha256': sha}]})
             result = check(receipt, 'receipt.json')
-            self.assertEqual(result['ready_cells'], 1)
+            self.assertEqual(result['ready_cells'], 0)
+            self.assertIn('full-cross-instance-content-proof-missing-or-invalid',
+                          next(c for c in result['cells'] if c['profile']=='playwright' and c['benchmark']=='wav')['errors'])
+            # Artificial byte-level sequence ONLY for verifier regression. This
+            # never runs a fixture or exports an actual acceptance receipt.
+            from test_runtime_isolation_evidence import IsolationEvidenceTests
+            synthetic=IsolationEvidenceTests();synthetic.setUp();self.addCleanup(synthetic.doCleanups)
+            proof={**synthetic.package,**identity,'benchmark':'wav','profile':'playwright',
+                   'data_kind':'MEASURED','scope':'diagnostic'}
+            p=Path(tmp)/'synthetic-isolation.json';h=save(p,proof)
+            receipt['cross_instance_isolation_ref']={'file':str(p),'sha256':h}
+            self.assertEqual(check(receipt,'with-content.json')['ready_cells'],1)
             self.assertFalse(result['confirmatory_authorized'])
             receipt['reset_cycles'][0]['peers'][0]['after_sha256'] = 'd'*64
             self.assertEqual(check(receipt, 'peer-drift.json')['ready_cells'], 0)

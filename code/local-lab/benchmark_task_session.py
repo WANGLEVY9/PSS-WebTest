@@ -45,17 +45,16 @@ def resolve_setup(op, reset, baseline_sha256, routes, storage_state_ref=None):
             return routes[token].rstrip('/')
         url=re.sub(r'__[A-Z_]+__',substitute,initial)
         parsed=urlparse(url)
-        origins={urlparse(u).netloc for u in routes.values()}
-        if parsed.scheme not in ('http','https') or parsed.username or parsed.password or parsed.netloc not in origins:
+        origins={(urlparse(u).scheme,urlparse(u).netloc) for u in routes.values()}
+        if parsed.scheme not in ('http','https') or parsed.username or parsed.password or (parsed.scheme,parsed.netloc) not in origins:
             raise ValueError('Start URL is not an explicitly deployed site')
         resolved.append(url)
     state=None
     if setup.get('require_login') and storage_state_ref is None:
         raise ValueError('Official task requires explicit reset-scoped authentication')
     if storage_state_ref is not None:
-        state=json.loads(read_pinned(storage_state_ref['file'],storage_state_ref['sha256']))
-        if storage_state_ref.get('opportunity_id')!=op['opportunity_id']:
-            raise ValueError('Authentication state reused across executions')
+        from session_auth import authenticated_state
+        state=authenticated_state(storage_state_ref,op,reset,baseline_sha256,routes)
     return {'start_urls':resolved,'geolocation':setup.get('geolocation'),'storage_state':state}
 
 

@@ -88,6 +88,91 @@ class ActorLifecycleChromiumTests(unittest.TestCase):
             payload or self.payload,'SYNTHETIC_DRIVER','visual',None,viewport=(800,600),
             synthetic_driver=driver or self.driver)
 
+    def traditional(self,source,max_actions=6):
+        script=persist(self.root/'reviewed-script.py',source.encode())
+        store=Store(str(self.root/'ledger.sqlite'))
+        op={**self.op,'schedule_sha256':'c'*64}
+        store.enqueue([op]);leased=store.claim();store.start(op['opportunity_id'],leased['lease_token'])
+        self.addCleanup(store.close)
+        payload={**self.payload,'budget':{'max_actions':max_actions,'task_timeout_ms':10000},
+            'request_ledger':{'database':store.filename,'opportunityId':op['opportunity_id'],'leaseToken':leased['lease_token']}}
+        return run_owned_session(self.browser,op,self.reset,'b'*64,self.routes,self.root/'traditional',
+            payload,'playwright','traditional',None,viewport=(800,600),traditional_script_ref=script,
+            lifecycle_limits={'setup_ms':10000,'evaluation_ms':10000,'finalization_ms':10000,'transport_ms':10000})
+
+    def test_traditional_real_locator_popup_read_done_timing_and_replay(self):
+        result=self.traditional('''def run(session, task):
+    session.get_by_role('button', name='Open popup').click()
+    session.focus_tab(0)
+    return session.locator('h1').inner_text()
+''')
+        actor=result['actor_result'];seal=verify_lifecycle(result['actor_lifecycle_ref'],actor)
+        self.assertEqual(actor['terminal_status'],'completed')
+        self.assertEqual(actor['final_answer'],'SYNTHETIC CONTROL')
+        self.assertEqual(actor['action_count'],3);self.assertEqual(actor['script_reads'],1)
+        self.assertEqual(actor['provider_requests'],0);self.assertEqual(actor['timing_policy'],POLICY)
+        self.assertIn('lifecycle_timing',seal);self.assertTrue(actor['source_tree_unchanged'])
+        rows=[json.loads(r) for r in Path(actor['trajectory_directory'],'trajectory.jsonl').read_text().splitlines()]
+        self.assertGreaterEqual(sum(r['kind']=='observation' for r in rows),7)
+        self.assertEqual(sum(r['kind']=='action-start' for r in rows),3)
+
+    def test_traditional_failed_script_seals_without_fabricated_answer(self):
+        result=self.traditional("def run(session, task):\n    raise AssertionError('SYNTHETIC')\n")
+        actor=result['actor_result'];verify_lifecycle(result['actor_lifecycle_ref'],actor)
+        self.assertEqual(actor['terminal_status'],'execution-error');self.assertIsNone(actor['final_answer'])
+
+    def test_traditional_action_budget_preserves_attempted_action_trace(self):
+        result=self.traditional("def run(session, task):\n    session.focus_tab(1)\n    return 'answer'\n",max_actions=1)
+        actor=result['actor_result'];verify_lifecycle(result['actor_lifecycle_ref'],actor)
+        self.assertEqual(actor['failure_class'],'action-budget-exhausted');self.assertEqual(actor['action_count'],1)
+        self.assertIsNone(actor['final_answer'])
+
+    def test_traditional_cannot_override_timeout_or_call_raw_evaluate(self):
+        result=self.traditional("def run(session, task):\n    session.get_by_role('button').click(timeout=100000)\n    return 'x'\n")
+        actor=result['actor_result'];verify_lifecycle(result['actor_lifecycle_ref'],actor)
+        self.assertEqual(actor['failure_class'],'ValueError');self.assertEqual(actor['action_count'],0)
+
+    def test_real_task_wrapper_uses_ledger_and_returns_sealed_traditional_run(self):
+        from test_runtime_session_wrapper import fixture
+        import subprocess
+        import sys
+        store,request,manifest=fixture(self.root,self.routes)
+        self.addCleanup(store.close)
+        proc=subprocess.run([sys.executable,str(Path(__file__).with_name('benchmark_session_wrapper.py')),
+            '--manifest',manifest['file'],'--manifest-sha256',manifest['sha256']],
+            input=json.dumps(request),capture_output=True,text=True,timeout=60)
+        self.assertEqual(proc.returncode,0,proc.stderr)
+        envelope=json.loads(proc.stdout)
+        actor=envelope['actor_result'];seal=verify_lifecycle(envelope['actor_lifecycle_ref'],actor)
+        self.assertEqual(actor['final_answer'],'SYNTHETIC CONTROL')
+        self.assertEqual(actor['terminal_status'],'completed')
+        self.assertEqual(actor['scope'],'synthetic');self.assertEqual(actor['provider_requests'],0)
+        self.assertIn('lifecycle_timing',seal)
+
+    def test_worker_wrapper_subprocess_chain_preserves_negative_synthetic_evaluation(self):
+        # Only actor/wrapper/Chromium are real here. Reset, evaluation and cleanup
+        # are explicit synthetic callbacks; no official task or fixture is run.
+        from test_runtime_session_wrapper import fixture
+        from runtime_worker import execute_one,run_command
+        old,request,_=fixture(self.root,self.routes)
+        op=json.loads(old.db.execute('SELECT payload FROM opportunities').fetchone()['payload']);old.close()
+        store=Store(str(self.root/'worker.sqlite'));self.addCleanup(store.close);store.enqueue([op])
+        calls=[]
+        def invoke(command,payload,heartbeat):
+            heartbeat();stage=('reset','actor','evaluate','cleanup')[len(calls)];calls.append(stage)
+            if stage=='actor':return run_command(command,payload,heartbeat)
+            identity={k:payload[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','data_kind','lease_token')}
+            if stage=='reset':return {**request['reset_receipt'],**identity}
+            if stage=='evaluate':return {**identity,'assessment_status':'valid','native_score':0,'verdict':None}
+            return {**identity,'cleaned':True}
+        result=execute_one(store,request['binding'],invoke)
+        self.assertEqual(calls,['reset','actor','evaluate','cleanup'])
+        self.assertTrue(result['lifecycle_completed'],result)
+        self.assertEqual(result['actor_terminal_status'],'completed')
+        self.assertEqual(result['native_score'],0)
+        self.assertEqual(result['cleanup_status'],'verified')
+        self.assertGreater(result['actor_envelope_elapsed_ms'],result['actor_elapsed_ms'])
+
     def test_context_close_seals_multi_page_har_and_preserves_actor_end(self):
         envelope=self.run_fixture()
         actor=envelope['actor_result']

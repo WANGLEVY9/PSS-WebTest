@@ -1,5 +1,11 @@
 # Official benchmark development acceptance
 
+Implementation update: [task wrapper, Traditional replay, authentication and
+full-state isolation](SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md). Fixture receipts
+now require a verified `cross_instance_isolation_ref`; equal producer-supplied
+peer digest strings alone cannot pass that gate. Live VWA/ATA acceptance remains
+pending deployment-specific restore/parity evidence.
+
 ## Material Passport
 
 - Origin Skill: academic-research-suite / experiment-agent

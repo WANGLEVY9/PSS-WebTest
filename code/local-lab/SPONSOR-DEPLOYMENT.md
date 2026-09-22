@@ -1,5 +1,10 @@
 # Sponsor deployment and acceptance
 
+Latest session/authentication/isolation implementation and host-specific VWA/ATA
+handoff: [Session and isolation handoff](SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md).
+It includes the Traditional API, task wrapper bindings, private authentication
+proof schema, bidirectional full-state export protocol and unresolved live gates.
+
 Current operational checklist: [official development acceptance runbook](ACCEPTANCE-RUNBOOK.md).
 It defines the 60-task / four-profile / 360-opportunity development gate, public
 output protocols, source mapping and measured receipt contracts. It explicitly

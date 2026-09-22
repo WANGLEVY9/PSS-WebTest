@@ -12,12 +12,13 @@ from benchmark_acceptance import audit as audit_fixtures, BENCHMARKS, PROFILES
 from runtime_inputs import read_pinned, task_projection
 from runtime_store import digest
 from prepare_official_runtime import save
+from lifecycle_timing import POLICY,verify_timing
 
 ARTIFACTS = ('reset', 'actor', 'native_evaluation', 'replay', 'cleanup', 'failure_review')
 TERMINALS = ('completed','failed','timeout','no-verdict')
 FRAMEWORK_SOURCES = ('native_framework_driver.py','framework_actions.py','framework_model.py','journaled_browser.py',
     'framework_agentlab.py','framework_browser_use.py','framework_boundary.py','benchmark_output_contract.py',
-    'runtime_inputs.py','runtime_store.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs')
+    'runtime_inputs.py','runtime_store.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs','lifecycle_timing.py')
 
 
 def load_ref(ref):
@@ -127,6 +128,8 @@ def audit(package):
         group=[runtime.get(b+'/'+p) for p in PROFILES]
         if all(group):
             if len({digest(x['budget']) for x in group})!=1:runtime_errors.append(b+':unmatched-budgets')
+            if len({digest({'policy':x.get('timing_policy'),'limits':x.get('lifecycle_limits')}) for x in group})!=1:
+                runtime_errors.append(b+':unmatched-lifecycle-policy-or-limits')
             if len({digest(x['model_binding']) for x in group[:3]})!=1:runtime_errors.append(b+':unmatched-actor-models')
     expected = {(t['task_key'], p, repetition):t for t in tasks for p in PROFILES
                 for repetition in (['A1','S1','S2'] if t['stability_repeat'] else ['A1'])}
@@ -155,7 +158,7 @@ def audit(package):
                 errors.append('unfrozen-runtime-configuration')
             artifacts={}
             artifact_names = ARTIFACTS + (() if key[1]=='playwright' else ('provider_accounting',))
-            if t['benchmark']=='wav':artifact_names += ('actor_lifecycle',)
+            artifact_names += ('actor_lifecycle',)
             for name in artifact_names:
                 ref = r.get('artifacts',{}).get(name)
                 try: artifacts[name]=load_ref(ref)
@@ -181,6 +184,26 @@ def audit(package):
                 errors.append('actor-non-capability-terminal')
             count, elapsed = actor.get('action_count'), actor.get('elapsed_ms')
             supervisor_elapsed = outcome.get('phase_timings_ms',{}).get('actor')
+            try:
+                from benchmark_actor_lifecycle import verify_lifecycle
+                lifecycle_ref=r['artifacts']['actor_lifecycle']
+                lifecycle=verify_lifecycle(lifecycle_ref,actor)
+                if (binding.get('timing_policy')!=POLICY or outcome.get('timing_policy')!=POLICY
+                    or lifecycle.get('lifecycle_limits')!=binding.get('lifecycle_limits')
+                    or outcome.get('lifecycle_timing')!=lifecycle.get('lifecycle_timing')):
+                    raise ValueError('Lifecycle timing not frozen or summary mismatch')
+                elapsed=verify_timing(lifecycle['lifecycle_timing'],actor,binding['lifecycle_limits'])
+                inner=sum(p['elapsed_ms'] for p in lifecycle['lifecycle_timing']['phases'].values())
+                if not valid_number(supervisor_elapsed) or inner>supervisor_elapsed:
+                    raise ValueError('Lifecycle exceeds parent-process duration')
+                if supervisor_elapsed>binding['commands']['actor']['timeout_ms']:
+                    raise ValueError('Parent process exceeded frozen lifecycle envelope')
+                if supervisor_elapsed-inner>binding['lifecycle_limits']['transport_ms']:
+                    raise ValueError('Unaccounted parent/child transport exceeds frozen allowance')
+                if outcome.get('actor_elapsed_ms')!=elapsed:
+                    raise ValueError('Actor elapsed summary differs')
+            except (ValueError,TypeError,KeyError,OSError,AttributeError):
+                errors.append('lifecycle-timing-unverified')
             accounting_valid = (type(count) is int and count >= 0
                 and type(actor.get('budget_met')) is bool and valid_number(elapsed)
                 and valid_number(supervisor_elapsed) and bool(binding))
@@ -189,7 +212,6 @@ def audit(package):
             else:
                 budget_met = (actor['budget_met'] and actor['terminal_status']!='timeout'
                     and elapsed <= binding['budget']['task_timeout_ms']
-                    and supervisor_elapsed <= binding['budget']['task_timeout_ms']
                     and count <= binding['budget']['max_actions'])
                 terminal = ('timeout' if actor['terminal_status']=='completed' and not budget_met
                             else actor['terminal_status'])
@@ -230,6 +252,46 @@ def audit(package):
                         raise ValueError('Evaluator used another actor lifecycle or HAR')
                     read_pinned(native['network_trace_ref']['file'],native['network_trace_ref']['sha256'])
                 except (ValueError,TypeError,KeyError,OSError,AttributeError):errors.append('wav-actor-lifecycle-unverified')
+            if t['benchmark']=='vwa':
+                try:
+                    from benchmark_actor_lifecycle import verify_lifecycle
+                    lifecycle_ref=r['artifacts']['actor_lifecycle']
+                    seal=verify_lifecycle(lifecycle_ref,actor)
+                    preclose=load_ref(seal['preclose_evaluation_ref'])
+                    if (native.get('actor_lifecycle_ref')!=lifecycle_ref
+                        or native.get('preclose_evaluation_ref')!=seal['preclose_evaluation_ref']
+                        or any(native.get(k)!=v for k,v in preclose.items())
+                        or preclose.get('schema')!='pss-vwa-native-evaluator-v1'
+                        or preclose.get('evaluated_after_actor_end_before_context_close') is not True
+                        or preclose.get('actor_journal_unchanged') is not True):
+                        raise ValueError('Native result is not the sealed pre-close evaluation')
+                    for k in ('native_result_ref','native_config_ref','native_log_ref','actor_answer_ref','pre_evaluation_page_ref'):
+                        read_pinned(preclose[k]['file'],preclose[k]['sha256'])
+                except (ValueError,TypeError,KeyError,OSError,AttributeError):errors.append('vwa-preclose-native-evaluation-unverified')
+            if t['benchmark']=='ata':
+                # Reference-label scoring is useful engineering evidence, but
+                # cannot prove that a live fixture still contains the defect.
+                if native.get('live_fixture_label_parity_verified') is not True:
+                    errors.append('ata-live-fixture-label-parity-unverified')
+                for k in ('prediction_status','failure_step','verdict_correctness','confusion_class',
+                          'step_assessment_status','strict_step_correctness'):
+                    if k not in native or native.get(k)!=outcome.get(k):
+                        errors.append('ata-prediction-correctness-summary-mismatch')
+                try:
+                    if native.get('actor_lifecycle_ref')!=r['artifacts']['actor_lifecycle']:
+                        raise ValueError('ATA score consumed another actor lifecycle')
+                    for k in ('native_result_ref','actor_answer_ref','evaluator_manifest_ref'):
+                        read_pinned(native[k]['file'],native[k]['sha256'])
+                    # Live parity must have a concrete artifact, not just a bool.
+                    parity=load_ref(native['live_fixture_label_parity_ref'])
+                    if (parity.get('schema')!='pss-ata-live-label-parity-v1'
+                        or parity.get('evaluation_ref')!=task_binding['evaluation_ref']
+                        or parity.get('baseline_sha256')!=binding['baseline_sha256']
+                        or parity.get('data_kind')!='MEASURED' or not parity.get('evidence_refs')
+                        or parity.get('label_parity_verified') is not True):
+                        raise ValueError('Unverified live ATA label parity')
+                    for ref in parity['evidence_refs']:read_pinned(ref['file'],ref['sha256'])
+                except (ValueError,TypeError,KeyError,OSError,AttributeError):errors.append('ata-reference-or-live-parity-evidence-unverified')
             if key[1]!='playwright':
                 accounting=artifacts.get('provider_accounting',{})
                 if (accounting.get('opportunity_id')!=r['opportunity_id'] or accounting.get('all_requests_settled') is not True

@@ -11,11 +11,13 @@ import json
 from pathlib import Path
 import tempfile
 import threading
+import time
 import unittest
 
 from benchmark_actor_lifecycle import run_owned_session, verify_lifecycle, encoded, persist, sha
 from journaled_browser import JournaledBrowser
-from runtime_store import digest
+from runtime_store import digest,Store
+from lifecycle_timing import POLICY,window,verify_timing
 
 
 @unittest.skipUnless(importlib.util.find_spec('playwright'), 'Use pinned h-agentlab Python for Chromium lifecycle integration')
@@ -137,6 +139,92 @@ class ActorLifecycleChromiumTests(unittest.TestCase):
         with self.assertRaises(ValueError):self.run_fixture(driver=changed)
         self.assertFalse((self.root/'run/supervisor-lifecycle.json').exists())
         self.assertEqual(len(self.browser.contexts),0)
+
+    def timed_driver(self,context,page,payload,journal,framework,mode,node,viewport,
+                     terminal_page_sink,defer_trace_finalization):
+        start=time.monotonic_ns()
+        self.assertTrue(defer_trace_finalization)
+        context.tracing.start(screenshots=True,snapshots=True)
+        actuator=JournaledBrowser(context,page,journal,viewport,payload['input'],settle_ms=20)
+        journal.event('actor-start',framework=framework,mode=mode)
+        actuator.observe(mode)
+        actuator.execute({'name':'click','x':60,'y':120})
+        actuator.observe(mode)
+        actuator.execute({'name':'done','text':'SYNTHETIC_CONTROL'})
+        end=time.monotonic_ns()
+        actor={**self.identity,'scope':'synthetic','data_kind':'SYNTHETIC_TEST',
+               'terminal_status':'completed','final_answer':'SYNTHETIC_CONTROL',
+               'trajectory_directory':str(journal.directory),'action_count':2,'budget_met':True,
+               'timing_policy':POLICY,'actor_timing':window(start,end),'elapsed_ms':(end-start)/1_000_000}
+        journal.event('actor-end',receipt=actor)
+        terminal_page_sink(actuator.page)
+        return actor
+
+    def run_timed_fixture(self,evaluator):
+        return run_owned_session(self.browser,self.op,self.reset,'b'*64,self.routes,self.root/'timed',
+            self.payload,'SYNTHETIC_DRIVER','visual',None,viewport=(800,600),
+            synthetic_driver=self.timed_driver,native_evaluator=evaluator,
+            lifecycle_limits={'setup_ms':10000,'evaluation_ms':10000,'finalization_ms':10000,'transport_ms':1000})
+
+    def test_timing_and_actual_final_popup_preclose_evaluation(self):
+        called=[]
+        def evaluate(actor,page):
+            # The first page and previously opened second tab are NOT this page.
+            self.assertTrue(page.url.endswith('/popup'));self.assertFalse(page.is_closed())
+            self.assertEqual(json.loads((Path(actor['trajectory_directory'])/'trajectory.jsonl').read_text().splitlines()[-1])['kind'],'actor-end')
+            called.append(True)
+            time.sleep(.02)
+            return {**self.identity,'scope':'synthetic','data_kind':'SYNTHETIC_TEST',
+                    'assessment_status':'valid','native_score':0,'verdict':None,
+                    'trajectory_ref':{'file':str(Path(actor['trajectory_directory'])/'trajectory.jsonl'),
+                        'sha256':sha((Path(actor['trajectory_directory'])/'trajectory.jsonl').read_bytes())}}
+        out=self.run_timed_fixture(evaluate)
+        seal=verify_lifecycle(out['actor_lifecycle_ref'],out['actor_result'])
+        self.assertEqual(called,[True])
+        verify_timing(seal['lifecycle_timing'],out['actor_result'],seal['lifecycle_limits'])
+        self.assertGreaterEqual(seal['lifecycle_timing']['phases']['evaluation']['elapsed_ms'],20)
+        self.assertEqual(len(self.browser.contexts),0)
+        self.assertIn('preclose_evaluation_ref',seal)
+
+    def test_native_evaluator_error_closes_and_seals_unresolved(self):
+        def broken(actor,page):raise RuntimeError('private evaluator diagnostic')
+        out=self.run_timed_fixture(broken)
+        seal=verify_lifecycle(out['actor_lifecycle_ref'],out['actor_result'])
+        receipt=json.loads(Path(seal['preclose_evaluation_ref']['file']).read_bytes())
+        self.assertEqual(receipt['assessment_status'],'unresolved')
+        self.assertIsNone(receipt['native_score'])
+        self.assertEqual(out['actor_result']['terminal_status'],'completed')
+        self.assertEqual(len(self.browser.contexts),0)
+
+    def test_real_agentlab_driver_uses_current_clock_and_deferred_trace(self):
+        from native_framework_driver import run_actor
+        class OfflineModel:
+            identity={'model':'SYNTHETIC_OFFLINE'}
+            requests=0
+            def __call__(self,messages):
+                self.requests+=1
+                return {'role':'assistant','content':'<action>send_msg_to_user("SYNTHETIC_CONTROL")</action>'}
+            def get_stats(self):return {}
+        for mode in ('visual','hybrid'):
+            database=self.root/f'{mode}.sqlite'
+            store=Store(str(database))
+            try:
+                store.enqueue([{**self.op,'schedule_sha256':'synthetic-not-benchmark'}])
+                claimed=store.claim();store.start(self.op['opportunity_id'],claimed['lease_token'])
+                payload={**self.payload,'request_ledger':{'database':str(database),'opportunityId':self.op['opportunity_id'],
+                    'leaseToken':claimed['lease_token']}}
+                def driver(*args,**kwargs):return run_actor(*args,backend=OfflineModel(),**kwargs)
+                envelope=run_owned_session(self.browser,self.op,self.reset,'b'*64,self.routes,self.root/f'real-{mode}',
+                    payload,'agentlab-browsergym',mode,None,viewport=(800,600),synthetic_driver=driver,
+                    lifecycle_limits={'setup_ms':10000,'evaluation_ms':10000,'finalization_ms':10000,'transport_ms':1000})
+                actor=envelope['actor_result']
+                self.assertEqual(actor['terminal_status'],'completed')
+                self.assertTrue(actor['budget_met']);self.assertEqual(actor['action_count'],1)
+                seal=verify_lifecycle(envelope['actor_lifecycle_ref'],actor)
+                self.assertIn('browser_trace_ref',seal)
+                self.assertEqual(actor['timing_policy'],POLICY)
+                store.finish(self.op['opportunity_id'],claimed['lease_token'],actor)
+            finally:store.close()
 
 
 if __name__=='__main__':unittest.main()

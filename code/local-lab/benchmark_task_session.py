@@ -32,6 +32,11 @@ def resolve_setup(op, reset, baseline_sha256, routes, storage_state_ref=None):
     if not reset.get('reset_evidence_ref'):
         raise ValueError('Reset evidence file required, not only self-declared success')
     read_pinned(reset['reset_evidence_ref']['file'],reset['reset_evidence_ref']['sha256'])
+    if op['scope']=='diagnostic' and op.get('benchmark')=='vwa':
+        from vwa_reset_contract import verify_measured_reset
+        verify_measured_reset(reset,{'sites':sites,'require_reset':setup.get('original_require_reset')},
+            {**{key:op[key] for key in ('opportunity_id','environment_id','configuration_sha256')},
+             'scope':'diagnostic','data_kind':'MEASURED'},baseline_sha256)
     resolved=[]
     for initial in setup['start_urls']:
         def substitute(match):

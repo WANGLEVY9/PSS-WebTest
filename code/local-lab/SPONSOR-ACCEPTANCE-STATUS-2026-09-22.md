@@ -4,6 +4,35 @@ Status: **engineering remediation, not sponsor-ready or confirmatory admission**
 This is a new prospective development campaign. Its empty execution count does
 not assert that historical local/cloud experiments are absent or invalid.
 
+## Continuation update (supersedes timing/component status below)
+
+Latest verification: **550 tests passed, zero skipped**, plus framework and
+14 actuator checks; verification-007 source SHA256
+`e553656596802d7367f285c55f8a79c841d0d7aa64b8c22df2a3965108de3780`.
+WAV shopping disposable-clone controls completed **two real mutation/restore
+cycles**, using three fresh owned instances, all cleaned afterward. Review,
+customer and filesystem marker restoration passed; pre-existing container IDs
+were unchanged. Full peer-state contents and per-profile tasks were not tested.
+Public sanitized summary:
+`results/local-runtime/2026-09-22-lifecycle-native-evaluation.json`.
+
+`actor-phase-monotonic-v1` is implemented in the native driver, owned lifecycle,
+worker and coverage auditor. Setup/evaluation/finalization are measured apart
+from actor budget; an external envelope timeout is not invented actor failure.
+Legacy records cannot pass the new timing gate. Numeric limits, sponsor-host
+binding and Traditional executor compliance still require the frozen campaign.
+
+VWA native text/URL/DOM/image-SSIM controls and pre-close sealed evaluation now
+execute the pinned upstream router. Model-judged cases remain pending a frozen
+judge. ATA has a checksum-pinned reference-label adapter with separate binary
+and failure-step correctness, not a fabricated live native oracle. WAV has a
+new owned whole-container shopping reset adapter and real disposable-clone
+diagnostics; these do not admit other WAV sites or certify three-arm tasks.
+
+See `LIFECYCLE-AND-NATIVE-EVALUATION.md` for APIs, evidence boundaries and sponsor
+handoff steps. The following 521-test report is the **previous** immutable
+iteration, not the latest source validation. Subsequent reports use new paths.
+
 ## Completed in this iteration
 
 | Area | Implemented and verified | Not established |
@@ -63,7 +92,7 @@ is x86_64. Actual installed binaries and CPU smoke are ARM64/working. This is a
 packaging defect, not proof that the captioner/evaluator works. We did not edit
 wheel metadata or waive the dependency gate. See `VWA-FIXTURE-DEPLOYMENT.md`.
 
-## Remaining gates, in order
+## Previous-iteration gate list (timing item superseded above)
 
 1. **Timing semantics:** the current worker caps the entire actor subprocess
    at the task budget, while context initialization/HAR close add overhead and

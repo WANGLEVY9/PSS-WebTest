@@ -15,6 +15,7 @@ import subprocess
 import time
 from runtime_store import Store, canonical
 from runtime_inputs import verify_bound_input, materialize_actor_input
+from lifecycle_timing import POLICY, envelope_budget, verify_timing
 
 
 class AdapterReceiptError(ValueError):
@@ -63,6 +64,12 @@ def verify_native_endpoint(benchmark, evaluated):
 
 
 def validate_commands(binding):
+    if binding.get('timing_policy') not in (None,POLICY):
+        raise ValueError('Unknown lifecycle timing policy')
+    if binding.get('timing_policy')==POLICY:
+        minimum=envelope_budget(binding['budget'],binding.get('lifecycle_limits'))
+        if binding['commands']['actor']['timeout_ms']<minimum:
+            raise ValueError('Actor envelope must include all frozen lifecycle phase budgets')
     if binding.get('framework') not in ('agentlab-browsergym', 'browser-use-restricted', 'playwright'):
         raise ValueError('Unsupported framework binding')
     if binding.get('coordinate_space', 'css-pixels') not in ('css-pixels', 'qwen-0-999'):
@@ -141,6 +148,8 @@ def execute_one(store, binding, invoke=run_command):
     # Before start: binding failures do not mutate SUT. Lease may expire safely.
     if op.get('scope') not in ('synthetic', 'diagnostic'):
         raise ValueError('Formal execution requires benchmark-specific admission; this worker is diagnostic')
+    if op['scope']=='diagnostic' and binding.get('timing_policy')!=POLICY:
+        raise ValueError('New diagnostic runs require explicit frozen lifecycle timing policy')
     if op['environment_id'] != binding['environment_id'] or op.get('configuration_sha256') != binding['configuration_sha256'] or op.get('config_id') != binding.get('config_id'):
         raise ValueError('Opportunity/runtime binding mismatch')
     if op.get('runtime_binding_sha256') != hashlib.sha256(canonical(binding).encode()).hexdigest():
@@ -175,7 +184,10 @@ def execute_one(store, binding, invoke=run_command):
         stage = 'actor'
         result['actor_started'] = True
         # Only the separate, outcome-free input is delivered to the framework.
-        actor_command = {**binding['commands']['actor'], 'timeout_ms': min(binding['commands']['actor']['timeout_ms'], binding['budget']['task_timeout_ms'])}
+        actor_command = dict(binding['commands']['actor'])
+        if binding.get('timing_policy')!=POLICY:
+            # Historical synthetic controls only, not new diagnostic admission.
+            actor_command['timeout_ms']=min(actor_command['timeout_ms'],binding['budget']['task_timeout_ms'])
         actor_output = invoke(actor_command, {**base, 'input': actor_input,
                        'coordinate_space': binding.get('coordinate_space', 'css-pixels'),
                        'configuration_sha256': binding['configuration_sha256'],
@@ -191,6 +203,25 @@ def execute_one(store, binding, invoke=run_command):
         if type(actor.get('budget_met')) is not bool or type(actor.get('action_count')) is not int or actor['action_count'] < 0:
             raise AdapterReceiptError('Explicit adapter budget accounting required')
         result['phase_timings_ms']['actor'] = (time.monotonic()-phase_start)*1000
+        actor_elapsed=result['phase_timings_ms']['actor']
+        if binding.get('timing_policy')==POLICY:
+            if actor_lifecycle_ref is None:
+                raise AdapterReceiptError('Current timing requires a sealed lifecycle, not a self-reported duration')
+            from benchmark_actor_lifecycle import verify_lifecycle
+            seal=verify_lifecycle(actor_lifecycle_ref,actor)
+            if seal.get('lifecycle_limits')!=binding['lifecycle_limits']:
+                raise AdapterReceiptError('Lifecycle limits differ from frozen binding')
+            actor_elapsed=verify_timing(seal.get('lifecycle_timing'),actor,binding['lifecycle_limits'])
+            phases=seal['lifecycle_timing']['phases']
+            inner=sum(p['elapsed_ms'] for p in phases.values())
+            if inner>result['phase_timings_ms']['actor']:
+                raise AdapterReceiptError('Child lifecycle exceeds enclosing supervisor duration')
+            if result['phase_timings_ms']['actor']-inner>binding['lifecycle_limits']['transport_ms']:
+                raise AdapterReceiptError('Unaccounted transport exceeds frozen lifecycle allowance')
+            result['timing_policy']=POLICY
+            result['lifecycle_timing']=seal['lifecycle_timing']
+            result['actor_elapsed_ms']=actor_elapsed
+            result['actor_envelope_elapsed_ms']=result['phase_timings_ms']['actor']
         # Never let a later native success overwrite an actor timeout or budget violation.
         # The actor's receipt is necessary but not sufficient: supervisor wall time and
         # action count are checked too. Actual action-journal conformance is still a gate.
@@ -198,7 +229,7 @@ def execute_one(store, binding, invoke=run_command):
         result['actor_failure_class'] = actor.get('failure_class')
         result['action_count'] = actor['action_count']
         result['budget_met'] = (actor['budget_met'] and actor['terminal_status'] != 'timeout'
-            and result['phase_timings_ms']['actor'] <= binding['budget']['task_timeout_ms']
+            and actor_elapsed <= binding['budget']['task_timeout_ms']
             and actor['action_count'] <= binding['budget']['max_actions'])
         result['protocol_completed'] = actor['terminal_status'] == 'completed' and result['budget_met']
         phase_start = time.monotonic()
@@ -217,7 +248,10 @@ def execute_one(store, binding, invoke=run_command):
         verify_native_endpoint(op.get('benchmark'), evaluated)
         result.update({k: evaluated.get(k) for k in ('assessment_status', 'native_score', 'verdict')})
         if op.get('benchmark') == 'ata':
-            result['step_class'] = evaluated.get('step_class')
+            for key in ('step_class','prediction_status','failure_step','verdict_correctness',
+                        'confusion_class','step_assessment_status','strict_step_correctness',
+                        'live_fixture_label_parity_verified'):
+                result[key]=evaluated.get(key)
         result['terminal_status'] = ('evaluator-error' if evaluated['assessment_status'] != 'valid'
             else 'timeout' if actor['terminal_status'] == 'completed' and not result['budget_met']
             else actor['terminal_status'])
@@ -230,9 +264,16 @@ def execute_one(store, binding, invoke=run_command):
         # producer raised ValueError rather than a transport exception.
         uncertain = True
         if stage == 'actor' and isinstance(exc, TimeoutError):
-            result['terminal_status'] = 'timeout'
-            result['actor_terminal_status'] = 'timeout'
-            result['budget_met'] = False
+            if binding.get('timing_policy')==POLICY:
+                result['failure_class']='lifecycle-envelope-timeout'
+                result['failure_attribution']='engineering-or-external-unresolved'
+                # A killed setup/evaluator/finalizer proves no actor timeout.
+                result['actor_terminal_status']=None
+                result['budget_met']=None
+            else:
+                result['terminal_status'] = 'timeout'
+                result['actor_terminal_status'] = 'timeout'
+                result['budget_met'] = False
     finally:
         result['phase_timings_ms'][stage] = (time.monotonic()-phase_start)*1000
         cleanup_start = time.monotonic()

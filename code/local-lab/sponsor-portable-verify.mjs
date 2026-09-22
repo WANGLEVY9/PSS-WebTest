@@ -14,6 +14,9 @@ for(let i=0;i<args.length;i++) {
   else throw Error('Usage: node local-lab/sponsor-portable-verify.mjs --output NEW_DIRECTORY [--python PYTHON_EXECUTABLE] [--with-artifacts] [--framework-profile DEPLOYMENT_PROFILE.json]');
 }
 if(!o.output)throw Error('New private output directory required');
+// Resolve an explicit relative executable against the caller, not the child
+// cwd (code/). Bare executable names still use PATH as documented.
+if(o.python.includes(path.sep))o.python=path.resolve(o.python);
 const dest=path.resolve(o.output);
 // Deliberately refuses existing paths. No repair, overwrite or stale-green reuse.
 fs.mkdirSync(dest,{mode:0o700});
@@ -25,7 +28,7 @@ const artifactTests=['benchmark-artifact-snapshot','llm-screening-simulation','o
   .map(n=>`tests/contracts/${n}.test.mjs`);
 // Native evaluator and real Chromium lifecycle suites require their own pinned
 // environments. Do not treat skipped integration tests as portable passes.
-const nativePythonSuites=['test_runtime_wav_evaluate','test_runtime_actor_lifecycle'];
+const nativePythonSuites=['test_runtime_wav_evaluate','test_runtime_actor_lifecycle','test_runtime_vwa_evaluate','test_runtime_ata_evaluate'];
 const portablePythonSuites=fs.readdirSync(path.join(code,'local-lab'))
   .filter(f=>/^test_runtime.*\.py$/.test(f)&&!nativePythonSuites.includes(f.slice(0,-3)))
   .sort().map(f=>f.slice(0,-3));
@@ -58,6 +61,10 @@ if(o['framework-profile']) {
     args:['local-lab/journaled-browser-probe.py','--output',path.join(dest,'actuator-proof')]});
   steps.push({id:'native-wav-evaluator-controls',tests:true,pythonpath:'local-lab',env:{PSS_WAV_SOURCE:profile.sources.wav},
     cmd:profile.python_environments.wav.executable,args:['-m','unittest','test_runtime_wav_evaluate','-v']});
+  steps.push({id:'native-vwa-evaluator-controls',tests:true,pythonpath:'local-lab',env:{PSS_VWA_SOURCE:profile.sources.vwa},
+    cmd:profile.python_environments.vwa.executable,args:['-m','unittest','test_runtime_vwa_evaluate','-v']});
+  steps.push({id:'published-ata-reference-controls',tests:true,pythonpath:'local-lab',
+    cmd:profile.python_environments.wav.executable,args:['-m','unittest','test_runtime_ata_evaluate','-v']});
   if(fs.existsSync(path.join(code,'local-lab/test_runtime_actor_lifecycle.py')))
     steps.push({id:'chromium-har-lifecycle',tests:true,pythonpath:'local-lab',cmd:profile.python_environments.agentlab.executable,
       args:['-m','unittest','test_runtime_actor_lifecycle','-v']});
@@ -95,7 +102,7 @@ for(const step of steps) {
 }
 report.finished_at=new Date().toISOString();
 if(o.artifacts)report.artifact_integration.status=report.checks.find(c=>c.id==='historical-artifact-integration')?.passed?'passed':'failed';
-if(o['framework-profile'])report.native_python_integration.status=['native-wav-evaluator-controls','chromium-har-lifecycle']
+if(o['framework-profile'])report.native_python_integration.status=['native-wav-evaluator-controls','native-vwa-evaluator-controls','published-ata-reference-controls','chromium-har-lifecycle']
   .every(id=>report.checks.find(c=>c.id===id)?.passed)?'passed':'failed';
 report.source_tree_unchanged=JSON.stringify(before)===JSON.stringify(sources());
 report.passed=report.source_tree_unchanged&&report.checks.every(c=>c.passed);

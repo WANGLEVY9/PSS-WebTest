@@ -15,9 +15,12 @@ def public_output_instruction(benchmark):
     if benchmark in (None, 'vwa'):
         return ''  # VWA retains its native free-text STOP answer contract.
     if benchmark == 'ata':
-        return ('\nAt completion, explicitly report your own PASS or FAIL judgment and '
-                'the official step number(s) supporting it, or state that no verdict '
-                'could be reached. Do not treat your completion claim as ground truth.')
+        return ('\nAt completion return only a JSON object with exactly two keys: '
+                '"verdict": "PASS", "FAIL", or null; "failure_step": a positive '
+                'integer official source step label or null. Use null verdict if '
+                'no judgment can be reached. Only FAIL may have a non-null failure_step. '
+                'No Markdown or extra keys. Report your own observed judgment, '
+                'not a claim of ground truth. This output schema is identical for all methods.')
     if benchmark != 'wav':
         raise ValueError('Unknown public benchmark output contract')
     return ('\nOfficial WebArena-Verified final-answer protocol (identical for all methods): '

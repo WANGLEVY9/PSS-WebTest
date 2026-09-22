@@ -12,6 +12,7 @@ from prepare_official_runtime import save
 from runtime_store import digest
 from journaled_browser import Journal
 from replay_audit import audit as audit_replay
+from lifecycle_timing import POLICY,window
 
 
 class CoverageTests(unittest.TestCase):
@@ -80,15 +81,16 @@ class CoverageTests(unittest.TestCase):
         row=next(row for row in out['rows'] if row['task_key']==t['task_key'] and row['profile']=='playwright' and row['repetition']=='A1')
         self.assertIn('identity-or-provenance-mismatch',row['errors'])
 
-    def complete_failure(self):
-        t=self.tasks[0];profile='playwright'
+    def complete_failure(self,benchmark='wav'):
+        t=next(t for t in self.tasks if t['benchmark']==benchmark);profile='playwright'
         script=self.root/'fixture.py';script.write_text('# SYNTHETIC_TEST: never executed\n')
         import hashlib
         command={'argv':[sys.executable,str(script)],'source':str(script),
-                 'sha256':hashlib.sha256(script.read_bytes()).hexdigest(),'timeout_ms':1000}
+                 'sha256':hashlib.sha256(script.read_bytes()).hexdigest(),'timeout_ms':5000}
         binding={'framework':'playwright','framework_revision':'unit-fixture','configuration_sha256':'a'*64,
             'boundary_audit_sha256':'b'*64,'baseline_sha256':'c'*64,'environment_id':'unit-fixture',
             'budget':{'task_timeout_ms':1000,'max_actions':10},'sdk_max_retries':0,
+            'timing_policy':POLICY,'lifecycle_limits':{'setup_ms':1000,'evaluation_ms':1000,'finalization_ms':1000,'transport_ms':1000},
             'commands':{s:command for s in ('reset','actor','evaluate','cleanup')}}
         binding['traditional_script_ref']={'file':str(script),'sha256':command['sha256']}
         self.package['runtime_binding_refs']={t['benchmark']+'/'+profile:self.ref(binding)}
@@ -126,6 +128,13 @@ class CoverageTests(unittest.TestCase):
         """Hash-chained artificial evidence, never an actual benchmark run."""
         self.counter+=1
         journal=Journal(self.root/f'SYNTHETIC_TEST_replay_{self.counter}')
+        actor['timing_policy']=POLICY
+        actor['actor_timing']=window(1_000_000,1_000_000+int(actor['elapsed_ms']*1_000_000))
+        end=actor['actor_timing']['end_ns']
+        timing={'policy':POLICY,'phases':{'setup':window(0,1_000_000),
+            'actor':window(1_000_000,end),'evaluation':window(end,end+1_000_000),
+            'finalization':window(end+1_000_000,end+2_000_000)}}
+        receipt['result'].update(timing_policy=POLICY,lifecycle_timing=timing,actor_elapsed_ms=actor['elapsed_ms'])
         actor['trajectory_directory']=str(journal.directory)
         source_refs=(binding['actor_source_refs'] if binding['framework']!='playwright' else
                      {Path(binding['traditional_script_ref']['file']).name:binding['traditional_script_ref']})
@@ -152,7 +161,7 @@ class CoverageTests(unittest.TestCase):
         receipt['artifacts']['replay']=self.ref({**identity,'schema':'pss-replay-evidence-v1',
             'scope':'diagnostic','data_kind':'MEASURED','integrity_audit':report,
             'trajectory_ref':{'file':str(journal.directory/'trajectory.jsonl'),'sha256':report['trajectory_sha256']}})
-        if receipt['task_key'].startswith('wav:'):
+        if True:
             # Artificial positive-control envelope. No browser was closed and
             # no measured benchmark data exists; all files are deleted with the
             # unit-test TemporaryDirectory. Never send these claims to a ledger.
@@ -163,6 +172,7 @@ class CoverageTests(unittest.TestCase):
                   'actor_receipt_ref':actor_ref,'trajectory_ref':pinned_ref(journal.directory/'trajectory.jsonl'),
                   'network_trace_ref':har_ref,'har_entries':0,'context_close_observed':True,
                   'context_closed_after_actor_end':True,'journal_unchanged_on_close':True,
+                  'lifecycle_timing':timing,'lifecycle_limits':binding['lifecycle_limits'],
                   'confirmatory_authorized':False}
             seal_ref=persist(journal.directory/'supervisor-lifecycle.json',encoded(seal))
             receipt['artifacts']['actor_lifecycle']=seal_ref
@@ -175,6 +185,14 @@ class CoverageTests(unittest.TestCase):
         report=audit(self.package)
         self.assertEqual(report['evidence_ready_executions'],1)
         self.assertFalse(report['delivery_evidence_ready'])
+
+    def test_vwa_cannot_use_postclose_or_missing_native_evaluation(self):
+        r=self.complete_failure('vwa')
+        self.rejected(r,'vwa-preclose-native-evaluation-unverified')
+
+    def test_ata_reference_labels_do_not_prove_live_fixture_parity(self):
+        r=self.complete_failure('ata')
+        self.rejected(r,'ata-live-fixture-label-parity-unverified')
 
     def test_summary_cannot_replace_native_outcome_and_external_failure_not_admitted(self):
         r=self.complete_failure();r['result']['native_score']=1
@@ -201,7 +219,7 @@ class CoverageTests(unittest.TestCase):
 
     def test_summary_cannot_hide_budget_excess(self):
         r=self.complete_failure();r['result']['phase_timings_ms']['actor']=2000
-        self.rejected(r,'actor-budget-or-terminal-summary-mismatch')
+        self.rejected(r,'lifecycle-timing-unverified')
         r=self.complete_failure();actor=self.read(r['artifacts']['actor']);actor['action_count']=11
         r['artifacts']['actor']=self.ref(actor)
         self.rejected(r,'executed-beyond-frozen-action-budget')

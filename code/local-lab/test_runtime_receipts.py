@@ -7,6 +7,7 @@ import sys
 import hashlib
 from runtime_store import Store, digest
 from runtime_worker import execute_one, validate_commands, run_command, AdapterReceiptError, unpack_actor_envelope, verify_receipt
+from lifecycle_timing import POLICY,window
 
 
 class ReceiptTests(unittest.TestCase):
@@ -44,7 +45,7 @@ class ReceiptTests(unittest.TestCase):
             with self.assertRaises(AdapterReceiptError):
                 run_command({'argv':[sys.executable,str(script)],'timeout_ms':1000},{},lambda:None)
 
-    def scenario(self, actor_override=None, wrong_stage=None, wrong_field='opportunity_id', evaluator_override=None, delayed=False, coordinate_space='css-pixels'):
+    def scenario(self, actor_override=None, wrong_stage=None, wrong_field='opportunity_id', evaluator_override=None, delayed=False, coordinate_space='css-pixels', current_timing=False, envelope_timeout=False):
         with tempfile.TemporaryDirectory() as tmp:
             script = Path(tmp) / 'fixture.py'
             script.write_text('# SYNTHETIC_TEST\n')
@@ -56,6 +57,9 @@ class ReceiptTests(unittest.TestCase):
                 'budget': {'task_timeout_ms': 1000, 'max_actions': 3}, 'sdk_max_retries': 0,
                 'cost_policy': {'cap_micro_usd': 1000, 'request_reservation_micro_usd': 100},
                 'commands': {s: {**cmd, 'stage': s} for s in ('reset', 'actor', 'evaluate', 'cleanup')}}
+            if current_timing:
+                binding.update(timing_policy=POLICY,lifecycle_limits={'setup_ms':1000,'evaluation_ms':1000,'finalization_ms':1000,'transport_ms':1000})
+                binding['commands']['actor']['timeout_ms']=5000
             store = Store(str(Path(tmp) / 'ledger.sqlite'))
             op = {'opportunity_id': 'one', 'scope': 'synthetic', 'schedule_sha256': 'd'*64,
                   'config_id': 'v1', 'environment_id': 'fixture', 'configuration_sha256': 'a'*64,
@@ -64,17 +68,26 @@ class ReceiptTests(unittest.TestCase):
             store.enqueue([op])
             clock = [0.0]
             calls = []
+            seal={'lifecycle_limits':binding.get('lifecycle_limits'),'lifecycle_timing':{'policy':POLICY,'phases':{
+                'setup':window(0,900_000_000),'actor':window(900_000_000,1_000_000_000),
+                'evaluation':window(1_000_000_000,1_100_000_000),'finalization':window(1_100_000_000,1_900_000_000)}}}
             def invoke(command, payload, heartbeat):
                 heartbeat()
                 stage = command['stage']; calls.append(stage)
                 out = {k: payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256', 'scope', 'data_kind')}
                 if stage == 'reset': out.update(restored=True, baseline_sha256=payload['baseline_sha256'])
                 elif stage == 'actor':
+                    if envelope_timeout:raise TimeoutError('synthetic outer deadline')
                     self.assertNotIn('evaluation_ref', payload)
                     self.assertEqual(payload['coordinate_space'], coordinate_space)
                     out.update(terminal_status='completed', budget_met=True, action_count=2)
                     out.update(actor_override or {})
                     if delayed: clock[0] += 2
+                    if current_timing:
+                        self.assertEqual(command['timeout_ms'],5000)
+                        out.update(timing_policy=POLICY,actor_timing=window(900_000_000,1_000_000_000),elapsed_ms=100.0)
+                        out.update(actor_override or {})
+                        return {'actor_result':out,'actor_lifecycle_ref':{'file':'/synthetic-only/seal','sha256':'a'*64}}
                 elif stage == 'evaluate':
                     out.update(assessment_status='valid', native_score=1, verdict=None)
                     out.update(evaluator_override or {})
@@ -82,7 +95,7 @@ class ReceiptTests(unittest.TestCase):
                 if stage == wrong_stage: out[wrong_field] = 'OTHER_CELL'
                 return out
             try:
-                with patch('runtime_worker.time.monotonic', side_effect=lambda: clock[0]):
+                with patch('runtime_worker.time.monotonic', side_effect=lambda: clock[0]),patch('benchmark_actor_lifecycle.verify_lifecycle',return_value=seal):
                     result = execute_one(store, binding, invoke)
                 return result, store.summary(), calls
             finally: store.close()
@@ -152,6 +165,26 @@ class ReceiptTests(unittest.TestCase):
         self.assertTrue(result['budget_met'])
         self.assertIsNone(result['operational_correctness'])
         self.assertEqual(ledger['states'], {'terminal': 1})
+
+    def test_current_policy_excludes_setup_and_finalization_from_actor_budget(self):
+        result,ledger,_=self.scenario(current_timing=True,delayed=True)
+        self.assertEqual(result['actor_elapsed_ms'],100)
+        self.assertEqual(result['actor_envelope_elapsed_ms'],2000)
+        self.assertTrue(result['budget_met']);self.assertTrue(result['protocol_completed'])
+        self.assertEqual(ledger['states'],{'terminal':1})
+
+    def test_current_outer_timeout_is_not_fabricated_actor_timeout(self):
+        result,ledger,_=self.scenario(current_timing=True,envelope_timeout=True)
+        self.assertEqual(result['failure_class'],'lifecycle-envelope-timeout')
+        self.assertEqual(result['terminal_status'],'execution-error')
+        self.assertIsNone(result['actor_terminal_status']);self.assertIsNone(result['budget_met'])
+        self.assertEqual(ledger['states'],{'uncertain':1})
+
+    def test_child_duration_cannot_exceed_parent_clock_or_fake_actor_window(self):
+        result,ledger,_=self.scenario(current_timing=True,delayed=False)
+        self.assertEqual(ledger['states'],{'uncertain':1})
+        result,ledger,_=self.scenario(current_timing=True,delayed=True,actor_override={'elapsed_ms':99})
+        self.assertEqual(ledger['states'],{'uncertain':1})
 
 
 if __name__ == '__main__': unittest.main()

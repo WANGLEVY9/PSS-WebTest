@@ -13,11 +13,13 @@ import json
 import os
 from pathlib import Path
 import stat
+import time
 
 from benchmark_task_session import create_context
 from journaled_browser import Journal
 from replay_audit import audit as audit_replay
 from runtime_inputs import read_pinned
+from lifecycle_timing import POLICY, window, verify_timing, validate_limits
 
 SCHEMA = 'pss-actor-lifecycle-v1'
 IDENTITY = ('opportunity_id', 'environment_id', 'configuration_sha256')
@@ -58,7 +60,9 @@ def checked_actor(directory, actor):
     return raw
 
 
-def seal_context(context, journal, actor_result, scope):
+def seal_context(context, journal, actor_result, scope, *, timing=None,
+                 finalization_start_ns=None, preclose_evaluation_ref=None,
+                 stop_trace=False, lifecycle_limits=None):
     """Close the owned context, then seal its finalized HAR without changing actor."""
     if scope not in ('synthetic','diagnostic'):
         raise ValueError('Separate formal campaign admission required')
@@ -75,6 +79,8 @@ def seal_context(context, journal, actor_result, scope):
     # Read before close: the journal must already end with the exact returned
     # actor receipt, and browser cleanup must not append or rewrite its events.
     before=checked_actor(directory,actor)
+    if stop_trace:
+        context.tracing.stop(path=str(directory/'trace.zip'))
     observed=[]
     context.on('close',lambda *_:observed.append(True))
     context.close()
@@ -107,6 +113,19 @@ def seal_context(context, journal, actor_result, scope):
         if browser_trace.is_symlink():raise ValueError('Browser trace symlink forbidden')
         os.chmod(browser_trace,0o600)
         receipt['browser_trace_ref']=pinned_ref(browser_trace)
+    if preclose_evaluation_ref is not None:
+        evaluation=json.loads(read_pinned(preclose_evaluation_ref['file'],preclose_evaluation_ref['sha256']))
+        if (any(evaluation.get(k)!=actor.get(k) for k in IDENTITY)
+            or evaluation.get('scope')!=scope or evaluation.get('data_kind')!=expected_kind
+            or evaluation.get('trajectory_ref')!=receipt['trajectory_ref']):
+            raise ValueError('Preclose evaluation belongs to a different actor')
+        receipt['preclose_evaluation_ref']=preclose_evaluation_ref
+    if timing is not None:
+        timing=copy.deepcopy(timing)
+        timing['phases']['finalization']=window(finalization_start_ns,time.monotonic_ns())
+        verify_timing(timing,actor,lifecycle_limits)
+        receipt['lifecycle_timing']=timing
+        receipt['lifecycle_limits']=lifecycle_limits
     ref=persist(directory/'supervisor-lifecycle.json',encoded(receipt))
     return {'actor_result':actor,'actor_lifecycle_ref':ref}
 
@@ -148,13 +167,29 @@ def verify_lifecycle(ref,actor):
     entries=json.loads(contents['network_trace_ref']).get('log',{}).get('entries')
     if not isinstance(entries,list) or type(seal.get('har_entries')) is not int or len(entries)!=seal['har_entries']:
         raise ValueError('HAR accounting mismatch')
+    if 'lifecycle_timing' in seal:
+        verify_timing(seal['lifecycle_timing'],actor,seal.get('lifecycle_limits'))
+    if 'preclose_evaluation_ref' in seal:
+        evaluation_ref=seal['preclose_evaluation_ref']
+        if Path(evaluation_ref['file']).resolve()!=directory/'preclose-evaluation.json':
+            raise ValueError('Preclose receipt outside owned actor directory')
+        evaluation=json.loads(read_pinned(evaluation_ref['file'],evaluation_ref['sha256']))
+        if (any(evaluation.get(k)!=actor.get(k) for k in IDENTITY)
+            or evaluation.get('trajectory_ref')!=seal['trajectory_ref']
+            or evaluation.get('scope')!=seal['scope'] or evaluation.get('data_kind')!=seal['data_kind']):
+            raise ValueError('Preclose receipt identity or immutable journal mismatch')
     return seal
 
 
 def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
                       payload,framework,mode,node,viewport=(1280,720),locale='en-US',
-                      timezone_id='UTC',storage_state_ref=None,synthetic_driver=None):
-    """Compose trusted setup → real actor → closed-context seal; never evaluate."""
+                      timezone_id='UTC',storage_state_ref=None,synthetic_driver=None,
+                      native_evaluator=None,lifecycle_limits=None):
+    """Trusted setup → actor → optional live-page evaluation → trace/HAR seal.
+
+    native_evaluator is supervisor-only and runs once after immutable actor-end.
+    Its result never re-enters the actor. No initial/last-tab fallback is allowed.
+    """
     if op.get('scope') not in ('synthetic','diagnostic'):
         raise ValueError('Formal session admission is not implemented')
     if synthetic_driver is not None and op['scope']!='synthetic':
@@ -170,21 +205,56 @@ def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
                               'cost_policy','coordinate_space','scope','data_kind'}
     if set(payload)-public_keys:
         raise ValueError('Unexpected supervisor data in actor payload')
+    if op['scope']=='diagnostic' or lifecycle_limits is not None:
+        validate_limits(lifecycle_limits)
     journal=Journal(journal_directory)
     context=None
+    setup_start=time.monotonic_ns()
     try:
         context,page,actor_input=create_context(browser,op,reset,baseline_sha256,routes,
             journal.directory,viewport,locale,timezone_id,storage_state_ref)
         if payload.get('input')!=actor_input:
             raise ValueError('Actor payload differs from frozen public task input')
+        actor_start=time.monotonic_ns()
+        if lifecycle_limits and (actor_start-setup_start)/1_000_000>lifecycle_limits['setup_ms']:
+            raise TimeoutError('Session setup exceeded its administrative budget')
         if synthetic_driver is None:
             from native_framework_driver import run_actor
             driver=run_actor
         else:driver=synthetic_driver
         # Only the existing actor payload is supplied. No setup/reset refs, HAR,
         # lifecycle file, evaluator result, hidden URL or gold is added to it.
-        actor=driver(context,page,payload,journal,framework,mode,node,viewport=viewport)
-        return seal_context(context,journal,actor,op['scope'])
+        active=[]
+        managed=synthetic_driver is None or lifecycle_limits is not None or native_evaluator is not None
+        options={'terminal_page_sink':active.append,'defer_trace_finalization':True} if managed else {}
+        actor=driver(context,page,payload,journal,framework,mode,node,viewport=viewport,**options)
+        actor_end=time.monotonic_ns()
+        before=checked_actor(journal.directory,actor)
+        evaluation_ref=None
+        if native_evaluator is not None:
+            if len(active)!=1 or active[0].context!=context or active[0].is_closed():
+                raise ValueError('Trusted final active page required for native evaluation')
+            try:
+                evaluated=native_evaluator(actor,active[0])
+            except Exception as exc:
+                # An evaluator failure is unresolved, not a zero capability score.
+                evaluated={**{k:actor[k] for k in IDENTITY},'scope':op['scope'],'data_kind':kind,
+                    'assessment_status':'unresolved','native_score':None,'verdict':None,
+                    'error_type':type(exc).__name__,'confirmatory_authorized':False,
+                    'trajectory_ref':pinned_ref(journal.directory/'trajectory.jsonl')}
+            if checked_actor(journal.directory,actor)!=before:
+                raise ValueError('Evaluator changed immutable actor journal')
+            evaluation_ref=persist(journal.directory/'preclose-evaluation.json',encoded(evaluated))
+        evaluation_end=time.monotonic_ns()
+        timing=None
+        if 'actor_timing' in actor:
+            timing={'policy':POLICY,'phases':{'setup':window(setup_start,actor_start),
+                'actor':window(actor_start,actor_end),'evaluation':window(actor_end,evaluation_end)}}
+        elif lifecycle_limits is not None:
+            raise ValueError('Current timing receipt required; legacy driver cannot be admitted')
+        return seal_context(context,journal,actor,op['scope'],timing=timing,
+            finalization_start_ns=evaluation_end,preclose_evaluation_ref=evaluation_ref,
+            stop_trace=managed,lifecycle_limits=lifecycle_limits)
     except BaseException as exc:
         cleanup='not-created'
         if context is not None:

@@ -15,10 +15,12 @@ from framework_actions import agentlab_action, browser_use_action, to_css, coord
 from framework_model import LedgerModel, ProviderFailure, agentlab_args, browser_use_model
 from journaled_browser import JournaledBrowser, sha
 from runtime_store import Store
+from lifecycle_timing import POLICY, window
 
 
 def run_actor(context, page, payload, journal, framework, mode, node,
-              viewport=(1280, 720), backend=None):
+              viewport=(1280, 720), backend=None, terminal_page_sink=None,
+              defer_trace_finalization=False):
     if payload.get('scope') not in ('synthetic', 'diagnostic'):
         raise ValueError('Explicit diagnostic or synthetic scope required; formal admission is separate')
     if framework not in ('agentlab-browsergym', 'browser-use-restricted') or mode not in ('visual', 'hybrid'):
@@ -29,7 +31,8 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     coordinate_space=coordinate_contract(payload.get('coordinate_space','css-pixels'))
     if any(type(budget.get(k)) is not int or budget[k] <= 0 for k in ('task_timeout_ms', 'max_actions')):
         raise ValueError('Frozen positive task budgets required')
-    started = time.monotonic()
+    started_ns = time.monotonic_ns()
+    started = started_ns / 1_000_000_000
     deadline = started + budget['task_timeout_ms']/1000
     actuator = JournaledBrowser(context, page, journal, viewport, task)
     actuator.deadline = deadline
@@ -37,7 +40,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     sources={}
     for name in ('native_framework_driver.py','framework_actions.py','framework_model.py','journaled_browser.py',
                  'framework_agentlab.py','framework_browser_use.py','framework_boundary.py','benchmark_output_contract.py','runtime_inputs.py',
-                 'runtime_store.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs'):
+                 'runtime_store.py','framework-provider-bridge.mjs','provider.mjs','runtime-env.mjs','lifecycle_timing.py'):
         raw=Path(__file__).with_name(name).read_bytes()
         sources[name]=journal.artifact('source-'+name+'.txt',raw)
     versions={name:importlib.metadata.version(name) for name in
@@ -108,16 +111,22 @@ def run_actor(context, page, payload, journal, framework, mode, node,
         journal.event('actor-exception', error_type=type(exc).__name__)
     finally:
         if decision_pool:decision_pool.shutdown(wait=True,cancel_futures=True)
-        context.tracing.stop(path=str(journal.directory/'trace.zip'))
-    elapsed = (time.monotonic()-started)*1000
+    ended_ns = time.monotonic_ns()
+    elapsed = (ended_ns-started_ns)/1_000_000
     receipt = {k:payload[k] for k in ('opportunity_id', 'environment_id', 'configuration_sha256')}
     receipt.update(terminal_status=terminal, failure_class=failure, action_count=len(actions),
                    scope=payload['scope'], data_kind='MEASURED' if payload['scope']=='diagnostic' else 'SYNTHETIC_TEST',
                    provider_requests=backend.requests, final_answer=final_answer,
                    budget_met=terminal!='timeout' and elapsed<=budget['task_timeout_ms'],
                    elapsed_ms=elapsed, framework=framework, mode=mode,
+                   timing_policy=POLICY, actor_timing=window(started_ns,ended_ns),
                    trajectory_directory=str(journal.directory), confirmatory_authorized=False,
                    source_tree_unchanged=all(sha(Path(__file__).with_name(n).read_bytes())==r['sha256'] for n,r in sources.items()),
                    installed_versions=versions)
     journal.event('actor-end', receipt=receipt)
+    # Trusted supervisor plumbing only: no inspected URL/DOM/evaluator feedback
+    # reaches the actor. The selected page can differ from initial or last tab.
+    if terminal_page_sink is not None:terminal_page_sink(actuator.page)
+    if not defer_trace_finalization:
+        context.tracing.stop(path=str(journal.directory/'trace.zip'))
     return receipt

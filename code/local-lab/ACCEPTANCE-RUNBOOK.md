@@ -12,6 +12,11 @@ This runbook complements `SPONSOR-DEPLOYMENT.md`. It does not authorize formal
 acquisition. Do not merge this campaign into D1/D2 or V1–V10. The manuscript
 population remains 600 WAV + 700 VWA + 113 ATA, not the development cohort below.
 
+See `LIFECYCLE-AND-NATIVE-EVALUATION.md` for the prospective mandatory timing
+policy, pre-close VWA evaluation API, ATA reference-evaluation boundary, and
+the exact remaining integration/restore gates. Old whole-subprocess timing
+cannot be silently reused as actor latency.
+
 ## 1. Acceptance scope and release blockers
 
 Use 20 official development tasks per benchmark, four profiles per task:

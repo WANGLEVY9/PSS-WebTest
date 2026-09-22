@@ -1,5 +1,7 @@
 # 云主机安装、依赖交付与实验验收手册
 
+> **2026-09-22 范围变更：当前批次只做 WebArena-Verified。** 请先按[六步操作单](../../../README-EXPERIMENT-OPERATORS.zh-CN.md)执行。本文件保留三 benchmark 技术参考，不是逐段照跑的清单；跳过 VWA/ATA 下载、安装与运行。这里的三 benchmark 总规模及完整 doctor/profile 不适用于当前 WAV-only 批次。
+
 实验执行总入口：[GPT API 接入与实验操作手册](../../../README-EXPERIMENT-OPERATORS.zh-CN.md)。本文件专注主机/资产安装；实验矩阵、分批调度、成本值守和交回流程按总手册执行。
 
 维护日期：2026-09-22。用途：赞助商实验人员在独立 Linux 主机部署、检查和执行新研究批次。

@@ -14,7 +14,7 @@
 
 </div>
 
-**Running experiments with GPT API resources?** Start with the comprehensive [experiment operator README (中文)](README-EXPERIMENT-OPERATORS.zh-CN.md): target experiment matrix, API setup, CNY budget controls, staged acceptance, dispatch limitations, recovery and evidence handoff.
+**Current operator scope: WebArena-Verified only.** Follow the [six-step operator guide (中文)](README-EXPERIMENT-OPERATORS.zh-CN.md). VWA/ATA collection is paused. The three-benchmark manuscript design below is retained historical context, not the next campaign's dispatch plan; see the [scope amendment and remaining delivery gates](docs/WAV-ONLY-EXECUTION-SCOPE.md).
 
 PSS-WebTest is an open-source research infrastructure project for comparing **screenshot-only CUAs, structure-assisted CUAs, and human-authored Playwright scripts** on public Web benchmarks. It connects native benchmark outcomes with repeated correctness, preparation effort, fresh verdicts on previously misjudged cases, and the additional coverage obtained by combining executors.
 

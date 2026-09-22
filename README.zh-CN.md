@@ -1,6 +1,6 @@
 # PSS-WebTest
 
-**实验人员入口：**请先阅读[GPT API 接入与实验执行操作手册](README-EXPERIMENT-OPERATORS.zh-CN.md)，涵盖该跑哪些配置、预算预警、分阶段验收、D/V轮次、执行命令、故障恢复和材料交回。
+**当前只运行 WebArena-Verified：**请按[六步实验人员操作单](README-EXPERIMENT-OPERATORS.zh-CN.md)执行；VWA/ATA 采集暂停。下文保留的三 benchmark 论文设计不是下一批派发计划，区别及未完成门禁见[范围变更记录](docs/WAV-ONLY-EXECUTION-SCOPE.md)。
 
 **超越任务完成率：研究 Computer-Use Agent 与脚本式 Web 测试的重复可靠性、反复错误和互补性。**
 

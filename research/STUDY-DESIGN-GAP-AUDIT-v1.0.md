@@ -1,5 +1,7 @@
 # Study-design implementation gap audit v1.0
 
+> **Historical v1.0 record.** The current design is v2.1, selected by the active machine pointer; see [design authority](DESIGN-AUTHORITY.md). Counts, plans, gates and freeze claims below belong to the original version and do not authorize current collection.
+
 Date: 2026-09-14
 
 Authority: `code/config/study-design-contract.v1.0.json`

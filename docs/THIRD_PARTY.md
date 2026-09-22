@@ -1,5 +1,7 @@
 # Third-party acknowledgments
 
+Fixed-version installation, evaluator order and deliberate study restrictions are documented in the [upstream traceability matrix](technical/UPSTREAM_TRACEABILITY.md). See individual benchmark/framework pages for source links and open parity checks, and the [cloud dependency inventory](../code/local-lab/cloud-handoff/dependency-manifest.json) for declared package provenance. That inventory is not a validated Linux install lock.
+
 PSS-WebTest builds on public benchmarks and open-source browser automation. The repository's MIT license covers its own code and documentation; it does not relicense upstream datasets, applications, assets, models or fixtures. Record exact upstream revisions and comply with their distribution/access terms.
 
 | Upstream | Role in this project |

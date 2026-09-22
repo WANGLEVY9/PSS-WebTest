@@ -21,6 +21,30 @@ The active authority is [`pss-manuscript-v2.1`](../code/config/study-design-cont
 
 ## What the latest engineering receipt means
 
+### Runtime documentation baseline
+
+The [technical specifications](technical/README.md) describe committed runtime
+`de93d32`, with a [native-source traceability matrix](technical/UPSTREAM_TRACEABILITY.md).
+Its newer implementation includes a WAV shopping owned lifecycle, VWA live-page
+deterministic evaluation, and an ATA reference comparator; those do not establish
+full selected-workload acceptance. Judge-dependent VWA tasks and ATA fixture/label
+parity remain open. [Qwen live diagnostics](../code/local-lab/QWEN-LIVE-DIAGNOSTICS.md)
+use synthetic sites and must not be counted as official benchmark executions.
+The later [WAV100 plan](../code/local-lab/WAV100-QWEN38MAX-PLAN.md) adds a separate
+bounded official task-260 probe and a 100-task Shopping development selection.
+Its 400 planned opportunities are not a completed-run count or full workload
+admission; its targeted reset probes do not certify all mutable state.
+
+The CNY 1,500 shared-budget implementation and stronger task-bound receipts are
+on the separate `codex/sponsor-acceptance-bound-input` branch. They are **not
+integrated** into this runtime baseline. The [cost integration matrix](technical/RUNTIME.md)
+records that gap; before any sponsor release, all provider and evaluator requests
+must pass the unified budget gate. The [cloud handoff](../code/local-lab/cloud-handoff/README.md)
+contains installation, dependency and evidence-return requirements, not a passed
+cloud acceptance certificate.
+
+### Earlier source-hashed receipts
+
 The dated [22 September remediation receipt](../results/local-runtime/2026-09-22-sponsor-adapter-remediation.json) reports **429 passed offline checks**: 103 local Node/browser, 284 source-only contract, 39 runtime Python and 3 ATA input-projection checks. Four historical artifact-integration files were not run. This is a historical, source-hashed verification result, not a hardcoded expectation for every later checkout.
 
 Its framework probes used installed AgentLab 0.4.2 / BrowserGym core 0.14.2 and Browser Use 0.13.10 with deterministic injected responses. Both report `benchmark_adapter_admitted=false`. The receipt records zero model requests, zero benchmark executions and `confirmatory_authorized=false`. These distinctions are part of the result.
@@ -30,6 +54,25 @@ There may be existing executions elsewhere; lack of local source records does no
 ## Presentation-refresh verification
 
 A fresh [local source-snapshot check](verification/offline-2026-09-22.json) ran 440 tests: 108 local Node/browser, 284 source-only contracts, 45 runtime Python and 3 ATA projection checks; all passed. It included pre-existing working-tree changes and reused the developer installation of Node dependencies. This verifies the documented offline command against that snapshot, not a clean Linux installation or a GitHub Actions run. Model requests and official benchmark executions were zero.
+
+## Technical-documentation verification
+
+The [documentation receipt](verification/documentation-2026-09-22.json) records
+local link/heading and active-design checks, dependency inventory hashes, three
+negative controls, and rendering of 13 Mermaid diagrams. No model calls, official
+benchmark executions or cloud installations were performed for this documentation
+change. This is separate from runtime or empirical acceptance.
+
+## GPT operator handoff
+
+The [operator README](../README-EXPERIMENT-OPERATORS.zh-CN.md) documents runtime
+baseline `d21231d`, including the later Qwen checkpoint, exact GPT workflow
+limitations and outstanding dispatch/budget/admission work. The earlier technical
+receipt remains tied to its original files. The current dependency inventory uses
+the complete Browser Use journaled-actuator candidate and contains 849 rows.
+[Operator-document verification](verification/operator-readme-2026-09-22.json)
+records no-call configuration checks, command syntax, CLI help and diagram checks;
+it is not a GPT API or sponsor-host acceptance result.
 
 ## Important corrections
 

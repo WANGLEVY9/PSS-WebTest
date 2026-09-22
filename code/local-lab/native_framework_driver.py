@@ -34,7 +34,8 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     started_ns = time.monotonic_ns()
     started = started_ns / 1_000_000_000
     deadline = started + budget['task_timeout_ms']/1000
-    actuator = JournaledBrowser(context, page, journal, viewport, task)
+    actuator = JournaledBrowser(context, page, journal, viewport, task,
+        observation_timeout_ms=payload.get('observation_timeout_ms',5000))
     actuator.deadline = deadline
     backend = backend or LedgerModel(payload, journal, node, deadline)
     sources={}
@@ -70,7 +71,8 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     terminal, failure = 'failed', 'action-budget-exhausted'
     context.tracing.start(screenshots=True, snapshots=True, sources=False)
     journal.event('actor-start', framework=framework, mode=mode, budget=budget,
-                  model_binding=payload['model_binding'], coordinate_space=coordinate_space, confirmatory_authorized=False)
+                  model_binding=payload['model_binding'], coordinate_space=coordinate_space,
+                  observation_timeout_ms=actuator.observation_timeout, confirmatory_authorized=False)
     try:
         for index in range(budget['max_actions']):
             ledger = payload['request_ledger']

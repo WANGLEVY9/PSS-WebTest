@@ -1,0 +1,1349 @@
+{
+  "schema": "pss-wav100-development-campaign-v1",
+  "scope": "diagnostic",
+  "model": "qwen3.8-max",
+  "source_commit": "6473f72db5dcefc97b5725b59e734504edc28a21",
+  "dataset_sha256": "d65275660814663375028e9017e1f929e3c38321041b125795e2713b52243d30",
+  "site": "shopping",
+  "available_source_tasks": 187,
+  "selected_unique_tasks": 100,
+  "intent_templates_covered": 48,
+  "selection_rule": "smallest official ID per public intent template, then SHA256(pss-qwen38max-wav100-v1:ID)",
+  "outcomes_used_for_selection": false,
+  "prior_exposure_known_ids": [
+    21,
+    22,
+    163,
+    164,
+    165,
+    166,
+    167
+  ],
+  "profiles": [
+    "agentlab-visual",
+    "agentlab-hybrid",
+    "browser-use-hybrid",
+    "playwright"
+  ],
+  "planned_executions_per_profile": 100,
+  "planned_executions": 400,
+  "repetitions": 1,
+  "received_executions": 0,
+  "effective_executions": 0,
+  "proposed_budget": {
+    "task_timeout_ms": 180000,
+    "max_actions": 24,
+    "max_output_tokens": 2048
+  },
+  "budget_frozen": false,
+  "task_adapters_complete": false,
+  "bulk_execution_authorized": false,
+  "confirmatory_authorized": false,
+  "admission_note": "Keep official task failures, adaptation failures and external blocks distinct. Never replace failed IDs or count repeats as different tasks.",
+  "tasks": [
+    {
+      "task_key": "wav:21",
+      "task_id": 21,
+      "intent_template_id": 222,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get name(s) of reviewer(s) who mention ear cups being small for the product on the current page",
+      "start_urls": [
+        "__SHOPPING__/6s-wireless-headphones-over-ear-noise-canceling-hi-fi-bass-foldable-stereo-wireless-kid-headsets-earbuds-with-built-in-mic-micro-sd-tf-fm-for-iphone-samsung-ipad-pc-black-gold.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:24",
+      "task_id": 24,
+      "intent_template_id": 222,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get name(s) of reviewer(s) who mention price being unfair for the product on the current page",
+      "start_urls": [
+        "__SHOPPING__/haflinger-men-s-wool-felt-open-back-slippers-beige-550-peat-us-7.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:25",
+      "task_id": 25,
+      "intent_template_id": 222,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get name(s) of reviewer(s) who mention print quality explicitly with a rating of 3 or less stars for the product on the current page",
+      "start_urls": [
+        "__SHOPPING__/epson-workforce-wf-3620-wifi-direct-all-in-one-color-inkjet-printer-copier-scanner-amazon-dash-replenishment-ready.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:47",
+      "task_id": 47,
+      "intent_template_id": 197,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Today is June 12, 2023. Get how many complete orders I have over the past months, and the total amount of money I spent (including shipping and handling fees). Return an object with keys \"order_count\" (as integer) and \"amount\" (as number, e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:51",
+      "task_id": 51,
+      "intent_template_id": 197,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Today is June 12, 2023. Get how many complete orders I have over the past six months, and the total amount of money I spent (including shipping and handling fees). Return an object with keys \"order_count\" (as integer) and \"amount\" (as number, e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:96",
+      "task_id": 96,
+      "intent_template_id": 193,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the status of my latest order and when will it arrive. Return a list of objects with keys \"status\" and \"arrival_date\" (YYYY-MM-DD format or null if not available), without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:117",
+      "task_id": 117,
+      "intent_template_id": 161,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the date when I made my first purchase on this site. Return the date in YYYY-MM-DD format or null if not available, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:118",
+      "task_id": 118,
+      "intent_template_id": 151,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I have a jaw bruxism problem, go to the product page for something that could alleviate the problem.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:124",
+      "task_id": 124,
+      "intent_template_id": 159,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "What is the price range of wireless earphone in the One Stop Market?. Return an object with keys \"min\" and \"max\" (as numbers, e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:141",
+      "task_id": 141,
+      "intent_template_id": 162,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return how much I spent on food-related shopping during March 2023 without considering shipping and handling fee. Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:145",
+      "task_id": 145,
+      "intent_template_id": 162,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return how much I spent on cooking and food shopping during March 2022 without considering shipping and handling fee. Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:146",
+      "task_id": 146,
+      "intent_template_id": 155,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the size of the picture frame I bought in Sep 2022. Return a list of objects with keys \"width\" and \"height\".",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:148",
+      "task_id": 148,
+      "intent_template_id": 155,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the color of the picture frame I bought Sep 2022.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:149",
+      "task_id": 149,
+      "intent_template_id": 155,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the color of the artifical plants I bought Feb 2023.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:150",
+      "task_id": 150,
+      "intent_template_id": 155,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the price of the fake tree I bought Jan 2023.Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:158",
+      "task_id": 158,
+      "intent_template_id": 171,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Go to the product page of the best storage option that fits 11 Nintendo Switch game cards",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:160",
+      "task_id": 160,
+      "intent_template_id": 171,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Go to the product page of the best storage option that fits 6 Nintendo Switch game cards",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:162",
+      "task_id": 162,
+      "intent_template_id": 171,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Go to the product page of the best storage option that fits 40 Nintendo Switch game cards",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:163",
+      "task_id": 163,
+      "intent_template_id": 136,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get all review titles with 2 stars or below for the product on the current page.",
+      "start_urls": [
+        "__SHOPPING__/ostent-16gb-memory-card-stick-storage-for-sony-ps-vita-psv1000-2000-pch-z081-z161-z321-z641.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:165",
+      "task_id": 165,
+      "intent_template_id": 136,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get all review titles with 2 stars or below for the product on the current page.",
+      "start_urls": [
+        "__SHOPPING__/sandgrens-swedish-handmade-wooden-clog-sandal-copenhagen.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:188",
+      "task_id": 188,
+      "intent_template_id": 214,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the total cost of my latest order marked as \"cancelled\". Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:192",
+      "task_id": 192,
+      "intent_template_id": 214,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the total cost of my latest order that is not cancelled. Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:225",
+      "task_id": 225,
+      "intent_template_id": 135,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return the titles for reviews with 3 stars or below for brush from sephora",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:226",
+      "task_id": 226,
+      "intent_template_id": 370,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "What is the price range for products from Amazon basic?. Return an object with keys \"min\" and \"max\" (as numbers, e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:231",
+      "task_id": 231,
+      "intent_template_id": 213,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the order number of my most recent cancelled order",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:232",
+      "task_id": 232,
+      "intent_template_id": 213,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the order number of my most recent pending order",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:234",
+      "task_id": 234,
+      "intent_template_id": 213,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the order number of my most recent on hold order",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:238",
+      "task_id": 238,
+      "intent_template_id": 138,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I am doing a market survey for one stop market, go to the product page for the most expensive PS4 accessories",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:242",
+      "task_id": 242,
+      "intent_template_id": 138,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I am doing a market survey for one stop market, go to the product page for the most expensive Household Supplies",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:260",
+      "task_id": 260,
+      "intent_template_id": 211,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the Video Game category page to browse products",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:261",
+      "task_id": 261,
+      "intent_template_id": 211,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the Headphones category page to browse products",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:269",
+      "task_id": 269,
+      "intent_template_id": 139,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the \"women shoes\" category page filtered to under $25",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:271",
+      "task_id": 271,
+      "intent_template_id": 139,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the \"makeup remover\" category page filtered to under $46.99",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:274",
+      "task_id": 274,
+      "intent_template_id": 212,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the search results for \"usb wifi\"",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:279",
+      "task_id": 279,
+      "intent_template_id": 204,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Provide me with the full names of Bluetooth headphones from Sony, and also share the price range for the available models. Return an object with keys \"names\" (list of product names), \"min\" and \"max\" (as numbers, e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:280",
+      "task_id": 280,
+      "intent_template_id": 204,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Provide me with the full names of chargers from Anker, and also share the price range for the available models. Return an object with keys \"names\" (list of product names), \"min\" and \"max\" (as numbers, e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:283",
+      "task_id": 283,
+      "intent_template_id": 210,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the page showing the most recent Xbox controller models released between 2020-2021",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:284",
+      "task_id": 284,
+      "intent_template_id": 207,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "View the product page for the least expensive shoe storage with a minimum storage capacity of 12 pairs.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:285",
+      "task_id": 285,
+      "intent_template_id": 207,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "View the product page for the least expensive switch card holder with a minimum storage capacity of 15 cards.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:298",
+      "task_id": 298,
+      "intent_template_id": 180,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the order details page for the most recent completed order",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:301",
+      "task_id": 301,
+      "intent_template_id": 180,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the order details page for the most recent processing order",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:302",
+      "task_id": 302,
+      "intent_template_id": 180,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Open the order details page for the most recent out of delivery order",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:313",
+      "task_id": 313,
+      "intent_template_id": 134,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the customer service phone number",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:319",
+      "task_id": 319,
+      "intent_template_id": 160,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "How much refund should I expect from my orders canceled, if any, in April 2022, including shipping fee.. Return the value as a number (e.g., 10.99) only, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:324",
+      "task_id": 324,
+      "intent_template_id": 208,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Pull up the page with all \"chairs\" listings sorted by ascending price.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:329",
+      "task_id": 329,
+      "intent_template_id": 147,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return the total amount I spent on shopping at One Stop Market on April 19, 2023, excluding shipping. Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:330",
+      "task_id": 330,
+      "intent_template_id": 147,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return the total amount I spent on shopping at One Stop Market in March 2023, excluding shipping. Return the value as a number (e.g., 10.99) only, without any additional details",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:334",
+      "task_id": 334,
+      "intent_template_id": 169,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return the date I last ordered my muffin cornbread mix. Return the date in YYYY-MM-DD format or null if not available, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:335",
+      "task_id": 335,
+      "intent_template_id": 169,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return the date I last ordered my body butter. Return the date in YYYY-MM-DD format or null if not available, without any additional details.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:351",
+      "task_id": 351,
+      "intent_template_id": 137,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Go to the page showing PS4 accessories products sorted by ascending price",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:353",
+      "task_id": 353,
+      "intent_template_id": 137,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Go to the page showing competitive swimwear products sorted by ascending price",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:355",
+      "task_id": 355,
+      "intent_template_id": 137,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Go to the page showing kids\" bedding products sorted by descending price",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:358",
+      "task_id": 358,
+      "intent_template_id": 206,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the shipping method for order number 187.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:360",
+      "task_id": 360,
+      "intent_template_id": 206,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the product names for order number 148.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:361",
+      "task_id": 361,
+      "intent_template_id": 206,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the order statuses for order number 170 and 189. Return a list of objects with keys \"order_number\" and \"status\".",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:362",
+      "task_id": 362,
+      "intent_template_id": 206,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Get the billing address for order number 00178. Return a list of objects with keys \"house_number\", \"street\", \"city\", \"state\", \"postcode\", and \"country\".",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:368",
+      "task_id": 368,
+      "intent_template_id": 188,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Return the list of discounted (sale) items available on the site.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:376",
+      "task_id": 376,
+      "intent_template_id": 182,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Summarize customer reviews for Amazon Echo Dot 3rd generation.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:384",
+      "task_id": 384,
+      "intent_template_id": 666,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "List the customer names who complain about the quality of EYZUTAK phone cases",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:386",
+      "task_id": 386,
+      "intent_template_id": 1355,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "What is the rating of Ugreen lightning to 3.5mm cable?",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:387",
+      "task_id": 387,
+      "intent_template_id": 1356,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Who gave 4 or 5 stars for phone cases from EYZUTAK",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:431",
+      "task_id": 431,
+      "intent_template_id": 145,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product with the lowest per unit price from my open tabs to the shopping cart",
+      "start_urls": [
+        "__SHOPPING__/tall-pink-taper-candles-4-piece-orange-colored-tapered-candles-gradient-candles-10-6-inches-tall-tie-dye-candle-set-large-dripless-long-burning-candlesticks-two-color-taper-candles-candlesticks.html",
+        "__SHOPPING__/spaas-white-taper-candles-4-pack-10-inch-tall-candles-scent-free-premium-wax-candle-sticks-8-hour-long-burning-white-candlesticks-for-home-decoration-wedding-holiday-and-parties.html",
+        "__SHOPPING__/white-starfish-wall-candle-sconces-set-of-2-beach-decor-ocean-themed-wall-mount-candleholders-nautical-style-beach-bathroom-decor-coastal-farmhouse-seashell-candle-holders.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:433",
+      "task_id": 433,
+      "intent_template_id": 145,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product with the lowest per unit price from my open tabs to the shopping cart",
+      "start_urls": [
+        "__SHOPPING__/tazrigo-5pcs-white-dental-resin-brush-pens-dental-shaping-silicone-tooth-tool.html",
+        "__SHOPPING__/stylus-pens-for-touch-screens-2-pcs-universal-stylus-2-in-1-2022-updated-touch-screen-pens-for-all-touch-screens-cell-phones-tablets-laptops-with-6-replacement-tips-4-discstips-2-fiber-tips.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:435",
+      "task_id": 435,
+      "intent_template_id": 145,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product with the lowest per unit price from my open tabs to the shopping cart",
+      "start_urls": [
+        "__SHOPPING__/35-ft-hdmi-cable-gearit-pro-series-hdmi-cable-35-feet-high-speed-ethernet-4k-resolution-3d-video-and-arc-audio-return-channel-hdmi-cable-white.html",
+        "__SHOPPING__/dp-to-hdmi-cable-6ft-2-pack-fosmon-gold-plated-displayport-to-hdmi-cable-1080p-full-hd-for-pcs-to-hdtv-monitor-projector-with-hdmi-port.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:436",
+      "task_id": 436,
+      "intent_template_id": 156,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I previously ordered a mattress foundation around Feb or March 2023 and later cancelled. Can you reorder it for me?",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:438",
+      "task_id": 438,
+      "intent_template_id": 156,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I previously ordered a TV stand sometime around sep 2022 and later cancelled. Can you reorder it for me?",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:440",
+      "task_id": 440,
+      "intent_template_id": 156,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I previously ordered a make up removal kit during summer 2022 and later cancelled. Can you reorder it for me?",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:465",
+      "task_id": 465,
+      "intent_template_id": 186,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add Tide PODS Spring Meadow Scent HE Turbo Laundry Detergent Pacs, 81 Count to my wish list",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:466",
+      "task_id": 466,
+      "intent_template_id": 186,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add 2 Hawaiian Bamboo Orchid Roots #zc50 - by Discount Hawaiian Gifts to my wish list",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:467",
+      "task_id": 467,
+      "intent_template_id": 186,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add HONGJ Hawaiian Beach Outfits Set for Mens, Summer Tropical Tree Printed Relaxed-fit Hawaii Shirts Shorts 2 Piece Suits to my wish list",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:468",
+      "task_id": 468,
+      "intent_template_id": 186,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add DkRgVNY Lace Spcling Lingerie Womens Sexy Hollow Out Underwear Bodysuit One Piece Snap Crotch Clubwear Teddy Bodysuit to my wish list",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:506",
+      "task_id": 506,
+      "intent_template_id": 172,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Buy the highest rated product from the meat substitute category within a budget between 100 and 200. Discard any items in your cart if it is not empty.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:508",
+      "task_id": 508,
+      "intent_template_id": 172,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Buy the highest rated product from the NS switch category within a budget under 60. Discard any items in your cart if it is not empty.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:509",
+      "task_id": 509,
+      "intent_template_id": 216,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Buy the best rating product from \"Men\"s shoe\" category with at least 5 reviews and the product is least expensive. Choose any available variant.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:511",
+      "task_id": 511,
+      "intent_template_id": 189,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add a laundry detergent to my wish list.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:514",
+      "task_id": 514,
+      "intent_template_id": 189,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add a white desk to my wish list.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:516",
+      "task_id": 516,
+      "intent_template_id": 196,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product on the current page to my wishlist",
+      "start_urls": [
+        "__SHOPPING__/elmwood-inn-fine-teas-orange-vanilla-caffeine-free-fruit-infusion-16-ounce-pouch.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:517",
+      "task_id": 517,
+      "intent_template_id": 196,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product on the current page to my wishlist",
+      "start_urls": [
+        "__SHOPPING__/skinit-decal-gaming-skin-compatible-with-xbox-one-s-console-and-controller-bundle-officially-licensed-nfl-baltimore-ravens-design.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:519",
+      "task_id": 519,
+      "intent_template_id": 196,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product on the current page to my wishlist",
+      "start_urls": [
+        "__SHOPPING__/iphone-13-pro-max-case-neon-turtle-iphone-13-pro-max-cases-tempered-glass-back-soft-silicone-tpu-shock-protective-case-for-apple-iphone-13-pro-max.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:520",
+      "task_id": 520,
+      "intent_template_id": 196,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Add the product on the current page to my wishlist",
+      "start_urls": [
+        "__SHOPPING__/magnetic-metal-stainless-steel-d-pads-kits-directional-pad-replacement-parts-for-xbox-one-elite-controller-elite-series-2-xbox-one-xbox-one-s-x-controller.html"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:521",
+      "task_id": 521,
+      "intent_template_id": 199,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Subscribe to the newsletter of OneStopMarket",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:528",
+      "task_id": 528,
+      "intent_template_id": 154,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Fill out the contact us form with this refund message for the phone screen protector bought March 2023: \"I need a refund. Order: <order_id>. Amount: <amount>. Reason: It broke after three days of use.\" Leave the filled form ready for review and do not submit it.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:529",
+      "task_id": 529,
+      "intent_template_id": 154,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Fill out the contact us form with this refund message for the Stereo Sound System bought Feb 2023: \"I need a refund. Order: <order_id>. Amount: <amount>. Reason: It broke after three days of use.\" Leave the filled form ready for review and do not submit it.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:530",
+      "task_id": 530,
+      "intent_template_id": 154,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Fill out the contact us form with this refund message for the kitchen organizer bought around Feb 2023: \"I need a refund. Order: <order_id>. Amount: <amount>. Reason: It broke after three days of use.\" Leave the filled form ready for review and do not submit it.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:571",
+      "task_id": 571,
+      "intent_template_id": 165,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I recently moved, my address is 231 Willow Way, Suite 100, Chicago, IL, 60601, update my information on OneStopShopping accordingly",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:573",
+      "task_id": 573,
+      "intent_template_id": 165,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "I recently moved, my address is 987 Sycamore Circle, Philadelphia, PA, 19102, update my information on OneStopShopping accordingly",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:585",
+      "task_id": 585,
+      "intent_template_id": 194,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Rate my recently purchased floor lamp with 5 stars using my nickname Emma Lopez, with the summary \"Good purchase\" and review \"I like it\"",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:586",
+      "task_id": 586,
+      "intent_template_id": 194,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Rate my recently purchased Jiffy Mix with 4 stars using my nickname ShoppingEmma, with the summary \"Good purchase\" and review \"I like it\"",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:587",
+      "task_id": 587,
+      "intent_template_id": 194,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Rate my recently purchased PS3 accessory with 3 stars using my nickname GamingEmma, with the summary \"Ok I guess\" and review \"Does the job\"",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:589",
+      "task_id": 589,
+      "intent_template_id": 194,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Rate my recently purchased Mini Wireless Bluetooth Speaker with 2 stars using my nickname SimpleEmma, with the summary \"Very bad\" and review \"I hated it\"",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:653",
+      "task_id": 653,
+      "intent_template_id": 153,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Fill the \"contact us\" form in the site for a refund on the phone screen protector I bought, stating that \"it broke after just three days of use\". Also, ensure to include the order number #000000180 and the product SKU. Don\"t submit yet, I will check.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:654",
+      "task_id": 654,
+      "intent_template_id": 153,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Fill the \"contact us\" form in the site for a refund on the bluetooth speaker I bought, stating that \"it broke after just three days of use\". Also, ensure to include the order number #161 and the product SKU. Don\"t submit yet, I will check.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:689",
+      "task_id": 689,
+      "intent_template_id": 163,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Prepare a coupon request in the shop's contact form with the reason: \"I am a loyal customer, give me a coupon\". Keep it ready for review.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:690",
+      "task_id": 690,
+      "intent_template_id": 163,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Prepare a coupon request in the shop's contact form with the reason: \"they promised me a coupon last time\". Keep it ready for review.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:692",
+      "task_id": 692,
+      "intent_template_id": 163,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Prepare a coupon request in the shop's contact form with the reason: \"I am a student\". Keep it ready for review.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:693",
+      "task_id": 693,
+      "intent_template_id": 163,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Prepare a coupon request in the shop's contact form with the reason: \"my refund is supposed to be replaced by a coupon\". Keep it ready for review.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:793",
+      "task_id": 793,
+      "intent_template_id": 172,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Buy the highest rated product from the Men clothing category within a budget above 50 but under 129.99. Discard any items in your cart if it is not empty.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:794",
+      "task_id": 794,
+      "intent_template_id": 191,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Change the delivery address for my most recent non canceled order to 4000 Forbes Ave, Pittsburgh, PA.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:796",
+      "task_id": 796,
+      "intent_template_id": 191,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Change the delivery address for my oldest order in 2023 to 155 5th Street, San Francisco, CA.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    },
+    {
+      "task_key": "wav:797",
+      "task_id": 797,
+      "intent_template_id": 191,
+      "sites": [
+        "shopping"
+      ],
+      "intent": "Change the delivery address for my first order ever to 3 Oxford St, Cambridge, MA.",
+      "start_urls": [
+        "__SHOPPING__"
+      ],
+      "status": "awaiting-task-auth-script-and-fixture-validation"
+    }
+  ]
+}

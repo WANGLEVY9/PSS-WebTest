@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 import {readDeploymentProfile,parseExactPins,indexInstalledDistributions,compareExactPins,inspectContainer,deploymentSummary} from './sponsor-portable-config.mjs';
+import {measureColimaStorage} from './colima-storage.mjs';
 
 const code=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const hash=x=>crypto.createHash('sha256').update(x).digest('hex');
@@ -94,7 +95,9 @@ else attempt('docker-runtime',()=>{
   check('docker-runtime',daemon.OSType==='linux'&&['x86_64','amd64'].includes(daemon.Architecture),{os:daemon.OSType,architecture:daemon.Architecture,server_version:daemon.ServerVersion});
   // Host fs.statfs is valid only for a local native daemon's exact storage root.
   const local=p.purpose==='sponsor-native-linux'&&os.platform()==='linux'&&os.arch()==='x64'&&context.Endpoints?.docker?.Host?.startsWith('unix://');
-  if(!local||!p.storage.docker_filesystem_path||!p.storage.required_free_bytes||p.storage.docker_filesystem_path!==daemon.DockerRootDir)
+  if(p.purpose==='local-diagnostic'&&p.storage.colima_profile&&p.storage.required_free_bytes)
+    attempt('docker-storage',()=>{const facts=measureColimaStorage({profile:p.storage.colima_profile,context,daemon,requiredBytes:p.storage.required_free_bytes,run});check('docker-storage',facts.passed,facts);});
+  else if(!local||!p.storage.docker_filesystem_path||!p.storage.required_free_bytes||p.storage.docker_filesystem_path!==daemon.DockerRootDir)
     add('docker-storage','unverified','Require native-local daemon, exact DockerRootDir and measured provisioning reserve; never substitute Mac host free disk for VM capacity');
   else attempt('docker-storage',()=>{
     const s=fs.statfsSync(p.storage.docker_filesystem_path,{bigint:true}),free=s.bavail*s.bsize;

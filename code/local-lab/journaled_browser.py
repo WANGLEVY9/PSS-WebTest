@@ -85,10 +85,14 @@ VISIBLE_PROJECTION = r"""() => {
 
 
 class JournaledBrowser:
-    def __init__(self, context, page, journal, viewport, task, action_timeout_ms=5000, settle_ms=750):
+    def __init__(self, context, page, journal, viewport, task, action_timeout_ms=5000, settle_ms=750,
+                 observation_timeout_ms=5000):
         self.context, self.page, self.journal = context, page, journal
         self.viewport = list(viewport)
         self.timeout, self.settle_ms = action_timeout_ms, settle_ms
+        if type(observation_timeout_ms) is not int or observation_timeout_ms <= 0:
+            raise ValueError('Positive observation timeout required')
+        self.observation_timeout = observation_timeout_ms
         self.pages = list(context.pages)
         self.action_error = None
         self.assets = {}
@@ -114,10 +118,20 @@ class JournaledBrowser:
         self.page = page
         self.journal.event('page-opened', page_ordinal=len(self.pages)-1)
 
-    def remaining_ms(self):
+    def remaining_ms(self, maximum=None):
+        maximum = self.timeout if maximum is None else maximum
         if math.isinf(self.deadline):
-            return self.timeout
-        return max(1, min(self.timeout, int((self.deadline-time.monotonic())*1000)))
+            return maximum
+        return max(1, min(maximum, int((self.deadline-time.monotonic())*1000)))
+
+    def screenshot(self, phase):
+        try:
+            return self.page.screenshot(type='png',timeout=self.remaining_ms(self.observation_timeout))
+        except Exception as exc:
+            # Private call log is evidence only, never feedback to the model.
+            ref=self.journal.artifact(f'observation-error-{self.journal.sequence:06d}.txt',str(exc).encode())
+            self.journal.event('observation-error',phase=phase,error_type=type(exc).__name__,private_detail_ref=ref)
+            raise
 
     def observe(self, mode):
         if mode not in ('visual', 'hybrid'):
@@ -126,14 +140,14 @@ class JournaledBrowser:
             raise TimeoutError('Task deadline')
         # Fixed dwell only. No DOM/URL/load-state based progress or done heuristic.
         self.page.wait_for_timeout(min(self.settle_ms, self.remaining_ms()))
-        png = self.page.screenshot(type='png', timeout=self.remaining_ms())
+        png = self.screenshot('primary-frame')
         frame = self.journal.artifact(f'frame-{self.journal.sequence:06d}.png', png)
         self.journal.event('observation', frame=frame, page_ordinal=self.pages.index(self.page),
                            private_url=self.page.url, action_error=self.action_error, mode=mode)
         result = {'screenshot': png, 'action_error': self.action_error}
         if mode == 'hybrid':
             controls = self.page.evaluate(VISIBLE_PROJECTION)
-            after=self.page.screenshot(type='png',timeout=self.remaining_ms())
+            after=self.screenshot('projection-bracket')
             ref=self.journal.artifact(f'bracket-{self.journal.sequence:06d}.png',after)
             self.journal.event('projection-bracket',frame=ref,unchanged=sha(after)==sha(png))
             if sha(after)!=sha(png):

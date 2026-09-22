@@ -154,7 +154,8 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     journal.event('source-snapshot', sources=sources, installed_versions=versions)
     journal.event('actor-start', framework=framework, mode=mode, budget=budget,
                   model_binding=None, confirmatory_authorized=False)
-    actuator = JournaledBrowser(context,page,journal,viewport,payload['input'],settle_ms=0)
+    actuator = JournaledBrowser(context,page,journal,viewport,payload['input'],settle_ms=0,
+        observation_timeout_ms=payload.get('observation_timeout_ms',5000))
     actuator.deadline = started/1e9 + budget['task_timeout_ms']/1000
     session = Session(actuator,payload)
     terminal, failure, answer = 'completed', None, None

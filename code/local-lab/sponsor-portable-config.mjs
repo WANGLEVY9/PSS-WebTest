@@ -26,7 +26,8 @@ export function validateDeploymentProfile(p) {
     must(text(e.executable),'Explicit Python executable path required');
     must(e.lock_file===null||text(e.lock_file),'Explicit dependency lock path or null required');
   }
-  keys(p.storage,['docker_filesystem_path','required_free_bytes','ledger_path'],'storage');
+  keys(p.storage,['docker_filesystem_path','required_free_bytes','ledger_path','colima_profile'],'storage');
+  if(p.storage.colima_profile!==undefined)must(p.purpose==='local-diagnostic'&&typeof p.storage.colima_profile==='string'&&/^[a-zA-Z0-9][a-zA-Z0-9_-]{0,60}$/.test(p.storage.colima_profile),'Colima probe requires an explicit safe local diagnostic profile');
   must(p.storage.docker_filesystem_path===null||text(p.storage.docker_filesystem_path),'Docker filesystem path required or null');
   must(p.storage.required_free_bytes===null||(Number.isSafeInteger(p.storage.required_free_bytes)&&p.storage.required_free_bytes>0),'Storage requirement must be positive integer bytes or unknown/null');
   must(text(p.storage.ledger_path),'Dedicated local ledger directory required');

@@ -7,6 +7,7 @@ their native official task IDs, images and evaluator contracts separately.
 import argparse
 import hashlib
 import json
+from runtime_store import digest
 import os
 from pathlib import Path
 from ata_mapping import source_catalog, parser as ata_parser
@@ -48,7 +49,8 @@ def prepare_ata(source, destination):
         # P/F and source path remain on the supervisor/evaluator side only.
         gold_hash = save(gold_file, {**identity, 'expected': expected, 'failures': case['failures'],
                                     'source_line': case['source_line'], 'evaluator_status': 'reference-labels-only-live-parity-not-verified'})
-        rows.append({**identity, 'task_key': task_key, 'expected': expected, 'agent_input_sha256': input_hash})
+        rows.append({**identity, 'task_key': task_key, 'expected': expected, 'agent_input_sha256': input_hash,
+                     'evaluation_sha256': gold_hash, 'evaluation_ref_sha256': digest({'file': str(gold_file), 'sha256': gold_hash})})
         bindings[task_key] = {**identity, 'source_file': str(source_file), 'agent_input_file': str(actor_file),
                               'agent_input_sha256': input_hash, 'evaluation_ref': {'file': str(gold_file), 'sha256': gold_hash}}
     save(dest / 'source-bundle.json', {'protocol_id': 'pss-manuscript-v2.1', 'scope': 'diagnostic', 'tasks': rows})

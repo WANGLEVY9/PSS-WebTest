@@ -1,7 +1,8 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const root = path.resolve(new URL('..', import.meta.url).pathname);
+const root = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const file = process.env.PSS_AGENT_MODEL_MATRIX ?? path.join(root, 'config', 'prestashop-agent-model-matrix.v0.1.json');
 const matrix = JSON.parse(fs.readFileSync(file, 'utf8'));
 const errors = [];

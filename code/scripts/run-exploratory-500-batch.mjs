@@ -1,11 +1,12 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { evaluateBatchAuthorisation, classifyControllerBoundary } from '../src/exploratory-batch-guards.mjs';
 import { readBlockPilotSummary } from '../src/exploratory-batch-artifacts.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const currentProfile = `${process.env.CUA_PROVIDER ?? ''}/${process.env.CUA_MODEL ?? ''}`;
 const manifestPath = process.env.PSS_BATCH_MANIFEST
   ? path.resolve(process.env.PSS_BATCH_MANIFEST)

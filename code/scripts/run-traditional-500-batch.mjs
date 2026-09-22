@@ -1,9 +1,10 @@
+import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const planPath = path.join(codeRoot, 'config/traditional-500-playwright.v0.1.json');
 const plan = JSON.parse(fs.readFileSync(planPath, 'utf8'));

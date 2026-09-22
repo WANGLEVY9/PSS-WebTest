@@ -16,7 +16,7 @@ export function costMicroUsd(usage,price) {
   return Math.ceil((i-cached)*rates[0]+cached*rates[1]+o*rates[2]);
 }
 export async function accountedProvider(config,body,{ledger,price=null,reservationMicroUsd,
-  maxAttempts=1,deadlineMs,requestTimeoutMs=45000,fetchImpl=fetch,
+  maxAttempts=1,deadlineMs,requestTimeoutMs=45000,fetchImpl=fetch,budgetGuard,taskId,
   sleep=ms=>new Promise(r=>setTimeout(r,ms)),random=Math.random,now=()=>performance.now()}={}) {
   if(!ledger||!Number.isSafeInteger(reservationMicroUsd)||reservationMicroUsd<0) throw Error('Durable ledger and cost reservation required');
   if(!Number.isInteger(maxAttempts)||maxAttempts<1||maxAttempts>3||!Number.isFinite(deadlineMs)||deadlineMs<=0||!Number.isInteger(requestTimeoutMs)||requestTimeoutMs<1) throw Error('Invalid bounded retry policy');
@@ -33,7 +33,7 @@ export async function accountedProvider(config,body,{ledger,price=null,reservati
     // Reservation time also consumes the wall-clock budget.
     const left=deadlineMs-(now()-start);
     const response=left<1?{failure_class:'not-dispatched-deadline',usage:null,output:null}:
-      await callProvider(config,body,{timeoutMs:Math.max(1,Math.floor(Math.min(requestTimeoutMs,left))),fetchImpl});
+      await callProvider(config,body,{timeoutMs:Math.max(1,Math.floor(Math.min(requestTimeoutMs,left))),fetchImpl,budgetGuard,taskId});
     if(!response.failure_class && response.model_returned!==config.model && !(config.approved_model_returned_aliases||[]).includes(response.model_returned)) response.failure_class='provider-model-identity-unverified';
     const {output,...telemetry}=response;
     let charge=null;

@@ -1,6 +1,6 @@
 # Benchmark observatory
 
-> **Scope:** this console documents the legacy WAV retrieval integration path and its retained diagnostic records. The current native AgentLab/Browser Use/Playwright lifecycle is specified in the [technical guide](../../docs/technical/README.md). It is not selected merely by changing this console’s strategy label. Budget panels from the independent acceptance branch require integration; see [spend controls](SPEND-CONTROLS.md).
+> **Scope:** this console documents the legacy WAV retrieval integration path and its retained diagnostic records. The current native AgentLab/Browser Use/Playwright lifecycle is specified in the [technical guide](../../docs/technical/README.md). It is not selected merely by changing this console’s strategy label. Shared budget panels and pause controls are integrated; verify live request coverage before paid acceptance; see [spend controls](SPEND-CONTROLS.md).
 
 An English, local-first console for **official benchmark integration runs**. The current selection uses unmodified WebArena-Verified tasks **163–167**, template 136, source commit `6473f72db5dcefc97b5725b59e734504edc28a21`; earlier task-21/22 records remain available. It invokes the **stock WebArena-Verified 1.2.3 evaluator**, not a replacement page assertion. This is not confirmatory collection.
 
@@ -9,7 +9,7 @@ An English, local-first console for **official benchmark integration runs**. The
 ## Start the environment and console
 
 ```bash
-cd PSS-WebTest/code
+cd "$(git rev-parse --show-toplevel)/code"
 # Developer-only Colima example; provision these named resources first.
 # For native Linux/cloud deployment, follow cloud-handoff/README.md.
 colima start webarena-x86 --activate=false

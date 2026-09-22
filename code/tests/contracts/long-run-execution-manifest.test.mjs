@@ -1,9 +1,10 @@
+import {fileURLToPath} from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const manifest = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/phase2-long-run-execution-manifest.v0.1.json'), 'utf8'));
 
 test('legacy long-run manifest preserves its arithmetic while remaining superseded and paused', () => {

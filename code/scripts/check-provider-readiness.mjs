@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Executable provider-readiness gate.
 //
 // `npm run check:agent` only proves that the provider environment variables are
@@ -22,7 +23,7 @@ import { createVolcengineHybridDriver } from '../src/arms/volcengine-hybrid-driv
 import { resolveAgentOptimization } from '../src/agent-optimization.mjs';
 import { loadProviderProfileManifest } from '../src/provider-profile.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const readinessPath = path.join(codeRoot, 'config', 'provider-readiness.v0.1.json');
 const baseURL = process.env.PRESTASHOP_BASE_URL ?? 'http://localhost:8083';
 const query = process.env.PSS_PRESTASHOP_QUERY ?? 'Mug';

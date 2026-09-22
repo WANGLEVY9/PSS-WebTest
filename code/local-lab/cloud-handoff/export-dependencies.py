@@ -49,7 +49,7 @@ def main():
         rows.append(['node', 'npm', package_path, package.get('version', 'UNSPECIFIED'),
                      'package-lock.json', npm_sha, 'LOCKED_NOT_CLOUD_INSTALL_VERIFIED'])
     output = Path(args.output)
-    output.mkdir(mode=0o700)
+    output.mkdir(mode=0o700, parents=True)
     with (output/'dependency-packages.csv').open('x', newline='', encoding='utf-8') as stream:
         writer = csv.writer(stream, lineterminator='\n')
         writer.writerow(['environment', 'ecosystem', 'package', 'declared_version', 'source_file', 'source_sha256', 'verification'])

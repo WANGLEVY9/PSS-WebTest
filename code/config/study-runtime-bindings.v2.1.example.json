@@ -30,6 +30,7 @@
   ],
   "required_binding_for_all": [
     "configuration_sha256",
-    "budget_profile_by_benchmark"
+    "budget_profile_by_benchmark",
+    "executor_binding_sha256_by_benchmark"
   ]
 }

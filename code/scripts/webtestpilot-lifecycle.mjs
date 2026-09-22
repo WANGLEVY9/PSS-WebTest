@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs/promises';
 import fsSync from 'node:fs';
 import path from 'node:path';
@@ -6,7 +7,7 @@ import { spawn } from 'node:child_process';
 
 const app = process.argv[2];
 const action = process.argv[3] ?? 'status';
-const repoRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const repoRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const webappsRoot = path.join(repoRoot, 'third_party', 'WebTestPilot', 'webapps');
 const definitions = {
   invoiceninja: {

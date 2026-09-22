@@ -56,7 +56,8 @@ class LedgerModel:
             store.reserve(ledger['opportunityId'], ledger['leaseToken'], request_id, self.identity,
                           self.payload['cost_policy']['request_reservation_micro_usd'], ledger['capMicroUsd'])
             self.requests += 1
-            request = {**self.identity, 'messages':messages, 'schema':schema, 'timeout_ms':timeout}
+            request = {**self.identity, 'messages':messages, 'schema':schema, 'timeout_ms':timeout,
+                       'spend_task_id':ledger['opportunityId'], 'runtime_request_id':request_id}
             ref = self.journal.artifact(f'request-{self.requests:04d}.json',
                 json.dumps(evidence_projection(request, self.journal), ensure_ascii=False).encode())
             self.journal.event('provider-start', request_id=request_id, request=ref)

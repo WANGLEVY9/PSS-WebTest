@@ -8,6 +8,7 @@ operations fail explicitly rather than silently escaping replay instrumentation.
 import copy
 import importlib.metadata
 import time
+from runtime_identity import receipt_binding
 from pathlib import Path
 from journaled_browser import JournaledBrowser, sha
 from runtime_inputs import read_pinned
@@ -15,7 +16,7 @@ from runtime_store import Store
 from lifecycle_timing import POLICY, window
 
 SOURCES = ('traditional_actor.py', 'journaled_browser.py', 'framework_actions.py',
-           'runtime_inputs.py', 'runtime_store.py', 'lifecycle_timing.py')
+           'runtime_inputs.py', 'runtime_store.py', 'runtime_identity.py', 'lifecycle_timing.py')
 
 
 class ActionBudgetExceeded(Exception):
@@ -181,6 +182,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     receipt = {k:payload[k] for k in ('opportunity_id','environment_id','configuration_sha256','scope','data_kind')}
     unchanged = all(sha(Path(__file__).with_name(n).read_bytes())==sources[n]['sha256'] for n in SOURCES)
     unchanged = unchanged and sha(Path(script_ref['file']).read_bytes())==script_ref['sha256']
+    receipt.update(receipt_binding(payload))
     receipt.update(framework=framework, mode=mode, terminal_status=terminal, failure_class=failure,
         final_answer=answer, action_count=session.actions, script_reads=session.reads, provider_requests=0,
         budget_met=terminal!='timeout' and elapsed<=budget['task_timeout_ms'], elapsed_ms=elapsed,

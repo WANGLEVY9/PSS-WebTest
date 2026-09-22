@@ -86,6 +86,8 @@ The doctor does not assume Colima or a developer home directory. It never substi
 
 ## 5. Scientific acceptance that still must run
 
+The development team must pass [the release acceptance plan](./SPONSOR-ACCEPTANCE-PLAN.md) **before** delivering this as a runnable full-study release. Sponsor-side verification repeats an already demonstrated path; it is not the first integration/debugging environment. An offline-green artifact without real framework/native-benchmark acceptance is a development package only.
+
 | Gate | Required evidence | What does not suffice |
 |---|---|---|
 | Official selection | Official task/source IDs and attachments; outcome-blind screening; fixed selected population | Counts or an automatically generated mock task list |
@@ -102,11 +104,16 @@ After these checks, use a small nonformal **official** development selection on 
 
 ### Diagnostic worker receipt contract
 
-`runtime_worker.py` now emits `runtime_protocol=diagnostic-receipts-v2`. All four adapter receipts must echo `opportunity_id`, `environment_id` and `configuration_sha256`. Reset additionally attests the expected baseline; cleanup attests cleanup. The actor adapter must provide a recognized terminal status, boolean `budget_met` and integer `action_count`; the binding must specify positive wall-time and action budgets. Supervisor timing and action-count checks can reject an actor's claimed completion. These are trusted adapter receipts, **not fields to accept directly from a model response**.
+`runtime_worker.py` now emits `runtime_protocol=diagnostic-task-bound-v3`. All four adapter receipts must echo `opportunity_id`, `environment_id`, `configuration_sha256`, `lease_token` and `task_manifest_sha256`. Evaluation also echoes `evaluation_ref` and `evaluation_sha256`. Reset additionally attests the expected baseline; cleanup attests cleanup. The actor adapter must provide a recognized terminal status, boolean `budget_met` and integer `action_count`; the binding must specify positive wall-time and action budgets. Supervisor timing and action-count checks can reject an actor's claimed completion. These are trusted adapter receipts, **not fields to accept directly from a model response**.
 
 An actor timeout or provider error remains that failure even when independent evaluation returns native score 1. Native score, actor termination, budget compliance, assessment validity and cleanup remain separate. Invalid or mismatched receipts quarantine the opportunity/environment. Identity echoes alone do not prove correct actions: the adapter still needs action-journal, observation-boundary and evaluator integration tests. Frozen task correspondence is implemented (see the adapter remediation report), but complete benchmark lifecycle and sponsor-host acceptance remain open. The additive `lifecycle_completed` field records a completed receipt/cleanup chain without asserting task success; it does not redefine `protocol_completed`. Do not enable formal collection on the strength of diagnostic worker tests.
 
 ## 6. Data and access
+
+Configure and verify [shared API spending controls](./SPEND-CONTROLS.md) before
+any paid canary. The default CNY 1,500 budget is shared across batches, with
+80%/90% alerts, a 95% new-task stop and per-execution limits. A verified price
+card is required; supplying an API key does not enable unpriced requests.
 
 Keep fixtures, credentials, screenshots/HAR/prompts, evaluator references, detailed logs, cost-ledger DB/WAL and raw outputs on restricted storage. Keep the console on loopback; use SSH port forwarding instead of exposing it publicly. Back up the ledger with SQLite's consistent-backup mechanism or while quiescent, not by copying only the live `.sqlite` file while ignoring WAL. Publish only reviewed, redacted summaries with source/configuration hashes.
 

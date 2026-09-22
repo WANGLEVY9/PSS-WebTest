@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import { chromium } from 'playwright';
 import { createRunRecord } from '../src/run-records.mjs';
@@ -17,7 +18,7 @@ const taskId = process.env.PSS_BOOKSTACK_TASK_ID ?? 'bookstack-open-book';
 if (!['bookstack-open-book', 'bookstack-search-and-open-book2'].includes(taskId)) throw new Error(`Unsupported PSS_BOOKSTACK_TASK_ID: ${taskId}`);
 const condition = process.env.PSS_PILOT_CONDITION ?? 'clean-stable';
 const phase2Protocol = process.env.PSS_PROTOCOL_VERSION === '2.0-draft';
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const phase2Fields = phase2Protocol
   ? createPhase2Provenance({
     registry: loadConfigurationRegistry(),

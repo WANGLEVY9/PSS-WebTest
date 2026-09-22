@@ -27,7 +27,22 @@ class BindingTests(unittest.TestCase):
         self.input.write_text(json.dumps({'schema': 'pss-official-task-input-v1', 'benchmark': 'wav', 'intent': 'Synthetic fixture', 'task_images': []}))
         self.task = {'task_key': 'wav:synthetic:1', 'benchmark': 'wav', 'official_task_id': '1', 'application': 'synthetic',
                      'source_sha256': sha(self.source.read_bytes()), 'template_id': 1, 'agent_input_sha256': sha(self.input.read_bytes())}
-        bundle = {'protocol_id': 'pss-manuscript-v2.1', 'scope': 'synthetic', 'tasks': [self.task]}
+        evaluator = self.root / 'evaluator.json'
+        evaluator.write_text(json.dumps({**self.task, 'gold': 'EVALUATOR_ONLY_SENTINEL'}))
+        adapter = self.root / 'adapter.py'
+        adapter.write_text('# SYNTHETIC_TEST\n')
+        cmd = {'argv': [sys.executable, str(adapter)], 'source': str(adapter), 'sha256': sha(adapter.read_bytes()), 'timeout_ms': 1000}
+        config_id = 'v1'
+        framework = 'playwright' if config_id == 's' else 'browser-use-restricted' if config_id.startswith('u') else 'agentlab-browsergym'
+        self.binding = {'config_id': config_id, 'framework': framework, 'framework_revision': 'fixture',
+                        'configuration_sha256': 'a'*64, 'boundary_audit_sha256': 'b'*64, 'baseline_sha256': 'c'*64,
+                        'environment_id': 'fixture', 'model_binding': {'provider': 'fixture', 'model': 'fixture'},
+                        'budget': {'task_timeout_ms': 1000, 'max_actions': 3}, 'sdk_max_retries': 0,
+                        'cost_policy': {'cap_micro_usd': 100, 'request_reservation_micro_usd': 1},
+                        'commands': {k: cmd for k in ('reset', 'actor', 'evaluate', 'cleanup')}}
+        self.task.update(evaluation_sha256=sha(evaluator.read_bytes()),
+                         evaluation_ref_sha256=digest({'file': str(evaluator), 'sha256': sha(evaluator.read_bytes())}))
+        bundle = {'protocol_id': 'pss-manuscript-v2.1', 'scope': 'synthetic', 'tasks': [self.task], 'bindings': {'configurations': {'v1': {'executor_binding_sha256_by_benchmark': {'wav': digest(self.binding)}}}}}
         input_bundle = self.root / 'bundle.json'
         input_bundle.write_text(json.dumps(bundle))
         out = self.root / 'plan'
@@ -36,19 +51,6 @@ class BindingTests(unittest.TestCase):
         self.freeze_sha = sha(self.freeze_file.read_bytes())
         self.plan_file = out / 'opportunities.jsonl'
         self.plan, self.freeze = frozen_plan(self.plan_file, self.freeze_file, self.freeze_sha)
-        evaluator = self.root / 'evaluator.json'
-        evaluator.write_text(json.dumps({**self.task, 'gold': 'EVALUATOR_ONLY_SENTINEL'}))
-        adapter = self.root / 'adapter.py'
-        adapter.write_text('# SYNTHETIC_TEST\n')
-        cmd = {'argv': [sys.executable, str(adapter)], 'source': str(adapter), 'sha256': sha(adapter.read_bytes()), 'timeout_ms': 1000}
-        config_id = self.plan[0]['config_id']
-        framework = 'playwright' if config_id == 's' else 'browser-use-restricted' if config_id.startswith('u') else 'agentlab-browsergym'
-        self.binding = {'config_id': config_id, 'framework': framework, 'framework_revision': 'fixture',
-                        'configuration_sha256': 'a'*64, 'boundary_audit_sha256': 'b'*64, 'baseline_sha256': 'c'*64,
-                        'environment_id': 'fixture', 'model_binding': {'provider': 'fixture', 'model': 'fixture'},
-                        'budget': {'task_timeout_ms': 1000, 'max_actions': 3}, 'sdk_max_retries': 0,
-                        'cost_policy': {'cap_micro_usd': 100, 'request_reservation_micro_usd': 1},
-                        'commands': {k: cmd for k in ('reset', 'actor', 'evaluate', 'cleanup')}}
         self.package = {'schedule_freeze_sha256': self.freeze_sha,
                         'tasks': {self.task['task_key']: {**self.task, 'source_file': str(self.source), 'agent_input_file': str(self.input),
                                   'evaluation_ref': {'file': str(evaluator), 'sha256': sha(evaluator.read_bytes())}}},
@@ -58,7 +60,7 @@ class BindingTests(unittest.TestCase):
         self.temp.cleanup()
 
     def bound(self, package=None):
-        return list(bind(self.plan[:1], package or self.package, self.freeze))[0]
+        return list(bind([p for p in self.plan if p['config_id']=='v1'][:1], package or self.package, self.freeze))[0]
 
     def test_js_export_to_python_hash_and_identity_roundtrip(self):
         self.assertEqual(len(self.plan), 19*12)
@@ -81,7 +83,7 @@ class BindingTests(unittest.TestCase):
     def test_another_valid_actor_file_cannot_be_substituted(self):
         self.input.write_text(json.dumps({'schema': 'pss-official-task-input-v1', 'benchmark': 'wav', 'intent': 'Wrong task', 'task_images': []}))
         self.package['tasks'][self.task['task_key']]['agent_input_sha256'] = sha(self.input.read_bytes())
-        with self.assertRaisesRegex(ValueError, 'not frozen'):
+        with self.assertRaisesRegex(ValueError, 'source drift'):
             self.bound()
 
     def test_wrong_evaluator_even_with_correct_file_hash_rejected(self):
@@ -103,7 +105,7 @@ class BindingTests(unittest.TestCase):
             verify_bound_input(op)
 
     def test_legacy_diagnostic_bypass_rejected(self):
-        op = {**self.plan[0], 'scope': 'diagnostic'}
+        op = {**next(p for p in self.plan if p['config_id']=='v1'), 'scope': 'diagnostic'}
         with self.assertRaisesRegex(ValueError, 'schedule freeze'):
             list(bind([op], self.package))
         with self.assertRaisesRegex(ValueError, 'correspondence'):

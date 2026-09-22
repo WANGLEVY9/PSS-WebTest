@@ -1,9 +1,10 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const repoRoot = path.resolve(new URL('../..', import.meta.url).pathname);
+const repoRoot = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const benchmarkRoot = path.join(repoRoot, 'third_party', 'WebTestPilot', 'benchmark');
 const args = process.argv.slice(2);
 const outputIndex = args.indexOf('--output');

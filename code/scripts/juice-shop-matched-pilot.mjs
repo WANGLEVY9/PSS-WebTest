@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
@@ -21,7 +22,7 @@ const timeoutMs = process.env.CUA_TIMEOUT_MS ?? '20000';
 const wallTimeoutMs = process.env.CUA_AGENT_WALL_TIMEOUT_MS ?? '120000';
 const provider = process.env.CUA_PROVIDER ?? null;
 const model = process.env.CUA_MODEL ?? null;
-const root = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const root = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const readEnvFile = (name) => {
   const file = `${root}/${name}`;
   if (!fs.existsSync(file)) return {};

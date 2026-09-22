@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 // Validates the frozen provider-profile manifest and reports how much of the
 // configuration registry is covered by a frozen protocol profile.
 import fs from 'node:fs';
@@ -7,7 +8,7 @@ import { loadProviderProfileManifest, providerProfileManifestPath, validateProvi
 import { loadAgentOptimizationProfiles } from '../src/agent-optimization.mjs';
 import { loadConfigurationRegistry } from '../src/configuration-registry.mjs';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const registryPath = path.join(codeRoot, 'config', 'configuration-registry.v0.2.json');
 
 const manifest = loadProviderProfileManifest();

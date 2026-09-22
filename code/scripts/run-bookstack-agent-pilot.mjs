@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
@@ -38,7 +39,7 @@ const postActionSettleMs = Number.parseInt(process.env.PSS_AGENT_POST_ACTION_SET
 const oraclePollMs = Number.parseInt(process.env.PSS_ORACLE_POLL_MS ?? '5000', 10);
 const viewport = { width: 1280, height: 720 };
 const phase2Protocol = process.env.PSS_PROTOCOL_VERSION === '2.0-draft';
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const phase2Fields = phase2Protocol
   ? createPhase2Provenance({
     registry: loadConfigurationRegistry(),

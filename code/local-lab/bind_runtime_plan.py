@@ -10,6 +10,7 @@ from runtime_store import digest
 from runtime_worker import validate_commands
 from runtime_inputs import read_pinned, task_projection
 import hashlib
+from runtime_identity import task_contract, verify_bound_input as verify_identity, sha
 
 
 def frozen_plan(filename, freeze_file, freeze_sha256):
@@ -31,8 +32,10 @@ def frozen_plan(filename, freeze_file, freeze_sha256):
         task = tasks.get(op.get('task_key'))
         if not task or op.get('benchmark') != task['benchmark'] or any(op.get(k) != freeze[k] for k in ('protocol_id', 'scope', 'schedule_sha256')):
             raise ValueError('Opportunity differs from frozen selection')
-        identity = json.dumps([op['schedule_sha256'], op['task_key'], op['config_id'], op['round']], ensure_ascii=False, separators=(',', ':'))
-        if hashlib.sha256(identity.encode()).hexdigest() != op['opportunity_id'] or op['opportunity_id'] in seen:
+        frozen_task = task_contract(op)
+        if frozen_task != task:
+            raise ValueError('Task manifest differs from frozen selection')
+        if op['opportunity_id'] in seen:
             raise ValueError('Frozen opportunity identity mismatch/duplicate')
         seen.add(op['opportunity_id'])
         if op['config_id'] not in configs or op['round'] not in rounds:
@@ -50,8 +53,11 @@ def bind(plan, package, freeze=None):
         if op['opportunity_id'] in seen:
             raise ValueError('Duplicate opportunity')
         seen.add(op['opportunity_id'])
+        frozen = task_contract(op)
         b = package['executors'][op['config_id']][op['benchmark']]
         validate_commands(b)
+        if op.get('executor_binding_sha256') != digest(b):
+            raise ValueError('Executor/model/budget must be frozen before schedule generation')
         if b['config_id'] != op['config_id']:
             raise ValueError('Configuration mismatch')
         if freeze is not None:
@@ -61,7 +67,7 @@ def bind(plan, package, freeze=None):
         task = package['tasks'][op['task_key']]
         # Specs and evaluator references live in separate files; no implicit P/F IDs.
         raw = Path(task['agent_input_file']).read_bytes()
-        if hashlib.sha256(raw).hexdigest() != task['agent_input_sha256']:
+        if sha(raw) != task['agent_input_sha256'] or sha(raw) != frozen['agent_input_sha256']:
             raise ValueError('Outcome-free input source drift')
         if freeze is None:
             if op['scope'] != 'synthetic':
@@ -86,16 +92,23 @@ def bind(plan, package, freeze=None):
             evidence.update(official_task_id=selected['official_task_id'], source_sha256=selected['source_sha256'],
                 input_file_sha256=task['agent_input_sha256'], agent_payload_sha256=digest(payload),
                 evaluation_ref_sha256=digest(ref), schedule_freeze_sha256=package['schedule_freeze_sha256'])
-        yield {**op, 'configuration_sha256': b['configuration_sha256'],
+        bound = {**op, 'configuration_sha256': b['configuration_sha256'],
                'runtime_binding_sha256': digest(b), 'model_binding': b.get('model_binding'), 'environment_id': b['environment_id'],
+               'cost_policy': b.get('cost_policy'), 'agent_input_json': raw.decode('utf-8'),
+               'source_file': str(Path(task['source_file']).resolve()),
+               'evaluation_file': str(Path(task.get('evaluation_file') or ref['file']).resolve()),
                'agent_input': payload, 'evaluation_ref': ref, **({'task_input_binding': evidence} if evidence else {}),
                **bind_setup(task, selected if freeze is not None else None)}
+        verify_identity(bound)
+        yield bound
 
 
 def bind_setup(task, selected):
     ref=task.get('setup_ref')
     if ref is None:return {}  # historical/synthetic inputs; native session refuses absence
     if selected is None:raise ValueError('Official setup requires frozen task correspondence')
+    if digest(ref) != selected.get('setup_ref_sha256'):
+        raise ValueError('Setup reference must be frozen before scheduling')
     setup=json.loads(read_pinned(ref['file'],ref['sha256']))
     for field in ('benchmark','official_task_id','application','source_sha256'):
         if setup.get(field)!=selected.get(field):raise ValueError('Setup mapped to another official task')

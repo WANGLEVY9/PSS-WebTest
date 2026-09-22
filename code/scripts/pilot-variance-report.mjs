@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -72,7 +73,7 @@ export function combinePilotArtifacts(pilots) {
   };
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(new URL(import.meta.url).pathname)) {
+if (process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(new URL(import.meta.url)))) {
   const args = process.argv.slice(2);
   const inputs = args.flatMap((value, index) => value === '--input' && args[index + 1] ? [args[index + 1]] : []);
   const outputIndex = args.indexOf('--output');

@@ -26,14 +26,20 @@ export function schedulePlan(design,tasks,{scope='formal',seed='pss-manuscript-v
   must(validateDesign(design).length===0,'Invalid active design');validateTasks(design,tasks,{scope});
   const selected=[...tasks].sort((a,b)=>a.task_key.localeCompare(b.task_key)),selection_sha256=digest(selected),cs=configurations(design);
   const rounds=[...design.rounds.discovery,...design.rounds.validation];
-  const design_sha256=digest(design),bindings_sha256=bindings?digest(bindings):null,schedule_sha256=digest({design_sha256,selection_sha256,bindings_sha256,scope,seed});
+  const design_sha256=digest(design),bindings_sha256=bindings?digest(bindings):null,schedule_sha256=digest({design_sha256,selection_sha256,bindings_sha256,scope,seed,identity_schema:'task-bound-opportunity-v1'});
   function* opportunities() {
     // All D rounds precede V rounds; each task/round interleaves all 19 configurations.
     for(const round of rounds) for(const task of selected) {
+      const task_manifest_json=JSON.stringify(task),task_manifest_sha256=digest(task_manifest_json);
       const ordered=cs.map(c=>({c,rank:digest([seed,task.task_key,round,c.id])})).sort((a,b)=>a.rank.localeCompare(b.rank)).map(x=>x.c);
-      for(const c of ordered) yield {protocol_id:design.protocol_id,opportunity_id:digest([schedule_sha256,task.task_key,c.id,round]),
+      for(const c of ordered) {
+        const executor_binding_sha256=bindings?.configurations?.[c.id]?.executor_binding_sha256_by_benchmark?.[task.benchmark]??null;
+        yield {protocol_id:design.protocol_id,opportunity_id:digest([schedule_sha256,task_manifest_sha256,executor_binding_sha256,task.task_key,c.id,round]),
+        executor_binding_sha256,
+        identity_schema:'task-bound-opportunity-v1',task_manifest_json,task_manifest_sha256,
         task_key:task.task_key,benchmark:task.benchmark,config_id:c.id,round,phase:round.startsWith('D')?'discovery':'validation',
         matched_block_id:digest([schedule_sha256,task.task_key,round]),scope,schedule_sha256};
+      }
     }
   }
   return {protocol_id:design.protocol_id,design_sha256,selection_sha256,bindings_sha256,schedule_sha256,scope,seed,
@@ -57,6 +63,7 @@ export function bindingReadiness(design,bindings) {
       modelBindings.set(c.model_id,modelIdentity);
     }
     for(const benchmark of design.benchmarks) {
+      if(!hash(b.executor_binding_sha256_by_benchmark?.[benchmark.id])) errors.push(`${c.id}/${benchmark.id}: exact executable binding digest missing`);
       const p=bindings?.budget_profiles?.[b.budget_profile_by_benchmark?.[benchmark.id]];
       if(!p || !Number.isInteger(p.task_timeout_ms)||p.task_timeout_ms<1||!Number.isInteger(p.max_actions)||p.max_actions<1||!p.browser_revision||!p.locale||!p.timezone||!Number.isInteger(p.viewport?.width)||p.viewport.width<1||!Number.isInteger(p.viewport?.height)||p.viewport.height<1) {errors.push(`${c.id}/${benchmark.id}: matched numeric runtime profile missing`);continue;}
       const fingerprint=digest(design.budget_policy.matched_fields.map(f=>p[f]));
@@ -66,14 +73,20 @@ export function bindingReadiness(design,bindings) {
   }
   return {ready:errors.length===0,errors};
 }
-export function validateRecords(design,tasks,records) {
+export function validateRecords(design,tasks,records,{schedule_sha256=null}={}) {
   const byTask=new Map(tasks.map(t=>[t.task_key,t])),configs=new Set(configurations(design).map(c=>c.id)),rounds=new Set([...design.rounds.discovery,...design.rounds.validation]);
-  const seen=new Set(),configurationDigests=new Map();
+  const seen=new Set(),sourceSeen=new Set(),configurationDigests=new Map(),schedules=new Set();
   for(const r of records) {
     must(r.protocol_id===design.protocol_id,'Historical acquisition protocol requires explicit reconciliation; never silently relabel records');
     const k=key(r.task_key,r.config_id,r.round),t=byTask.get(r.task_key);
     must(t&&configs.has(r.config_id)&&rounds.has(r.round)&&!seen.has(k),'Record outside selected matrix or duplicate opportunity');seen.add(k);
     must(typeof r.source_opportunity_id==='string'&&r.source_opportunity_id&&hash(r.source_sha256)&&hash(r.configuration_sha256),'Original opportunity/configuration provenance required');
+    must(!sourceSeen.has(r.source_opportunity_id),'Original execution reused in different research cells');sourceSeen.add(r.source_opportunity_id);
+    const taskHash=digest(t);
+    must(r.identity_schema==='task-bound-opportunity-v1'&&r.task_manifest_sha256===taskHash&&r.task_manifest_json===JSON.stringify(t),'Record task differs from frozen manifest; reconcile legacy identities explicitly');
+    must(hash(r.schedule_sha256)&&r.opportunity_id===digest([r.schedule_sha256,taskHash,r.executor_binding_sha256??null,r.task_key,r.config_id,r.round]),'Record opportunity/schedule identity mismatch');
+    schedules.add(r.schedule_sha256);must(schedules.size===1,'Mixed acquisition schedules require explicit reconciliation');
+    if(schedule_sha256!==null) must(r.schedule_sha256===schedule_sha256,'Record schedule differs from selected campaign');
     const configKey=JSON.stringify([t.benchmark,r.config_id]);
     if(configurationDigests.has(configKey)) must(configurationDigests.get(configKey)===r.configuration_sha256,'Configuration changed within imported stratum; separate protocol versions');
     configurationDigests.set(configKey,r.configuration_sha256);
@@ -81,7 +94,7 @@ export function validateRecords(design,tasks,records) {
     must(r.phase===(r.round.startsWith('D')?'discovery':'validation'),'Recorded D/V allocation mismatch; do not relabel history');
     must(['prepared','unprepared','unknown'].includes(r.preparation_status)&&typeof r.started==='boolean','Preparation and started state required');
     must(['valid','unresolved'].includes(r.assessment_status)&&[true,false,null].includes(r.budget_met),'Explicit assessment/budget state required');
-    must(['completed','failed','no-verdict','timeout','provider-error','reset-error','evaluator-error','not-started'].includes(r.terminal_status),'Terminal status required');
+    must(['completed','failed','no-verdict','timeout','provider-error','execution-error','interrupted','reset-error','evaluator-error','not-started'].includes(r.terminal_status),'Terminal status required');
     if(['reset-error','evaluator-error'].includes(r.terminal_status)) must(r.assessment_status==='unresolved','Reset/evaluator failure must remain unresolved');
     if(r.terminal_status==='not-started') must(!r.started,'Not-started status cannot claim an execution');
     must(r.preparation_status!=='unprepared'||!r.started,'Unprepared opportunity cannot start');
@@ -95,7 +108,7 @@ export function validateRecords(design,tasks,records) {
   }
 }
 export function reconcile(design,tasks,records,options={}) {
-  const plan=schedulePlan(design,tasks,options);validateRecords(design,tasks,records);
+  const plan=schedulePlan(design,tasks,options);validateRecords(design,tasks,records,plan);
   const observed=new Map(records.map(r=>[key(r.task_key,r.config_id,r.round),r]));
   const coverage=configurations(design).map(c=>({config_id:c.id,scheduled:tasks.length*12,imported:0,started:0,unprepared:0,explicit_not_started:0,not_imported_unknown:0})),byConfig=new Map(coverage.map(c=>[c.config_id,c]));
   for(const op of plan.opportunities()) {
@@ -110,7 +123,7 @@ export function reconcile(design,tasks,records,options={}) {
     automatically_enqueued:0,new_execution_authorized:false};
 }
 export function recordsToAnalysis(design,tasks,records,options={}) {
-  const plan=schedulePlan(design,tasks,options);validateRecords(design,tasks,records);
+  const plan=schedulePlan(design,tasks,options);validateRecords(design,tasks,records,plan);
   must(records.length>0,'At least one source record is required for analysis');
   const kinds=new Set(records.map(r=>r.data_kind));must(kinds.size===1,'Synthetic and measured records cannot be pooled');
   if(options.scope==='synthetic') must(kinds.has('SYNTHETIC_TEST'),'Synthetic scope requires synthetic records');
@@ -128,6 +141,7 @@ export function recordsToAnalysis(design,tasks,records,options={}) {
           const r=rs[i];if(!r)continue;
           let correctness=null;
           if(r.preparation_status==='unprepared') correctness=0;
+          else if(r.started && (['failed','timeout','provider-error','no-verdict'].some(s=>s===r.actor_terminal_status||s===r.terminal_status) || r.budget_met===false)) correctness=0;
           else if(r.assessment_status==='valid'&&r.started) {
             const correct=b.id==='ata'?(r.verdict===null?0:Number(r.verdict===t.expected)):r.native_score;
             // Unresolved budget does not turn observed task failure into an unknown failure.

@@ -1,8 +1,9 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import dotenv from 'dotenv';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const matrixPath = process.env.PSS_AGENT_MODEL_MATRIX ?? path.join(codeRoot, 'config', 'prestashop-agent-model-matrix.v0.1.json');
 dotenv.config({ path: path.join(codeRoot, '.env') });
 const matrix = JSON.parse(fs.readFileSync(matrixPath, 'utf8'));

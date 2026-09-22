@@ -270,7 +270,7 @@ def evaluate_live(payload, manifest_ref, page):
         'scope': payload['scope'], 'data_kind': payload['data_kind'], 'assessment_status': status,
         'native_score': score, 'verdict': None,
         'official_status': 'error' if score is None else ('success' if score else 'failure'),
-        'evaluation_ref': payload['evaluation_ref'], 'source_commit': PINS['vwa'],
+        'evaluation_ref': payload['evaluation_ref'], 'evaluation_sha256': payload['evaluation_ref']['sha256'], 'source_commit': PINS['vwa'],
         'source_sha256': gold['source_sha256'], 'installed_source_tree_sha256': source_tree_sha,
         'manifest_sha256': manifest_ref['sha256'], 'native_config_ref': config_ref,
         'pre_evaluation_page_ref': final_state_ref, 'native_result_ref': result_ref,

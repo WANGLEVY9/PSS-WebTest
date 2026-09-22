@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';
@@ -5,7 +6,7 @@ import { promisify } from 'node:util';
 import dotenv from 'dotenv';
 
 const execFileAsync = promisify(execFile);
-const defaultEnvFile = path.resolve(new URL('../../third_party/WebTestPilot/webapps/invoiceninja/.env', import.meta.url).pathname);
+const defaultEnvFile = path.resolve(fileURLToPath(new URL('../../third_party/WebTestPilot/webapps/invoiceninja/.env', import.meta.url)));
 
 /**
  * Invoice Ninja independent oracle.

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import { spawn } from 'node:child_process';
@@ -44,7 +45,7 @@ const trace = [];
 const runId = `indico-${arm}-${Date.now()}`;
 const replayRecorder = createLocalReplayRecorder({ runId, applicationId: 'indico', taskId, arm });
 let pendingProviderEventIds = [];
-const codeRoot = new URL('..', import.meta.url).pathname.replace(/\/$/, '');
+const codeRoot = fileURLToPath(new URL('..', import.meta.url)).replace(/\/$/, '');
 const protocolVersion = process.env.PSS_PROTOCOL_VERSION ?? null;
 const phase2Protocol = protocolVersion === '2.0-draft';
 const phase2Fields = phase2Protocol ? createPhase2Provenance({

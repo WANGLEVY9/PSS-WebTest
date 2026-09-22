@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -86,7 +87,7 @@ export function validateConfigurationRegistry(registry) {
   return registry;
 }
 
-export function loadConfigurationRegistry(registryPath = path.resolve(new URL('..', import.meta.url).pathname, 'config/configuration-registry.v0.2.json')) {
+export function loadConfigurationRegistry(registryPath = path.resolve(fileURLToPath(new URL('..', import.meta.url)), 'config/configuration-registry.v0.2.json')) {
   return validateConfigurationRegistry(JSON.parse(fs.readFileSync(registryPath, 'utf8')));
 }
 

@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import dotenv from 'dotenv';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -16,7 +17,7 @@ import { installInvoiceNinjaMutation } from '../src/mutations/invoiceninja.mjs';
 
 // Invoice Ninja agent cell. Authentication is a matched preamble; credentials
 // are never included in an observation or a persisted record.
-dotenv.config({ path: process.env.PSS_INVOICENINJA_ENV ?? new URL('../../third_party/WebTestPilot/webapps/invoiceninja/.env', import.meta.url).pathname });
+dotenv.config({ path: process.env.PSS_INVOICENINJA_ENV ?? fileURLToPath(new URL('../../third_party/WebTestPilot/webapps/invoiceninja/.env', import.meta.url)) });
 dotenv.config();
 
 const arm = process.env.PSS_ARM ?? 'visual';

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {fileURLToPath} from 'node:url';
 /**
  * Produce a bounded, replay-aware failure-attribution report for Phase 2
  * pilots.  The report deliberately distinguishes an observed boundary from
@@ -10,7 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const artifactsRoot = path.join(repositoryRoot, 'artifacts', 'phase2');
 

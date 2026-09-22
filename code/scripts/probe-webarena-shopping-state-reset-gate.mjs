@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const manifestPath = path.join(codeRoot, 'config', 'benchmark-artifact-manifest.v1.0.json');
 const containerName = process.env.PSS_WEBARENA_SHOPPING_CONTAINER ?? 'webarena-verified-shopping-x86';
 const siteUrl = process.env.PSS_WEBARENA_SHOPPING_URL ?? 'http://127.0.0.1:7770/';

@@ -1,0 +1,15 @@
+{
+  "schema": "pss-spend-policy-v1",
+  "cap_micro_cny": 1500000000,
+  "warning_micro_cny": 1200000000,
+  "critical_micro_cny": 1350000000,
+  "stop_new_tasks_micro_cny": 1425000000,
+  "fx_cny_per_usd": 8,
+  "fx_note": "Conservative planning conversion, not a live FX quote; include taxes/fees when approving billing rates.",
+  "task_cap_micro_cny": 15000000,
+  "task_max_requests": 30,
+  "task_timeout_ms": 240000,
+  "task_max_actions": 30,
+  "request_timeout_ms": 45000,
+  "rates": []
+}

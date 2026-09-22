@@ -1,3 +1,4 @@
+import {fileURLToPath} from 'node:url';
 import 'dotenv/config';
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -7,7 +8,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const repositoryRoot = path.resolve(codeRoot, '..');
 const plan = JSON.parse(fs.readFileSync(path.join(codeRoot, 'config/prestashop-agent-500-batch.v0.1.json'), 'utf8'));
 const arm = process.env.PSS_AGENT_BATCH_ARM;

@@ -1,7 +1,8 @@
+import {fileURLToPath} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const codeRoot = path.resolve(new URL('..', import.meta.url).pathname);
+const codeRoot = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const matrixPath = path.resolve(codeRoot, 'config/benchmark-matrix.v0.1.json');
 const matrix = JSON.parse(fs.readFileSync(matrixPath, 'utf8'));
 const errors = [];

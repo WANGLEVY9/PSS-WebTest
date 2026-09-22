@@ -7,7 +7,7 @@ This component intentionally blocks the stock run loop until those are bound.
 import base64
 import json
 from framework_boundary import project_observation, public_task_text
-from framework_actions import browser_use_action
+from framework_actions import browser_use_action, KeyName
 
 
 def make_agent(llm, browser, task, private_directory):
@@ -26,7 +26,7 @@ def make_agent(llm, browser, task, private_directory):
     async def pss_click(x: int, y: int):
         raise RuntimeError('Use the benchmark-owned journaled actuator')
 
-    @tools.action('Type text at current keyboard focus.')
+    @tools.action('Insert text at current keyboard focus; this does not clear existing text.')
     async def pss_type(text: str):
         raise RuntimeError('Use the benchmark-owned journaled actuator')
 
@@ -34,8 +34,8 @@ def make_agent(llm, browser, task, private_directory):
     async def pss_scroll(delta_y: int):
         raise RuntimeError('Use the benchmark-owned journaled actuator')
 
-    @tools.action('Press a keyboard key.')
-    async def pss_key(key: str):
+    @tools.action('Press exactly one declared key or chord using the case-sensitive enum spelling.')
+    async def pss_key(key: KeyName):
         raise RuntimeError('Use the benchmark-owned journaled actuator')
 
     @tools.action('Click upload control at CSS coordinates and attach a pinned public task image ID.')

@@ -8,6 +8,7 @@ connectivity fixture before any admitted official benchmark runs.
 import asyncio
 import io
 import importlib.metadata
+import os
 from pathlib import Path
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -35,6 +36,7 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     started = started_ns / 1_000_000_000
     deadline = started + budget['task_timeout_ms']/1000
     actuator = JournaledBrowser(context, page, journal, viewport, task,
+        action_timeout_ms=payload.get('action_timeout_ms',5000),
         observation_timeout_ms=payload.get('observation_timeout_ms',5000))
     actuator.deadline = deadline
     backend = backend or LedgerModel(payload, journal, node, deadline)
@@ -54,7 +56,15 @@ def run_actor(context, page, payload, journal, framework, mode, node,
         agent = make_agent(agentlab_args(backend), mode, coordinate_space)
         decision_pool=None
     else:
+        # The benchmark's only authorized model destination is its bound
+        # provider. Disable unrelated vendor telemetry/cloud synchronization
+        # before importing Browser Use (not just in offline test commands).
+        os.environ.update(ANONYMIZED_TELEMETRY='false',BROWSER_USE_CLOUD_SYNC='false',
+                          BROWSER_USE_VERSION_CHECK='false',BROWSER_USE_LOGGING_LEVEL='warning')
         from browser_use import Browser
+        from browser_use.config import CONFIG
+        if CONFIG.ANONYMIZED_TELEMETRY or CONFIG.BROWSER_USE_CLOUD_SYNC:
+            raise ValueError('Unrelated cloud telemetry/synchronization must be disabled')
         from framework_browser_use import make_agent, get_action
         # Browser Use's Browser object supplies native agent schemas only; it
         # never launches or owns the benchmark browser or its observation loop.

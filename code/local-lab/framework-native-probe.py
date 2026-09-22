@@ -88,6 +88,12 @@ def browser_use_probe():
         Image.new('RGB', (64, 64)).save(image, format='PNG')
         browser = Browser(headless=True, enable_default_extensions=False)
         agent = make_agent(Model(), browser, 'Synthetic boundary check', directory)
+        from framework_actions import KEYS
+        key_model = agent.tools.registry.registry.actions['pss_key'].param_model
+        assert set(key_model.model_json_schema()['properties']['key']['enum']) == KEYS
+        try: key_model.model_validate({'key':'ctrl+a'})
+        except ValueError: pass
+        else: raise AssertionError('Undeclared key spelling accepted by provider schema')
         raw = {'screenshot': image.getvalue(), 'url': 'FORBIDDEN_URL_SENTINEL',
                'dom_object': 'FORBIDDEN_DOM_SENTINEL', 'visible_controls': [
                    {'role': 'button', 'name': 'VISIBLE_BUTTON_SENTINEL', 'box': [10,10,20,20], 'visible': True, 'in_viewport': True}]}

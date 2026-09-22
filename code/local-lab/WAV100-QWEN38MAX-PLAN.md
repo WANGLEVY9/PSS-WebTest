@@ -24,7 +24,7 @@ has no runtime model. 400 is a target, not a measured execution count.
 2. Run measured mutate/reset and peer-content probes. The current two-table and
    marker control is **targeted**, not full mutable-state closure: Redis, search
    indexes, other database tables, object storage and queues are not certified.
-3. Use `wav_official_acceptance_probe.py` for one bounded official task (260):
+3. Use `wav_official_acceptance_probe.py` for bounded official tasks 260 and 274:
    independent fresh rootfs per arm; actual framework; immutable actor-end;
    closed HAR/trace; pinned official evaluator, unchanged answer; owned cleanup.
    This probe produces acceptance evidence without turning the bulk gate green.
@@ -63,7 +63,9 @@ Placeholders deliberately do not run. Each output directory and port pair must
 be new/unused. Use `--mode hybrid` for AgentLab Hybrid. Browser Use requires its
 own Python executable and `--framework browser-use-restricted --mode hybrid`.
 Traditional uses `--framework playwright --mode traditional`, with no paid calls.
-The probe is intentionally restricted to task 260, not a hidden 100-task bypass.
+The probe is intentionally restricted to tasks 260 and 274, not a hidden 100-task
+bypass. `--task-id 274` uses the published search intent and its separately
+prewritten combobox/Enter script; neither script reads the native evaluator.
 Live execution provisions and eventually removes only its exact owned container
 and network. It never adopts the old wildcard-bound primary container.
 
@@ -112,3 +114,47 @@ label-parser tests as benchmark task completion.
 - Four-profile acceptance is sequential because concurrent cold starts put
   substantial load on the emulated x86 VM. This is not a performance-speedup
   claim and does not make host timings representative of sponsor hardware.
+- A later controlled acquisition policy allows at most three complete
+  screenshot/projection recaptures. Each rejected pair is logged. Pixel equality
+  remains exact; no tolerance, stale controls or goal-aware selection is added.
+- Playwright's first click also hit its five-second timeout after resolving an
+  actionable target. Subsequent configurations declare a common 30-second
+  action cap (still inside the 180-second task budget), rather than secretly
+  relaxing only one arm's timing.
+- Browser Use's unrelated telemetry and cloud sync are disabled in the actual
+  driver before import, not only in offline test environment variables.
+
+These changing acceptance configurations must NOT be pooled as a comparative
+success rate. Before the 100-task campaign, freeze the same coordinate convention
+for all Qwen agent profiles, plus timeouts, observation acquisition and resource
+policy. Keep earlier alternatives as explicitly versioned diagnostic evidence.
+
+## Traditional authoring handoff
+
+`prepare_wav100_authoring.py` verifies all 100 public input/setup hashes and
+exports only public instructions, start URLs and the public output contract.
+It never reads evaluator files or agent outcomes. Each entry starts PENDING;
+authoring/review time is null rather than invented zero. Share this isolated
+folder with baseline authors, not private evaluator or run directories.
+The design's human-authored blinded baseline remains a separate requirement;
+the two AI-written diagnostic scripts do not fulfill it. Authentication policy
+also needs an explicit per-task review before account-dependent tasks run.
+
+```bash
+python code/local-lab/prepare_wav100_authoring.py \
+  --plan code/config/wav-qwen38max-100-development.v1.json \
+  --bindings /absolute/private/official-wav-task-bindings.json \
+  --output /absolute/private/new-public-authoring-pack
+
+python code/local-lab/summarize_wav100_campaign.py \
+  --artifacts code/artifacts/local-runtime \
+  --output /absolute/private/new-progress-report.json
+```
+
+The summary counts distinct official IDs separately for each profile; retries
+and setup-only attempts cannot fill the 100-task target. It retains original
+reports and exports only hashed response metadata, token counts and latency.
+Unknown billed cost stays null. A native score alone cannot qualify a run:
+actor completion, budget compliance, unchanged source and intact replay are
+reported separately. The current reader covers the bounded acceptance-probe
+format, not unverified cloud data or a future bulk ledger format.

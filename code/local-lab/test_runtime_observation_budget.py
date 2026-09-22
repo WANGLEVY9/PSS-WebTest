@@ -2,7 +2,7 @@ import time
 import unittest
 from types import SimpleNamespace
 from unittest.mock import Mock
-from journaled_browser import JournaledBrowser
+from journaled_browser import JournaledBrowser, ProjectionDrift
 
 
 class ObservationBudgetTests(unittest.TestCase):
@@ -29,5 +29,26 @@ class ObservationBudgetTests(unittest.TestCase):
         journal.artifact.assert_called_once_with('observation-error-000001.txt',b'private call log')
         self.assertEqual(journal.event.call_args.kwargs['phase'],'projection-bracket')
         self.assertIsNone(actor.action_error)
+
+    def test_drift_reacquires_both_pixels_and_controls(self):
+        actor,page,journal=self.actuator()
+        page.screenshot.side_effect=[b'old',b'changed',b'new',b'new']
+        page.evaluate.side_effect=[['stale-control'],['fresh-control']]
+        journal.artifact.return_value={'sha256':'a'*64}
+        result=actor.observe('hybrid')
+        self.assertEqual(result['screenshot'],b'new')
+        self.assertEqual(result['visible_controls'],['fresh-control'])
+        self.assertEqual(page.evaluate.call_count,2)
+
+    def test_perpetual_drift_remains_fail_closed(self):
+        actor,page,journal=self.actuator()
+        page.screenshot.side_effect=[b'a',b'b']*3
+        journal.artifact.return_value={'sha256':'a'*64}
+        with self.assertRaises(ProjectionDrift):actor.observe('hybrid')
+        self.assertEqual(page.screenshot.call_count,6)
+
+    def test_visual_never_calls_structured_projection(self):
+        actor,page,_=self.actuator();actor.observe('visual')
+        page.evaluate.assert_not_called()
 
 if __name__=='__main__':unittest.main()

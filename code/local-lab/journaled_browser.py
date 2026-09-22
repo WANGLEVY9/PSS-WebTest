@@ -134,6 +134,18 @@ class JournaledBrowser:
             raise
 
     def observe(self, mode):
+        # Reacquire a complete matched observation, never reuse old controls.
+        # Every failed pair is retained. This is bounded image acquisition, not
+        # a new task attempt or model retry; all time consumes the actor budget.
+        for attempt in range(3):
+            try:
+                return self._observe_pair(mode)
+            except ProjectionDrift:
+                self.journal.event('observation-reacquire',attempt=attempt+1,limit=3)
+                if attempt==2:
+                    raise
+
+    def _observe_pair(self, mode):
         if mode not in ('visual', 'hybrid'):
             raise ValueError('Explicit mode required')
         if time.monotonic() >= self.deadline:

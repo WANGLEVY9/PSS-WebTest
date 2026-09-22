@@ -53,3 +53,30 @@ baseline accounts and data, then perform positive/negative published-case
 controls and all execution profiles. If an original image cannot fit locally,
 the sponsor host needs adequate disk and the same pinned deployment recipe.
 There are currently **zero new ATA official executions** from these checks.
+
+## Subsequent feasible retrieval path (same session)
+
+The physical host has approximately **566 GiB free and 48 GiB RAM**. Thus the
+60-GiB existing Docker VM's limit must not be described as a whole-machine
+capacity limit. The original Postmill mirror returned HTTP 206 for bounded
+range requests: 1 MiB in 2.957 seconds and 16 MiB in 4.977 seconds. Transfer
+startup dominates small samples; this is not a guaranteed whole-file speed.
+
+`retrieve_ata_postmill.py` now provides an explicit opt-in download-only step:
+53,435,097,088-byte cap, four-hour timeout, 8-MiB/s rate cap, sufficient physical
+disk reserve, upstream SHA1 verification and a freshly computed SHA256. It
+refuses to overwrite an old output directory. Partial files are not images
+admitted for execution. Retrieval has been started in ignored local artifacts;
+inspect its report or the current partial size rather than assuming completion.
+
+After checksum completion, deploy into a **separate**, explicitly selected
+x86 Docker VM with sufficient space (a 160-GiB disk is a provisional engineering
+allocation, not a benchmark requirement). Do not resize/restart the running WAV
+VM mid-experiment or change the default Docker context. Inspect the original
+image's services, volumes, ports and initialization behavior before running it;
+the WAV `env-ctrl` lifecycle cannot be assumed to exist in that image. ATA
+published login actions remain actor task steps, not secretly pre-completed
+supervisor actions. Validate baseline data and per-case reset before evaluating.
+
+The archive download overlaps later task-274 diagnostic probes. Their latency
+measurements must not be treated as isolated-host performance estimates.

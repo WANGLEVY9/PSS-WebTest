@@ -9,6 +9,15 @@ from framework_model import evidence_projection
 
 
 class ActionTests(unittest.TestCase):
+    def test_key_schema_and_actuator_share_exact_spelling(self):
+        from typing import get_args
+        from framework_actions import KeyName, KEYS
+        self.assertEqual(set(get_args(KeyName)), KEYS)
+        for key in KEYS:
+            self.assertEqual(browser_use_action({'pss_key':{'key':key}},[100,100]),{'name':'key','key':key})
+        with self.assertRaises(ValueError):
+            browser_use_action({'pss_key':{'key':'ctrl+a'}},[100,100])
+
     def test_explicit_qwen_codec_never_infers_units_or_changes_scroll(self):
         a={'name':'scroll','x':500,'y':500,'dx':0,'dy':200}
         self.assertEqual(to_css(a,[1000,700],'qwen-0-999'),{**a,'y':350})

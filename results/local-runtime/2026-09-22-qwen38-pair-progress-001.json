@@ -1,0 +1,245 @@
+{
+  "schema": "pss-qwen38-pair-sanitized-v1",
+  "scope": "diagnostic",
+  "confirmatory_authorized": false,
+  "generated_at": "2026-09-22T07:36:28.967Z",
+  "batch_name": "qwen38-pair-20260922-001",
+  "plan_sha256": "500fcd151667e168fd08a5c7565ed5eb3eda42c5be3d7acbc15d0b6ce6afd9c3",
+  "source_sha256": "d5f663c1cf544c9b5121efa9ed4fe3e302f6a4d057ef4e994d1f7bb29a3a5fdb",
+  "status": "in-progress-or-interrupted-not-complete",
+  "stop_reason": null,
+  "planned_executions": 14,
+  "distinct_planned_tasks": 2,
+  "official_actor_starts": 2,
+  "shared_playwright_counted_once": true,
+  "pooled_capability_claim": false,
+  "groups": [
+    {
+      "model": "qwen3.8-max",
+      "profile": "agentlab-browsergym/visual",
+      "planned": 2,
+      "sealed": 1,
+      "official_actor_starts": 1,
+      "valid_native_scores": 1,
+      "completed_actor_successes": 1
+    },
+    {
+      "model": "qwen3.8-max",
+      "profile": "agentlab-browsergym/hybrid",
+      "planned": 2,
+      "sealed": 0,
+      "official_actor_starts": 0,
+      "valid_native_scores": 0,
+      "completed_actor_successes": 0
+    },
+    {
+      "model": "qwen3.8-max",
+      "profile": "browser-use-restricted/hybrid",
+      "planned": 2,
+      "sealed": 0,
+      "official_actor_starts": 0,
+      "valid_native_scores": 0,
+      "completed_actor_successes": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "profile": "agentlab-browsergym/visual",
+      "planned": 2,
+      "sealed": 0,
+      "official_actor_starts": 0,
+      "valid_native_scores": 0,
+      "completed_actor_successes": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "profile": "agentlab-browsergym/hybrid",
+      "planned": 2,
+      "sealed": 0,
+      "official_actor_starts": 0,
+      "valid_native_scores": 0,
+      "completed_actor_successes": 0
+    },
+    {
+      "model": "qwen3.8-flash",
+      "profile": "browser-use-restricted/hybrid",
+      "planned": 2,
+      "sealed": 0,
+      "official_actor_starts": 0,
+      "valid_native_scores": 0,
+      "completed_actor_successes": 0
+    },
+    {
+      "model": null,
+      "profile": "playwright/traditional",
+      "planned": 2,
+      "sealed": 1,
+      "official_actor_starts": 1,
+      "valid_native_scores": 1,
+      "completed_actor_successes": 1
+    }
+  ],
+  "rows": [
+    {
+      "task_id": 260,
+      "framework": "playwright",
+      "mode": "traditional",
+      "model": null,
+      "index": 0,
+      "status": "sealed",
+      "report_sha256": "5425ed9ab5c382d619eed0b8fca3d567daf98e8a8d6acd4148f5ddd199916c4d",
+      "official_task_started": true,
+      "official_task_completed": true,
+      "official_score": 1,
+      "assessment_status": "valid",
+      "actor_status": "completed",
+      "failure_class": null,
+      "engineering_error": null,
+      "replay_integrity_passed": true,
+      "source_tree_unchanged": true,
+      "actor_budget_met": true,
+      "actor_elapsed_ms": 17621.493666,
+      "reset_elapsed_ms": 245999.922083,
+      "evaluation_elapsed_ms": 756.127292,
+      "cleanup_completed": true,
+      "provider_requests": 0,
+      "actions": 2,
+      "chain_valid": true,
+      "completed_actor_success": true
+    },
+    {
+      "task_id": 260,
+      "framework": "agentlab-browsergym",
+      "mode": "visual",
+      "model": "qwen3.8-max",
+      "index": 1,
+      "status": "sealed",
+      "report_sha256": "5a567e4b6c61ceb8f634848b85c515817aca23285cf831a8dd855073b25679d3",
+      "official_task_started": true,
+      "official_task_completed": true,
+      "official_score": 1,
+      "assessment_status": "valid",
+      "actor_status": "completed",
+      "failure_class": null,
+      "engineering_error": null,
+      "replay_integrity_passed": true,
+      "source_tree_unchanged": true,
+      "actor_budget_met": true,
+      "actor_elapsed_ms": 18930.203584,
+      "reset_elapsed_ms": 215890.718375,
+      "evaluation_elapsed_ms": 554.721125,
+      "cleanup_completed": true,
+      "provider_requests": 2,
+      "actions": 2,
+      "chain_valid": true,
+      "completed_actor_success": true
+    },
+    {
+      "task_id": 260,
+      "framework": "agentlab-browsergym",
+      "mode": "hybrid",
+      "model": "qwen3.8-max",
+      "index": 2,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 260,
+      "framework": "browser-use-restricted",
+      "mode": "hybrid",
+      "model": "qwen3.8-max",
+      "index": 3,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 260,
+      "framework": "agentlab-browsergym",
+      "mode": "visual",
+      "model": "qwen3.8-flash",
+      "index": 4,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 260,
+      "framework": "agentlab-browsergym",
+      "mode": "hybrid",
+      "model": "qwen3.8-flash",
+      "index": 5,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 260,
+      "framework": "browser-use-restricted",
+      "mode": "hybrid",
+      "model": "qwen3.8-flash",
+      "index": 6,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "playwright",
+      "mode": "traditional",
+      "model": null,
+      "index": 7,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "agentlab-browsergym",
+      "mode": "visual",
+      "model": "qwen3.8-max",
+      "index": 8,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "agentlab-browsergym",
+      "mode": "hybrid",
+      "model": "qwen3.8-max",
+      "index": 9,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "browser-use-restricted",
+      "mode": "hybrid",
+      "model": "qwen3.8-max",
+      "index": 10,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "agentlab-browsergym",
+      "mode": "visual",
+      "model": "qwen3.8-flash",
+      "index": 11,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "agentlab-browsergym",
+      "mode": "hybrid",
+      "model": "qwen3.8-flash",
+      "index": 12,
+      "status": "no-sealed-report",
+      "official_score": null
+    },
+    {
+      "task_id": 274,
+      "framework": "browser-use-restricted",
+      "mode": "hybrid",
+      "model": "qwen3.8-flash",
+      "index": 13,
+      "status": "no-sealed-report",
+      "official_score": null
+    }
+  ]
+}

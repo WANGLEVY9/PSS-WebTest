@@ -1,5 +1,7 @@
 # Sponsor deployment and acceptance
 
+Current operator entry: [cloud installation and capacity handoff](cloud-handoff/README.md), [dependency manifest](cloud-handoff/dependency-manifest.json), [technical design](../../docs/technical/README.md), and [native acceptance runbook](ACCEPTANCE-RUNBOOK.md). This guide is an engineering deployment path; passing the doctor does not authorize a campaign or establish complete shared-budget coverage.
+
 Latest session/authentication/isolation implementation and host-specific VWA/ATA
 handoff: [Session and isolation handoff](SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md).
 It includes the Traditional API, task wrapper bindings, private authentication

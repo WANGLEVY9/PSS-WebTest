@@ -1,5 +1,7 @@
 # Reproducibility guide
 
+For full environment preparation, use the [cloud installation handoff](../code/local-lab/cloud-handoff/README.md), [declared dependency inventory](../code/local-lab/cloud-handoff/dependency-manifest.json), and [acceptance receipt template](../code/local-lab/cloud-handoff/acceptance-receipt.example.json). Read the [input/output contract](technical/INPUT_OUTPUT.md) and benchmark/framework [technical index](technical/README.md) before running paid tasks. The CNY budget implementation remains an integration dependency, not an active guarantee for every mainline request path.
+
 [Project home](../README.md) · [Research design](RESEARCH.md) · [Evidence status](STATUS.md)
 
 Choose the reproduction layer that matches your question. Code verification, analysis reproduction, environment acceptance and empirical replication require different inputs.

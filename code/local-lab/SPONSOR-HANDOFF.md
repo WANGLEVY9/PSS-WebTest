@@ -1,5 +1,7 @@
 # GPT sponsor handoff and acceptance checklist
 
+> **Scope note, 22 September 2026:** this document describes the earlier console/provider acceptance path. For current committed native components, input boundaries and outstanding integration gates, start with the [technical index](../../docs/technical/README.md), [cloud handoff](cloud-handoff/README.md) and [acceptance runbook](ACCEPTANCE-RUNBOOK.md). Dated test counts below remain evidence of their original source snapshot, not a full release acceptance.
+
 **New sponsor campaign:** use [SPONSOR-DEPLOYMENT.md](./SPONSOR-DEPLOYMENT.md) and the portable doctor/verification entrypoints. Previous cloud records are not a dependency for new environment development or acceptance. Historical pooling remains separate. The instructions below also document the older prepared local workstation; they are not a portable three-benchmark installer.
 
 Status (2026-09-21): **OpenAI transport implemented and offline-tested; full benchmark handoff NOT ready.**

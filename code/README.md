@@ -1,5 +1,7 @@
 # PSS-WebTest code
 
+Current interface and implementation documentation: [technical index](../docs/technical/README.md), [inputs/outputs](../docs/technical/INPUT_OUTPUT.md), [native workflow traceability](../docs/technical/UPSTREAM_TRACEABILITY.md), and [cloud installation/dependency handoff](local-lab/cloud-handoff/README.md). Read these with the active v2.1 contract before adapting a runner.
+
 [Project overview](../README.md) · [Research design](../docs/RESEARCH.md) · [Reproduction guide](../docs/REPRODUCIBILITY.md)
 
 This directory contains the current benchmark integration/analysis/runtime work in `local-lab/` and the earlier local-application harness in `src/` and `scripts/`. The active study follows [`config/active-study-design.json`](config/active-study-design.json): WAV, VWA and ATA; nineteen configurations; twelve discovery/validation opportunities. Older pilot commands remain available for their original scope.

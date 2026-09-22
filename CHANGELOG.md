@@ -2,6 +2,14 @@
 
 This file records design and public-artifact milestones. It is not a list of published software releases.
 
+## Unreleased — native workflow documentation, 2026-09-22
+
+- Add version-grounded input/output, testing-paradigm, benchmark and framework specifications, with upstream-to-code traceability and lifecycle diagrams.
+- Correct the maintained design-authority entry to v2.1 and label retired freeze documents as history.
+- Add sponsor cloud provisioning, dependency inventory and evidence-return templates; declared dependencies are not certified Linux install locks.
+- Distinguish mainline runtime `de93d32` from the unmerged shared CNY budget/task-binding implementation, and retain all open admission gates.
+- Extend documentation checks to nested technical pages and maintained operator entry points.
+
 ## Unreleased — repository presentation refresh, 2026-09-22
 
 - Align the English and Chinese project overview with the active v2.1 study and the four current research questions.

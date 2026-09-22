@@ -6,7 +6,7 @@ Date: 2026-09-22. Authority: the project owner's explicit instruction to compres
 
 - Only WebArena-Verified (WAV) is in the next operator campaign. VWA and ATA deployment, task collection and admission are paused and are not prerequisites for this campaign.
 - Preserve all historical source, contracts and evidence. Do not relabel prior results or silently remove tasks from previously executed denominators.
-- Develop through 2, 10 and 20 shared official WAV tasks, then 100 per configuration: AgentLab visual, AgentLab hybrid, restricted Browser Use hybrid, and Playwright. These are cumulative diagnostic targets, not completed counts or authorization to bypass gates.
+- Develop through 2, 10 and 20 shared official WAV tasks, then 120 per configuration: GPT-6 Astra and GPT-5.6 Sol each run AgentLab visual, AgentLab hybrid and restricted Browser Use hybrid; Playwright supplies one shared 120-task baseline. The operator plan uses one round: 720 model-driven executions plus 120 shared baseline executions, 840 total. These are cumulative diagnostic targets, not completed counts or authorization to bypass gates.
 - Source population remains 812. The campaign's exact IDs, sites, model identity, budgets and repetitions require pre-execution binding. Shopping-only diagnostics are not representative full-WAV results.
 - AI-assisted Traditional authoring is permitted for diagnostics with provenance, no runtime LLM, no evaluator internals or cross-arm outcomes, and no claim of independent human authorship.
 

@@ -46,10 +46,13 @@ def main():
     p=argparse.ArgumentParser(description=__doc__)
     for key in ('manifest','peer-proof','bindings','spend-policy','output'):p.add_argument('--'+key,required=True)
     p.add_argument('--port-base',type=int,default=18500)
+    p.add_argument('--start-index',type=int,default=0)
+    p.add_argument('--stop-index',type=int,default=14)
     p.add_argument('--live',action='store_true')
     a=p.parse_args();code=Path(__file__).resolve().parents[1];repo=code.parent
     if os.environ.get('PSS_LOCAL_ENV_FILE'):raise ValueError('Legacy isolated env override not admitted in this diagnostic probe')
     if not 1024<=a.port_base<=65000:raise ValueError('Invalid reserved ports')
+    if not 0<=a.start_index<=a.stop_index<=14:raise ValueError('Invalid job slice')
     refs={k:{'file':str(Path(getattr(a,k.replace('-','_'))).resolve()),'sha256':sha(getattr(a,k.replace('-','_')))}
           for k in ('manifest','peer-proof','bindings','spend-policy')}
     root=Path(a.output).resolve();root.mkdir(parents=True,exist_ok=False,mode=0o700)
@@ -85,6 +88,7 @@ console.log('Provider configuration and shared pricing ready; no network calls')
             raise SystemExit(f'{framework} dependency preflight blocked: import {module}')
     completed=[];blocked=None
     for index,job in enumerate(plan['jobs']):
+        if index<a.start_index or index>=a.stop_index: continue
         if source_fingerprint(code)!=fingerprint or any(sha(ref['file'])!=ref['sha256'] for ref in refs.values()):
             blocked='frozen-input-or-source-drift';break
         python=repo/'third_party/frameworks'/('h-browser-use' if job['framework']=='browser-use-restricted' else 'h-agentlab')/'bin/python'

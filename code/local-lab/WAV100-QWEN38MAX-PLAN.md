@@ -4,6 +4,56 @@ This is a requested **development/diagnostic** campaign, not a replacement of
 the manuscript's 19-configuration/12-round design and not confirmatory collection.
 The shared set contains 100 different official task IDs, not 100 retries.
 
+## AI-assisted diagnostic authorization (2026-09-22)
+
+The user explicitly approved AI-assisted Traditional script authoring for this
+diagnostic batch. `config/wav100-ai-authoring-authorization.v1.json` binds that
+permission to the unchanged 100-task plan hash. It does not alter the manuscript's
+human-authored baseline, authorize reading evaluator gold or copying agent
+solution traces, or waive authentication/isolation/budget gates. No runtime LLM
+calls are permitted in the Traditional arm. Known prior author exposure is
+declared; independent human blinding is not claimed. The previous report's
+pending authorization question is now resolved, not a current blocker.
+
+`prepare_wav100_ai_scripts.py` verifies the public task/setup bindings and creates
+a separate 100-row adaptation ledger. Its first seven navigation/search/sort
+script proposals pass static facade checks, not live validation. Remaining
+tasks are still PENDING, never disguised as empty successful scripts. Account
+tasks require authentication review; all full-batch admission gates remain shut.
+Task 261 is additionally available for bounded four-profile acceptance, requiring
+the authorization file and its SHA256 on every profile, not just Traditional.
+This remains an anonymous public-navigation diagnostic, not account-state parity.
+
+The initial task-261 Traditional script timed out on a non-visible category link.
+A separately pinned two-click repair (`config/traditional-proposals/wav261-category-repair-v2.py`)
+was authored from its own initial screenshot, not Agent task-261 traces. Use
+`--traditional-script-file` and `--traditional-script-sha256` only with authorized
+task-261 Traditional probes. The previous failure remains intact; this is a new
+diagnostic configuration, not replacement success or a frozen comparative arm.
+
+An additional v3 proposal uses the visible Electronics top-level menu's hover
+interaction before clicking Headphones. The Traditional facade now exposes
+Playwright hover through the same action budget, deadline, screenshot and trace
+instrumentation. It does not force-click hidden controls or jump to a gold URL.
+Both v2 and v3 proposal sources are retained; neither is marked live-passed by
+source preparation. Later evidence must identify the exact script hash tested.
+
+Before executing v3, the original Traditional trace showed that Magento menu
+hydration changes these anchors from implicit link roles to `menuitem` roles.
+The queued v3 run was cancelled before launch; no benchmark execution is counted.
+The v4 repair therefore waits for `menuitem` Electronics, hovers it and clicks
+`menuitem` Headphones. This is derived from the Traditional trace's DOM, not a
+reference answer URL or an Agent solution. The unexecuted proposals remain
+available for provenance; only actual reports establish runtime outcomes.
+
+```bash
+python code/local-lab/prepare_wav100_ai_scripts.py \
+  --plan code/config/wav-qwen38max-100-development.v1.json \
+  --authorization code/config/wav100-ai-authoring-authorization.v1.json \
+  --bindings /absolute/private/official-wav-task-bindings.json \
+  --output /absolute/private/new-ai-diagnostic-authoring-pack
+```
+
 ## Fixed public candidate set
 
 `config/wav-qwen38max-100-development.v1.json` records 100 tasks from the 187

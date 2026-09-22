@@ -1,0 +1,23 @@
+{
+  "schema": "pss-diagnostic-authoring-authorization-v1",
+  "recorded_date": "2026-09-22",
+  "scope": "diagnostic",
+  "campaign_plan_sha256": "b4d17990c7fe826eeea6dc3ce6058fea0aad7151d6c6402854391317f7ddcb28",
+  "authority": "explicit-user-approval-in-current-conversation",
+  "approved_question": "May AI assist in writing Traditional scripts for this diagnostic batch?",
+  "user_response": "允许",
+  "traditional_authoring": "AI_ASSISTED_DIAGNOSTIC",
+  "human_authored_baseline": false,
+  "require_no_runtime_model_calls": true,
+  "may_read_evaluator_internals_or_gold": false,
+  "may_copy_agent_solution_trajectories": false,
+  "independent_human_blinding_claimed": false,
+  "prior_author_task_outcome_exposure_ids": [21, 22, 163, 164, 165, 166, 167, 260, 274],
+  "baseline_adaptation_failures_retained": true,
+  "retry_replaces_original": false,
+  "diagnostic_authoring_permission_only": true,
+  "overrides_environment_or_information_boundary_gates": false,
+  "bulk_execution_authorized": false,
+  "confirmatory_authorized": false,
+  "unchanged_manuscript_design_sha256": "9f36763bfb2881a160cd946920779f97e679befa9373b377fce205c4e437c527"
+}

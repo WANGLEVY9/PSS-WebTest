@@ -36,7 +36,7 @@ class Locator:
         return Locator(self._session, self._locator.locator(selector), self._description+[['locator', selector]])
 
     def _call(self, name, *args, **kwargs):
-        mutations = {'click', 'dblclick', 'fill', 'press', 'check', 'uncheck', 'select_option'}
+        mutations = {'click', 'dblclick', 'hover', 'fill', 'press', 'check', 'uncheck', 'select_option'}
         reads = {'inner_text', 'text_content', 'all_text_contents', 'count', 'is_visible',
                  'input_value', 'get_attribute', 'is_checked'}
         if name not in mutations | reads:
@@ -53,6 +53,7 @@ class Locator:
 
     def click(self, **kw): return self._call('click', **kw)
     def dblclick(self, **kw): return self._call('dblclick', **kw)
+    def hover(self): return self._call('hover')
     def fill(self, text): return self._call('fill', text)
     def press(self, key): return self._call('press', key)
     def check(self): return self._call('check')

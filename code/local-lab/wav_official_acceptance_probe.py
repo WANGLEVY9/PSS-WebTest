@@ -1,7 +1,7 @@
 """One official WAV task on a fresh owned fixture, for acceptance diagnosis.
 
 This bounded bootstrap probe does not bypass the bulk execution gate. It never
-authorizes the 100-task campaign. Only public-navigation tasks 260 and 274 are implemented;
+authorizes the 100-task campaign. Only public-navigation tasks 260, 261 and 274 are implemented;
 all other tasks require their authentication and reviewed script adapters first.
 """
 import argparse
@@ -14,7 +14,7 @@ import subprocess
 import sys
 import time
 from benchmark_actor_lifecycle import run_owned_session, pinned_ref, persist, encoded, verify_lifecycle
-from runtime_inputs import task_projection, materialize_actor_input
+from runtime_inputs import task_projection, materialize_actor_input, read_pinned
 from runtime_store import Store, digest
 from replay_audit import audit
 from wav_owned_lifecycle import OwnedLifecycle, read_ref, write_new
@@ -33,6 +33,9 @@ SEARCH_SCRIPT='''def run(session, public_task):
 '''
 PUBLIC_TASKS={260:('Open the Video Game category page to browse products',SCRIPT),
               274:('Open the search results for "usb wifi"',SEARCH_SCRIPT)}
+from prepare_wav100_ai_scripts import script_for, authorization, check_source
+PUBLIC_TASKS[261]=('Open the Headphones category page to browse products',
+                  script_for(261,'Open the Headphones category page to browse products'))
 
 
 def main():
@@ -47,8 +50,20 @@ def main():
     p.add_argument('--coordinate-space',choices=['css-pixels','qwen-0-999'],default='css-pixels')
     p.add_argument('--observation-timeout-ms',type=int,default=30000)
     p.add_argument('--action-timeout-ms',type=int,default=30000)
+    p.add_argument('--ai-authoring-policy')
+    p.add_argument('--ai-authoring-policy-sha256')
+    p.add_argument('--traditional-script-file')
+    p.add_argument('--traditional-script-sha256')
     a=p.parse_args()
     if not a.live:print('No execution: --live required');return
+    authoring_policy_ref=None
+    if a.task_id==261:
+        if not a.ai_authoring_policy or not a.ai_authoring_policy_sha256:
+            raise ValueError('New diagnostic task requires pinned AI-authoring authorization')
+        authoring_policy_ref={'file':a.ai_authoring_policy,'sha256':a.ai_authoring_policy_sha256}
+        read_ref(authoring_policy_ref)
+        authorization(Path(a.ai_authoring_policy).read_bytes(),
+                      (Path(__file__).resolve().parents[1]/'config/wav-qwen38max-100-development.v1.json').read_bytes())
     if ((a.framework=='playwright')!=(a.mode=='traditional') or
         a.framework=='browser-use-restricted' and a.mode!='hybrid'):raise ValueError('Incompatible framework/mode')
     if not 1024<=a.port_base<=65534:raise ValueError('Invalid ports')
@@ -67,6 +82,13 @@ def main():
     m=read_ref({'file':a.manifest,'sha256':a.manifest_sha256})
     task_key='wav:'+str(a.task_id)
     expected_intent,script_source=PUBLIC_TASKS[a.task_id]
+    script_override_ref=None
+    if a.traditional_script_file or a.traditional_script_sha256:
+        if a.task_id!=261 or a.mode!='traditional' or not authoring_policy_ref or not a.traditional_script_file or not a.traditional_script_sha256:
+            raise ValueError('Pinned authorized task-261 Traditional diagnostic repair only')
+        script_override_ref={'file':str(Path(a.traditional_script_file).resolve()),'sha256':a.traditional_script_sha256}
+        script_source=read_pinned(script_override_ref['file'],script_override_ref['sha256']).decode()
+        check_source(script_source)
     binding=json.loads(Path(a.bindings).read_bytes())['tasks'][task_key]
     public=read_ref({'file':binding['agent_input_file'],'sha256':binding['agent_input_sha256']})
     actor_input=task_projection(public,'wav')
@@ -82,6 +104,8 @@ def main():
     os.environ.update(PSS_LOCAL_PROVIDER='aliyun',PSS_LOCAL_MODEL='qwen3.8-max',PSS_LOCAL_MAX_OUTPUT_TOKENS='2048')
     model=None if a.mode=='traditional' else {'provider':'aliyun','model':'qwen3.8-max'}
     configuration={'framework':a.framework,'mode':a.mode,'model':model,'coordinate_space':a.coordinate_space,
+        'ai_authoring_policy_ref':authoring_policy_ref,
+        'traditional_script_override_ref':script_override_ref,
         'observation_timeout_ms':a.observation_timeout_ms,
         'action_timeout_ms':a.action_timeout_ms,
         'max_output_tokens':2048,'budget':{'task_timeout_ms':180000,'max_actions':24},
@@ -122,7 +146,11 @@ def main():
             'cost_policy':{'request_reservation_micro_usd':200000}}
         script=persist(root/('task'+str(a.task_id)+'-script.py'),script_source.encode()) if a.mode=='traditional' else None
         if script:write_new(root/'authoring-note.json',{'scope':'AI-assisted-diagnostic-only','human_blinded_baseline':False,
-            'task_key':task_key,'public_intent_only':True,'script_ref':script,'written_before_this_probe_outcomes':True})
+            'task_key':task_key,'public_intent_only':True,'script_ref':script,'written_before_this_probe_outcomes':True,
+            'authorization_ref':authoring_policy_ref,'independent_author_blinding_claimed':False,
+            'script_override_ref':script_override_ref,'replaces_original_evidence':False,
+            'known_prior_task_outcomes_seen':a.task_id in (260,274) or script_override_ref is not None,
+            'initial_state_note':'Anonymous public navigation probe; not proof of official authenticated account parity.'})
         from playwright.sync_api import sync_playwright
         print(json.dumps({'stage':'official-task-actor','task_id':a.task_id,'mode':a.mode}),flush=True)
         report['task_browser_setup_attempted']=True

@@ -1,5 +1,7 @@
 # Manuscript-aligned execution contract v2.0
 
+> **Historical migration record.** The active pointer now selects v2.1, including ATA 113 cases (62 PASS / 51 FAIL). Current maintained definitions are in [research design](../../docs/RESEARCH.md) and [technical documentation](../../docs/technical/README.md). Earlier counts and implementation status below describe the migration at its recorded stage.
+
 ## Decision and amendment (2026-09-21)
 
 The user explicitly retired the old execution plan and directed this project to follow the current manuscript. `config/active-study-design.json` is now the sole current design pointer. `study-design-contract.v2.1.json` records authority, source hash and change rationale. Old v1.0 and v2.0 files are retained as history, not execution authority. Default design/plan validation commands resolve v2; use `--legacy-audit` only for historical tests. This is a repository amendment, not a claim of external preregistration or retrospective pre-outcome freezing.

@@ -1,5 +1,7 @@
 # Execution reliability follow-up, 2026-09-21
 
+> **Historical engineering note.** The receipt version here remains relevant, but adapter implementation has advanced. Use [current runtime design](../../docs/technical/RUNTIME.md), [input/output contracts](../../docs/technical/INPUT_OUTPUT.md), and [lifecycle/native evaluation](LIFECYCLE-AND-NATIVE-EVALUATION.md) for the `de93d32` baseline. The independent shared CNY ledger has not been integrated into this baseline; a new campaign USD database does not replenish that shared budget.
+
 Follow-up receipt hardening uses `diagnostic-receipts-v2`: actor timeout/provider failure cannot be converted to completion by a late native score; actor, evaluator, reset and cleanup all bind opportunity/environment/configuration identity. The binding now requires `max_actions` as well as wall time, and the actor adapter reports explicit action count and budget status. Invalid receipts quarantine the environment. See [SPONSOR-DEPLOYMENT.md](./SPONSOR-DEPLOYMENT.md) for portable acceptance. These are diagnostic contracts, not proof of formal framework conformance or task-input-to-schedule binding.
 
 The active research definition remains `config/study-design-contract.v2.1.json` (19 configurations, D1–D2/V1–V10). This change does not rewrite collected results, measured framework identities, budgets or paper tables. Cloud-version verification is deferred at the user's request. No model requests or live benchmark runs were performed for this change.

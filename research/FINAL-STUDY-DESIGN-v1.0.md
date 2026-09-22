@@ -1,5 +1,7 @@
 # PSS-WebTest final study design v1.0 — confirmed and frozen
 
+> **Historical v1.0 record.** The current design is v2.1, selected by the active machine pointer; see [design authority](DESIGN-AUTHORITY.md). Counts, plans, gates and freeze claims below belong to the original version and do not authorize current collection.
+
 Date: 2026-09-14
 
 Status: **human-confirmed design freeze; experiment execution paused; confirmatory collection not authorized**

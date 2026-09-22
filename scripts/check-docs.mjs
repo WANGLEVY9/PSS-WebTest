@@ -2,10 +2,20 @@
 // Dependency-free public presentation checks; no network or model calls.
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const files=['README.md','README.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','CHANGELOG.md','code/README.md',
-  ...fs.readdirSync(path.join(root,'docs')).filter(x=>x.endsWith('.md')).map(x=>`docs/${x}`)];
+const markdownUnder=dir=>fs.readdirSync(path.join(root,dir),{withFileTypes:true})
+  .flatMap(entry=>entry.isDirectory()?markdownUnder(`${dir}/${entry.name}`):
+    entry.name.endsWith('.md')?[`${dir}/${entry.name}`]:[]);
+// Dated receipts remain historical. Check the maintained operator entry points
+// and all nested technical pages so newly added specifications cannot go dark.
+const files=['README.md','README.zh-CN.md','README-EXPERIMENT-OPERATORS.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','CHANGELOG.md','code/README.md',
+  'research/DESIGN-AUTHORITY.md',
+  ...markdownUnder('docs'),...markdownUnder('code/local-lab/cloud-handoff'),
+  ...['README.md','ANALYSIS-AND-ROUTING.md','SPEND-CONTROLS.md','ACCEPTANCE-RUNBOOK.md',
+    'LIFECYCLE-AND-NATIVE-EVALUATION.md','SPONSOR-DEPLOYMENT.md']
+    .map(file=>`code/local-lab/${file}`)];
 const errors=[];let links=0;
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const anchors=text=>{
@@ -48,6 +58,22 @@ for(const [file,text] of [['README.md',main],['README.zh-CN.md',zh]]){
 }
 const ata=design.benchmarks.find(x=>x.id==='ata');
 if(ata.selected_tasks!==ata.expected_pass+ata.expected_fail)errors.push('ATA reference classes do not partition selected cases');
+if(!read('research/DESIGN-AUTHORITY.md').includes(design.protocol_id))errors.push('Stale research design-authority entry');
+const inventory=JSON.parse(read('code/local-lab/cloud-handoff/dependency-manifest.json'));
+const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
+const csv=fs.readFileSync(path.join(root,'code/local-lab/cloud-handoff/dependency-packages.csv'));
+if(sha(csv)!==inventory.inventory_sha256)errors.push('Cloud dependency inventory digest mismatch');
+if(csv.toString('utf8').trimEnd().split('\n').length-1!==inventory.package_rows)errors.push('Cloud dependency inventory row count mismatch');
+for(const input of inventory.dependency_inputs){
+  // VWA requirements are external pinned-source bytes; their acquisition is
+  // verified by export-dependencies.py, not falsely certified without assets.
+  if(input.group==='vwa-upstream-declared')continue;
+  const source=path.join(root,'code',input.source);
+  if(!fs.existsSync(source)||sha(fs.readFileSync(source))!==input.sha256)
+    errors.push(`Stale cloud dependency input: ${input.source}`);
+}
+if(inventory.cloud_install_verified!==false||inventory.confirmatory_authorized!==false)
+  errors.push('Declared dependency inventory cannot authorize cloud installation or collection');
 const metadata=JSON.parse(read('.github/repository-metadata.json'));
 if(metadata.description.length>350)errors.push('GitHub description too long');
 if(metadata.topics.length>20||metadata.topics.some(t=>!/^[a-z0-9][a-z0-9-]{0,49}$/.test(t)))errors.push('Invalid GitHub topics');
@@ -57,4 +83,5 @@ if(!cff.includes('cff-version: 1.2.0')||!cff.includes('type: software'))errors.p
 // Full YAML/CFF schema validation is a separate release check; do not claim it here.
 if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}
 else console.log(JSON.stringify({status:'PASS',markdown_files:files.length,local_links:links,active_protocol:design.protocol_id,
-  planned_opportunities:tasks*configs*rounds,scope:'local links/headings, documented npm commands, design consistency, presentation metadata; no live execution or full CFF schema validation'},null,2));
+  planned_opportunities:tasks*configs*rounds,dependency_rows:inventory.package_rows,
+  scope:'local links/headings, documented npm commands, design consistency, dependency inventory hashes, presentation metadata; no live execution, external-asset verification or full CFF schema validation'},null,2));

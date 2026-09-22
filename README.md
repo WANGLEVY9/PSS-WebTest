@@ -14,6 +14,8 @@
 
 </div>
 
+**Running experiments with GPT API resources?** Start with the comprehensive [experiment operator README (中文)](README-EXPERIMENT-OPERATORS.zh-CN.md): target experiment matrix, API setup, CNY budget controls, staged acceptance, dispatch limitations, recovery and evidence handoff.
+
 PSS-WebTest is an open-source research infrastructure project for comparing **screenshot-only CUAs, structure-assisted CUAs, and human-authored Playwright scripts** on public Web benchmarks. It connects native benchmark outcomes with repeated correctness, preparation effort, fresh verdicts on previously misjudged cases, and the additional coverage obtained by combining executors.
 
 The practical question is: **when should a recurring Web test use another execution of the same agent, a different agent configuration, or a prepared script?**
@@ -90,6 +92,44 @@ node scripts/check-docs.mjs
 ```
 
 For targeted tests, analysis imports and environment setup, continue with [the reproducibility guide](docs/REPRODUCIBILITY.md) and [the code runbook](code/README.md). The legacy `test:contracts` command includes tests requiring downloaded historical artifacts; use the portable entry point above for a source-only checkout.
+
+## Technical design and native workflow compatibility
+
+The technical guide separates **upstream requirements, study restrictions,
+implementation and acceptance evidence**. Native scoring does not imply that
+our restricted actors reproduce upstream default agents or leaderboard results.
+
+| Area | Maintained specification |
+|---|---|
+| Inputs, outputs, private references and receipts | [Input/output contracts](docs/technical/INPUT_OUTPUT.md) |
+| Observation boundaries, preparation and repetitions | [Testing paradigms](docs/technical/TESTING_PARADIGMS.md) |
+| Three benchmark workflows and remaining gates | [WAV](docs/technical/benchmarks/WAV.md) · [VWA](docs/technical/benchmarks/VWA.md) · [ATA](docs/technical/benchmarks/ATA.md) |
+| Framework-specific integration | [AgentLab](docs/technical/frameworks/AGENTLAB.md) · [BrowserGym](docs/technical/frameworks/BROWSERGYM.md) · [Browser Use](docs/technical/frameworks/BROWSER_USE.md) · [Playwright](docs/technical/frameworks/PLAYWRIGHT.md) |
+| Scheduling, reset, retries and cost | [Runtime](docs/technical/RUNTIME.md) · [Upstream traceability](docs/technical/UPSTREAM_TRACEABILITY.md) |
+| Sponsor installation and evidence return | [Cloud handoff](code/local-lab/cloud-handoff/README.md) · [Dependency inventory](code/local-lab/cloud-handoff/dependency-manifest.json) |
+
+```mermaid
+flowchart TB
+    subgraph Prepare[Environment checks]
+        direction LR
+        Pin[Pin sources] --> Offline[Offline verification]
+        Offline --> Fixture[Fixture and reset]
+        Fixture --> Oracle[Evaluator controls]
+    end
+    subgraph Admit[Budget and admission]
+        direction LR
+        Guard[Guard all requests] --> Canary[Official development tasks]
+        Canary --> Review[Review and freeze]
+        Review --> Study[D1-D2 then V1-V10]
+    end
+    Prepare --> Admit
+```
+
+At runtime baseline `de93d32`, WAV has a shopping-only owned lifecycle; VWA has
+live-page deterministic evaluation but judge-dependent tasks remain blocked;
+ATA has a reference comparator awaiting fixture/label parity. The separate
+CNY 1,500 shared-budget implementation has **not** been integrated into all native
+framework paths. These are release gates, not installation steps to skip.
 
 ## Inspect or extend the project
 

@@ -1,5 +1,7 @@
 # PSS-WebTest long-cycle experiment plan v1.0
 
+> **Historical v1.0 record.** The current design is v2.1, selected by the active machine pointer; see [design authority](DESIGN-AUTHORITY.md). Counts, plans, gates and freeze claims below belong to the original version and do not authorize current collection.
+
 ## Material Passport
 
 - Origin Skill: academic-research-suite / experiment-agent

@@ -1,5 +1,7 @@
 # Research design and analysis map
 
+Implementation companion: [testing paradigms](technical/TESTING_PARADIGMS.md), [input/output contracts](technical/INPUT_OUTPUT.md), and [upstream requirements matrix](technical/UPSTREAM_TRACEABILITY.md). Benchmark populations come from pinned sources; selected counts are design targets and require actual frozen IDs. Native endpoint compatibility does not imply comparability with a published score under a different task subset, actor, observation or budget.
+
 [Project home](../README.md) · [Reproduce](REPRODUCIBILITY.md) · [Status](STATUS.md)
 
 The current design is selected by [`active-study-design.json`](../code/config/active-study-design.json), which points to [`study-design-contract.v2.1.json`](../code/config/study-design-contract.v2.1.json). Earlier contracts are retained for history, not current execution authority. Adoption inside this repository is not external preregistration.

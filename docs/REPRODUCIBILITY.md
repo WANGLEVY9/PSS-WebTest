@@ -1,47 +1,47 @@
 # Reproducibility
 
-[Project home](../README.md) · [Current WAV operator guide](EXPERIMENT-OPERATIONS.zh-CN.md) · [Architecture](../code/ARCHITECTURE.md) · [Research background](RESEARCH.md)
+[Project home](../README.md) · [Experiment map](EXPERIMENTS.md) · [Architecture](../code/ARCHITECTURE.md) · [Research design](RESEARCH.md)
 
-The next campaign is WAV-only. Its [planning contract](../code/config/current-campaign.json) fixes the intended comparison and denominator, but task IDs, exact API identities, budget bindings and full dispatcher support remain open. The historical three-benchmark contract is validated separately and must not dispatch the current campaign.
+Reproduce a study result by pinning its task population and source revisions, rebuilding the same execution schedule, restoring an independent environment for every opportunity, running the assigned method, and applying the benchmark-native evaluator. Preserve every attempt—including setup failures, timeouts, abstentions and missing outcomes—in the record set used for analysis.
 
-| Layer | What it establishes |
-| --- | --- |
-| Source-only verification | Current code imports, offline formulas, browser behavior and guarded runtime invariants |
-| Host acceptance | Pinned framework and benchmark versions, task mapping, reset, observation and evaluator controls on one host |
-| Research replication | Reviewed tasks and bindings, actual executions, sealed records and independently recomputed outcomes |
+## Study configuration
 
-## Source-only check
+The study covers 600 WebArena-Verified (WAV) tasks, 700 VisualWebArena (VWA) tasks and 113 ATA/piñata cases (62 PASS, 51 FAIL). Six model identities are compared across three agent cells: AgentLab visual (v), AgentLab hybrid (h) and restricted Browser Use hybrid (u). A single Playwright script cell (s) is shared across model comparisons. Each task/configuration has two discovery rounds (D1–D2) and ten validation rounds (V1–V10). See the [experiment map](EXPERIMENTS.md) for benchmark-specific setup, method boundaries and evaluation steps.
 
-From `code/`, with Node.js 20+, Python 3 and Playwright Chromium:
+## Prepare and validate
 
-```sh
+From `code/`, install the pinned dependencies and validate the study inputs:
+
+~~~sh
 npm ci
 npx playwright install chromium
-npm run campaign:validate
 npm run study:validate
-mkdir -p artifacts/local-runtime
-npm run sponsor:verify:portable -- --python python3 --output artifacts/local-runtime/offline-001
-```
+npm run campaign:validate
+~~~
 
-Choose a new output directory each time. The verifier records source hashes, test counts and logs. It performs no model calls or official benchmark tasks. Its report marks native acceptance as `not-run`, which cannot be read as a passing host gate.
+Create a task schedule and bind each opportunity to its model identity, framework profile, prompt, action/time/cost budget, environment, reset procedure and evaluator version. Keep credentials, task-specific private setup, and output ledgers outside Git. Use a new output directory for each run.
 
-The current WAV planning validator checks that 120 selected tasks, two models, three agent configurations, one shared baseline and one round imply 840 planned executions. It does not validate task selection or availability of an API model ID. `study:validate` checks the older manuscript contract only.
+## Run and evaluate
 
-## Host and execution evidence
+For each benchmark × task × configuration × round:
 
-Follow the [WAV operator guide](EXPERIMENT-OPERATIONS.zh-CN.md) for pinned source checkout, environment deployment, private model configuration and the 2/10/120 development sequence. Store credentials, task selections, receipts and trajectories outside Git. Each execution must bind its task, model, framework, inputs, budget, environment and evaluator version before the run. Keep unsuccessful and missing attempts in the ledger.
+1. Restore the benchmark fixture and verify the declared starting state.
+2. Construct the actor input for v, h, u or s; keep private setup and evaluator references outside the actor boundary.
+3. Run one isolated opportunity and journal its inputs, actions, termination, resource use and trajectory.
+4. Apply the pinned native evaluator using its required state and artifacts: WAV evaluates the original response and network trace; VWA evaluates the final active page; ATA compares the structured verdict and failure step with the published case reference.
+5. Seal the attempt, evaluator output, source identities and availability fields in the record ledger.
 
-The host acceptance record must include official task mapping, reset/isolation, framework observation and action controls, native evaluator positive/negative checks and spend accounting. A successful source-only run does not supply those results.
+Report benchmark outcomes with their native definitions. Keep task effectiveness, operational correctness, evaluator coverage, preparation effort, execution cost and missingness distinct. Do not remove failed or indeterminate opportunities from denominators without a documented estimand-specific rule.
 
-## Analysis and publication
+## Analyze and share
 
-`code/analysis/study-workflow.mjs` imports supplied records, and `code/analysis/study-analysis.mjs` computes summaries from their explicit denominator. Synthetic fixtures and local Qwen diagnostics are not confirmatory GPT campaign results. Share only reviewed, sanitized aggregates and the exact commit, protocol, source pins and exclusion decisions. The [data policy](DATA_AVAILABILITY.md) describes what is currently public.
+Import records with `code/analysis/study-workflow.mjs`; compute the RQ1–RQ4 summaries with `code/analysis/study-analysis.mjs`. Analysis inputs must carry task, model, execution cell, round, evaluator and source provenance. Preserve null outcomes and report coverage and identification bounds where outcomes cannot be determined.
 
-From the repository root, check documentation and tracked publication paths:
+Before sharing, validate the tables against the underlying records, review exclusions, and remove credentials, personal data, private fixtures and raw traces unless their release is authorized. Publish the source revision, study configuration, task-selection rule, evaluator version and analysis commands with the aggregate result.
 
-```sh
+From the repository root, check documentation links and public file boundaries:
+
+~~~sh
 node scripts/check-docs.mjs
 ./scripts/check-public-boundary.sh
-```
-
-The boundary check does not erase files already present in Git history. A historical purge requires a separately reviewed rewrite and coordinated replacement of the remote history.
+~~~

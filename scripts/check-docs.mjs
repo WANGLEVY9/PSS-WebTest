@@ -8,8 +8,7 @@ const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const markdownUnder=dir=>fs.readdirSync(path.join(root,dir),{withFileTypes:true})
   .flatMap(entry=>entry.isDirectory()?markdownUnder(`${dir}/${entry.name}`):
     entry.name.endsWith('.md')?[`${dir}/${entry.name}`]:[]);
-// Dated receipts remain historical. Check the maintained operator entry points
-// and all nested technical pages so newly added specifications cannot go dark.
+// Check the operator entry points and nested technical pages.
 const files=['README.md','README.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','code/README.md',
   ...markdownUnder('docs'),...markdownUnder('code/experiment/cloud-handoff'),
   ...['ANALYSIS-AND-ROUTING.md','SPEND-CONTROLS.md','ACCEPTANCE-RUNBOOK.md',
@@ -61,10 +60,11 @@ if(campaign.scope!=='planning-only'||campaign.benchmark!=='webarena-verified'||
   errors.push('Current WAV campaign plan is inconsistent');
 const main=read('README.md'),zh=read('README.zh-CN.md');
 for(const [file,text] of [['README.md',main],['README.zh-CN.md',zh]]){
-  for(const value of [design.protocol_id,design.scale.scheduled_opportunities.toLocaleString('en-US')])
-    if(!text.includes(value))errors.push(`${file}: stale manuscript design value ${value}`);
-  if(!text.includes(String(campaign.planned_total_executions))||!text.includes('confirmatory_authorized=false'))
-    errors.push(`${file}: current WAV planning status is missing`);
+  for(const benchmark of design.benchmarks)
+    if(!text.includes(String(benchmark.selected_tasks)))
+      errors.push(file+': study sample size for '+benchmark.id+' is missing or stale');
+  if(!text.includes('D1')||!text.includes('V10'))
+    errors.push(file+': discovery/validation round design is missing');
 }
 const ata=design.benchmarks.find(x=>x.id==='ata');
 if(ata.selected_tasks!==ata.expected_pass+ata.expected_fail)errors.push('ATA reference classes do not partition selected cases');

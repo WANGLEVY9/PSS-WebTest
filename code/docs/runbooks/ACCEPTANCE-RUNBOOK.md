@@ -6,13 +6,7 @@ now require a verified `cross_instance_isolation_ref`; equal producer-supplied
 peer digest strings alone cannot pass that gate. Live VWA/ATA acceptance remains
 pending deployment-specific restore/parity evidence.
 
-## Material Passport
-
-- Origin Skill: academic-research-suite / experiment-agent
-- Origin Mode: run and engineering remediation
-- Origin Date: 2026-09-22
-- Verification Status: PARTIAL — source/component checks are not live acceptance
-- Version Label: development-acceptance-v1; scientific authority remains manuscript v2.1
+**Scope:** Historical three-benchmark development acceptance plan, recorded on 2026-09-22. Source and component checks were partial; live host acceptance was not established. For the next WAV-only campaign, use the [operator guide](../../../README-EXPERIMENT-OPERATORS.zh-CN.md).
 
 This runbook complements `SPONSOR-DEPLOYMENT.md`. It does not authorize formal
 acquisition. Do not merge this campaign into D1/D2 or V1–V10. The manuscript
@@ -56,10 +50,10 @@ Run from `code/`, with new output directories on every verification:
 ```sh
 npm ci
 npx playwright install --with-deps chromium
-node local-lab/sponsor-portable-verify.mjs --python python3 \
+node experiment/sponsor-portable-verify.mjs --python python3 \
   --framework-profile PRIVATE_DEPLOYMENT_PROFILE.json \
   --output artifacts/local-runtime/verification-NEW
-node local-lab/sponsor-portable-doctor.mjs \
+node experiment/sponsor-portable-doctor.mjs \
   --profile PRIVATE_DEPLOYMENT_PROFILE.json --live-docker \
   --output artifacts/local-runtime/doctor-NEW.json
 ```
@@ -85,16 +79,16 @@ reviewed ATA source catalog. Create `artifacts/local-runtime` if it is absent.
 Replace `NEW` with one unique campaign suffix; do not overwrite earlier outputs.
 
 ```sh
-python3 local-lab/prepare_navigation_runtime.py --benchmark wav \
+python3 experiment/prepare_navigation_runtime.py --benchmark wav \
   --source artifacts/benchmark-snapshots/webarena-verified \
   --output artifacts/local-runtime/wav-inputs-NEW
-python3 local-lab/prepare_navigation_runtime.py --benchmark vwa \
+python3 experiment/prepare_navigation_runtime.py --benchmark vwa \
   --source artifacts/benchmark-snapshots/visualwebarena \
   --output artifacts/local-runtime/vwa-inputs-NEW
-python3 local-lab/prepare_official_runtime.py \
+python3 experiment/prepare_official_runtime.py \
   --source artifacts/benchmark-snapshots/ata-zenodo/ISSTA_ARTEFACT/benchmark \
   --output artifacts/local-runtime/ata-inputs-NEW
-python3 local-lab/prepare_acceptance_cohort.py \
+python3 experiment/prepare_acceptance_cohort.py \
   --wav artifacts/local-runtime/wav-inputs-NEW/task-bindings.json \
   --vwa artifacts/local-runtime/vwa-inputs-NEW/task-bindings.json \
   --ata artifacts/local-runtime/ata-inputs-NEW/task-bindings.json \
@@ -131,10 +125,10 @@ the pinned checkout, the official dataset/task, environment configuration, and
 an independently sealed closed-context HAR. It does not prove reset/isolation.
 
 ```sh
-PATH_TO_WAV_PYTHON local-lab/wav_contract_probe.py \
+PATH_TO_WAV_PYTHON experiment/wav_contract_probe.py \
   --source artifacts/benchmark-snapshots/webarena-verified \
   --output artifacts/local-runtime/wav-contract-NEW.json
-python3 local-lab/vwa_task_mapping.py \
+python3 experiment/vwa_task_mapping.py \
   --source artifacts/benchmark-snapshots/visualwebarena \
   --port-tasks PATH_TO_INSTALLED_VISUALWEBARENA/test_raw.json \
   --output artifacts/local-runtime/vwa-mapping-NEW.json
@@ -243,13 +237,13 @@ File hashes prove consistency, not honesty: retain independent review.
 
 ```sh
 # Empty baseline: EXPECT exit 2 and 0/360 execution coverage.
-python3 local-lab/acceptance_coverage.py \
+python3 experiment/acceptance_coverage.py \
   --manifest artifacts/local-runtime/cohort-NEW.json \
   --host-id ACTUAL_HOST --candidate-version ACTUAL_CANDIDATE_VERSION \
   --output artifacts/local-runtime/coverage-empty-NEW.json
 
 # After real measured receipts exist:
-python3 local-lab/acceptance_coverage.py --package PRIVATE_COVERAGE_PACKAGE.json \
+python3 experiment/acceptance_coverage.py --package PRIVATE_COVERAGE_PACKAGE.json \
   --output artifacts/local-runtime/coverage-measured-NEW.json
 ```
 

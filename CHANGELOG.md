@@ -2,6 +2,13 @@
 
 This file records design and public-artifact milestones. It is not a list of published software releases.
 
+## Unreleased — WAV source consolidation, 2026-09-23
+
+- Separate the current WAV campaign plan from the older manuscript analysis contract. The plan remains non-dispatchable and does not authorize confirmatory collection.
+- Move maintained integration code to `code/experiment/`, analysis to `code/analysis/`, and diagnostic report tooling to `code/tools/`.
+- Archive earlier local-application code, dedicated tests, pilot records, retired configuration and dated status reports in the local ignored `temp/` directory.
+- Replace the broad legacy command list with maintained experiment entry points and verify the public candidate from a clean source copy.
+
 ## Unreleased — pending runtime branch integration, 2026-09-22
 
 - Integrate the four previously local commits through `95c537d`, preserving mainline native lifecycle, task projection and updated dependency inventory.
@@ -39,4 +46,4 @@ This file records design and public-artifact milestones. It is not a list of pub
 - Retain nineteen configurations, twelve opportunities, discovery/validation separation, same-class RQ3 controls and two-window retry comparison.
 - Keep historical ATA aggregates provisional pending source-record reconciliation; no outcomes are supplied by changing the denominator.
 
-Earlier local-application pilots and design contracts remain dated history in the repository.
+Earlier local-application pilots and retired configuration are preserved in the local ignored archive; their prior Git history is unchanged.

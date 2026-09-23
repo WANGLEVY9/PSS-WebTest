@@ -4,7 +4,7 @@
 
 ## Scheduling and recovery
 
-[runtime_store.py](../../code/local-lab/runtime_store.py) uses a single-host
+[runtime_store.py](../../code/experiment/runtime_store.py) uses a single-host
 SQLite WAL ledger, unique scientific cells, worker leases and environment locks.
 An execution is marked started before reset or another external side effect.
 An expired unstarted lease can return to the queue; an expired started execution
@@ -24,9 +24,9 @@ stateDiagram-v2
     Terminal --> [*]
 ```
 
-The [worker](../../code/local-lab/runtime_worker.py),
-[session](../../code/local-lab/benchmark_task_session.py) and
-[actor wrapper](../../code/local-lab/benchmark_actor_lifecycle.py) separate public
+The [worker](../../code/experiment/runtime_worker.py),
+[session](../../code/experiment/benchmark_task_session.py) and
+[actor wrapper](../../code/experiment/benchmark_actor_lifecycle.py) separate public
 input, trusted reset/setup and private evaluation. Diagnostic/synthetic scope
 does not authorize formal execution. Source/configuration hashes are necessary
 integrity checks; they do not prove true fixture restoration.
@@ -55,12 +55,12 @@ completion with native score 0 is not an infrastructure failure by definition.
 
 | Implementation | Present at this documentation baseline | Limit |
 |---|---|---|
-| Mainline framework transport | [framework_model.py](../../code/local-lab/framework_model.py) reserves each actual attempt in the campaign SQLite ledger; no SDK retry/fallback | A per-database bound is not a shared allowance across all campaigns |
+| Mainline framework transport | [framework_model.py](../../code/experiment/framework_model.py) reserves each actual attempt in the campaign SQLite ledger; no SDK retry/fallback | A per-database bound is not a shared allowance across all campaigns |
 | Mainline live Qwen controls | Explicit live invocation, bounded synthetic-site diagnostics and a separate official task-260 probe | Keep synthetic and official evidence separate; neither certifies all selected tasks or verified actual billing |
 | Integrated shared guard | CNY1500, 80/90/95% thresholds, task caps and console alerts; native Node bridge reserves with the Python opportunity ID | Missing prices block dispatch; real billing, judge and direct-SDK coverage remain acceptance requirements |
 | Provider account settings | External project/organization enforcement | Not set by local configuration files or inferred from an API key |
 
-The [cloud handoff](../../code/local-lab/cloud-handoff/README.md) carries the
+The [cloud handoff](../../code/experiment/cloud-handoff/README.md) carries the
 integrated budget's deployment requirements; live coverage remains unverified. A complete
 release must wire every actor, evaluator model and auxiliary request to the same
 budget authority before claiming global enforcement. Never reset allowance by

@@ -47,14 +47,11 @@ jobs:
         run: npm ci
       - name: Install Chromium for local browser checks
         run: npx playwright install --with-deps chromium
+      - name: Validate current campaign plan
+        run: npm run campaign:validate
       - name: Run source-only offline verification
         run: |
           mkdir -p artifacts/local-runtime
           npm run sponsor:verify:portable -- --python python3 --output artifacts/local-runtime/ci-offline
-      - name: Validate legacy manifests and shared study assets
-        run: |
-          npm run validate:manifests
-          npm run validate:configuration-registry
-          npm run validate:study-assets
       # No model/provider secrets, live official benchmark tasks or raw-ledger upload.
-      # Artifact-dependent legacy tests remain explicitly not-run in the report.
+      # Native host acceptance is reported separately from source-only checks.

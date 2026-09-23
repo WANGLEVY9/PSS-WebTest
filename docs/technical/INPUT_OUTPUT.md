@@ -14,9 +14,9 @@ would leak references, credentials or environment control information.
 
 ## Files and binding
 
-The current [planner](../../code/local-lab/study-pipeline.mjs) and
-[workflow](../../code/local-lab/study-workflow.mjs) produce a schedule and
-`schedule-freeze.json`. [bind_runtime_plan.py](../../code/local-lab/bind_runtime_plan.py)
+The current [planner](../../code/analysis/study-pipeline.mjs) and
+[workflow](../../code/analysis/study-workflow.mjs) produce a schedule and
+`schedule-freeze.json`. [bind_runtime_plan.py](../../code/experiment/bind_runtime_plan.py)
 verifies the freeze digest, exact plan bytes, opportunity identity, task/source
 correspondence, input hash and evaluator mapping before producing private JSONL.
 The `task-bound-opportunity-v1` identity includes schedule hash, task-manifest
@@ -32,7 +32,7 @@ reference labels belong in the scheduler/evaluator manifest, never the actor
 envelope. The expected class is not the actor's verdict.
 
 The public file schema is `pss-official-task-input-v1`, validated by
-[runtime_inputs.py](../../code/local-lab/runtime_inputs.py):
+[runtime_inputs.py](../../code/experiment/runtime_inputs.py):
 
 ```json
 {
@@ -54,15 +54,15 @@ Source step labels are preserved rather than renumbered after filtering.
 
 ## Observation and action boundary
 
-[framework_boundary.py](../../code/local-lab/framework_boundary.py) creates the
+[framework_boundary.py](../../code/experiment/framework_boundary.py) creates the
 model-facing projection. Hybrid control entries contain observation-local
 `target_id`, role, accessible name, visible value/state and clipped bounding box.
 Raw HTML, selectors, stable application IDs, hidden/offscreen fields and gold
 are rejected. Geometry/schema validation alone does not prove visibility or
 occlusion; the live producer must establish those properties.
 
-Actions are decoded by [framework_actions.py](../../code/local-lab/framework_actions.py)
-and executed by [journaled_browser.py](../../code/local-lab/journaled_browser.py).
+Actions are decoded by [framework_actions.py](../../code/experiment/framework_actions.py)
+and executed by [journaled_browser.py](../../code/experiment/journaled_browser.py).
 One decision produces one accepted action. Uploads name pinned public assets,
 not filesystem paths. Tab operations use creation-order ordinals, not hidden
 URLs/titles. CSS pixels and declared Qwen 0–999 coordinates are distinct bound
@@ -80,7 +80,7 @@ ATA output shape: `{"verdict":"FAIL","failure_step":2}`. Verdict may be PASS,
 FAIL or null; failure_step is a positive source step label or null and must be
 null unless verdict is FAIL. No Markdown extraction, case repair, missing-as-FAIL
 conversion or gold-guided retry is allowed. See
-[benchmark_output_contract.py](../../code/local-lab/benchmark_output_contract.py).
+[benchmark_output_contract.py](../../code/experiment/benchmark_output_contract.py).
 
 ## Runtime outputs and null semantics
 
@@ -88,7 +88,7 @@ The current worker emits `runtime_protocol=diagnostic-task-bound-v3`. Every
 stage echoes opportunity, environment, configuration, lease token, task-manifest
 hash, scope and data kind. Evaluation additionally binds its reference and file
 hash. Native lifecycle/timing and public-input restrictions remain in force.
-See [runtime_worker.py](../../code/local-lab/runtime_worker.py). Standalone older
+See [runtime_worker.py](../../code/experiment/runtime_worker.py). Standalone older
 component receipts are historical controls, not valid v3 worker receipts.
 
 | Output | Meaning |

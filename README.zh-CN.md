@@ -1,98 +1,39 @@
 # PSS-WebTest
 
-**当前只运行 WebArena-Verified：**请按[六步实验人员操作单](README-EXPERIMENT-OPERATORS.zh-CN.md)执行；VWA/ATA 采集暂停。下文保留的三 benchmark 论文设计不是下一批派发计划，区别及未完成门禁见[范围变更记录](docs/WAV-ONLY-EXECUTION-SCOPE.md)。
+PSS-WebTest 研究 Computer-Use Agent 与脚本式 Web 测试在重复执行中的可靠性、反复错误和互补性。仓库包含 benchmark 接入、原生结果分析、执行记录和本地检查工具。
 
-**超越任务完成率：研究 Computer-Use Agent 与脚本式 Web 测试的重复可靠性、反复错误和互补性。**
+[English](README.md) · [当前实验操作指南](README-EXPERIMENT-OPERATORS.zh-CN.md) · [代码架构](code/ARCHITECTURE.md) · [研究设计](docs/RESEARCH.md) · [复现指南](docs/REPRODUCIBILITY.md)
 
-[English](README.md) · [研究设计](docs/RESEARCH.md) · [复现指南](docs/REPRODUCIBILITY.md) · [数据与产物](docs/DATA_AVAILABILITY.md) · [引用信息](CITATION.cff)
+## 当前实验
 
-PSS-WebTest 比较截图型 CUA、结构辅助 CUA 与人工编写的 Playwright 脚本。我们关心：同一批 Web 测试长期重复执行时，何时值得重试当前配置，何时应更换配置，何时混合执行能够带来额外覆盖。
+下一批操作范围只有 **WebArena-Verified（WAV）**。计划让 GPT-6 Astra 与 GPT-5.6 Sol 在同一组 120 个任务上运行 AgentLab 纯视觉、AgentLab 混合输入、受限 Browser Use 混合输入，并共用一组 Playwright 脚本基线。一轮计划为 720 次模型执行和 120 次脚本执行，共 **840 次**；2 题、10 题是通往 120 题的开发检查阶段。
 
-![研究流程：官方任务、不同执行配置、版本化记录、独立评估与四个研究问题。](docs/assets/study-overview.svg)
+这仍是计划，并非已完成实验。任务 ID、实际 API 模型身份、部署绑定和完整批量派发入口尚未固定。[当前实验配置](code/config/current-campaign.json) 明确标记 `dispatcher_available=false`、`confirmatory_authorized=false`。[范围变更记录](docs/WAV-ONLY-EXECUTION-SCOPE.md) 说明了原因；VWA 与 ATA 本批暂停采集。
 
-> **2026-09-22 状态：**当前权威设计为 `pss-manuscript-v2.1`。322,164 是包含未准备任务在内的**计划执行机会数**，不是已完成运行量。离线公式、运行器和框架组件检查已提供；完整 benchmark 适配器、实际部署主机与正式采集准入仍需验证。已有工程报告为 `confirmatory_authorized=false`。
+旧版 `pss-manuscript-v2.1` 合同继续用于历史论文设计和分析。其 **322,164 个计划执行机会**属于三 benchmark 设计，不是本次 WAV 实验规模，也不是已完成运行量。解释旧合同时参照[研究设计](docs/RESEARCH.md)，不能用它派发当前实验。
 
-## 研究问题
+## 代码与检查
 
-| RQ | 问题 |
-| --- | --- |
-| RQ1 原生性能 | 不同执行方式在 benchmark 原生任务成功、判定正确性与失败步骤匹配方面有何差异？ |
-| RQ2 重复使用 | 把准备失败、重复正确性和准备劳动纳入后，原生性能优势是否仍成立？ |
-| RQ3 反复错误 | 替代配置在过去判断错误的案例上是否改善，其收益是否超过同参考类别的发现阶段正确案例？ |
-| RQ4 超越重试 | 混合两种配置是否超过分别重试任一种配置？准确性差异与结果分歧如何解释覆盖收益？ |
+[架构说明](code/ARCHITECTURE.md) 标出配置、运行、框架适配、评测、分析与本地观测的入口。当前 benchmark 实现主要位于 `code/experiment/`；旧本地应用实验的实现与专用测试保存在被 Git 忽略的 `temp/`。旧记录、状态报告与退役配置保存在被 Git 忽略的 `temp/`。
 
-当前分析为描述性分析；缺失识别界与置信区间分别处理，不从四舍五入的汇总表反推统计显著性。
-
-## 当前设计
-
-- WAV：源数据 812 项，设计选定 600 项；任务成功按模板宏平均。
-- VWA：源数据 910 项，设计选定 700 项；保留其原生任务评估。
-- ATA：全部 113 项，62 expected-pass、51 expected-fail；保留原始类别。旧的 112 项、56/56 论文描述已废止；历史汇总仍待按原始记录重新核对。
-- 配置：6 个模型标签 × AgentLab visual / AgentLab hybrid / 受限 Browser Use hybrid，加 1 个共享人工 Playwright 基线，共 19 个配置。模型展示名不等于已验证 API 身份。
-- 重复：D1–D2 用于发现，V1–V10 用于验证；同一任务不同执行，不是训练/测试任务随机切分。
-
-完整定义以 [active-study-design.json](code/config/active-study-design.json) 指向的合同为准。官方 task ID、实际运行、人工准备和独立评估都有各自的证据要求，不能靠修改计数补齐。
-
-## 先复现离线检查
-
-需 Node.js 20+、Python 3、npm 和用于浏览器测试的 Chromium。此路径不需要模型密钥、旧云端运行、私有论文或 benchmark 下载。
+安装 Node.js 20+、Python 3 和 Playwright Chromium 后，可运行无模型调用的源码检查：
 
 ```sh
-git clone https://github.com/WANGLEVY9/PSS-WebTest.git
-cd PSS-WebTest/code
+cd code
 npm ci
 npx playwright install chromium
+npm run campaign:validate
 npm run study:validate
 mkdir -p artifacts/local-runtime
-npm run sponsor:verify:portable -- \
-  --python python3 --output artifacts/local-runtime/offline-001
+npm run sponsor:verify:portable -- --python python3 --output artifacts/local-runtime/offline-001
 ```
 
-输出目录必须是新的。报告记录源码哈希、实际执行的测试和未运行的历史资产检查；离线测试中的合成样例不计入实验结果。Linux 新环境的 Chromium 系统依赖安装方式见[英文复现指南](docs/REPRODUCIBILITY.md)。
+每次验证都要使用新输出目录。`study:validate` 检查旧论文合同；`campaign:validate` 检查当前 WAV 计划。两者均不授权采集，也不代表已执行官方任务。不同复现层级和待验收事项见[复现指南](docs/REPRODUCIBILITY.md)。
 
-## 技术文档与云端交接
+发布前在仓库根目录运行 `node scripts/check-docs.mjs` 和 `./scripts/check-public-boundary.sh`。公开边界脚本检查 Git 索引；此前已公开的历史记录不会因本次移除索引而自动消失。
 
-文档按“原生要求 → 本研究限制 → 当前实现 → 验收证据”编排。使用原生评分不代表复现上游默认agent或排行榜分数。
+## 数据与引用
 
-| 内容 | 专项说明 |
-|---|---|
-| 输入、输出、隐藏参考、收据 | [输入输出契约](docs/technical/INPUT_OUTPUT.md) |
-| 视觉/混合/人工脚本、准备与重复测试 | [测试范式](docs/technical/TESTING_PARADIGMS.md) |
-| 三个benchmark的原生流程 | [WAV](docs/technical/benchmarks/WAV.md) · [VWA](docs/technical/benchmarks/VWA.md) · [ATA](docs/technical/benchmarks/ATA.md) |
-| 各框架的真实调用和限制 | [AgentLab](docs/technical/frameworks/AGENTLAB.md) · [BrowserGym](docs/technical/frameworks/BROWSERGYM.md) · [Browser Use](docs/technical/frameworks/BROWSER_USE.md) · [Playwright](docs/technical/frameworks/PLAYWRIGHT.md) |
-| 幂等、恢复、重试、成本与上游依据 | [运行设计](docs/technical/RUNTIME.md) · [对照矩阵](docs/technical/UPSTREAM_TRACEABILITY.md) |
-| 云主机安装、容量、依赖与验收交回 | [中文交接手册](code/local-lab/cloud-handoff/README.md) · [机器可读清单](code/local-lab/cloud-handoff/dependency-manifest.json) |
+私有论文、原始运行记录、凭据、内部 mock 讨论数据和本地归档不属于公开仓库。[数据公开说明](docs/DATA_AVAILABILITY.md) 记录发布状态。公开论文、DOI 与逐执行复现包仍待发布；合成 fixture 和离线检查不是实测研究结果。
 
-```mermaid
-flowchart TB
-    subgraph Prepare[环境与测量检查]
-        direction LR
-        A[固定版本与依赖] --> B[离线检查]
-        B --> C[站点与逐臂重置]
-        C --> D[原生评测对照]
-    end
-    subgraph Admit[有界运行与准入]
-        direction LR
-        E[全部调用接入预算] --> F[官方开发任务验收]
-        F --> G[审核冻结]
-        G --> H[正式D轮与V轮]
-    end
-    Prepare --> Admit
-```
-
-当前文档对应运行基线 `de93d32`：WAV owned lifecycle仅覆盖shopping；VWA依赖模型的评测仍受阻；ATA参考比较器仍待fixture与标签一致性验收。1500元共享预算实现位于独立工程分支，尚未覆盖此主线的全部原生框架调用。云端安装成功和离线测试通过均不能替代这些验收项。
-
-## 项目入口
-
-| 内容 | 位置 |
-| --- | --- |
-| 研究设计、信息边界与指标 | [Research guide](docs/RESEARCH.md) |
-| 离线验证、数据导入、部署路径 | [Reproducibility guide](docs/REPRODUCIBILITY.md) |
-| 运行代码与命令 | [code/README.md](code/README.md) |
-| 本地控制台 | [Observatory guide](code/local-lab/README.md) |
-| 数据公开范围与 mock 隔离 | [Data availability](docs/DATA_AVAILABILITY.md) |
-| 社区参与 | [Contributing](CONTRIBUTING.md) · [Issues](https://github.com/WANGLEVY9/PSS-WebTest/issues/new/choose) |
-
-工作论文标题为 *Beyond Task Completion: An Empirical Study of Recurring Errors and Complementarity in Computer-Use Agents and Scripted Web Testing*。公开论文链接、持久标识符和逐执行复现数据包均为 **Forthcoming**，不宣称论文已录用。实验室内部 mock、旧汇总与工程验证均不能替代实测证据。
-
-软件引用见 [CITATION.cff](CITATION.cff)，请同时记录使用的 commit。项目自身代码与文档使用 [MIT License](LICENSE)，第三方 benchmark、框架和应用遵循各自条款。
+引用软件请使用 [CITATION.cff](CITATION.cff) 并记录准确 commit。项目自身代码与文档使用 [MIT License](LICENSE)，第三方 benchmark、框架和应用遵循各自许可。[参与贡献](CONTRIBUTING.md) · [安全报告](SECURITY.md)

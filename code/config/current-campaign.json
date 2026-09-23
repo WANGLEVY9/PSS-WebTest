@@ -1,0 +1,32 @@
+{
+  "schema": "pss-current-campaign-v1",
+  "campaign_id": "wav-120-gpt-development",
+  "scope": "planning-only",
+  "benchmark": "webarena-verified",
+  "source_population": 812,
+  "selected_task_count": 120,
+  "selection_file": null,
+  "models": [
+    "GPT-6 Astra",
+    "GPT-5.6 Sol"
+  ],
+  "agent_arms": [
+    "agentlab-visual",
+    "agentlab-hybrid",
+    "browser-use-hybrid"
+  ],
+  "shared_baseline": "playwright",
+  "rounds_per_task_configuration": 1,
+  "development_waves": [
+    2,
+    10,
+    120
+  ],
+  "planned_agent_executions": 720,
+  "planned_baseline_executions": 120,
+  "planned_total_executions": 840,
+  "dispatcher_available": false,
+  "new_execution_authorized": false,
+  "confirmatory_authorized": false,
+  "note": "Planning metadata only. Exact task IDs, API identities, fixtures, budgets and acceptance remain unbound."
+}

@@ -22,7 +22,7 @@ step labels; line/delimiter counts are not a reliable task count. Historical
 
 ## Actor, fixture and reference separation
 
-[prepare_official_runtime.py](../../../code/local-lab/prepare_official_runtime.py)
+[prepare_official_runtime.py](../../../code/experiment/prepare_official_runtime.py)
 creates public intent/steps and a separate private reference file. Public
 `expectedResult` states what the test checks; reference PASS/FAIL and failure
 annotations stay hidden. Original source bytes, ZIP/CSV hashes, application and
@@ -61,7 +61,7 @@ flowchart LR
     B --> O
 ```
 
-[ata_native_evaluate.py](../../../code/local-lab/ata_native_evaluate.py) is explicitly
+[ata_native_evaluate.py](../../../code/experiment/ata_native_evaluate.py) is explicitly
 `pss-ata-reference-evaluator-v1`. It computes reference agreement; it must not be
 advertised as an independently executed native runtime oracle. Until live parity
 is established, reference correctness does not justify operational correctness.
@@ -85,7 +85,7 @@ then evaluates fresh V1–V10 paired outcomes. RQ4 uses the same retained blocks
 for mixing and retry. These are PSS analyses, not upstream piñata default reporting.
 The [research guide](../../RESEARCH.md) defines the current estimands and bounds.
 
-The [dated local feasibility report](../../../code/docs/status/ATA-LOCAL-DEPLOYMENT-STATUS-20260922.md)
+The dated local feasibility record (kept in the ignored `temp/` archive)
 records original-image access and capacity constraints. An inaccessible hosted
 reset repository does not prove local provisioning impossible. An optimized WAV
 Shopping image is a port candidate, not automatically the original ATA fixture.

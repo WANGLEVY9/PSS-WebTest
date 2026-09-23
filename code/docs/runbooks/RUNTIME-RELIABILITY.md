@@ -31,7 +31,7 @@ From `code/`:
 ```sh
 npm run test:runtime-reliability
 npm run test:study-analysis
-python3 local-lab/ata_mapping.py --source artifacts/benchmark-snapshots/ata-zenodo/ISSTA_ARTEFACT/benchmark --all-official --output /tmp/ata-mapping-new.json
+python3 experiment/ata_mapping.py --source artifacts/benchmark-snapshots/ata-zenodo/ISSTA_ARTEFACT/benchmark --all-official --output /tmp/ata-mapping-new.json
 ```
 
 Existing plan production remains `npm run study:workflow -- plan BUNDLE.json NEW_OUTPUT_DIRECTORY`. Once actual diagnostic executors and task-input sources are supplied, `bind_runtime_plan.py` binds its `opportunities.jsonl`; `runtime_worker.py enqueue --database ... --input ...` idempotently registers it. `work --input EXECUTOR.json` executes one matching cell. `recover` only reconciles expired leases; `status` returns state/cost coverage. Use a new ledger per frozen plan/cost cap. Files contain metadata and evaluator references and should remain private. Do not reuse a dataset's human screening claim for these diagnostic jobs.

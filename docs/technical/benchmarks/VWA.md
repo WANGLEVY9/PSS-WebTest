@@ -19,7 +19,7 @@ The [fixed environment guide](https://github.com/web-arena-x/visualwebarena/blob
 is the source for Classifieds, Shopping, Reddit, Wikipedia and Homepage fixtures.
 PSS adds owned fixture names, private routing, immutable assets and per-execution
 state evidence; these restrictions do not change the native intended task state.
-The [cloud handoff](../../../code/local-lab/cloud-handoff/README.md) lists per-site
+The [cloud handoff](../../../code/experiment/cloud-handoff/README.md) lists per-site
 ports, SQL/images, model weights, capacity measurement and Linux-lock gaps.
 
 Keep a pristine official source and a hashed deployment/configuration copy.
@@ -27,7 +27,7 @@ Keep a pristine official source and a hashed deployment/configuration copy.
 must agree across native config, browser network, task images and authentication.
 Fresh cookies or a successful reset HTTP response do not prove database restore.
 
-[prepare_navigation_runtime.py](../../../code/local-lab/prepare_navigation_runtime.py)
+[prepare_navigation_runtime.py](../../../code/experiment/prepare_navigation_runtime.py)
 retains public images and separates setup/evaluation. MIME comes from bytes.
 For the known GIF-in-PNG-name cases, model-view PNG follows native PIL initial
 frame behavior while uploads retain original bytes. Record both identities.
@@ -36,7 +36,7 @@ frame behavior while uploads retain original bytes. Record both identities.
 
 The original [evaluator router](https://github.com/web-arena-x/visualwebarena/blob/89f5af29305c3d1e9f97ce4421462060a70c9a03/evaluation_harness/evaluators.py)
 uses task-specific answer, URL, page and visual checks. PSS
-[vwa_native_evaluate.py](../../../code/local-lab/vwa_native_evaluate.py) invokes it
+[vwa_native_evaluate.py](../../../code/experiment/vwa_native_evaluate.py) invokes it
 on the final live page after actor-end, seals the result, and later verifies the
 seal. Reopening a fresh page after teardown is not equivalent evaluation.
 
@@ -59,7 +59,7 @@ them zero, or let actor self-reported success substitute for the missing judge.
 
 ## Restore and release gates
 
-[vwa_reset_contract.py](../../../code/local-lab/vwa_reset_contract.py) verifies a
+[vwa_reset_contract.py](../../../code/experiment/vwa_reset_contract.py) verifies a
 full-site, lease-bound measurement manifest and dependency closure. It validates
 restore evidence; it does not implement every host's snapshot backend. Project
 operators must deliver real database/files/upload restoration for the selected

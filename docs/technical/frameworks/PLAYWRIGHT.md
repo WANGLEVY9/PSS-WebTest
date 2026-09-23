@@ -19,14 +19,14 @@ version in every campaign instead of treating current web documentation as a loc
 
 ## Traditional integration
 
-[traditional_actor.py](../../../code/local-lab/traditional_actor.py) exposes
+[traditional_actor.py](../../../code/experiment/traditional_actor.py) exposes
 reviewed public locator operations through a journaled Session wrapper. Writes,
 reads, time and lease ownership are checked. Uploads resolve only pinned public
 task assets. The script module and provenance are hash-bound by the lifecycle;
 arbitrary code that accesses wrapper internals is not made safe by a Python API
 wrapper alone. Script review and a trusted isolated process remain required.
 
-The common [actor lifecycle](../../../code/local-lab/benchmark_actor_lifecycle.py)
+The common [actor lifecycle](../../../code/experiment/benchmark_actor_lifecycle.py)
 uses reset-scoped session setup, actor timing and benchmark-specific finalization
 for Traditional as well as the agent profiles. A script must return the same
 WAV/VWA/ATA public completion contract; a Playwright assertion passing cannot

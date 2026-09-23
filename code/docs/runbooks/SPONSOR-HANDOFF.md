@@ -1,20 +1,20 @@
 # GPT sponsor handoff and acceptance checklist
 
-> **Scope note, 22 September 2026:** this document describes the earlier console/provider acceptance path. For current committed native components, input boundaries and outstanding integration gates, start with the [technical index](../../../docs/technical/README.md), [cloud handoff](../../local-lab/cloud-handoff/README.md) and [acceptance runbook](../runbooks/ACCEPTANCE-RUNBOOK.md). Dated test counts below remain evidence of their original source snapshot, not a full release acceptance.
+> **Scope note, 22 September 2026:** this document describes the earlier console/provider acceptance path. For current committed native components, input boundaries and outstanding integration gates, start with the [technical index](../../../docs/technical/README.md), [cloud handoff](../../experiment/cloud-handoff/README.md) and [acceptance runbook](../runbooks/ACCEPTANCE-RUNBOOK.md). Dated test counts below remain evidence of their original source snapshot, not a full release acceptance.
 
 **New sponsor campaign:** use [SPONSOR-DEPLOYMENT.md](./SPONSOR-DEPLOYMENT.md) and the portable doctor/verification entrypoints. Previous cloud records are not a dependency for new environment development or acceptance. Historical pooling remains separate. The instructions below also document the older prepared local workstation; they are not a portable three-benchmark installer.
 
 Status (2026-09-21): **OpenAI transport implemented and offline-tested; full benchmark handoff NOT ready.**
 
-The user adopted manuscript v2.0 and retired the old five-configuration plan on 2026-09-21. See [DESIGN-V2-MIGRATION.md](./DESIGN-V2-MIGRATION.md) and [ANALYSIS-AND-ROUTING.md](./ANALYSIS-AND-ROUTING.md). The active matrix is 19 configurations × 12 rounds. Substantial existing collection is user-reported; GPT supplementation should reconcile original IDs/configurations first. Missing local records do not establish globally unrun tasks.
+The user adopted manuscript v2.0 and retired the old five-configuration plan on 2026-09-21. See [ANALYSIS-AND-ROUTING.md](./ANALYSIS-AND-ROUTING.md); the dated v2 migration record is kept in the local ignored archive. The active matrix is 19 configurations × 12 rounds. Substantial existing collection is user-reported; GPT supplementation should reconcile original IDs/configurations first. Missing local records do not establish globally unrun tasks.
 
-This is the handoff for `code/local-lab`, the current official-benchmark observatory. The older `code/dashboard` and legacy five-application runners are engineering assets, not interchangeable official-benchmark entrypoints. No GPT capability result, confirmatory task result, or complete three-benchmark reproduction is claimed here.
+This is the handoff for `code/experiment`, the current official-benchmark observatory. The older `code/dashboard` and legacy five-application runners are engineering assets, not interchangeable official-benchmark entrypoints. No GPT capability result, confirmatory task result, or complete three-benchmark reproduction is claimed here.
 
 ## 1. What the sponsor supplies
 
 The default is the official OpenAI API. Supply an API key and exact model ID with **image input and strict structured JSON output** enabled. Use a versioned model ID when available and retain the returned model identifier. The project cannot infer model access from a key's shape or from `/models` alone. No particular model is silently selected.
 
-1. Copy `local-lab/openai.env.example` to **ignored** `code/.env.openai` if it does not already exist. Never overwrite an existing credential file. Set file permission to `600`.
+1. Copy `experiment/openai.env.example` to **ignored** `code/.env.openai` if it does not already exist. Never overwrite an existing credential file. Set file permission to `600`.
 2. Fill `OPENAI_API_KEY` and `OPENAI_MODEL` locally. Leave `PSS_LOCAL_PROVIDER=openai`, base `https://api.openai.com/v1`, and `OPENAI_API_MODE=responses` unless the sponsor explicitly provides a different supported interface.
 3. Use `PSS_LOCAL_ENV_FILE=.env.openai` for every sponsor command. This isolates the file from old Qwen keys, models, endpoints and launch switches. Restart the console after editing configuration.
 

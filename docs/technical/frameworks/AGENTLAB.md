@@ -20,13 +20,13 @@ substitute for the installed package/source digest.
 
 | Concern | Current integration |
 |---|---|
-| Constructor | [framework_agentlab.py](../../../code/local-lab/framework_agentlab.py) creates the real GenericAgent |
+| Constructor | [framework_agentlab.py](../../../code/experiment/framework_agentlab.py) creates the real GenericAgent |
 | Observation | Screenshot always; hybrid gets only PSS visible projection serialized into the AX-text slot; raw AX/HTML stays empty |
 | Additional state | No tabs/URLs/titles, focused element IDs, SoM, hints, plan, memory or hidden thinking history |
 | Actions | Restricted BrowserGym action set; coordinates, keys, typing, scrolling, history/tab operations and pinned asset uploads |
 | Parsing | Exactly one literal action; no arbitrary Python/JS, selectors or URL-navigation tool |
 | Calls | `max_retry=1` means one parser attempt in this implementation; zero would issue none |
-| Lifecycle | [native_framework_driver.py](../../../code/local-lab/native_framework_driver.py) owns the loop and journal; PSS owns reset/evaluation |
+| Lifecycle | [native_framework_driver.py](../../../code/experiment/native_framework_driver.py) owns the loop and journal; PSS owns reset/evaluation |
 
 The wrapper deliberately does not call `GenericAgentArgs.set_benchmark` because
 that can replace observation/action flags. Every observation passes the same
@@ -49,7 +49,7 @@ flowchart LR
 The candidate [lock](../../../code/config/frameworks/h-agentlab.lock) includes
 AgentLab 0.4.2, BrowserGym 0.14.2 and Playwright 1.44.0. The target Linux lock
 must be separately reviewed; a developer import is not installation acceptance.
-[framework_model.py](../../../code/local-lab/framework_model.py) uses a durable
+[framework_model.py](../../../code/experiment/framework_model.py) uses a durable
 request reservation and one real transport attempt. Requested/returned model
 identity and actual usage remain evidence, not inferred from a display label.
 Read [runtime accounting](../RUNTIME.md) for the integrated shared-CNY guard and its remaining live coverage requirements.

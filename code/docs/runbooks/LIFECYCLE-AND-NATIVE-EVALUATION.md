@@ -1,9 +1,6 @@
 # Lifecycle timing and native evaluation contract
 
-Material Passport: academic-research-suite / experiment-agent; engineering
-remediation, 2026-09-22. Component-verified, not confirmatory authorization.
-Scientific authority remains manuscript v2.1. This prospective engineering
-policy does not relabel historical runs or invent missing timing fields.
+Recorded on 2026-09-22 for the three-benchmark manuscript design. The timing policy was checked at component level but has not passed full host acceptance. It does not relabel historical runs or invent missing timing fields.
 
 ## 1. Common time definition
 
@@ -170,7 +167,7 @@ Missing/invalid verdicts stay in deployment accounting, not silently deleted.
 Offline commands (from repository root):
 
 ```sh
-node code/local-lab/sponsor-portable-verify.mjs \
+node code/experiment/sponsor-portable-verify.mjs \
   --output NEW_PRIVATE_DIRECTORY \
   --python /absolute/path/to/python \
   --framework-profile PRIVATE_DEPLOYMENT_PROFILE.json

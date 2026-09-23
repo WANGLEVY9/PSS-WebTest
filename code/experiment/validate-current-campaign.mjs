@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+const configPath=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../config/current-campaign.json');
+const campaign=JSON.parse(fs.readFileSync(configPath,'utf8'));
+const required=['schema','campaign_id','scope','benchmark','source_population','selected_task_count','models','agent_arms','shared_baseline','rounds_per_task_configuration','development_waves','planned_agent_executions','planned_baseline_executions','planned_total_executions'];
+for(const key of required)if(!(key in campaign))throw Error(`Missing campaign field: ${key}`);
+if(campaign.schema!=='pss-current-campaign-v1'||campaign.scope!=='planning-only'||campaign.benchmark!=='webarena-verified')throw Error('Unexpected campaign identity or scope');
+if(campaign.selected_task_count>campaign.source_population||campaign.selected_task_count<=0)throw Error('Invalid task count');
+if(new Set(campaign.models).size!==campaign.models.length||new Set(campaign.agent_arms).size!==campaign.agent_arms.length)throw Error('Duplicate model or arm');
+if(campaign.planned_agent_executions!==campaign.selected_task_count*campaign.models.length*campaign.agent_arms.length*campaign.rounds_per_task_configuration)throw Error('Agent denominator mismatch');
+if(campaign.planned_baseline_executions!==campaign.selected_task_count*campaign.rounds_per_task_configuration)throw Error('Shared baseline denominator mismatch');
+if(campaign.planned_total_executions!==campaign.planned_agent_executions+campaign.planned_baseline_executions)throw Error('Total denominator mismatch');
+if(JSON.stringify(campaign.development_waves)!==JSON.stringify([2,10,120]))throw Error('Unexpected wave plan');
+if(campaign.selection_file!==null||campaign.dispatcher_available!==false||campaign.new_execution_authorized!==false||campaign.confirmatory_authorized!==false)throw Error('Planning campaign cannot claim dispatch or authorization');
+console.log(JSON.stringify({status:'valid-planning-metadata',campaign_id:campaign.campaign_id,planned_total_executions:campaign.planned_total_executions,dispatcher_available:false,confirmatory_authorized:false}));

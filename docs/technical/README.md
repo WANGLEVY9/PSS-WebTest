@@ -19,7 +19,7 @@ study, not a reproduction of every upstream default agent or leaderboard score.
 | Framework integration and deliberate restrictions | [AgentLab](frameworks/AGENTLAB.md) · [BrowserGym](frameworks/BROWSERGYM.md) · [Browser Use](frameworks/BROWSER_USE.md) · [Playwright](frameworks/PLAYWRIGHT.md) |
 | Scheduling, resets, costs and recovery | [Runtime and acceptance](RUNTIME.md) |
 | Native source → requirement → implementation → check | [Upstream traceability](UPSTREAM_TRACEABILITY.md) |
-| Cloud provisioning and operator handoff | [Cloud deployment](../../code/local-lab/cloud-handoff/README.md) |
+| Cloud provisioning and operator handoff | [Cloud deployment](../../code/experiment/cloud-handoff/README.md) |
 
 ```mermaid
 flowchart TB

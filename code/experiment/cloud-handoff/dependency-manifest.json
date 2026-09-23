@@ -1,0 +1,175 @@
+{
+  "schema": "pss-cloud-dependencies-v1",
+  "inventory_kind": "DECLARED_DEPENDENCIES_NOT_INSTALL_LOCK",
+  "confirmatory_authorized": false,
+  "cloud_install_verified": false,
+  "scientific_authority": "config/active-study-design.json",
+  "corrected_ata_population": {
+    "tasks": 113,
+    "pass": 62,
+    "fail": 51
+  },
+  "sources": [
+    {
+      "id": "webarena-verified",
+      "repository": "https://github.com/ServiceNow/webarena-verified",
+      "source_commit": "6473f72db5dcefc97b5725b59e734504edc28a21"
+    },
+    {
+      "id": "visualwebarena",
+      "repository": "https://github.com/web-arena-x/visualwebarena",
+      "source_commit": "89f5af29305c3d1e9f97ce4421462060a70c9a03"
+    },
+    {
+      "id": "autonomous-tester-agent-benchmark",
+      "repository": "https://github.com/Smartesting/pinata",
+      "source_commit": "650b9edaa055915cb27d2498f379a66430cc3e02"
+    }
+  ],
+  "dependency_inputs": [
+    {
+      "group": "wav-local-macos-candidate",
+      "source": "config/frameworks/wav-local-macos-arm64-py312.lock",
+      "sha256": "264e7456b0d934596f81c2d6de2a8953eef2bb175582c00c7b1e44dba6b532e7"
+    },
+    {
+      "group": "agentlab-candidate",
+      "source": "config/frameworks/h-agentlab.lock",
+      "sha256": "0629ef67c2b595f0025bce83f1486fa9fc221335c9247c0fc38b5fe7ced6d990"
+    },
+    {
+      "group": "browser-use-journaled-actuator-candidate",
+      "source": "config/frameworks/h-browser-use-journaled-actuator.lock",
+      "sha256": "b14911b5fdb2047503e232ad0a39bde8e2313c057c56d2701bdd71fa0bff6a8c"
+    },
+    {
+      "group": "vwa-upstream-declared",
+      "source": "visualwebarena/requirements.txt",
+      "sha256": "66ca3a0f62def4f21b12acb2d6cc72c7facb3580afabac43efec0f14592dbd96"
+    },
+    {
+      "group": "node",
+      "source": "package-lock.json",
+      "sha256": "f1c46b09ae0c0ee0b8fc5d64930c52e4d515a0dcd960eb14f06da18a4390d6ea"
+    }
+  ],
+  "package_rows": 529,
+  "inventory_sha256": "4a8747218cee1fcda9b8cf106923c229d0bbd2ec52f712a88393cb64e3de3e0a",
+  "runtime_requirements": {
+    "os": "native Linux x86_64",
+    "node": ">=20, exact version to freeze",
+    "vwa_python": "3.10 or 3.11; not 3.12",
+    "wav_python": ">=3.11; exact environment to freeze",
+    "framework_python_candidate": "3.12; Linux installation unverified",
+    "docker": "Engine plus Compose v2; exact versions to freeze",
+    "storage": "local block storage for SQLite; measure actual DockerRootDir",
+    "gpu": "depends on verified evaluator/captioning model; not inferred from remote actor API"
+  },
+  "vwa_assets": [
+    {
+      "id": "shopping",
+      "asset": "shopping_final_0712.tar",
+      "port": 7770
+    },
+    {
+      "id": "reddit",
+      "asset": "postmill-populated-exposed-withimg.tar",
+      "port": 9999
+    },
+    {
+      "id": "classifieds",
+      "asset": "classifieds image + MySQL + pinned SQL",
+      "port": 9980
+    },
+    {
+      "id": "wikipedia",
+      "asset": "wikipedia_en_all_maxi_2022-05.zim + Kiwix",
+      "port": 8888
+    },
+    {
+      "id": "homepage",
+      "asset": "environment_docker/webarena-homepage + reviewed Flask environment",
+      "port": 4399
+    }
+  ],
+  "wav_sites": [
+    {
+      "id": "shopping",
+      "web_port": 7770,
+      "control_port": 7771,
+      "verified_release_image_digest": null
+    },
+    {
+      "id": "shopping_admin",
+      "web_port": 7780,
+      "control_port": 7781,
+      "verified_release_image_digest": null
+    },
+    {
+      "id": "reddit",
+      "web_port": 9999,
+      "control_port": 9998,
+      "verified_release_image_digest": null
+    },
+    {
+      "id": "gitlab",
+      "web_port": 8023,
+      "control_port": 8024,
+      "verified_release_image_digest": null
+    },
+    {
+      "id": "wikipedia",
+      "web_port": 8888,
+      "control_port": 8889,
+      "verified_release_image_digest": null
+    },
+    {
+      "id": "map",
+      "web_port": 3030,
+      "control_port": 3031,
+      "verified_release_image_digest": null
+    }
+  ],
+  "ata": {
+    "publication": "https://doi.org/10.5281/zenodo.15198569",
+    "archive_sha256": "c0b0a21f3ca5871f8c6db59e7d015e04350c577aef8714091e40246dc8fcb3bf",
+    "csv_hash_manifest": "config/ata-source-population.v1.json",
+    "applications": {
+      "classifieds": 30,
+      "onestopshop": 49,
+      "postmill": 34
+    },
+    "runtime_baseline_mapping_verified": false
+  },
+  "asset_metadata_required_before_start": [
+    "download_url",
+    "bytes",
+    "sha256",
+    "expected_digest_source",
+    "image_architecture",
+    "local_image_id",
+    "registry_digest_if_available",
+    "license",
+    "baseline_state_hash"
+  ],
+  "additional_dependencies_to_freeze": [
+    "WAV complete Linux dependency lock",
+    "ATA publication ZIP and six CSV digests",
+    "framework Linux locks without platform-incompatible packages",
+    "per-environment browser revisions and OS libraries",
+    "task input images",
+    "authentication state",
+    "captioning/evaluation weights and revisions",
+    "private reset credentials",
+    "reviewed per-arm lifecycle executors",
+    "shared provider pricing and request guard"
+  ],
+  "unmeasured": {
+    "download_bytes": null,
+    "expanded_image_bytes": null,
+    "minimum_host_ram_bytes": null,
+    "peak_install_disk_bytes": null,
+    "per_worker_peak_ram_bytes": null,
+    "minimum_gpu_vram_bytes": null
+  }
+}

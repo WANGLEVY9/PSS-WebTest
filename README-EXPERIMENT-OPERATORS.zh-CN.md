@@ -40,7 +40,7 @@ npx playwright install --with-deps chromium
 
 后续运行固定这个提交；实验期间不执行 `git pull`。保留 `package-lock.json` 和各 Python 环境的安装清单。
 
-框架需要独立 Python 环境：AgentLab 0.4.2 / BrowserGym 0.14.2，以及 Browser Use 0.13.10。使用项目组交付的 Linux 依赖锁安装；仓库中含 `pyobjc` 的 macOS 锁不能用于 Linux。安装工具及参数见 [bootstrap_sponsor_framework.py](code/local-lab/bootstrap_sponsor_framework.py)。
+框架需要独立 Python 环境：AgentLab 0.4.2 / BrowserGym 0.14.2，以及 Browser Use 0.13.10。使用项目组交付的 Linux 依赖锁安装；仓库中含 `pyobjc` 的 macOS 锁不能用于 Linux。安装工具及参数见 [bootstrap_sponsor_framework.py](code/experiment/bootstrap_sponsor_framework.py)。
 
 ## 3. 下载任务、部署网站
 
@@ -53,7 +53,7 @@ git clone https://github.com/ServiceNow/webarena-verified \
   artifacts/benchmark-snapshots/webarena-verified
 git -C artifacts/benchmark-snapshots/webarena-verified checkout --detach \
   6473f72db5dcefc97b5725b59e734504edc28a21
-python3 local-lab/prepare_navigation_runtime.py --benchmark wav \
+python3 experiment/prepare_navigation_runtime.py --benchmark wav \
   --source artifacts/benchmark-snapshots/webarena-verified \
   --output /srv/pss/runs/wav-inputs
 cat /srv/pss/runs/wav-inputs/report.json
@@ -143,8 +143,8 @@ Wikipedia 和 Map 先下载并初始化数据，再启动：
 
 ```bash
 cd /srv/pss/repo/code
-install -m 600 local-lab/openai.env.example /srv/pss/private/astra.env
-install -m 600 local-lab/openai.env.example /srv/pss/private/sol.env
+install -m 600 experiment/openai.env.example /srv/pss/private/astra.env
+install -m 600 experiment/openai.env.example /srv/pss/private/sol.env
 install -m 600 config/spend-policy.json /srv/pss/private/spend-policy.json
 ```
 
@@ -198,7 +198,7 @@ PSS_SPEND_DB=/srv/pss/private/shared-spend.sqlite
 
 ```bash
 cd /srv/pss/repo/code
-node local-lab/sponsor-portable-verify.mjs --python python3 \
+node experiment/sponsor-portable-verify.mjs --python python3 \
   --output /srv/pss/runs/offline-001
 ```
 
@@ -208,7 +208,7 @@ node local-lab/sponsor-portable-verify.mjs --python python3 \
 
 ```bash
 cd /srv/pss/repo/code
-PSS_LOCAL_ENV_FILE=/srv/pss/private/astra.env node local-lab/server.mjs
+PSS_LOCAL_ENV_FILE=/srv/pss/private/astra.env node experiment/server.mjs
 ```
 
 在自己的电脑执行以下转发，然后打开 `http://127.0.0.1:4173`：

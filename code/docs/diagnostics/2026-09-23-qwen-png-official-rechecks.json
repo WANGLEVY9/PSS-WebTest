@@ -1,0 +1,48 @@
+{
+  "schema": "pss-wav-png-remediation-diagnostic-v1",
+  "scope": "diagnostic",
+  "confirmatory_eligible": false,
+  "distinct_official_tasks_added": 0,
+  "new_official_process_attempts": 2,
+  "framework": "agentlab-browsergym",
+  "mode": "visual",
+  "model": "qwen3.8-flash",
+  "coordinate_space": "qwen-0-999",
+  "screenshot_transport": "lossless-png",
+  "attempts": [
+    {
+      "task_id": 324,
+      "configuration_sha256": "acb694bc462804e4b113967fc0337b6ef67897f709ee7891f14a799e30e5b204",
+      "report_sha256": "1b65bed9362d417429d404386727f528c2229c29eaa76b9e82c924bb37250857",
+      "official_score": 0,
+      "assessment_status": "valid",
+      "actor_status": "failed",
+      "failure_class": "action-budget-exhausted",
+      "actions": 24,
+      "provider_requests": 24,
+      "provider_failures": 0,
+      "action_errors": 0,
+      "capture_contract_errors": 0,
+      "replay_passed": true,
+      "owned_cleanup_completed": true,
+      "observed_failure_boundary": "24 identical clicks inside focused search field; no text entry"
+    },
+    {
+      "task_id": 351,
+      "configuration_sha256": "413d14cac3722c6bdc4c155c5de8298f60ecf810b3ed7374f2e0ff23e61cd75a",
+      "report_sha256": "443a25c2414f1fbd01c14042fa01668bd23d6772be390360c108cecd26790831",
+      "official_score": 0,
+      "assessment_status": "valid",
+      "actor_status": "failed",
+      "failure_class": "action-budget-exhausted",
+      "actions": 24,
+      "provider_requests": 24,
+      "provider_failures": 0,
+      "action_errors": 0,
+      "capture_contract_errors": 0,
+      "replay_passed": true,
+      "owned_cleanup_completed": true,
+      "observed_failure_boundary": "21 repeated clicks on focused native sort select; popup options absent from page screenshot"
+    }
+  ]
+}

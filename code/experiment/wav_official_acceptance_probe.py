@@ -58,7 +58,9 @@ if(!state.ready||rate.length!==1||rate[0].max_output_tokens<Number(process.env.P
                           cwd=Path(__file__).resolve().parents[1],env=env,
                           stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
     if result.returncode:
-        raise ValueError('Provider or spend policy does not admit this diagnostic configuration')
+        raise ValueError('Provider or spend policy does not admit this diagnostic configuration; '
+                         'bind a verified private PSS_SPEND_POLICY_FILE to the existing shared ledger '
+                         '(the public default has no Qwen rate cards). Do not reset the ledger.')
 
 SCRIPT='''def run(session, public_task):
     session.get_by_role('link', name='Video Games', exact=True).click()

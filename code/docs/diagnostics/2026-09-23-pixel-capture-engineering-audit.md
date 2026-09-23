@@ -40,6 +40,29 @@ configuration**, not a retrospective repair or confirmatory result.
    replace the historical ledger to make this test pass; use an approved,
    versioned tariff-policy migration with audit evidence before any live run.
 
+### Same-day resolution of the local policy mismatch
+
+The above was the state of the first two smoke attempts, not the final state.
+A pre-existing ignored private Beijing Qwen 3.8 policy was located at
+`code/artifacts/private/qwen38-beijing-policy-20260922.json`. Its canonical
+fingerprint **exactly matches** the populated shared spend ledger, which had
+460 historical request records before this follow-up. The public default
+`code/config/spend-policy.json` intentionally has an empty rate list and is
+not the live policy. No ledger reset or policy migration was needed. The
+private policy's Max/Flash price sources were rechecked against the official
+[Max](https://help.aliyun.com/zh/model-studio/qwen3-8-max) and
+[Flash](https://help.aliyun.com/zh/model-studio/qwen3-8-flash) model pages
+on 2026-09-23; the policy expires 2026-09-24 and must be
+reverified before use beyond that date.
+
+With `PSS_SPEND_POLICY_FILE` explicitly pointing to the matching private
+policy, a bounded live **synthetic** AgentLab pure-visual Qwen 3.8 Flash run
+passed: three provider requests, three actor actions, exact uploaded image,
+two browser pages and correct on-page confirmation code. The private provider
+request journal records `image/png` for both task image and screenshot. This
+shows the repaired PNG path reached the real provider. It does **not** revise
+any prior official WebArena score or admit bulk runs.
+
 ## Attribution and boundary
 
 - A wrong click coordinate on an otherwise faithful screenshot, followed by
@@ -56,9 +79,9 @@ configuration**, not a retrospective repair or confirmatory result.
 - Headed OS-level capture is a possible *future separately preregistered
   observation treatment*, but is not established as equivalent to the current
   headless page screenshot and must not silently replace it.
-- The lossless PNG path passed an offline prompt-decoding test. A paid model
-  request with the repaired path has **not** yet passed the shared spend gate;
-  no claim of end-to-end provider acceptance or task-score improvement follows.
+- The lossless PNG path passed both an offline prompt-decoding test and one
+  budgeted synthetic provider run. No official task-score improvement follows
+  from the synthetic control alone.
 
 ## Reproduce locally
 

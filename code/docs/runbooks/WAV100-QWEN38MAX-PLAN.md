@@ -137,6 +137,15 @@ execution and evaluation chain is sound; it is not a reason to drop the task.
 
 ## Bounded official acceptance probe
 
+Before any paid Qwen probe, explicitly bind a **private, price-verified**
+`PSS_SPEND_POLICY_FILE` to the same durable `PSS_SPEND_DB` used by prior runs.
+The public `code/config/spend-policy.json` is an empty-rate template, not a
+live Qwen tariff. Check the policy's `verified_at`/`expires_at`, provider,
+model, endpoint and stored ledger fingerprint first. A fingerprint mismatch
+must fail closed; do not delete the ledger or start an untracked replacement
+to bypass it. The private September 2026 Beijing policy used locally is
+valid only through its recorded expiry and is **not** a sponsor default.
+
 Run from repository root after installing the locked framework environments:
 
 ```bash

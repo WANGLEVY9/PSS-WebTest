@@ -1,13 +1,13 @@
 # Technical documentation
 
-For experiment operators, the [comprehensive Chinese README](../EXPERIMENT-OPERATIONS.zh-CN.md) connects these specifications into an ordered GPT API acceptance and execution workflow.
+For the benchmark-by-method matrix and execution sequence, see the [experiment map](../EXPERIMENTS.md) or its [Chinese version](../EXPERIMENTS.zh-CN.md).
 
 [Project](../../README.md) · [Experiment map](../EXPERIMENTS.md) · [实验地图](../EXPERIMENTS.zh-CN.md) · [研究设计](../RESEARCH.md)
 
-Documentation baseline: `8796b8b` plus the integration of the committed acceptance
-branch through `95c537d`, reviewed 22 September 2026. Uncommitted experiments are not part
-of that implementation. This documentation describes a restricted comparative
-study, not a reproduction of every upstream default agent or leaderboard score.
+This documentation specifies the benchmark inputs, execution methods, runtime
+interfaces, evaluation boundaries and analysis workflow for the comparative
+study. The experiment map is the quick reference for running each benchmark and
+method combination.
 
 ## Reading map
 
@@ -47,19 +47,14 @@ URLs or network traces for evaluation does not authorize feeding them to visual
 agents. A task can fail while its measurement is valid; a successful final page
 can coexist with a timeout or invalid measurement.
 
-## Authority and document maintenance
+## Study specification and implementation
 
-1. [Active study pointer](../../code/config/active-study-design.json) selects the
-   scientific design; dated reports and old manifests cannot override it.
-2. Fixed upstream source defines native task/evaluator semantics. Our adaptation
-   and remaining deviations are recorded separately on each component page.
-3. Runtime source, bound configuration and source-hashed receipts establish what
-   was actually executed. Documentation and readiness booleans cannot supply
-   missing evidence.
-4. Historical reports remain dated records. Current navigation points here;
-   corrections do not rewrite their original outcomes or test counts.
-
-For an implementation change, update the relevant component page, traceability
-row, interface contract and status entry. Include a genuine acceptance receipt
-before replacing “component-tested” with “live accepted.” Run `node
-scripts/check-docs.mjs` from the repository root to check maintained documentation.
+1. [Study contract](../../code/config/active-study-design.json) defines the
+   scientific design, task samples, execution cells and repeated rounds.
+2. Pinned benchmark sources define native task and evaluator semantics. Each
+   component page documents the corresponding inputs and adaptations.
+3. Bound configuration and source-identified execution records specify the
+   runtime settings and evidence used in an analysis.
+4. Update the relevant component page, upstream traceability entry and interface
+   contract when changing an implementation. Run `node scripts/check-docs.mjs`
+   from the repository root to check documentation links and required content.

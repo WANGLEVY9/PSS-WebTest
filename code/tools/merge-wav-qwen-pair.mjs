@@ -35,17 +35,18 @@ for (const name of inputs) {
         throw Error('Sealed report identity drift');
       const receiptFile = path.join(root, stem, 'trajectory', 'actor-receipt.json');
       const receipt = fs.existsSync(receiptFile) ? JSON.parse(fs.readFileSync(receiptFile)) : {};
+      const chainValid = report.official_task_started === true && report.official_task_completed === true &&
+        report.assessment_status === 'valid' && report.owned_cleanup_completed === true &&
+        !report.engineering_error && !report.cleanup_error && report.replay?.passed === true &&
+        receipt.source_tree_unchanged === true && receipt.terminal_status === report.actor_status;
       Object.assign(row, {
         status: 'sealed', report_sha256: sha(bytes), official_task_started: report.official_task_started === true,
         actor_status: report.actor_status ?? null, failure_class: report.failure_class ?? null,
         official_score: report.official_score ?? null, assessment_status: report.assessment_status ?? null,
         provider_requests: report.provider_requests ?? null, actions: report.actions ?? null,
         reset_elapsed_ms: report.reset_elapsed_ms ?? null, actor_elapsed_ms: receipt.elapsed_ms ?? null,
-        chain_valid: report.official_task_started === true && report.official_task_completed === true &&
-          report.assessment_status === 'valid' &&
-          report.owned_cleanup_completed === true && !report.engineering_error && !report.cleanup_error &&
-          report.replay?.passed === true && receipt.source_tree_unchanged === true &&
-          receipt.terminal_status === report.actor_status,
+        chain_valid: chainValid,
+        analysis_eligible: chainValid && ['completed', 'failed', 'invalid-action', 'timeout'].includes(report.actor_status),
       });
     }
     attempts.push(row);
@@ -53,21 +54,23 @@ for (const name of inputs) {
 }
 const cells = referenceJobs.map((job, index) => {
   const all = attempts.filter(a => a.index === index);
-  const valid = all.filter(a => a.chain_valid === true);
-  return {index, ...job, attempted: all.length, valid_chains: valid.length,
-    status: valid.length === 1 ? 'one-valid-chain' : valid.length > 1 ? 'ambiguous-multiple-valid-chains' :
-      all.length ? 'attempted-no-valid-chain' : 'unstarted',
-    selected_batch: valid.length === 1 ? valid[0].batch : null,
-    official_score: valid.length === 1 ? valid[0].official_score : null,
-    source_variant: valid.length === 1 ? plans.find(p => p.batch === valid[0].batch)?.source_sha256 : null};
+  const eligible = all.filter(a => a.analysis_eligible === true);
+  return {index, ...job, attempted: all.length,
+    lifecycle_complete_attempts: all.filter(a => a.chain_valid === true).length,
+    analysis_eligible_attempts: eligible.length,
+    status: eligible.length === 1 ? 'one-eligible-attempt' : eligible.length > 1 ? 'ambiguous-multiple-eligible-attempts' :
+      all.length ? 'attempted-no-eligible-attempt' : 'unstarted',
+    selected_batch: eligible.length === 1 ? eligible[0].batch : null,
+    official_score: eligible.length === 1 ? eligible[0].official_score : null,
+    source_variant: eligible.length === 1 ? plans.find(p => p.batch === eligible[0].batch)?.source_sha256 : null};
 });
-const result = {schema: 'pss-qwen38-multislice-diagnostic-v1', scope: 'diagnostic', confirmatory_authorized: false,
+const result = {schema: 'pss-qwen38-multislice-diagnostic-v2', scope: 'diagnostic', confirmatory_authorized: false,
   generated_at: new Date().toISOString(), planned_cells: referenceJobs.length,
   distinct_official_tasks: [...new Set(referenceJobs.map(j => j.task_id))].length,
-  attempted_processes: attempts.length, valid_cells: cells.filter(c => c.status === 'one-valid-chain').length,
+  attempted_processes: attempts.length, analysis_eligible_cells: cells.filter(c => c.status === 'one-eligible-attempt').length,
   source_variants: [...new Set(plans.map(p => p.source_sha256))],
   pooled_comparative_claim_authorized: false, shared_traditional_counted_once: true,
   plans, cells, attempts};
 fs.writeFileSync(output, JSON.stringify(result, null, 2) + '\n', {flag: 'wx', mode: 0o600});
 console.log(JSON.stringify({planned_cells: result.planned_cells, attempted_processes: result.attempted_processes,
-  valid_cells: result.valid_cells, source_variants: result.source_variants.length}));
+  analysis_eligible_cells: result.analysis_eligible_cells, source_variants: result.source_variants.length}));

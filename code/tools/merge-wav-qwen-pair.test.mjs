@@ -7,11 +7,12 @@ import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
 const script = fileURLToPath(new URL('./merge-wav-qwen-pair.mjs', import.meta.url));
-test('resumed slices retain invalid attempts and select only one valid chain per cell', t => {
+test('provider failure remains a complete chain but cannot displace an eligible retry', t => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'pss-wav-merge-'));
   t.after(() => fs.rmSync(root, {recursive: true, force: true}));
   const job = {task_id: 260, framework: 'agentlab-browsergym', mode: 'visual', model: 'qwen3.8-flash'};
-  for (const [batch, valid] of [['initial', false], ['resumed', true]]) {
+  for (const [batch, status] of [['initial', null], ['provider-stop', 'provider-error'], ['resumed', 'invalid-action']]) {
+    const valid = status !== null;
     const dir = path.join(root, batch);
     const stem = '00-qwen3.8-flash-260-agentlab-browsergym-visual';
     fs.mkdirSync(path.join(dir, stem, 'trajectory'), {recursive: true});
@@ -21,16 +22,18 @@ test('resumed slices retain invalid attempts and select only one valid chain per
       model: {model: job.model}, confirmatory_authorized: false,
       official_task_started: valid, official_task_completed: valid, official_score: valid ? 0 : null,
       assessment_status: valid ? 'valid' : null, owned_cleanup_completed: true,
-      replay: {passed: valid}, actor_status: valid ? 'invalid-action' : null}));
+      replay: {passed: valid}, actor_status: status}));
     fs.writeFileSync(path.join(dir, stem, 'trajectory', 'actor-receipt.json'),
-      JSON.stringify({source_tree_unchanged: valid, terminal_status: valid ? 'invalid-action' : null}));
+      JSON.stringify({source_tree_unchanged: valid, terminal_status: status}));
   }
   const out = path.join(root, 'merged.json');
-  const run = spawnSync(process.execPath, [script, out, path.join(root, 'initial'), path.join(root, 'resumed')], {encoding: 'utf8'});
+  const run = spawnSync(process.execPath, [script, out, path.join(root, 'initial'),
+    path.join(root, 'provider-stop'), path.join(root, 'resumed')], {encoding: 'utf8'});
   assert.equal(run.status, 0, run.stderr);
   const merged = JSON.parse(fs.readFileSync(out));
-  assert.equal(merged.attempted_processes, 2);
-  assert.equal(merged.valid_cells, 1);
+  assert.equal(merged.attempted_processes, 3);
+  assert.equal(merged.analysis_eligible_cells, 1);
+  assert.equal(merged.cells[0].lifecycle_complete_attempts, 2);
   assert.equal(merged.cells[0].official_score, 0);
   assert.equal(merged.cells[0].selected_batch, 'resumed');
   assert.equal(merged.pooled_comparative_claim_authorized, false);

@@ -30,6 +30,7 @@ for (const name of directories) {
   rows.push({attempt: path.basename(root), report_sha256: sha(bytes),
     configuration_sha256: sha(fs.readFileSync(path.join(root, 'configuration.json'))),
     traditional_script_sha256: report.framework === 'playwright' ? configuration.script_sha256 ?? null : null,
+    provider_request_timeout_ms: configuration.provider_request_timeout_ms ?? 30000,
     task_id: report.task_id, framework: report.framework, mode: report.mode,
     model: report.model?.model ?? null, official_score: report.official_score ?? null,
     actor_status: report.actor_status ?? null, failure_class: report.failure_class ?? null,

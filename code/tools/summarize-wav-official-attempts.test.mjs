@@ -27,6 +27,7 @@ test('complete provider failure is retained but not analysis eligible', t => {
   assert.equal(summary.lifecycle_complete_attempts, 1);
   assert.equal(summary.analysis_eligible_attempts, 0);
   assert.equal(summary.attempts[0].traditional_script_sha256, null);
+  assert.equal(summary.attempts[0].provider_request_timeout_ms, 30000);
 });
 
 test('Traditional script execution failure is not silently removed from deployment accounting', t => {

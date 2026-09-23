@@ -44,7 +44,11 @@ def run_actor(context, page, payload, journal, framework, mode, node,
         action_timeout_ms=payload.get('action_timeout_ms',5000),
         observation_timeout_ms=payload.get('observation_timeout_ms',5000))
     actuator.deadline = deadline
-    backend = backend or LedgerModel(payload, journal, node, deadline)
+    request_timeout_ms = payload.get('provider_request_timeout_ms', 30000)
+    if type(request_timeout_ms) is not int or not 1000 <= request_timeout_ms <= 45000:
+        raise ValueError('Provider request timeout must be an integer within 1–45 seconds')
+    backend = backend or LedgerModel(payload, journal, node, deadline,
+                                     request_timeout_ms=request_timeout_ms)
     sources={}
     for name in ('native_framework_driver.py','framework_actions.py','framework_model.py','journaled_browser.py',
                  'framework_agentlab.py','framework_browser_use.py','framework_boundary.py','benchmark_output_contract.py','runtime_inputs.py',

@@ -25,5 +25,13 @@ class OfficialProbeGuards(unittest.TestCase):
             self.assertNotEqual(r.returncode,0)
             self.assertIn('requires pinned AI-authoring authorization',r.stderr)
             self.assertFalse(output.exists())
+    def test_provider_request_timeout_above_spend_policy_bound_fails_before_fixture(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output=Path(tmp)/'not-created'
+            r=subprocess.run(self.command(output)+['--provider-request-timeout-ms','45001','--live'],
+                             capture_output=True,text=True,timeout=20)
+            self.assertNotEqual(r.returncode,0)
+            self.assertIn('Invalid provider request timeout',r.stderr)
+            self.assertFalse(output.exists())
 
 if __name__=='__main__':unittest.main()

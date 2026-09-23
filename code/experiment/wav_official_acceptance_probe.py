@@ -2,7 +2,7 @@
 
 This bounded bootstrap probe does not bypass the bulk execution gate. It never
 authorizes the 100-task campaign. Only bounded public-navigation tasks 260,
-261, 274 and 324 are implemented;
+261, 274, 324 and 351 are implemented;
 all other tasks require their authentication and reviewed script adapters first.
 """
 import argparse
@@ -57,6 +57,8 @@ PUBLIC_TASKS[261]=('Open the Headphones category page to browse products',
                   script_for(261,'Open the Headphones category page to browse products'))
 PUBLIC_TASKS[324]=('Pull up the page with all "chairs" listings sorted by ascending price.',
                   script_for(324,'Pull up the page with all "chairs" listings sorted by ascending price.'))
+PUBLIC_TASKS[351]=('Go to the page showing PS4 accessories products sorted by ascending price',
+                  script_for(351,'Go to the page showing PS4 accessories products sorted by ascending price'))
 
 
 def opportunity_id(root):
@@ -78,6 +80,7 @@ def main():
     p.add_argument('--coordinate-space',choices=['css-pixels','qwen-0-999'],default='css-pixels')
     p.add_argument('--observation-timeout-ms',type=int,default=30000)
     p.add_argument('--action-timeout-ms',type=int,default=30000)
+    p.add_argument('--provider-request-timeout-ms',type=int,default=30000)
     p.add_argument('--ai-authoring-policy')
     p.add_argument('--ai-authoring-policy-sha256')
     p.add_argument('--traditional-script-file')
@@ -85,7 +88,7 @@ def main():
     a=p.parse_args()
     if not a.live:print('No execution: --live required');return
     authoring_policy_ref=None
-    if a.task_id in (261,324):
+    if a.task_id in (261,324,351):
         if not a.ai_authoring_policy or not a.ai_authoring_policy_sha256:
             raise ValueError('New diagnostic task requires pinned AI-authoring authorization')
         authoring_policy_ref={'file':a.ai_authoring_policy,'sha256':a.ai_authoring_policy_sha256}
@@ -98,6 +101,7 @@ def main():
     if not 1024<=a.port_base<=65534:raise ValueError('Invalid ports')
     if not 1<=a.observation_timeout_ms<=30000:raise ValueError('Invalid observation timeout')
     if not 1<=a.action_timeout_ms<=30000:raise ValueError('Invalid action timeout')
+    if not 1000<=a.provider_request_timeout_ms<=45000:raise ValueError('Invalid provider request timeout')
     if os.environ.get('PSS_LOCAL_ENV_FILE'):raise ValueError('Explicit env file override refused')
     proof=read_ref({'file':a.peer_proof,'sha256':a.peer_proof_sha256})
     if (proof.get('kind')!='WAV_OWNED_BIDIRECTIONAL_TARGETED_CONTENT_CONTROL' or
@@ -137,6 +141,7 @@ def main():
         'traditional_script_override_ref':script_override_ref,
         'observation_timeout_ms':a.observation_timeout_ms,
         'action_timeout_ms':a.action_timeout_ms,
+        'provider_request_timeout_ms':a.provider_request_timeout_ms,
         'max_output_tokens':2048,'budget':{'task_timeout_ms':180000,'max_actions':24},
         'lifecycle_limits':{'setup_ms':60000,'evaluation_ms':30000,'finalization_ms':30000,'transport_ms':30000},
         'script_sha256':hashlib.sha256(script_source.encode()).hexdigest(),'source_sha256':pinned_ref(root/'runner-source.py')['sha256']}
@@ -171,6 +176,7 @@ def main():
             'budget':configuration['budget'],'coordinate_space':a.coordinate_space,
             'observation_timeout_ms':a.observation_timeout_ms,
             'action_timeout_ms':a.action_timeout_ms,
+            'provider_request_timeout_ms':a.provider_request_timeout_ms,
             'request_ledger':{'database':store.filename,'opportunityId':op['opportunity_id'],'leaseToken':op['lease_token'],'capMicroUsd':5000000},
             'cost_policy':{'request_reservation_micro_usd':200000}}
         script=persist(root/('task'+str(a.task_id)+'-script.py'),script_source.encode()) if a.mode=='traditional' else None

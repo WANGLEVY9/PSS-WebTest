@@ -115,7 +115,7 @@ has no runtime model. 400 is a target, not a measured execution count.
    marker control is **targeted**, not full mutable-state closure: Redis, search
    indexes, other database tables, object storage and queues are not certified.
 3. Use `wav_official_acceptance_probe.py` for bounded official public-navigation
-   tasks 260, 261, 274 and 324:
+   tasks 260, 261, 274, 324 and 351:
    independent fresh rootfs per arm; actual framework; immutable actor-end;
    closed HAR/trace; pinned official evaluator, unchanged answer; owned cleanup.
    This probe produces acceptance evidence without turning the bulk gate green.
@@ -154,8 +154,8 @@ Placeholders deliberately do not run. Each output directory and port pair must
 be new/unused. Use `--mode hybrid` for AgentLab Hybrid. Browser Use requires its
 own Python executable and `--framework browser-use-restricted --mode hybrid`.
 Traditional uses `--framework playwright --mode traditional`, with no paid calls.
-The probe is intentionally restricted to tasks 260, 261, 274 and 324, not a
-hidden 100-task bypass. Tasks 261 and 324 additionally require the pinned
+The probe is intentionally restricted to tasks 260, 261, 274, 324 and 351, not a
+hidden 100-task bypass. Tasks 261, 324 and 351 additionally require the pinned
 diagnostic AI-authoring policy; this does not make them independently
 human-blinded. Task 274 uses the published search intent and its separately
 prewritten combobox/Enter script; none of these scripts reads the native
@@ -169,6 +169,12 @@ settings are declared in each configuration; they remain proposed for the full
 100-task campaign. Setup/evaluation/finalization are separate from actor time.
 Model alias use is disclosed, not misrepresented as a fixed model snapshot.
 Costs in the local ledger are reservations until provider billing is observed.
+The default provider-request timeout is 30 seconds. The optional bounded
+`--provider-request-timeout-ms 45000` is a **separate diagnostic configuration**
+and must not be pooled with 30-second cells; it does not extend the actor's
+180-second budget or the private spending-policy limit. A response truncated
+at the 2,048-token output cap remains a provider-output failure, not a task
+capability verdict.
 
 ## ATA / VWA scope
 

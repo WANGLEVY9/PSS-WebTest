@@ -1,5 +1,7 @@
 # WebArena 实验运行指南：120 个任务，GPT‑6 Astra / GPT‑5.6 Sol
 
+[实验地图](EXPERIMENTS.zh-CN.md) · [研究设计](RESEARCH.md) · [项目首页](../README.zh-CN.md)
+
 本次使用 **WebArena-Verified（WAV）中的同一组 120 个任务**，比较 GPT‑6 Astra 和 GPT‑5.6 Sol。只部署这些任务需要的网站。VWA、ATA 不在本次运行范围内。
 
 **当前代码尚缺支持这两个 GPT 模型、任意任务清单的批量启动入口。** 以下安装、任务导入和配置检查可以执行；第 6 节列出启动前需要补齐的交付项。现有 Qwen 探针不能通过更换 API key 用于本批实验。

@@ -1,6 +1,6 @@
 # Technical documentation
 
-For experiment operators, the [comprehensive Chinese README](../../README-EXPERIMENT-OPERATORS.zh-CN.md) connects these specifications into an ordered GPT API acceptance and execution workflow.
+For experiment operators, the [comprehensive Chinese README](../EXPERIMENT-OPERATIONS.zh-CN.md) connects these specifications into an ordered GPT API acceptance and execution workflow.
 
 [Project](../../README.md) · [Research design](../RESEARCH.md)
 

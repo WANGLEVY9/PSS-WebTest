@@ -1,6 +1,6 @@
 # Reproducibility
 
-[Project home](../README.md) · [Current WAV operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md) · [Architecture](../code/ARCHITECTURE.md) · [Research background](RESEARCH.md)
+[Project home](../README.md) · [Current WAV operator guide](EXPERIMENT-OPERATIONS.zh-CN.md) · [Architecture](../code/ARCHITECTURE.md) · [Research background](RESEARCH.md)
 
 The next campaign is WAV-only. Its [planning contract](../code/config/current-campaign.json) fixes the intended comparison and denominator, but task IDs, exact API identities, budget bindings and full dispatcher support remain open. The historical three-benchmark contract is validated separately and must not dispatch the current campaign.
 
@@ -29,7 +29,7 @@ The current WAV planning validator checks that 120 selected tasks, two models, t
 
 ## Host and execution evidence
 
-Follow the [WAV operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md) for pinned source checkout, environment deployment, private model configuration and the 2/10/120 development sequence. Store credentials, task selections, receipts and trajectories outside Git. Each execution must bind its task, model, framework, inputs, budget, environment and evaluator version before the run. Keep unsuccessful and missing attempts in the ledger.
+Follow the [WAV operator guide](EXPERIMENT-OPERATIONS.zh-CN.md) for pinned source checkout, environment deployment, private model configuration and the 2/10/120 development sequence. Store credentials, task selections, receipts and trajectories outside Git. Each execution must bind its task, model, framework, inputs, budget, environment and evaluator version before the run. Keep unsuccessful and missing attempts in the ledger.
 
 The host acceptance record must include official task mapping, reset/isolation, framework observation and action controls, native evaluator positive/negative checks and spend accounting. A successful source-only run does not supply those results.
 

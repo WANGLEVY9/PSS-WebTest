@@ -1,39 +1,52 @@
 # PSS-WebTest
 
-PSS-WebTest studies recurring errors and reliability in computer-use agents and scripted Web testing. It contains benchmark integration code, native outcome analysis, and tools for recording and inspecting executions.
+PSS-WebTest is an empirical study of computer-use agents and scripted Web testing. It examines benchmark-native task performance, reliability under repeated execution, recurring errors, and whether combining methods improves on retrying either method alone.
 
-[简体中文](README.zh-CN.md) · [Current experiment guide](docs/EXPERIMENT-OPERATIONS.zh-CN.md) · [Architecture](code/ARCHITECTURE.md) · [Research design](docs/RESEARCH.md) · [Reproduction](docs/REPRODUCIBILITY.md)
+[简体中文](README.zh-CN.md) · [Experiment map](docs/EXPERIMENTS.md) · [Architecture](code/ARCHITECTURE.md) · [Research design](docs/RESEARCH.md) · [Reproduction](docs/REPRODUCIBILITY.md)
 
-## Current experiment
+## Study scope
 
-The next operator campaign is **WebArena-Verified (WAV) only**. The plan compares GPT-6 Astra and GPT-5.6 Sol on the same 120 tasks, with AgentLab visual, AgentLab hybrid, restricted Browser Use hybrid, and one shared Playwright baseline. One round would comprise 720 model-driven executions and 120 baseline executions, **840 in total**. The 2-task and 10-task waves are development gates within the 120-task target.
+The research materials cover three benchmarks and four execution paradigms. The benchmark-specific evaluator defines correctness; a framework's own reward or a script assertion cannot replace it.
 
-This is a plan, not a completed experiment. Task IDs, exact API model identities, deployment bindings and full dispatcher support remain open. The machine-readable [current campaign plan](code/config/current-campaign.json) records `dispatcher_available=false` and `confirmatory_authorized=false`. The [scope decision](docs/WAV-ONLY-EXECUTION-SCOPE.md) explains the change. VWA and ATA collection is paused for this campaign.
+| Benchmark | Population and research selection | Native assessment | Current status |
+|---|---|---|---|
+| [WebArena-Verified (WAV)](docs/technical/benchmarks/WAV.md) | 812 source tasks; the historical manuscript design selected 600. The separate current development plan targets 120 frozen task IDs. | Original structured completion plus network trace, assessed by the pinned WAV evaluator. | Current campaign is WAV-only and planning/development scope. Task IDs and API identities are not bound; dispatcher and execution authorization are false. |
+| [VisualWebArena (VWA)](docs/technical/benchmarks/VWA.md) | 910 source tasks; the historical manuscript design selected 700. | Native evaluator on the final live page; judge-dependent paths need a frozen, audited policy. | Historical study design and implementation reference. Restore, judge, and host acceptance remain incomplete. |
+| [ATA / piñata](docs/technical/benchmarks/ATA.md) | 113 published cases: 62 PASS and 51 FAIL; the historical design uses the full population. | Predicted verdict and failure step compared with the published reference; operational correctness also requires independent live-fixture/label parity. | Historical study design and analysis reference; runtime parity remains unverified. |
 
-The older `pss-manuscript-v2.1` contract remains available for analysis and protocol history. Its **322,164 scheduled opportunities** are a historical three-benchmark design denominator, not the current WAV campaign or a completed-run count. Use [the design guide](docs/RESEARCH.md) when interpreting that contract; do not dispatch the WAV campaign from it.
+The historical pss-manuscript-v2.1 contract schedules 1,413 tasks × 19 configurations × 12 rounds = **322,164 planned opportunities**. This is a design denominator, not a count of completed or imported runs. It must not be used to dispatch the current WAV campaign.
 
-## Code and verification
+## Execution paradigms
 
-The [code map](code/ARCHITECTURE.md) identifies configuration, runtime, framework adapters, evaluation, analysis and local observation. `code/experiment/` currently holds most benchmark integration modules; Earlier local-application source and its dedicated tests are preserved in the ignored `temp/` archive. Local historical evidence and retired configuration live in the ignored `temp/` archive.
+| Cell | Framework and input | How the comparison works |
+|---|---|---|
+| Visual (v) | [AgentLab](docs/technical/frameworks/AGENTLAB.md) / [BrowserGym](docs/technical/frameworks/BROWSERGYM.md); screenshot and permitted interaction state only | Compares visual decisions with the same framework's hybrid cell. No DOM, accessibility tree, external OCR, selectors, or evaluator state. |
+| Hybrid (h) | [AgentLab](docs/technical/frameworks/AGENTLAB.md) / [BrowserGym](docs/technical/frameworks/BROWSERGYM.md); screenshot plus a restricted projection of visible controls | Adds only observation-local IDs, roles, accessible names, visible values/states, and clipped bounds. Raw HTML and hidden state remain withheld. |
+| Hybrid framework comparison (u) | [Restricted Browser Use](docs/technical/frameworks/BROWSER_USE.md); same declared hybrid information boundary | Compares two framework integrations under a shared input boundary. There is no Browser Use visual-only cell, so this is a partial framework/input crossing, not a full factorial design. |
+| Scripted baseline (s) | [Reviewed Playwright script](docs/technical/frameworks/PLAYWRIGHT.md); public UI/DOM/AX during blinded preparation, no runtime LLM | One fixed baseline is shared across model comparisons. Preparation, debugging, and review effort are recorded; evaluator internals, gold, and agent traces are withheld. |
 
-For source-only checks, install Node.js 20+, Python 3 and Playwright Chromium:
+AgentLab uses BrowserGym components; BrowserGym is not an additional study arm. The historical manuscript design covers three benchmarks × four paradigms; the current WAV development plan covers only WAV's four cells. Each benchmark keeps its own native evaluator, and all VWA/ATA cells remain subject to target-environment acceptance. See the [experiment map](docs/EXPERIMENTS.md) for the per-benchmark procedure and setup links.
 
-```sh
+## What can be prepared now
+
+The current campaign is a **120-task WAV development plan**: two display model labels (GPT-6 Astra and GPT-5.6 Sol), three agent cells (v, h, u) and one shared Playwright baseline, giving 720 planned model executions plus 120 planned script executions. The 2-, 10-, and 120-task waves are development gates. They are not completed runs.
+
+Exact task IDs, API model identities, target bindings, and the full dispatcher are not available. The machine-readable [campaign plan](code/config/current-campaign.json) sets <code>dispatcher_available=false</code>, <code>new_execution_authorized=false</code>, and <code>confirmatory_authorized=false</code>. The [scope decision](docs/WAV-ONLY-EXECUTION-SCOPE.md) records why VWA and ATA are outside this campaign. Follow the [WAV operator guide](docs/EXPERIMENT-OPERATIONS.zh-CN.md) for the detailed environment and configuration handoff; it does not supply the missing dispatcher or authorize collection.
+
+For source-only checks, install dependencies in code/ and run the plan and portable verification commands below. They do not call a model or execute official benchmark tasks.
+
+~~~sh
 cd code
 npm ci
-npx playwright install chromium
 npm run campaign:validate
 npm run study:validate
-mkdir -p artifacts/local-runtime
-npm run sponsor:verify:portable -- --python python3 --output artifacts/local-runtime/offline-001
-```
+npm run sponsor:verify:portable -- --python python3 --output artifacts/local-runtime/NEW_NAME
+~~~
 
-Use a new output directory for every verification. These checks do not call a model or execute official benchmark tasks. `study:validate` checks the historical manuscript contract; `campaign:validate` checks the current WAV plan. Neither authorizes collection. The [reproduction guide](docs/REPRODUCIBILITY.md) explains the different verification layers and remaining acceptance requirements.
+## Research and evidence
 
-From the repository root, run `node scripts/check-docs.mjs` and `./scripts/check-public-boundary.sh` before publishing. The boundary check examines Git's index; it does not remove data from already published Git history.
+The [research design](docs/RESEARCH.md) defines RQ1–RQ4, estimands, denominators, and missing-data treatment. The [experiment map](docs/EXPERIMENTS.md) links each benchmark and paradigm to its technical specification, code entry points, setup sequence, and evidence gates. The [data policy](docs/DATA_AVAILABILITY.md) states what is and is not publicly available.
 
-## Data and citation
+Synthetic fixtures, injected framework responses, source checks, and local diagnostics are engineering evidence. They are not benchmark outcomes. Preserve scheduled, prepared, started, scorable, and completed counts separately.
 
-The repository excludes private manuscripts, raw runs, credentials, internal mock discussions and local archives. See [data availability](docs/DATA_AVAILABILITY.md) for release status. Public paper, DOI and execution-level replication links are forthcoming. Synthetic fixtures and offline checks are engineering evidence, not measured research outcomes.
-
-Use [CITATION.cff](CITATION.cff) and record the exact commit. Project-owned code and documentation use the [MIT License](LICENSE); upstream benchmark, framework and application materials retain their own terms. [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md)
+Cite the software with [CITATION.cff](CITATION.cff) and record the exact commit. Project-owned code and documentation use the [MIT License](LICENSE); upstream benchmark, framework, and application materials retain their own terms.

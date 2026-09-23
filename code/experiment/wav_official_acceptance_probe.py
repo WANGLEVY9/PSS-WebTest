@@ -1,11 +1,13 @@
 """One official WAV task on a fresh owned fixture, for acceptance diagnosis.
 
 This bounded bootstrap probe does not bypass the bulk execution gate. It never
-authorizes the 100-task campaign. Only public-navigation tasks 260, 261 and 274 are implemented;
+authorizes the 100-task campaign. Only bounded public-navigation tasks 260,
+261, 274 and 324 are implemented;
 all other tasks require their authentication and reviewed script adapters first.
 """
 import argparse
 import hashlib
+import importlib.metadata
 import json
 import os
 from pathlib import Path
@@ -20,6 +22,23 @@ from replay_audit import audit
 from wav_owned_lifecycle import OwnedLifecycle, read_ref, write_new
 from wav_owned_peer_probe import comparisons
 from probe_lease_guard import ProbeLeaseGuard
+
+
+def require_framework_environment(framework):
+    """Reject a mismatched framework interpreter before an expensive reset."""
+    required = {
+        'agentlab-browsergym': ('agentlab', 'browsergym-core', 'playwright'),
+        'browser-use-restricted': ('browser-use', 'playwright'),
+        'playwright': ('playwright',),
+    }[framework]
+    missing = []
+    for distribution in required:
+        try:
+            importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            missing.append(distribution)
+    if missing:
+        raise ValueError('Framework interpreter missing installed distributions: ' + ', '.join(missing))
 
 SCRIPT='''def run(session, public_task):
     session.get_by_role('link', name='Video Games', exact=True).click()
@@ -36,6 +55,8 @@ PUBLIC_TASKS={260:('Open the Video Game category page to browse products',SCRIPT
 from prepare_wav100_ai_scripts import script_for, authorization, check_source
 PUBLIC_TASKS[261]=('Open the Headphones category page to browse products',
                   script_for(261,'Open the Headphones category page to browse products'))
+PUBLIC_TASKS[324]=('Pull up the page with all "chairs" listings sorted by ascending price.',
+                  script_for(324,'Pull up the page with all "chairs" listings sorted by ascending price.'))
 
 
 def opportunity_id(root):
@@ -64,7 +85,7 @@ def main():
     a=p.parse_args()
     if not a.live:print('No execution: --live required');return
     authoring_policy_ref=None
-    if a.task_id==261:
+    if a.task_id in (261,324):
         if not a.ai_authoring_policy or not a.ai_authoring_policy_sha256:
             raise ValueError('New diagnostic task requires pinned AI-authoring authorization')
         authoring_policy_ref={'file':a.ai_authoring_policy,'sha256':a.ai_authoring_policy_sha256}
@@ -73,6 +94,7 @@ def main():
                       (Path(__file__).resolve().parents[1]/'config/wav-qwen38max-100-development.v1.json').read_bytes())
     if ((a.framework=='playwright')!=(a.mode=='traditional') or
         a.framework=='browser-use-restricted' and a.mode!='hybrid'):raise ValueError('Incompatible framework/mode')
+    require_framework_environment(a.framework)
     if not 1024<=a.port_base<=65534:raise ValueError('Invalid ports')
     if not 1<=a.observation_timeout_ms<=30000:raise ValueError('Invalid observation timeout')
     if not 1<=a.action_timeout_ms<=30000:raise ValueError('Invalid action timeout')

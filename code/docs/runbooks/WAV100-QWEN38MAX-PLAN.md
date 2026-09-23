@@ -114,7 +114,8 @@ has no runtime model. 400 is a target, not a measured execution count.
 2. Run measured mutate/reset and peer-content probes. The current two-table and
    marker control is **targeted**, not full mutable-state closure: Redis, search
    indexes, other database tables, object storage and queues are not certified.
-3. Use `wav_official_acceptance_probe.py` for bounded official tasks 260 and 274:
+3. Use `wav_official_acceptance_probe.py` for bounded official public-navigation
+   tasks 260, 261, 274 and 324:
    independent fresh rootfs per arm; actual framework; immutable actor-end;
    closed HAR/trace; pinned official evaluator, unchanged answer; owned cleanup.
    This probe produces acceptance evidence without turning the bulk gate green.
@@ -153,9 +154,13 @@ Placeholders deliberately do not run. Each output directory and port pair must
 be new/unused. Use `--mode hybrid` for AgentLab Hybrid. Browser Use requires its
 own Python executable and `--framework browser-use-restricted --mode hybrid`.
 Traditional uses `--framework playwright --mode traditional`, with no paid calls.
-The probe is intentionally restricted to tasks 260 and 274, not a hidden 100-task
-bypass. `--task-id 274` uses the published search intent and its separately
-prewritten combobox/Enter script; neither script reads the native evaluator.
+The probe is intentionally restricted to tasks 260, 261, 274 and 324, not a
+hidden 100-task bypass. Tasks 261 and 324 additionally require the pinned
+diagnostic AI-authoring policy; this does not make them independently
+human-blinded. Task 274 uses the published search intent and its separately
+prewritten combobox/Enter script; none of these scripts reads the native
+evaluator. A framework/interpreter package preflight now rejects a Browser Use
+run launched from AgentLab's Python environment before any fixture reset.
 Live execution provisions and eventually removes only its exact owned container
 and network. It never adopts the old wildcard-bound primary container.
 

@@ -38,6 +38,12 @@ PUBLIC_TASKS[261]=('Open the Headphones category page to browse products',
                   script_for(261,'Open the Headphones category page to browse products'))
 
 
+def opportunity_id(root):
+    """Keep retries in distinct batch directories distinct in the shared spend ledger."""
+    root=Path(root).resolve()
+    return root.name+'-'+hashlib.sha256(str(root.parent).encode()).hexdigest()[:12]
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
     p.add_argument('--framework',choices=['agentlab-browsergym','browser-use-restricted','playwright'],required=True)
@@ -116,7 +122,7 @@ def main():
     schedule=write_new(root/'acceptance-opportunity.json',{'task_key':task_key,'configuration_sha256':cr['sha256'],
         'scope':'acceptance-probe-not-bulk','prior_task_exposure':'public-intent-seen-no-outcome-used',
         'full_state_isolation_proven':False,'bulk_admission':False})
-    op={'opportunity_id':root.name,'environment_id':m['environment_id'],'configuration_sha256':cr['sha256'],
+    op={'opportunity_id':opportunity_id(root),'environment_id':m['environment_id'],'configuration_sha256':cr['sha256'],
         'scope':'diagnostic','benchmark':'wav','task_key':task_key,'schedule_sha256':schedule['sha256'],
         'agent_input':actor_input,'evaluation_ref':binding['evaluation_ref'],'setup_ref':binding['setup_ref'],
         'setup_binding_sha256':digest(binding['setup_ref']),'model_binding':model}

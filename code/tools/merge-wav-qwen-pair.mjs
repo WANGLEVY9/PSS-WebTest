@@ -5,7 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 
 const [output, ...inputs] = process.argv.slice(2);
-if (!output || inputs.length === 0) throw Error('Usage: node scripts/merge-wav-qwen-pair.mjs NEW_EXPORT.json BATCH_DIR...');
+if (!output || inputs.length === 0) throw Error('Usage: node tools/merge-wav-qwen-pair.mjs NEW_EXPORT.json BATCH_DIR...');
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 const plans = [];
 const attempts = [];

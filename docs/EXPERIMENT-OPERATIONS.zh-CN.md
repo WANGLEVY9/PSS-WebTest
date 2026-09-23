@@ -40,7 +40,7 @@ npx playwright install --with-deps chromium
 
 后续运行固定这个提交；实验期间不执行 `git pull`。保留 `package-lock.json` 和各 Python 环境的安装清单。
 
-框架需要独立 Python 环境：AgentLab 0.4.2 / BrowserGym 0.14.2，以及 Browser Use 0.13.10。使用项目组交付的 Linux 依赖锁安装；仓库中含 `pyobjc` 的 macOS 锁不能用于 Linux。安装工具及参数见 [bootstrap_sponsor_framework.py](code/experiment/bootstrap_sponsor_framework.py)。
+框架需要独立 Python 环境：AgentLab 0.4.2 / BrowserGym 0.14.2，以及 Browser Use 0.13.10。使用项目组交付的 Linux 依赖锁安装；仓库中含 `pyobjc` 的 macOS 锁不能用于 Linux。安装工具及参数见 [bootstrap_sponsor_framework.py](../code/experiment/bootstrap_sponsor_framework.py)。
 
 ## 3. 下载任务、部署网站
 
@@ -180,7 +180,7 @@ PSS_SPEND_DB=/srv/pss/private/shared-spend.sqlite
 | `max_input_tokens`、`max_output_tokens` | 接口允许计费的 token 上界，包含图像输入 |
 | `source`、`verified_at`、`expires_at` | 价格来源及核验、失效时间 |
 
-人民币计价的字段及格式见[费用配置说明](code/docs/runbooks/SPEND-CONTROLS.md)。同时核对 `fx_cny_per_usd`；默认 8 是预算换算值。空价格表会阻止请求，不能用其他模型的价格代填。
+人民币计价的字段及格式见[费用配置说明](../code/docs/runbooks/SPEND-CONTROLS.md)。同时核对 `fx_cny_per_usd`；默认 8 是预算换算值。空价格表会阻止请求，不能用其他模型的价格代填。
 
 | 控制项 | 默认值 |
 | --- | ---: |
@@ -239,4 +239,4 @@ ssh -N -L 4173:127.0.0.1:4173 EXPERIMENT_USER@CLOUD_HOST
 
 运行结束交回：固定任务名单及哈希、代码提交、依赖清单、镜像 digest、去密钥配置、逐任务证据、汇总表，以及停止所有运行进程后导出的完整费用账本。
 
-接口和评测细节见 [WAV 技术说明](docs/technical/benchmarks/WAV.md)；本批范围记录见 [WAV-only scope](docs/WAV-ONLY-EXECUTION-SCOPE.md)。
+接口和评测细节见 [WAV 技术说明](../docs/technical/benchmarks/WAV.md)；本批范围记录见 [WAV-only scope](../docs/WAV-ONLY-EXECUTION-SCOPE.md)。

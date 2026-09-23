@@ -29,7 +29,7 @@ AgentLab 使用 BrowserGym 组件；BrowserGym 不是额外的实验组。历史
 
 ## 当前可以开展的准备
 
-当前实验是一个**120 题 WAV 开发计划**：GPT-6 Astra 与 GPT-5.6 Sol 两个展示标签，三种 agent 单元（v、h、u）以及共用的 Playwright 基线，计划为 720 次模型执行加 120 次脚本执行。2、10、120 题是开发检查阶段，不是已完成运行数。
+当前实验是一个**120 题 WAV 开发计划**：GPT-6 Astra 与 GPT-5.6 Sol 两个展示标签，三种 agent 单元（v、h、u）以及共用的 Playwright 基线，计划为 720 次模型执行加 120 次脚本执行，共计 840 次。2、10、120 题是开发检查阶段，不是已完成运行数。
 
 准确 task ID、API 模型身份、部署绑定和完整派发器均未就绪。[机器可读实验计划](code/config/current-campaign.json)明确设置 <code>dispatcher_available=false</code>、<code>new_execution_authorized=false</code>、<code>confirmatory_authorized=false</code>。[WAV 操作指南](docs/EXPERIMENT-OPERATIONS.zh-CN.md)说明了环境与配置交接，但不能替代派发器，也不构成采集授权。
 

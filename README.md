@@ -29,7 +29,7 @@ AgentLab uses BrowserGym components; BrowserGym is not an additional study arm. 
 
 ## What can be prepared now
 
-The current campaign is a **120-task WAV development plan**: two display model labels (GPT-6 Astra and GPT-5.6 Sol), three agent cells (v, h, u) and one shared Playwright baseline, giving 720 planned model executions plus 120 planned script executions. The 2-, 10-, and 120-task waves are development gates. They are not completed runs.
+The current campaign is a **120-task WAV development plan**: two display model labels (GPT-6 Astra and GPT-5.6 Sol), three agent cells (v, h, u) and one shared Playwright baseline, giving 720 planned model executions plus 120 planned script executions, 840 in total. The 2-, 10-, and 120-task waves are development gates. They are not completed runs.
 
 Exact task IDs, API model identities, target bindings, and the full dispatcher are not available. The machine-readable [campaign plan](code/config/current-campaign.json) sets <code>dispatcher_available=false</code>, <code>new_execution_authorized=false</code>, and <code>confirmatory_authorized=false</code>. The [scope decision](docs/WAV-ONLY-EXECUTION-SCOPE.md) records why VWA and ATA are outside this campaign. Follow the [WAV operator guide](docs/EXPERIMENT-OPERATIONS.zh-CN.md) for the detailed environment and configuration handoff; it does not supply the missing dispatcher or authorize collection.
 

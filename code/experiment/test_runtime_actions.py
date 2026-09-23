@@ -4,11 +4,36 @@ import tempfile
 import unittest
 from framework_actions import agentlab_action, browser_use_action, validate, to_css
 from framework_boundary import project_observation, public_task_text
-from journaled_browser import Journal, sha, screenshot_stall_signal
+from journaled_browser import Journal, JournaledBrowser, CaptureContractError, sha, screenshot_stall_signal, verify_pixel_capture
 from framework_model import evidence_projection, single_action_schema, ModelOutputValidationError
 
 
 class ActionTests(unittest.TestCase):
+    def test_pixel_capture_must_match_css_action_viewport(self):
+        import struct
+        png = b'\x89PNG\r\n\x1a\n' + struct.pack('>I',13) + b'IHDR' + struct.pack('>II',1280,720)
+        self.assertEqual(verify_pixel_capture(png,[1280,720]),(1280,720))
+        for bad,viewport in [(png,[1280,800]),(b'not a png',[1280,720])]:
+            with self.assertRaises(CaptureContractError): verify_pixel_capture(bad,viewport)
+
+    def test_misaligned_capture_is_private_engineering_failure_not_actor_input(self):
+        import struct
+        from types import SimpleNamespace
+        png = b'\x89PNG\r\n\x1a\n' + struct.pack('>I',13) + b'IHDR' + struct.pack('>II',2560,1440)
+        with tempfile.TemporaryDirectory() as tmp:
+            journal = Journal(Path(tmp)/'trace')
+            browser = JournaledBrowser.__new__(JournaledBrowser)
+            browser.page = SimpleNamespace(screenshot=lambda **kwargs: png)
+            browser.viewport = [1280,720]
+            browser.journal = journal
+            browser.timeout = browser.observation_timeout = 5000
+            browser.deadline = float('inf')
+            with self.assertRaises(CaptureContractError): browser.screenshot('primary-frame')
+            event = json.loads((journal.directory/'trajectory.jsonl').read_text().splitlines()[0])
+            self.assertEqual(event['kind'],'observation-error')
+            self.assertEqual(event['error_type'],'CaptureContractError')
+            self.assertNotIn('screenshot',event)
+
     def test_stall_signal_uses_only_existing_screenshot_bytes(self):
         previous=sha(b'image')
         self.assertEqual(screenshot_stall_signal(previous,b'image','click',True),'unchanged')

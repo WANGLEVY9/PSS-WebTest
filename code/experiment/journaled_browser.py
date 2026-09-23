@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import math
+import struct
 from pathlib import Path
 import time
 from framework_actions import validate
@@ -95,6 +96,24 @@ def screenshot_stall_signal(previous_sha, current_png, last_action, enabled):
     return 'unchanged' if previous_sha == sha(current_png) else None
 
 
+class CaptureContractError(ValueError):
+    """Observation/actuator geometry mismatch, not an agent capability error."""
+
+
+def verify_pixel_capture(png, viewport):
+    """Fail closed if screenshot pixels cannot share the actuator's CSS axes.
+
+    A device-scale or full-page capture silently misgrounds every click. This
+    reads only the PNG header and the pinned viewport, never page structure.
+    """
+    if not isinstance(png, bytes) or len(png) < 24 or png[:8] != b'\x89PNG\r\n\x1a\n' or png[12:16] != b'IHDR':
+        raise CaptureContractError('Invalid PNG screenshot')
+    size = struct.unpack('>II', png[16:24])
+    if size != tuple(viewport):
+        raise CaptureContractError('Screenshot pixels do not match CSS action viewport')
+    return size
+
+
 class JournaledBrowser:
     def __init__(self, context, page, journal, viewport, task, action_timeout_ms=5000, settle_ms=750,
                  observation_timeout_ms=5000, screenshot_stall_feedback=False):
@@ -142,7 +161,10 @@ class JournaledBrowser:
 
     def screenshot(self, phase):
         try:
-            return self.page.screenshot(type='png',timeout=self.remaining_ms(self.observation_timeout))
+            png = self.page.screenshot(type='png', scale='css', full_page=False,
+                                       timeout=self.remaining_ms(self.observation_timeout))
+            verify_pixel_capture(png, self.viewport)
+            return png
         except Exception as exc:
             # Private call log is evidence only, never feedback to the model.
             ref=self.journal.artifact(f'observation-error-{self.journal.sequence:06d}.txt',str(exc).encode())

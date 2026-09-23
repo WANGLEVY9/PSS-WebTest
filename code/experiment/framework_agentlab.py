@@ -6,6 +6,7 @@ flags there. Native task integration must use this projection at every step.
 """
 from dataclasses import dataclass
 import json
+from unittest.mock import patch
 from framework_boundary import project_observation, public_task_text
 from framework_actions import upload_task_image, focus_task_tab, close_task_tab, task_back, task_forward
 
@@ -47,9 +48,9 @@ def make_agent(chat_model_args, mode, coordinate_space='css-pixels'):
         'Return exactly one action inside <action>...</action> tags. '
         'Keep the entire reply to that single action tag; do not narrate the screenshot, '
         'repeat prior steps, or include reasoning or Markdown. '
-        'A native select popup may not appear in a page screenshot. If you have focused a '
-        'visually identified select, Arrow keys and Enter can change it; confirm the value '
-        'in the next screenshot instead of repeatedly clicking the same point. '
+        'A native select popup may not appear in a page screenshot. After focusing a '
+        'visually identified select, keyboard interaction may be necessary; confirm any '
+        'selected value in the next screenshot rather than assuming an invisible popup changed. '
         'PSS actuator restrictions override generic action descriptions: no bid IDs; '
         'mouse_click and mouse_dblclick accept only x,y (left button); noop() takes no arguments. '
         'keyboard_press accepts only Enter, Tab, Shift+Tab, Escape, ArrowUp, ArrowDown, ArrowLeft, '
@@ -61,6 +62,8 @@ def make_agent(chat_model_args, mode, coordinate_space='css-pixels'):
 
 
 def get_action(agent, raw, mode, task, index, viewport, coordinate_space='css-pixels'):
+    from agentlab.agents import dynamic_prompting as dp
+    from agentlab.llm.llm_utils import image_to_png_base64_url
     projected = project_observation(raw, mode, task, index, viewport, coordinate_space)
     # Blank mandatory framework fields rather than letting upstream preprocessor
     # derive structured side channels. Never use native reward/done to select actions.
@@ -70,4 +73,17 @@ def get_action(agent, raw, mode, task, index, viewport, coordinate_space='css-pi
                    'pruned_html': '', 'axtree_txt': json.dumps(projected.get('controls', []), ensure_ascii=False) if mode == 'hybrid' else '',
                    'focused_element_bid': '', 'last_action_error': projected['action_error'] or '',
                    'open_pages_urls': [], 'open_pages_titles': [], 'active_page_index': 0}
-    return agent.get_action(observation)
+    # AgentLab upstream's Observation.add_screenshot encodes screenshots as
+    # lossy JPEG. Keep its real prompt/parser/decision loop while replacing
+    # only that image transport with lossless PNG for pixel-grounded actions.
+    # Scope the patch to one synchronous decision, never the benchmark process.
+    def lossless_add_screenshot(self, prompt):
+        if self.flags.use_screenshot:
+            if self.flags.use_som:
+                raise ValueError('Set-of-marks overlay is outside this boundary')
+            prompt.add_text('\n## Screenshot:\nHere is a screenshot of the page:')
+            prompt.add_image(image_to_png_base64_url(self.obs['screenshot']),
+                             detail=self.flags.openai_vision_detail)
+        return prompt
+    with patch.object(dp.Observation, 'add_screenshot', lossless_add_screenshot):
+        return agent.get_action(observation)

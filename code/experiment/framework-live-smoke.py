@@ -38,6 +38,11 @@ def main():
     os.environ['PSS_LOCAL_MODEL'] = args.model
     if not 1<=args.max_output_tokens<=4096:raise ValueError('Bounded diagnostic token limit required')
     os.environ['PSS_LOCAL_MAX_OUTPUT_TOKENS'] = str(args.max_output_tokens)
+    # A local control must fail before allocating its journal/lease if the
+    # shared tariff policy or durable spend ledger does not admit this model.
+    # Never label a policy rejection as a provider/model transport failure.
+    from wav_official_acceptance_probe import require_provider_budget
+    require_provider_budget(args.model,args.max_output_tokens,30000)
     output = Path(args.output).resolve()
     output.mkdir(parents=True, exist_ok=False, mode=0o700)
     model = {'provider':'aliyun', 'model':args.model}

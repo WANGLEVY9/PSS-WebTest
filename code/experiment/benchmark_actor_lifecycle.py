@@ -203,7 +203,7 @@ def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
         raise ValueError('Actor model differs from frozen opportunity')
     public_keys=set(IDENTITY)|{'input','task_manifest_sha256','lease_token','model_binding','budget','request_ledger',
                               'cost_policy','coordinate_space','observation_timeout_ms','action_timeout_ms',
-                              'provider_request_timeout_ms','scope','data_kind'}
+                              'provider_request_timeout_ms','screenshot_stall_feedback','scope','data_kind'}
     if set(payload)-public_keys:
         raise ValueError('Unexpected supervisor data in actor payload')
     if 'observation_timeout_ms' in payload and (type(payload['observation_timeout_ms']) is not int
@@ -215,6 +215,8 @@ def run_owned_session(browser,op,reset,baseline_sha256,routes,journal_directory,
     if 'provider_request_timeout_ms' in payload and (type(payload['provider_request_timeout_ms']) is not int
             or not 1000<=payload['provider_request_timeout_ms']<=45000):
         raise ValueError('Bounded provider request timeout required')
+    if 'screenshot_stall_feedback' in payload and type(payload['screenshot_stall_feedback']) is not bool:
+        raise ValueError('Boolean pixel-only feedback setting required')
     if op['scope']=='diagnostic' or lifecycle_limits is not None:
         validate_limits(lifecycle_limits)
     journal=Journal(journal_directory)

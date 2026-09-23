@@ -176,6 +176,18 @@ and must not be pooled with 30-second cells; it does not extend the actor's
 at the 2,048-token output cap remains a provider-output failure, not a task
 capability verdict.
 
+The probe also accepts `--max-output-tokens N` (default 2,048; at most 4,096).
+The private spend policy must price and allow at least N output tokens; a
+model/endpoint/policy preflight rejects an unpriced variant before fixture
+reset. Generate a distinct private policy with
+`node experiment/prepare-qwen38-spend.mjs NEW_PRIVATE_POLICY.json N` only
+after checking the model's actual limit and the dated tariff. Keep this
+variant's configuration, policy hash and outcome separate from the default.
+The opt-in `--screenshot-stall-feedback` flag sends an exact screenshot-byte
+no-change signal after an action to both agent observation projections. It
+does not read URL, DOM, native evaluator or hidden state, and it is a separate
+diagnostic configuration rather than a retroactive correction to earlier runs.
+
 ## ATA / VWA scope
 
 VWA provisioning is deferred for this local batch by user direction; no VWA task

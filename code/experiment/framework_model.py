@@ -5,6 +5,7 @@ campaign reservation are checked before every network attempt. Unknown billing
 stays unknown and consumes the full reservation; never reported as zero cost.
 """
 import base64
+import copy
 import json
 import os
 from pathlib import Path
@@ -28,6 +29,22 @@ def validate_model_json(output_format, raw):
         return output_format.model_validate_json(raw)
     except ValueError as exc:
         raise ModelOutputValidationError('browser-use-schema-validation') from exc
+
+
+def single_action_schema(output_format):
+    """Advertise the same one-action boundary enforced after parsing.
+
+    The upstream Browser Use model uses an unconstrained action list. A model
+    can therefore return [] even though our actuator cannot execute it. This
+    changes only the output contract, not the observations or action set.
+    """
+    schema = copy.deepcopy(output_format.model_json_schema())
+    action = schema.get('properties', {}).get('action')
+    if not isinstance(action, dict) or action.get('type') != 'array':
+        raise ModelOutputValidationError('browser-use-action-schema-missing')
+    action.pop('min_items', None)  # Upstream emits this nonstandard spelling.
+    action['minItems'] = action['maxItems'] = 1
+    return schema
 
 
 def evidence_projection(value, journal):
@@ -133,7 +150,7 @@ def browser_use_model(backend):
             # The caller awaits one decision outside the synchronous Playwright
             # loop. No Browser Use SDK retries or hidden provider routes.
             serialized = OpenAIMessageSerializer.serialize_messages(messages)
-            schema = output_format.model_json_schema()
+            schema = single_action_schema(output_format)
             serialized.insert(0, {'role':'system', 'content':'Return exactly one JSON object, never an array. Follow this action schema: '+json.dumps(schema)})
             raw = backend.request(serialized, schema)
             parsed = validate_model_json(output_format, raw)

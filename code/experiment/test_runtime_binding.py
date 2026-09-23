@@ -143,7 +143,7 @@ class ProjectionTests(unittest.TestCase):
                 if key not in ('screenshot',): raise AssertionError(key)
                 return super().__getitem__(key)
             def get(self, key, default=None):
-                if key != 'action_error': raise AssertionError(key)
+                if key not in ('action_error', 'visual_feedback'): raise AssertionError(key)
                 return default
         out = project_observation(Poison(screenshot=b'pixels'), 'visual', {'intent': 'Synthetic'}, 0, [100, 100])
         self.assertNotIn('controls', out)

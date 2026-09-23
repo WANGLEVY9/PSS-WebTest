@@ -45,6 +45,11 @@ def make_agent(chat_model_args, mode, coordinate_space='css-pixels'):
         max_prompt_tokens=None, use_concrete_example=False, use_abstract_example=True,
         extra_instructions=('For this run, point x,y use normalized 0..999 axes, NOT the generic tool descriptions\' CSS pixels. Scroll distances remain CSS pixels. ' if coordinate_space=='qwen-0-999' else '') +
         'Return exactly one action inside <action>...</action> tags. '
+        'Keep the entire reply to that single action tag; do not narrate the screenshot, '
+        'repeat prior steps, or include reasoning or Markdown. '
+        'A native select popup may not appear in a page screenshot. If you have focused a '
+        'visually identified select, Arrow keys and Enter can change it; confirm the value '
+        'in the next screenshot instead of repeatedly clicking the same point. '
         'PSS actuator restrictions override generic action descriptions: no bid IDs; '
         'mouse_click and mouse_dblclick accept only x,y (left button); noop() takes no arguments. '
         'keyboard_press accepts only Enter, Tab, Shift+Tab, Escape, ArrowUp, ArrowDown, ArrowLeft, '

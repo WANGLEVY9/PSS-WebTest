@@ -17,6 +17,10 @@ restricted Browser Use Hybrid. There is no Browser Use pure-visual arm.
 | Total descriptive coverage | **5** | **35** | **46** | **29**, under the above conservative rules |
 
 These are not 46 independent benchmark tasks or 35 confirmatory observations.
+Three later task-351 remediation attempts are preserved separately in
+[the engineering addendum](2026-09-23-qwen-remediation-addendum.md). They raise
+the descriptive process-attempt count to 49 while leaving the number of
+distinct official tasks at five; the historical table above is not rewritten.
 Some processes are retries or multiple Traditional script versions. The task
 261 five script failures belong to one intended Traditional configuration,
 not five repetitions. The pair audit has three task-260 model-action parser

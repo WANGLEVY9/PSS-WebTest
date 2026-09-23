@@ -106,11 +106,16 @@ async def get_action(agent, raw, task, index, viewport, accepted_actions=(), coo
     for action in accepted_actions:
         validate_action(action, viewport, [f'task-image-{i}' for i in range(len(task.get('task_images', [])))], coordinate_space)
     text = json.dumps({'task': public_task_text(projected), 'controls': projected['controls'],
-                       'action_error': projected['action_error'], 'accepted_actions': list(accepted_actions)}, ensure_ascii=False)
+                       'action_error': projected['action_error'],
+                       'visual_feedback': projected['visual_feedback'],
+                       'accepted_actions': list(accepted_actions)}, ensure_ascii=False)
     content = [{'type': 'text', 'text': text}, {'type': 'image_url', 'image_url':
                {'url': 'data:image/png;base64,' + base64.b64encode(image).decode()}}]
     content.extend({'type': 'image_url', 'image_url': {'url': i['image_url']}} for i in projected['task_images'])
-    messages = [SystemMessage(content='Complete the public task. Use one declared action at a time. '+
+    messages = [SystemMessage(content='Complete the public task. Use one declared action at a time. '
+        'A native select popup may not appear in a page screenshot. Once a visually identified select '
+        'has focus, use Arrow keys and Enter if needed, then confirm its value in the next screenshot. '
+        'Do not repeat an unchanged click without considering a different action. '+
         ('Point x,y are normalized 0..999; this overrides generic tool descriptions. Scroll distances remain CSS pixels.' if coordinate_space=='qwen-0-999' else 'Coordinates are screenshot CSS pixels.')), UserMessage(content=content)]
     # One upstream decision, no hidden empty-output retry, no model fallback.
     output = await agent.get_model_output(messages)

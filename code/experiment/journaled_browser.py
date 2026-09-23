@@ -84,9 +84,20 @@ VISIBLE_PROJECTION = r"""() => {
 }"""
 
 
+def screenshot_stall_signal(previous_sha, current_png, last_action, enabled):
+    """Return only an exact pixel-derived no-change signal, never page state."""
+    if type(enabled) is not bool:
+        raise ValueError('Explicit screenshot feedback setting required')
+    if not enabled or previous_sha is None or last_action not in {
+            'click', 'double_click', 'type', 'key', 'scroll', 'upload',
+            'tab_focus', 'tab_close', 'back', 'forward'}:
+        return None
+    return 'unchanged' if previous_sha == sha(current_png) else None
+
+
 class JournaledBrowser:
     def __init__(self, context, page, journal, viewport, task, action_timeout_ms=5000, settle_ms=750,
-                 observation_timeout_ms=5000):
+                 observation_timeout_ms=5000, screenshot_stall_feedback=False):
         self.context, self.page, self.journal = context, page, journal
         self.viewport = list(viewport)
         self.timeout, self.settle_ms = action_timeout_ms, settle_ms
@@ -95,6 +106,11 @@ class JournaledBrowser:
         self.observation_timeout = observation_timeout_ms
         self.pages = list(context.pages)
         self.action_error = None
+        if type(screenshot_stall_feedback) is not bool:
+            raise ValueError('Boolean screenshot stall feedback setting required')
+        self.screenshot_stall_feedback = screenshot_stall_feedback
+        self.previous_frame_sha = None
+        self.last_action = None
         self.assets = {}
         self.deadline = float('inf')
         for index, image in enumerate(task.get('task_images', [])):
@@ -153,10 +169,14 @@ class JournaledBrowser:
         # Fixed dwell only. No DOM/URL/load-state based progress or done heuristic.
         self.page.wait_for_timeout(min(self.settle_ms, self.remaining_ms()))
         png = self.screenshot('primary-frame')
+        visual_feedback = screenshot_stall_signal(self.previous_frame_sha, png,
+                                                  self.last_action, self.screenshot_stall_feedback)
         frame = self.journal.artifact(f'frame-{self.journal.sequence:06d}.png', png)
         self.journal.event('observation', frame=frame, page_ordinal=self.pages.index(self.page),
-                           private_url=self.page.url, action_error=self.action_error, mode=mode)
-        result = {'screenshot': png, 'action_error': self.action_error}
+                           private_url=self.page.url, action_error=self.action_error, mode=mode,
+                           visual_feedback=visual_feedback)
+        result = {'screenshot': png, 'action_error': self.action_error,
+                  'visual_feedback': visual_feedback}
         if mode == 'hybrid':
             controls = self.page.evaluate(VISIBLE_PROJECTION)
             after=self.screenshot('projection-bracket')
@@ -166,6 +186,8 @@ class JournaledBrowser:
                 raise ProjectionDrift('Screenshot changed during projection; no stale controls dispatched')
             result['visible_controls'] = controls
             self.journal.event('hybrid-projection', controls=controls, frame_sha256=frame['sha256'])
+        self.previous_frame_sha = sha(png)
+        self.last_action = None
         return result
 
     def execute(self, action):
@@ -214,6 +236,7 @@ class JournaledBrowser:
                            elapsed_ms=(time.monotonic()-began)*1000,
                            page_ordinal=self.pages.index(self.page), private_url=self.page.url,
                            previous_page_closed=before.is_closed())
+        self.last_action = name if self.action_error is None else None
         return self.action_error
 
 

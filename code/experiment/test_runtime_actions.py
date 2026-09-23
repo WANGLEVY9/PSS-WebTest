@@ -3,12 +3,39 @@ from pathlib import Path
 import tempfile
 import unittest
 from framework_actions import agentlab_action, browser_use_action, validate, to_css
-from framework_boundary import project_observation
-from journaled_browser import Journal, sha
-from framework_model import evidence_projection
+from framework_boundary import project_observation, public_task_text
+from journaled_browser import Journal, sha, screenshot_stall_signal
+from framework_model import evidence_projection, single_action_schema, ModelOutputValidationError
 
 
 class ActionTests(unittest.TestCase):
+    def test_stall_signal_uses_only_existing_screenshot_bytes(self):
+        previous=sha(b'image')
+        self.assertEqual(screenshot_stall_signal(previous,b'image','click',True),'unchanged')
+        self.assertIsNone(screenshot_stall_signal(previous,b'changed','click',True))
+        self.assertIsNone(screenshot_stall_signal(previous,b'image','wait',True))
+        self.assertIsNone(screenshot_stall_signal(previous,b'image','click',False))
+        with self.assertRaises(ValueError):
+            screenshot_stall_signal(previous,b'image','click','true')
+        projected=project_observation({'screenshot':b'image','visual_feedback':'unchanged'},
+                                      'visual',{'intent':'public task'},1,[100,100])
+        self.assertIn('screenshot is byte-for-byte unchanged',public_task_text(projected))
+        with self.assertRaises(ValueError):
+            project_observation({'screenshot':b'image','visual_feedback':'url-changed'},
+                                'visual',{'intent':'public task'},1,[100,100])
+
+    def test_browser_use_provider_schema_requires_exactly_one_action(self):
+        class Output:
+            @staticmethod
+            def model_json_schema():
+                return {'type':'object','properties':{'action':{'type':'array','items':{'type':'object'},'min_items':1}}}
+        source=Output.model_json_schema()
+        schema=single_action_schema(Output)
+        self.assertEqual((schema['properties']['action']['minItems'],schema['properties']['action']['maxItems']),(1,1))
+        self.assertNotIn('minItems',source['properties']['action'])
+        with self.assertRaises(ModelOutputValidationError):
+            single_action_schema(type('NoAction',(),{'model_json_schema':staticmethod(lambda:{'type':'object','properties':{}})}))
+
     def test_key_schema_and_actuator_share_exact_spelling(self):
         from typing import get_args
         from framework_actions import KeyName, KEYS
@@ -55,7 +82,7 @@ class ActionTests(unittest.TestCase):
                 if k!='screenshot':raise AssertionError('Structure accessed')
                 return b'image'
             def get(self,k,d=None):
-                if k!='action_error':raise AssertionError('Structure accessed')
+                if k not in ('action_error','visual_feedback'):raise AssertionError('Structure accessed')
                 return d
         out=project_observation(Raw(),'visual',{'intent':'public task'},0,[100,100])
         self.assertNotIn('controls',out)

@@ -42,7 +42,8 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     deadline = started + budget['task_timeout_ms']/1000
     actuator = JournaledBrowser(context, page, journal, viewport, task,
         action_timeout_ms=payload.get('action_timeout_ms',5000),
-        observation_timeout_ms=payload.get('observation_timeout_ms',5000))
+        observation_timeout_ms=payload.get('observation_timeout_ms',5000),
+        screenshot_stall_feedback=payload.get('screenshot_stall_feedback',False))
     actuator.deadline = deadline
     request_timeout_ms = payload.get('provider_request_timeout_ms', 30000)
     if type(request_timeout_ms) is not int or not 1000 <= request_timeout_ms <= 45000:
@@ -91,7 +92,9 @@ def run_actor(context, page, payload, journal, framework, mode, node,
     context.tracing.start(screenshots=True, snapshots=True, sources=False)
     journal.event('actor-start', framework=framework, mode=mode, budget=budget,
                   model_binding=payload['model_binding'], coordinate_space=coordinate_space,
-                  observation_timeout_ms=actuator.observation_timeout, confirmatory_authorized=False)
+                  observation_timeout_ms=actuator.observation_timeout,
+                  screenshot_stall_feedback=actuator.screenshot_stall_feedback,
+                  confirmatory_authorized=False)
     try:
         for index in range(budget['max_actions']):
             ledger = payload['request_ledger']

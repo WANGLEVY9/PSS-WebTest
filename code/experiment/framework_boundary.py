@@ -47,6 +47,9 @@ def project_observation(raw, mode, task, index, viewport, coordinate_space='css-
               'task_images': task.get('task_images', []), 'steps': task.get('steps', []),
               'observation_index': index, 'viewport': list(viewport), 'coordinate_space':coordinate_space,
               'action_error': raw.get('action_error') if raw.get('action_error') in ERRORS else None}
+    if raw.get('visual_feedback') not in (None, 'unchanged'):
+        raise ValueError('Only exact screenshot-derived feedback is allowed')
+    result['visual_feedback'] = raw.get('visual_feedback')
     if mode == 'hybrid':
         result['controls'] = visible_controls(raw['visible_controls'], viewport, index)
         if coordinate_space=='qwen-0-999':
@@ -65,4 +68,7 @@ def public_task_text(projected):
     text += ('\nPoint x,y coordinates MUST be normalized to 0..999 independently on each axis; x=1000*pixel_x/image_width and y=1000*pixel_y/image_height. Control boxes use the same normalized axes. Scroll dx,dy remain CSS pixel distances.'
              if projected.get('coordinate_space')=='qwen-0-999' else '\nCoordinates are CSS screenshot pixels.')
     text += '\nTab ordinals are zero-based creation order (closed ordinals are not reused). No tab URLs or titles are supplied.'
+    if projected.get('visual_feedback') == 'unchanged':
+        text += ('\nThe screenshot is byte-for-byte unchanged after your previous action. '
+                 'This is visual feedback only; check the visible state and consider another action.')
     return text

@@ -40,6 +40,26 @@ def require_framework_environment(framework):
     if missing:
         raise ValueError('Framework interpreter missing installed distributions: ' + ', '.join(missing))
 
+
+def require_provider_budget(model, output_tokens, request_timeout_ms):
+    """Reject an unpriced diagnostic variant before starting its SUT fixture."""
+    script = """import {loadRuntimeEnv} from './experiment/runtime-env.mjs';
+import {resolveProvider} from './experiment/provider.mjs';
+import {spendGuard} from './experiment/spend-guard.mjs';
+const env=loadRuntimeEnv(), config=resolveProvider(env), state=spendGuard(env).status(config);
+const rate=state.policy.rates.filter(r=>r.provider===config.provider&&r.model===config.model&&r.base_url===config.base_url);
+if(!state.ready||rate.length!==1||rate[0].max_output_tokens<Number(process.env.PSS_LOCAL_MAX_OUTPUT_TOKENS)
+   ||state.policy.request_timeout_ms<Number(process.env.PSS_PROBE_REQUEST_TIMEOUT_MS))process.exit(2);
+"""
+    env=dict(os.environ,PSS_LOCAL_PROVIDER='aliyun',PSS_LOCAL_MODEL=model,
+             PSS_LOCAL_MAX_OUTPUT_TOKENS=str(output_tokens),
+             PSS_PROBE_REQUEST_TIMEOUT_MS=str(request_timeout_ms))
+    result=subprocess.run([shutil.which('node') or 'node','--input-type=module','-e',script],
+                          cwd=Path(__file__).resolve().parents[1],env=env,
+                          stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,timeout=20)
+    if result.returncode:
+        raise ValueError('Provider or spend policy does not admit this diagnostic configuration')
+
 SCRIPT='''def run(session, public_task):
     session.get_by_role('link', name='Video Games', exact=True).click()
     return '{"task_type":"NAVIGATE","status":"SUCCESS","retrieved_data":null}'
@@ -81,6 +101,8 @@ def main():
     p.add_argument('--observation-timeout-ms',type=int,default=30000)
     p.add_argument('--action-timeout-ms',type=int,default=30000)
     p.add_argument('--provider-request-timeout-ms',type=int,default=30000)
+    p.add_argument('--max-output-tokens',type=int,default=2048)
+    p.add_argument('--screenshot-stall-feedback',action='store_true')
     p.add_argument('--ai-authoring-policy')
     p.add_argument('--ai-authoring-policy-sha256')
     p.add_argument('--traditional-script-file')
@@ -102,7 +124,10 @@ def main():
     if not 1<=a.observation_timeout_ms<=30000:raise ValueError('Invalid observation timeout')
     if not 1<=a.action_timeout_ms<=30000:raise ValueError('Invalid action timeout')
     if not 1000<=a.provider_request_timeout_ms<=45000:raise ValueError('Invalid provider request timeout')
+    if not 256<=a.max_output_tokens<=4096:raise ValueError('Invalid diagnostic output token limit')
     if os.environ.get('PSS_LOCAL_ENV_FILE'):raise ValueError('Explicit env file override refused')
+    if a.mode!='traditional':
+        require_provider_budget(a.model,a.max_output_tokens,a.provider_request_timeout_ms)
     proof=read_ref({'file':a.peer_proof,'sha256':a.peer_proof_sha256})
     if (proof.get('kind')!='WAV_OWNED_BIDIRECTIONAL_TARGETED_CONTENT_CONTROL' or
         proof.get('passed') is not True or proof.get('cleanup_errors')!=[] or
@@ -134,7 +159,8 @@ def main():
     m.update(namespace='pss-wav-official-'+str(time.time_ns()),environment_id='wav-official-'+str(a.task_id),artifact_root=str(root/'instances'))
     m['sites'][0].update(http_port=a.port_base,control_port=a.port_base+1)
     mr=write_new(root/'fixture-manifest.json',m)
-    os.environ.update(PSS_LOCAL_PROVIDER='aliyun',PSS_LOCAL_MODEL=a.model,PSS_LOCAL_MAX_OUTPUT_TOKENS='2048')
+    os.environ.update(PSS_LOCAL_PROVIDER='aliyun',PSS_LOCAL_MODEL=a.model,
+                      PSS_LOCAL_MAX_OUTPUT_TOKENS=str(a.max_output_tokens))
     model=None if a.mode=='traditional' else {'provider':'aliyun','model':a.model}
     configuration={'framework':a.framework,'mode':a.mode,'model':model,'coordinate_space':a.coordinate_space,
         'ai_authoring_policy_ref':authoring_policy_ref,
@@ -142,7 +168,8 @@ def main():
         'observation_timeout_ms':a.observation_timeout_ms,
         'action_timeout_ms':a.action_timeout_ms,
         'provider_request_timeout_ms':a.provider_request_timeout_ms,
-        'max_output_tokens':2048,'budget':{'task_timeout_ms':180000,'max_actions':24},
+        'screenshot_stall_feedback':a.screenshot_stall_feedback,
+        'max_output_tokens':a.max_output_tokens,'budget':{'task_timeout_ms':180000,'max_actions':24},
         'lifecycle_limits':{'setup_ms':60000,'evaluation_ms':30000,'finalization_ms':30000,'transport_ms':30000},
         'script_sha256':hashlib.sha256(script_source.encode()).hexdigest(),'source_sha256':pinned_ref(root/'runner-source.py')['sha256']}
     cr=write_new(root/'configuration.json',configuration)
@@ -177,6 +204,7 @@ def main():
             'observation_timeout_ms':a.observation_timeout_ms,
             'action_timeout_ms':a.action_timeout_ms,
             'provider_request_timeout_ms':a.provider_request_timeout_ms,
+            'screenshot_stall_feedback':a.screenshot_stall_feedback,
             'request_ledger':{'database':store.filename,'opportunityId':op['opportunity_id'],'leaseToken':op['lease_token'],'capMicroUsd':5000000},
             'cost_policy':{'request_reservation_micro_usd':200000}}
         script=persist(root/('task'+str(a.task_id)+'-script.py'),script_source.encode()) if a.mode=='traditional' else None

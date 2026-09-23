@@ -43,7 +43,27 @@ blob-report/
 .workbuddy/
 .venv*/
 
-# Legacy phase2 payloads. Only the record files that were already tracked are kept in
-# git; the bulk replay, screenshot and browser-profile material behind them (about 2.6 GB)
-# stays out of the repository. Tracked files under an ignored path remain tracked.
-/legacy/artifacts/phase2/
+# Historical records are stored in the local ignored archive.
+
+# Local archive, historical outputs, and assistant workspace
+/temp/
+/legacy/
+/results/local-runtime/
+/code/config/archive/
+/code/docs/status/
+/skills/
+
+# Local experiment ledger and trajectories
+/DataLog/
+
+# Retired local-application implementation and test paths
+/code/src/
+/code/scripts/
+/code/dashboard/
+/code/manifests/
+/code/sut/
+/code/agentlab_adapter/
+/code/tests/contracts/
+/code/tests/traditional/
+/code/local-lab/
+/code/tests/local-lab/

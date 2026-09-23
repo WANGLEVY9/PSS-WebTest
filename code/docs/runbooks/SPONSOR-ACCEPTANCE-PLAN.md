@@ -23,12 +23,12 @@ The exact tasks, numeric action/time/request/cost caps and provider must be fixe
 From `code/`, prepare a private bundle and executor package. Tasks must include `source_sha256`, `agent_input_sha256`, `evaluation_sha256`, `evaluation_ref_sha256`. Source and evaluator files remain private. Use `runtime_store.digest(executor)` to populate `bindings.configurations[config_id].executor_binding_sha256_by_benchmark[benchmark]` **before** producing the plan. Each executor pins argv/source bytes, actual model, budget, environment and cost policy. The package maps each task to source_file, agent_input_file, agent_input_sha256, evaluation_file and evaluation_ref. For official tasks, evaluation_ref is a pinned file object and the source preparation tools emit its digest. Also freeze setup_ref_sha256 when setup is present, and set package.schedule_freeze_sha256 from the exact generated freeze file. A missing binding is an error, not a guessed default.
 
 ```sh
-node local-lab/study-workflow.mjs plan PRIVATE_BUNDLE.json NEW_PLAN_DIR
-python3 local-lab/bind_runtime_plan.py --plan NEW_PLAN_DIR/opportunities.jsonl --freeze NEW_PLAN_DIR/schedule-freeze.json --bindings PRIVATE_EXECUTORS.json --output NEW_BOUND.jsonl
-python3 local-lab/runtime_worker.py enqueue --database NEW_LEDGER.sqlite --input NEW_BOUND.jsonl
-python3 local-lab/runtime_worker.py work --database NEW_LEDGER.sqlite --input ONE_EXECUTOR.json
-python3 local-lab/export_runtime.py --database NEW_LEDGER.sqlite --bundle PRIVATE_BUNDLE.json --output NEW_RECORDS.json
-node local-lab/study-workflow.mjs import NEW_RECORDS.json NEW_ANALYSIS_DIR
+node analysis/study-workflow.mjs plan PRIVATE_BUNDLE.json NEW_PLAN_DIR
+python3 experiment/bind_runtime_plan.py --plan NEW_PLAN_DIR/opportunities.jsonl --freeze NEW_PLAN_DIR/schedule-freeze.json --bindings PRIVATE_EXECUTORS.json --output NEW_BOUND.jsonl
+python3 experiment/runtime_worker.py enqueue --database NEW_LEDGER.sqlite --input NEW_BOUND.jsonl
+python3 experiment/runtime_worker.py work --database NEW_LEDGER.sqlite --input ONE_EXECUTOR.json
+python3 experiment/export_runtime.py --database NEW_LEDGER.sqlite --bundle PRIVATE_BUNDLE.json --output NEW_RECORDS.json
+node analysis/study-workflow.mjs import NEW_RECORDS.json NEW_ANALYSIS_DIR
 ```
 
 These are diagnostic commands, not a formal acquisition launcher. `work` executes one eligible opportunity. Do not wrap it in an unbounded loop before the stage's caps and stop conditions are enforced. Large study plans are not canary selections: use a separate diagnostic bundle and explicitly select the bounded opportunities before enqueueing. The framework-specific stage commands still must be implemented and validated on real official tasks; supplying a shell command or framework label is not evidence of that integration.

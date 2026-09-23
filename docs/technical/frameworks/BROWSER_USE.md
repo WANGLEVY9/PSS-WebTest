@@ -17,12 +17,12 @@ visual-only cell in the research matrix.
 
 ## Adapter design
 
-[framework_browser_use.py](../../../code/local-lab/framework_browser_use.py):
+[framework_browser_use.py](../../../code/experiment/framework_browser_use.py):
 
 - Creates a real Agent and Tools registry, removes default actions and registers
   the explicit PSS coordinate/key/scroll/upload/tab/completion schemas.
 - Overrides `run` to reject the default observation/control loop. The outer
-  [native driver](../../../code/local-lab/native_framework_driver.py) invokes one
+  [native driver](../../../code/experiment/native_framework_driver.py) invokes one
   `get_model_output` decision and sends the result to the journaled actuator.
 - Sends original screenshot bytes, public task/images, restricted visible
   controls, generic action errors and previously accepted actions.
@@ -54,7 +54,7 @@ expanded environment. Resolve and review a Linux lock with the frozen
 framework version, plus the outer actuator's Playwright/browser dependencies.
 Do not infer browser readiness from successful Browser Use import.
 
-The actual model bridge is [framework_model.py](../../../code/local-lab/framework_model.py),
+The actual model bridge is [framework_model.py](../../../code/experiment/framework_model.py),
 which owns reservations and transport attempts. Upstream cost estimation is
 disabled in the adapter; absence of its cost field is not a zero-dollar result.
 Record all failed attempts and unknown billing. The mainline campaign ledger

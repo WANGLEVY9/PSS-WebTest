@@ -19,13 +19,13 @@ score zero alone does not. There are no automatic retries or task substitutions.
 From `code/`, prepare pricing without a model call:
 
 ```bash
-node local-lab/prepare-qwen38-spend.mjs artifacts/private/qwen38-policy.json
+node experiment/prepare-qwen38-spend.mjs artifacts/private/qwen38-policy.json
 ```
 
 Run the paired driver from repository root with actual validated private inputs:
 
 ```bash
-python3 code/local-lab/run_wav_qwen_pair.py \
+python3 code/experiment/run_wav_qwen_pair.py \
   --manifest /absolute/private/owned-fixture-manifest.json \
   --peer-proof /absolute/private/measured-peer-report.json \
   --bindings /absolute/private/official-wav-task-bindings.json \
@@ -87,7 +87,7 @@ reference answer URL or an Agent solution. The unexecuted proposals remain
 available for provenance; only actual reports establish runtime outcomes.
 
 ```bash
-python code/local-lab/prepare_wav100_ai_scripts.py \
+python code/experiment/prepare_wav100_ai_scripts.py \
   --plan code/config/wav-qwen38max-100-development.v1.json \
   --authorization code/config/wav100-ai-authoring-authorization.v1.json \
   --bindings /absolute/private/official-wav-task-bindings.json \
@@ -139,7 +139,7 @@ execution and evaluation chain is sound; it is not a reason to drop the task.
 Run from repository root after installing the locked framework environments:
 
 ```bash
-third_party/frameworks/h-agentlab/bin/python code/local-lab/wav_official_acceptance_probe.py \
+third_party/frameworks/h-agentlab/bin/python code/experiment/wav_official_acceptance_probe.py \
   --framework agentlab-browsergym --mode visual \
   --manifest /absolute/private/owned-fixture-manifest.json \
   --manifest-sha256 ACTUAL_SHA256 \
@@ -231,12 +231,12 @@ the two AI-written diagnostic scripts do not fulfill it. Authentication policy
 also needs an explicit per-task review before account-dependent tasks run.
 
 ```bash
-python code/local-lab/prepare_wav100_authoring.py \
+python code/experiment/prepare_wav100_authoring.py \
   --plan code/config/wav-qwen38max-100-development.v1.json \
   --bindings /absolute/private/official-wav-task-bindings.json \
   --output /absolute/private/new-public-authoring-pack
 
-python code/local-lab/summarize_wav100_campaign.py \
+python code/experiment/summarize_wav100_campaign.py \
   --artifacts code/artifacts/local-runtime \
   --output /absolute/private/new-progress-report.json
 ```

@@ -1,6 +1,6 @@
 # Sponsor deployment and acceptance
 
-Current operator entry: [cloud installation and capacity handoff](../../local-lab/cloud-handoff/README.md), [dependency manifest](../../local-lab/cloud-handoff/dependency-manifest.json), [technical design](../../../docs/technical/README.md), and [native acceptance runbook](../runbooks/ACCEPTANCE-RUNBOOK.md). This guide is an engineering deployment path; passing the doctor does not authorize a campaign or establish complete shared-budget coverage.
+Current operator entry: [cloud installation and capacity handoff](../../experiment/cloud-handoff/README.md), [dependency manifest](../../experiment/cloud-handoff/dependency-manifest.json), [technical design](../../../docs/technical/README.md), and [native acceptance runbook](../runbooks/ACCEPTANCE-RUNBOOK.md). This guide is an engineering deployment path; passing the doctor does not authorize a campaign or establish complete shared-budget coverage.
 
 Latest session/authentication/isolation implementation and host-specific VWA/ATA
 handoff: [Session and isolation handoff](SPONSOR-SESSION-AND-ISOLATION-HANDOFF.md).
@@ -12,14 +12,11 @@ It defines the 60-task / four-profile / 360-opportunity development gate, public
 output protocols, source mapping and measured receipt contracts. It explicitly
 does not claim that the full live benchmark lifecycle is already delivered.
 
-Update 2026-09-22: see [adapter remediation status](../status/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md)
-for the implemented frozen-input correspondence checks and real-framework
-component probes. The former binder gap below is historical; full native
-benchmark and sponsor-machine acceptance still remains open.
+The dated adapter remediation report is retained in the local ignored archive. Frozen-input correspondence checks and real-framework component probes were implemented; full native benchmark and sponsor-machine acceptance remains open.
 
 This guide is for a **new, separately identified sponsor campaign**. Previous cloud data is not a prerequisite for installing, checking or developing this environment. Do not merge new and historical results without a later provenance reconciliation. No historical result is deleted or declared nonexistent.
 
-Use `config/active-study-design.json` as the execution-design pointer. At this revision it selects the corrected v2.1 population: WAV 600, VWA 700, ATA 113 (62 PASS / 51 FAIL); 19 configurations; D1–D2 and V1–V10; 322,164 selected execution opportunities. These are planned denominators, not counts produced by the deployment tools. The paper stays private and is not needed to install the public artifact.
+`config/active-study-design.json` is the historical manuscript-design pointer, not the next WAV campaign dispatcher. See `config/current-campaign.json` for the current planning status. At this revision it selects the corrected v2.1 population: WAV 600, VWA 700, ATA 113 (62 PASS / 51 FAIL); 19 configurations; D1–D2 and V1–V10; 322,164 selected execution opportunities. These are planned denominators, not counts produced by the deployment tools. The paper stays private and is not needed to install the public artifact.
 
 ## 1. Separate three kinds of configuration
 
@@ -29,7 +26,7 @@ Use `config/active-study-design.json` as the execution-design pointer. At this r
 | Private deployment profile | Docker context, source/venv paths, image identities, measured disk reserve | API keys, gold labels, permission to start formal collection |
 | Private runtime bindings | Exact model/API and framework identities, prompts/actions/images hashes, matched budgets | Silent per-arm model fallback or budget changes |
 
-Place credentials separately in ignored `code/.env.openai`, using `local-lab/openai.env.example`. Sponsor integration supplies the actual accessible model IDs; manuscript display labels are not assumed to be API identifiers.
+Place credentials separately in ignored `code/.env.openai`, using `experiment/openai.env.example`. Sponsor integration supplies the actual accessible model IDs; manuscript display labels are not assumed to be API identifiers.
 
 The paper specifies *matched* budgets, not numeric deadlines. For the new campaign, choose prospective limits using separate development tasks, record the choice and freeze it **before** comparative execution. Recovering old cloud settings is unnecessary for a new campaign, but is necessary before claiming it replicates or pools with an old configuration. Do not silently inherit the old local runner's 24-action / 240-second limits.
 
@@ -52,7 +49,7 @@ For existing environments, audit before installing. The legacy `frameworks:build
 
 ```sh
 mkdir -p artifacts/local-runtime
-node local-lab/sponsor-portable-verify.mjs \
+node experiment/sponsor-portable-verify.mjs \
   --python python3 --output artifacts/local-runtime/sponsor-offline-001
 ```
 
@@ -75,7 +72,7 @@ Copy `config/sponsor-deployment.example.json` to a **new** ignored file, e.g. `a
 Then:
 
 ```sh
-node local-lab/sponsor-portable-doctor.mjs \
+node experiment/sponsor-portable-doctor.mjs \
   --profile artifacts/local-runtime/sponsor-deployment.json \
   --live-docker --output artifacts/local-runtime/sponsor-doctor-001.json
 ```

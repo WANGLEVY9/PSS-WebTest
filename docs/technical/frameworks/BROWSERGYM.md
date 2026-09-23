@@ -21,11 +21,11 @@ reset/step/close; each benchmark has additional setup requirements. Installing
 | PSS lifecycle | Owned fixture reset, setup/authentication, budgets and cleanup |
 | Benchmark source | Independent native task/evaluator definitions |
 
-[framework_agentlab.py](../../../code/local-lab/framework_agentlab.py) obtains
+[framework_agentlab.py](../../../code/experiment/framework_agentlab.py) obtains
 `HighLevelActionSet` and restricts its action dictionary. Strict single-action
 parsing and no force retry are declared. Custom asset/tab operations are
-implemented in [framework_actions.py](../../../code/local-lab/framework_actions.py).
-The outer browser execution is [journaled_browser.py](../../../code/local-lab/journaled_browser.py),
+implemented in [framework_actions.py](../../../code/experiment/framework_actions.py).
+The outer browser execution is [journaled_browser.py](../../../code/experiment/journaled_browser.py),
 not evidence that an unmodified Gym task registration performed the run.
 
 ```mermaid
@@ -51,7 +51,7 @@ action names, strict decoding, public asset restrictions, viewport geometry and
 no hidden-state observation fields. Fresh-context creation, benchmark reset and
 per-arm isolation are separate checks.
 
-The [framework probe](../../../code/local-lab/framework-native-probe.py) and
-[actuator probe](../../../code/local-lab/journaled-browser-probe.py) are component
+The [framework probe](../../../code/experiment/framework-native-probe.py) and
+[actuator probe](../../../code/experiment/journaled-browser-probe.py) are component
 evidence, not native benchmark admission. See [input/output contracts](../INPUT_OUTPUT.md)
 and [upstream traceability](../UPSTREAM_TRACEABILITY.md) before extending adapters.

@@ -16,7 +16,7 @@ nor the shopping-only local slice establishes that selected population.
 
 Preserve official task ID, intent, template, declared sites and ordered start
 URLs. Actor input must be separated from native eval configuration and references.
-Use [prepare_navigation_runtime.py](../../../code/local-lab/prepare_navigation_runtime.py)
+Use [prepare_navigation_runtime.py](../../../code/experiment/prepare_navigation_runtime.py)
 and the [binding contract](../INPUT_OUTPUT.md); generated IDs cannot replace
 source identity. Multi-start tasks retain all declared pages.
 
@@ -48,16 +48,16 @@ sequenceDiagram
     E-->>W: Native score and assessment status
 ```
 
-[wav_native_evaluate.py](../../../code/local-lab/wav_native_evaluate.py) verifies
+[wav_native_evaluate.py](../../../code/experiment/wav_native_evaluate.py) verifies
 task/source evidence and calls the original evaluator. Actor timing ends before
 trace finalization and native evaluation, but those phases remain bounded and
 reported. A late native success cannot override an actor timeout.
 
 ## Implemented limits and acceptance
 
-[wav_owned_lifecycle.py](../../../code/local-lab/wav_owned_lifecycle.py) currently
+[wav_owned_lifecycle.py](../../../code/experiment/wav_owned_lifecycle.py) currently
 targets owned, mount-free shopping fixtures. It does not implement the whole six
-site closure. [benchmark_task_session.py](../../../code/local-lab/benchmark_task_session.py)
+site closure. [benchmark_task_session.py](../../../code/experiment/benchmark_task_session.py)
 binds reset, setup, authentication and start pages. General instance reset
 controls and unchanged peer container IDs alone do not prove peer data isolation.
 
@@ -71,7 +71,7 @@ Report template-macro task success per round and equal-round aggregation using
 the declared scheduled rounds. Also report scorable coverage and fixed-workload
 operational bounds. Do not report the project’s selected-task estimate as the
 full upstream leaderboard score. Cloud installation details are in the
-[operator handoff](../../../code/local-lab/cloud-handoff/README.md).
+[operator handoff](../../../code/experiment/cloud-handoff/README.md).
 
 ## Separate WAV100 development campaign
 

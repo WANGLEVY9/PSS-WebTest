@@ -56,9 +56,9 @@ From `code/`, use an existing completed batch and failed record ID:
 
 ```bash
 # Preview whitelisted payload; makes no API call.
-PSS_LOCAL_ENV_FILE=.env.openai node local-lab/triage-failure.mjs local-BATCH RECORD_ID
+PSS_LOCAL_ENV_FILE=.env.openai node experiment/triage-failure.mjs local-BATCH RECORD_ID
 # At most ONE request, 15-second timeout, 512 output-token cap, no retries/fallback.
-PSS_LOCAL_ENV_FILE=.env.openai node local-lab/triage-failure.mjs local-BATCH RECORD_ID --live
+PSS_LOCAL_ENV_FILE=.env.openai node experiment/triage-failure.mjs local-BATCH RECORD_ID --live
 ```
 
 Results are separate ignored `aux-triage-UUID.json` sidecars, with source snapshot/request/evidence digests, usage and model metadata. They never rewrite the snapshot, never affect benchmark scheduling and are not included in actor cost. The whole batch must finish first. Invalid model output fails closed; annotations require human review.
@@ -67,4 +67,4 @@ To evaluate Luna as an actor, configure it as a **separate fixed-model stratum**
 
 ## Verification
 
-`node local-lab/sponsor-verify.mjs` runs formula fixtures, route isolation/audit, env isolation, provider parsing, actual Chromium console rendering, benchmark boundary contracts, ATA preparation, ledger and frozen-manifest validation. Formula fixtures and mocked provider responses are synthetic tests, not empirical model results. Frontend and metric-module hashes are included in the verification artifact. All benchmark gates remain enforced.
+`node experiment/sponsor-verify.mjs` runs formula fixtures, route isolation/audit, env isolation, provider parsing, actual Chromium console rendering, benchmark boundary contracts, ATA preparation, ledger and frozen-manifest validation. Formula fixtures and mocked provider responses are synthetic tests, not empirical model results. Frontend and metric-module hashes are included in the verification artifact. All benchmark gates remain enforced.

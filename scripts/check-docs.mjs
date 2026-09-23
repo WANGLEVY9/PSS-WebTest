@@ -11,11 +11,11 @@ const markdownUnder=dir=>fs.readdirSync(path.join(root,dir),{withFileTypes:true}
 // Dated receipts remain historical. Check the maintained operator entry points
 // and all nested technical pages so newly added specifications cannot go dark.
 const files=['README.md','README.zh-CN.md','README-EXPERIMENT-OPERATORS.zh-CN.md','CONTRIBUTING.md','SECURITY.md','CODE_OF_CONDUCT.md','CHANGELOG.md','code/README.md',
-  ...markdownUnder('docs'),...markdownUnder('code/local-lab/cloud-handoff'),
+  ...markdownUnder('docs'),...markdownUnder('code/experiment/cloud-handoff'),
   ...['ANALYSIS-AND-ROUTING.md','SPEND-CONTROLS.md','ACCEPTANCE-RUNBOOK.md',
     'LIFECYCLE-AND-NATIVE-EVALUATION.md','SPONSOR-DEPLOYMENT.md']
     .map(file=>`code/docs/runbooks/${file}`),
-  'code/local-lab/README.md'];
+  'code/experiment/README.md'];
 const errors=[];let links=0;
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const anchors=text=>{
@@ -50,11 +50,21 @@ const design=JSON.parse(read(`code/config/${active.active_contract}`));
 const tasks=design.benchmarks.reduce((sum,x)=>sum+x.selected_tasks,0);
 const configs=design.models.length*design.agent_configurations_per_model.length+1;
 const rounds=design.rounds.discovery.length+design.rounds.validation.length;
-if(tasks*configs*rounds!==design.scale.scheduled_opportunities)errors.push('Active design scale does not reconcile');
+if(tasks*configs*rounds!==design.scale.scheduled_opportunities)errors.push('Manuscript design scale does not reconcile');
+const campaign=JSON.parse(read('code/config/current-campaign.json'));
+const agentTotal=campaign.selected_task_count*campaign.models.length*campaign.agent_arms.length*campaign.rounds_per_task_configuration;
+const baselineTotal=campaign.selected_task_count*campaign.rounds_per_task_configuration;
+if(campaign.scope!=='planning-only'||campaign.benchmark!=='webarena-verified'||
+  campaign.dispatcher_available!==false||campaign.confirmatory_authorized!==false||
+  agentTotal!==campaign.planned_agent_executions||baselineTotal!==campaign.planned_baseline_executions||
+  agentTotal+baselineTotal!==campaign.planned_total_executions)
+  errors.push('Current WAV campaign plan is inconsistent');
 const main=read('README.md'),zh=read('README.zh-CN.md');
 for(const [file,text] of [['README.md',main],['README.zh-CN.md',zh]]){
   for(const value of [design.protocol_id,design.scale.scheduled_opportunities.toLocaleString('en-US')])
-    if(!text.includes(value))errors.push(`${file}: stale active design value ${value}`);
+    if(!text.includes(value))errors.push(`${file}: stale manuscript design value ${value}`);
+  if(!text.includes(String(campaign.planned_total_executions))||!text.includes('confirmatory_authorized=false'))
+    errors.push(`${file}: current WAV planning status is missing`);
 }
 const ata=design.benchmarks.find(x=>x.id==='ata');
 if(ata.selected_tasks!==ata.expected_pass+ata.expected_fail)errors.push('ATA reference classes do not partition selected cases');
@@ -62,9 +72,9 @@ if(ata.selected_tasks!==ata.expected_pass+ata.expected_fail)errors.push('ATA ref
 // denominator reconciled with the active contract.
 if(!read('docs/RESEARCH.md').includes(design.scale.scheduled_opportunities.toLocaleString('en-US')))
   errors.push('Stale planned denominator in docs/RESEARCH.md');
-const inventory=JSON.parse(read('code/local-lab/cloud-handoff/dependency-manifest.json'));
+const inventory=JSON.parse(read('code/experiment/cloud-handoff/dependency-manifest.json'));
 const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
-const csv=fs.readFileSync(path.join(root,'code/local-lab/cloud-handoff/dependency-packages.csv'));
+const csv=fs.readFileSync(path.join(root,'code/experiment/cloud-handoff/dependency-packages.csv'));
 if(sha(csv)!==inventory.inventory_sha256)errors.push('Cloud dependency inventory digest mismatch');
 if(csv.toString('utf8').trimEnd().split('\n').length-1!==inventory.package_rows)errors.push('Cloud dependency inventory row count mismatch');
 for(const input of inventory.dependency_inputs){
@@ -85,6 +95,7 @@ const cff=read('CITATION.cff');
 if(!cff.includes('cff-version: 1.2.0')||!cff.includes('type: software'))errors.push('CFF identity fields missing');
 // Full YAML/CFF schema validation is a separate release check; do not claim it here.
 if(errors.length){console.error(errors.join('\n'));process.exitCode=1;}
-else console.log(JSON.stringify({status:'PASS',markdown_files:files.length,local_links:links,active_protocol:design.protocol_id,
-  planned_opportunities:tasks*configs*rounds,dependency_rows:inventory.package_rows,
+else console.log(JSON.stringify({status:'PASS',markdown_files:files.length,local_links:links,current_campaign:campaign.campaign_id,current_planned_executions:campaign.planned_total_executions,
+  manuscript_protocol:design.protocol_id,manuscript_planned_opportunities:tasks*configs*rounds,
+  dependency_rows:inventory.package_rows,
   scope:'local links/headings, documented npm commands, design consistency, dependency inventory hashes, presentation metadata; no live execution, external-asset verification or full CFF schema validation'},null,2));

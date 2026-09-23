@@ -1,90 +1,49 @@
-# PSS-WebTest code
+# Experiment code
 
-Sponsor operators should start with the [GPT experiment operator README (中文)](../README-EXPERIMENT-OPERATORS.zh-CN.md) before configuring a paid run.
+[Project overview](../README.md) · [Architecture](ARCHITECTURE.md) · [WAV operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md) · [Reproducibility](../docs/REPRODUCIBILITY.md)
 
-Current interface and implementation documentation: [technical index](../docs/technical/README.md), [inputs/outputs](../docs/technical/INPUT_OUTPUT.md), [native workflow traceability](../docs/technical/UPSTREAM_TRACEABILITY.md), and [cloud installation/dependency handoff](local-lab/cloud-handoff/README.md). Read these with the active v2.1 contract before adapting a runner.
+The next experiment is the WAV-only 120-task plan in [`config/current-campaign.json`](config/current-campaign.json). It is planning metadata: the exact tasks, model API identities and full dispatcher are not yet bound. The older [`config/active-study-design.json`](config/active-study-design.json) remains for the manuscript analysis contract and must not dispatch this campaign.
 
-[Project overview](../README.md) · [Research design](../docs/RESEARCH.md) · [Reproduction guide](../docs/REPRODUCIBILITY.md)
+## Layout
 
-This directory contains the current benchmark integration/analysis/runtime work in `local-lab/` and the earlier local-application harness in `src/` and `scripts/`. The active study follows [`config/active-study-design.json`](config/active-study-design.json): WAV, VWA and ATA; nineteen configurations; twelve discovery/validation opportunities. Older pilot commands remain available for their original scope.
+| Path | Role |
+| --- | --- |
+| `config/` | Campaign and research contracts, framework pins and example private bindings |
+| `experiment/` | Runtime, framework adapters, native evaluation and offline verification |
+| `analysis/` | Research protocol, record import and outcome analysis |
+| `console/` | Local evidence inspection and execution gate display |
+| `tests/experiment/` | Node and browser tests for maintained experiment code |
+| `tools/` | Diagnostic report processing; no model calls |
+| `artifacts/` | Ignored local inputs, trajectories and verification reports |
 
-## Install and check
+Older local-application runners and tests are kept only in the ignored `../temp/` archive. The [architecture guide](ARCHITECTURE.md) explains module responsibilities and evidence boundaries.
 
-Requirements for source-only checks: Node.js 20+, Python 3, npm and Playwright Chromium. No API key or private data is needed.
+## Install and verify
+
+Use Node.js 20+, Python 3 and Playwright Chromium. These commands use synthetic fixtures and make no model requests:
 
 ```sh
-# From this code/ directory
 npm ci
 npx playwright install chromium
+npm run campaign:validate
 npm run study:validate
+npm run test:experiment
+npm run test:diagnostic-merge
 mkdir -p artifacts/local-runtime
-npm run sponsor:verify:portable -- \
-  --python python3 --output artifacts/local-runtime/offline-001
+npm run sponsor:verify:portable -- --python python3 --output artifacts/local-runtime/offline-001
 ```
 
-Use `npx playwright install --with-deps chromium` on a fresh Linux host where system dependencies are needed. Every verification output directory must be new. Read test counts, skips, source-change detection and the explicit `not-run` historical artifact group in the report.
-
-The portable verifier runs the installed local Node/browser tests, source-only contracts, Python runtime tests, ATA input projection and active design validation. It makes no model requests and executes no official benchmark tasks. Its synthetic fixtures are engineering checks, not study results.
+The output directory must be new. The verifier checks source hashes before and after execution and records every test group's count. It does not validate a sponsor host, official task reset, native evaluator integration or research results.
 
 ## Entry points
 
-| Purpose | Command from code/ | Notes |
-| --- | --- | --- |
-| Active design | `npm run study:validate` | Validates the current design pointer and scale |
-| Portable source checks | `npm run sponsor:verify:portable -- --python python3 --output NEW_DIRECTORY` | Includes actual Chromium tests; output must be new |
-| RQ formulas/import pipeline | `npm run test:study-analysis` | Synthetic analysis fixtures |
-| Runtime recovery/accounting | `npm run test:runtime-reliability` | Python and Node regression |
-| Local observatory | `npm run sponsor:console` | Loopback port 4173; gate status remains enforced |
-| Analyze supplied input | `node local-lab/analyze-study.mjs INPUT.json NEW_REPORT.json` | See the input contract; does not validate underlying scientific truth |
-| Plan/import supplied bundle | `node local-lab/study-workflow.mjs plan INPUT.json NEW_DIRECTORY` or `import` | Choose one subcommand; no dispatch or implicit cloud access |
-
-Detailed input/round/metric semantics: [ANALYSIS-AND-ROUTING.md](docs/runbooks/ANALYSIS-AND-ROUTING.md). Current changes and source/fixture constraints: [DESIGN-V2-MIGRATION.md](docs/runbooks/DESIGN-V2-MIGRATION.md) and [adapter progress](docs/status/SPONSOR-ADAPTER-PROGRESS-2026-09-22.md).
-
-## Code map
-
-| Location | Responsibility |
+| Task | Command |
 | --- | --- |
-| `config/active-study-design.json` | Sole active design pointer; older contracts are historical |
-| `config/` (top level) | Configuration in force for the active protocol only |
-| `config/archive/` | 42 superseded configuration documents (retired design contracts, metric dictionary v0.1, phase2 plans, local-application manifests). Preserved, never used for current execution |
-| `config/frameworks/` | Framework environment manifest, defect matrix and dependency locks |
-| `local-lab/study-analysis.mjs` | Native outcomes, operational bounds, error-conditioned controls and retry decomposition |
-| `local-lab/study-pipeline.mjs` | Schedule construction, import reconciliation and analysis conversion |
-| `local-lab/runtime_store.py` | Runtime ledger/recovery infrastructure |
-| `local-lab/runtime_worker.py` | Diagnostic worker and trusted adapter receipt handling |
-| `local-lab/runtime_inputs.py` | Restricted actor input and separate evaluator-reference preparation |
-| `local-lab/framework_agentlab.py` / `framework_browser_use.py` | Framework-specific restricted components; full benchmark acceptance separate |
-| `console/server.mjs` | Local benchmark observatory (loopback UI + API, no dispatch without gates) |
-| `tests/contracts/` | Shared contract/provenance checks and historical artifact integrations |
-| `tests/local-lab/` | Runtime, provider and console regression suites (Node). Python runtime tests stay next to their modules in `local-lab/test_*.py` and run with `python3 -m unittest discover -s local-lab` |
-| `docs/runbooks/` | Maintained engineering runbooks (deployment, acceptance, spend, analysis input) |
-| `docs/status/` | Dated engineering status reports; historical, superseded by newer entries |
-| `src/arms/`, `scripts/`, `manifests/` | Earlier local-SUT arms, lifecycle and pilot infrastructure |
+| Validate current WAV planning metadata | `npm run campaign:validate` |
+| Validate historical manuscript contract | `npm run study:validate` |
+| Verify retained offline source | `npm run sponsor:verify:portable -- --python python3 --output NEW_DIRECTORY` |
+| Inspect local evidence | `npm run sponsor:console` |
+| Analyze a supplied research bundle | `npm run study:workflow -- import INPUT.json NEW_DIRECTORY` |
+| Merge Qwen diagnostic slices | `node tools/merge-wav-qwen-pair.mjs NEW_OUTPUT.json BATCH_DIR...` |
 
-## Prepare a new campaign
-
-Use [SPONSOR-DEPLOYMENT.md](docs/runbooks/SPONSOR-DEPLOYMENT.md). Separate the public study contract, private deployment profile, private runtime bindings and credentials. Exact API identities, matched budgets, framework/benchmark pins and fixture acceptance must be recorded before measured execution. Do not silently fall back to another model or relabel a custom runner as a study framework.
-
-The active information boundary is stricter than generic screenshot-plus-DOM: hybrid receives only the allowed visible projection. Visual cannot use URL/DOM/AX for control-flow decisions. Evaluator truth and other-arm results are never actor inputs.
-
-The current default worker is diagnostic. Frozen schedule/input hashes and valid receipts prevent specific integrity failures; they do not by themselves authorize formal collection or prove reset/evaluator correctness. Implementation state, component probes and accepted benchmark execution are declared separately in the [deployment and acceptance runbook](docs/runbooks/SPONSOR-DEPLOYMENT.md).
-
-## Historical harness
-
-The earlier BookStack/Indico/Juice Shop/Invoice Ninja/PrestaShop runners remain for reproducing their dated pilots. They are outside the current core workload. Their package scripts include reset/mutation commands; inspect the named local fixture and original protocol before using them.
-
-```sh
-# Optional legacy checks; some require downloaded historical artifacts.
-npm run test:contracts
-npm run test:adapter-conformance
-npm run test:phase2-provenance
-npm run validate:manifests
-npm run validate:configuration-registry
-npm run validate:study-assets
-```
-
-`npm run dashboard:serve` is the earlier read-only inspection surface. It shares the observatory's default port, so start only one console at a time. Legacy registry versions and five-application readiness reports must not override the active v2.1 study contract.
-
-## Local data
-
-Keep keys in ignored env files and private runtime artifacts under `code/artifacts/`. For the OpenAI route, the example is [`local-lab/openai.env.example`](local-lab/openai.env.example); an accessible model identity is configured explicitly. Never publish keys, cookies or raw authenticated browser/provider traces. See [SECURITY.md](../SECURITY.md) and [data availability](../docs/DATA_AVAILABILITY.md).
+For the next paid WAV run, follow the [operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md). A passing offline check does not open the execution gate.

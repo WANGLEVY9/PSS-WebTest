@@ -1,6 +1,6 @@
 # Explicit VWA Classifieds provisioning
 
-This is environment provisioning, not benchmark admission. No official task or model request is executed by these commands. The old `node local-lab/prepare-vwa.mjs pull` interface is intentionally rejected.
+This is environment provisioning, not benchmark admission. No official task or model request is executed by these commands. The old `node experiment/prepare-vwa.mjs pull` interface is intentionally rejected.
 
 ## Prerequisites
 
@@ -39,10 +39,10 @@ These placeholders are not runnable. The reserve is an operator provisioning cho
 ## Commands (from `code/`)
 
 ```bash
-node local-lab/prepare-vwa.mjs config --profile /ABSOLUTE/PRIVATE/vwa-provision.json
-node local-lab/prepare-vwa.mjs pull --profile /ABSOLUTE/PRIVATE/vwa-provision.json
-node local-lab/prepare-vwa.mjs up --profile /ABSOLUTE/PRIVATE/vwa-provision.json
-node local-lab/prepare-vwa.mjs ps --profile /ABSOLUTE/PRIVATE/vwa-provision.json
+node experiment/prepare-vwa.mjs config --profile /ABSOLUTE/PRIVATE/vwa-provision.json
+node experiment/prepare-vwa.mjs pull --profile /ABSOLUTE/PRIVATE/vwa-provision.json
+node experiment/prepare-vwa.mjs up --profile /ABSOLUTE/PRIVATE/vwa-provision.json
+node experiment/prepare-vwa.mjs ps --profile /ABSOLUTE/PRIVATE/vwa-provision.json
 node scripts/probe-visualwebarena-local-assets.mjs --fixture-profile /ABSOLUTE/PRIVATE/vwa-provision.json
 ```
 
@@ -55,7 +55,7 @@ After provisioning, native reset, isolation, evaluator controls and task-level/f
 ## Regression checks
 
 ```bash
-node --test local-lab/vwa-fixture-config.test.mjs local-lab/provisioning-contract.test.mjs local-lab/sponsor-portable-config.test.mjs tests/contracts/visualwebarena-local-assets.test.mjs
+node --test experiment/vwa-fixture-config.test.mjs experiment/provisioning-contract.test.mjs experiment/sponsor-portable-config.test.mjs tests/contracts/visualwebarena-local-assets.test.mjs
 ```
 
 Verified this round: **30 tests passed, 0 failed, 0 skipped**. This includes synthetic config/hash/tampering, credential-file restrictions, explicit context, digest mismatch, unknown storage, insufficient capacity, error redaction and refusal of the legacy no-profile CLI. These are not live Docker provisioning or benchmark-success evidence.
@@ -64,7 +64,7 @@ Verified this round: **30 tests passed, 0 failed, 0 skipped**. This includes syn
 
 - `docs/runbooks/EXPANSION-PLAN.md` contains the superseded no-profile commands.
 - `scripts/probe-visualwebarena-local-assets.mjs` now requires the same explicit profile, checks fixture hashes and selected-context image digests, and never searches source-internal fixture paths. It deliberately keeps `ready_for_service_start=false` and `study_execution_allowed=false`: an inventory does not establish full immutable provenance for Shopping/Reddit, reset or evaluator admission. Exit zero means this inventory check completed with its declared assets present, not scientific admission.
-- The sponsor offline verifier automatically discovers `tests/local-lab/*.test.mjs`, including the new test suite.
+- The sponsor offline verifier automatically discovers `tests/experiment/*.test.mjs`, including the new test suite.
 
 ## Torch platform diagnosis
 

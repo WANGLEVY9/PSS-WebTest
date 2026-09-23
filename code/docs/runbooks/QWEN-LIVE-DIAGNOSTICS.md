@@ -27,22 +27,22 @@ The commands below select the provider's `qwen3.8-max` alias (not an immutable
 snapshot). Record returned model IDs and freeze a snapshot before confirmatory use.
 
 ```bash
-third_party/frameworks/h-agentlab/bin/python code/local-lab/lifecycle-live-smoke.py \
+third_party/frameworks/h-agentlab/bin/python code/experiment/lifecycle-live-smoke.py \
   --framework agentlab-browsergym --mode visual --model qwen3.8-max \
   --coordinate-space qwen-0-999 --max-output-tokens 1024 \
   --output code/artifacts/local-runtime/qwen-max-visual-control-001 --live
 
-third_party/frameworks/h-agentlab/bin/python code/local-lab/lifecycle-live-smoke.py \
+third_party/frameworks/h-agentlab/bin/python code/experiment/lifecycle-live-smoke.py \
   --framework agentlab-browsergym --mode hybrid --model qwen3.8-max \
   --coordinate-space css-pixels --max-output-tokens 1024 \
   --output code/artifacts/local-runtime/qwen-max-agentlab-hybrid-control-001 --live
 
-third_party/frameworks/h-browser-use/bin/python code/local-lab/lifecycle-live-smoke.py \
+third_party/frameworks/h-browser-use/bin/python code/experiment/lifecycle-live-smoke.py \
   --framework browser-use-restricted --mode hybrid --model qwen3.8-max \
   --coordinate-space css-pixels --max-output-tokens 1024 \
   --output code/artifacts/local-runtime/qwen-max-browser-use-hybrid-control-001 --live
 
-third_party/frameworks/h-agentlab/bin/python code/local-lab/lifecycle-live-smoke.py \
+third_party/frameworks/h-agentlab/bin/python code/experiment/lifecycle-live-smoke.py \
   --framework playwright --mode traditional \
   --output code/artifacts/local-runtime/playwright-control-001 --live
 ```

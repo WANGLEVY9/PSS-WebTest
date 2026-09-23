@@ -4,19 +4,19 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import {loadRuntimeEnv} from '../local-lab/runtime-env.mjs';
-import {spendGuard} from '../local-lab/spend-guard.mjs';
-import {resolveProvider, publicProvider} from '../local-lab/provider.mjs';
-import { alive } from "../local-lab/lock.mjs";
-import { currentExecutionGate } from '../local-lab/execution-gate.mjs';
-import { resetProgress } from '../local-lab/reset-evidence.mjs';
-import { summarize } from "../local-lab/metrics.mjs";
-import {studyStatus} from '../local-lab/study-design.mjs';
-import { PROTOCOL } from "../local-lab/agent-protocol.mjs";
-import {readAcceptanceStatus} from '../local-lab/acceptance-status.mjs';
+import {loadRuntimeEnv} from '../experiment/runtime-env.mjs';
+import {spendGuard} from '../experiment/spend-guard.mjs';
+import {resolveProvider, publicProvider} from '../experiment/provider.mjs';
+import { alive } from "../experiment/lock.mjs";
+import { currentExecutionGate } from '../experiment/execution-gate.mjs';
+import { resetProgress } from '../experiment/reset-evidence.mjs';
+import { summarize } from "../experiment/metrics.mjs";
+import {studyStatus} from '../analysis/study-design.mjs';
+import { PROTOCOL } from "../experiment/agent-protocol.mjs";
+import {readAcceptanceStatus} from '../experiment/acceptance-status.mjs';
 const root = path.dirname(fileURLToPath(import.meta.url)),
   code = path.resolve(root, ".."),
-  labRoot = path.join(code, "local-lab");
+  labRoot = path.join(code, "experiment");
 const runtimeEnv=loadRuntimeEnv();
 function budgetStatus() {
   try {return spendGuard(runtimeEnv).status(providerStatus());}

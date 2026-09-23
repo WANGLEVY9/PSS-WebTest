@@ -109,7 +109,7 @@ Create a private wrapper manifest (new file, immutable after hashing):
   "locale": "en-US",
   "timezone_id": "UTC",
   "node": "/ABSOLUTE/node",
-  "supervisor_source_refs": {"EACH_NAME_IN_SUPERVISOR_SOURCES": {"file": "/ABSOLUTE/code/local-lab/NAME", "sha256": "ACTUAL_HASH"}}
+  "supervisor_source_refs": {"EACH_NAME_IN_SUPERVISOR_SOURCES": {"file": "/ABSOLUTE/code/experiment/NAME", "sha256": "ACTUAL_HASH"}}
 }
 ```
 
@@ -122,7 +122,7 @@ their separate worker commands. Keep gold and evaluator files private.
 Actor command argv is an array, with no shell interpolation:
 
 ```text
-/ABSOLUTE/framework-python /ABSOLUTE/code/local-lab/benchmark_session_wrapper.py
+/ABSOLUTE/framework-python /ABSOLUTE/code/experiment/benchmark_session_wrapper.py
   --manifest /ABSOLUTE/PRIVATE/wrapper.json --manifest-sha256 ACTUAL_HASH
 ```
 
@@ -136,9 +136,9 @@ Never mutate an already enqueued opportunity to change its model or script.
 Start through `runtime_worker.py`, **not** by inventing wrapper stdin:
 
 ```bash
-python local-lab/runtime_worker.py enqueue --database /ABSOLUTE/PRIVATE/ledger.sqlite --input /ABSOLUTE/PRIVATE/opportunities.jsonl
-python local-lab/runtime_worker.py work --database /ABSOLUTE/PRIVATE/ledger.sqlite --input /ABSOLUTE/PRIVATE/runtime-binding.json
-python local-lab/runtime_worker.py status --database /ABSOLUTE/PRIVATE/ledger.sqlite
+python experiment/runtime_worker.py enqueue --database /ABSOLUTE/PRIVATE/ledger.sqlite --input /ABSOLUTE/PRIVATE/opportunities.jsonl
+python experiment/runtime_worker.py work --database /ABSOLUTE/PRIVATE/ledger.sqlite --input /ABSOLUTE/PRIVATE/runtime-binding.json
+python experiment/runtime_worker.py status --database /ABSOLUTE/PRIVATE/ledger.sqlite
 ```
 
 The worker freezes configuration, starts the lease before reset, records a
@@ -245,8 +245,8 @@ Package the refs as `pss-cross-instance-isolation-v1`, `inventory_ref` and
 The per-profile fixture receipt requires `cross_instance_isolation_ref`:
 
 ```bash
-python local-lab/isolation_evidence.py /ABSOLUTE/PRIVATE/isolation-package.json
-python local-lab/benchmark_acceptance.py --package /ABSOLUTE/PRIVATE/fixture-package.json --output /ABSOLUTE/PRIVATE/fixture-audit-001.json
+python experiment/isolation_evidence.py /ABSOLUTE/PRIVATE/isolation-package.json
+python experiment/benchmark_acceptance.py --package /ABSOLUTE/PRIVATE/fixture-package.json --output /ABSOLUTE/PRIVATE/fixture-audit-001.json
 ```
 
 The first command certifies byte-level consistency **within the reviewed
@@ -317,8 +317,8 @@ replication context, not permission or proof of current accessible fixtures.
 ## 8. Reproduction and troubleshooting
 
 ```bash
-PYTHONPATH=local-lab PYTHONDONTWRITEBYTECODE=1 /ABSOLUTE/agentlab-python -m unittest test_runtime_actor_lifecycle test_runtime_session_wrapper test_runtime_session_auth test_runtime_isolation_evidence test_runtime_acceptance -v
-node local-lab/sponsor-portable-verify.mjs --python /ABSOLUTE/python --framework-profile /ABSOLUTE/PRIVATE/deployment.json --output /ABSOLUTE/PRIVATE/offline-verification-NEW
+PYTHONPATH=experiment PYTHONDONTWRITEBYTECODE=1 /ABSOLUTE/agentlab-python -m unittest test_runtime_actor_lifecycle test_runtime_session_wrapper test_runtime_session_auth test_runtime_isolation_evidence test_runtime_acceptance -v
+node experiment/sponsor-portable-verify.mjs --python /ABSOLUTE/python --framework-profile /ABSOLUTE/PRIVATE/deployment.json --output /ABSOLUTE/PRIVATE/offline-verification-NEW
 ```
 
 | Symptom | Required response |

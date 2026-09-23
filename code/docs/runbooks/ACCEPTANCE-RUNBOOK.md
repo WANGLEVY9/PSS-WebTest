@@ -6,7 +6,7 @@ now require a verified `cross_instance_isolation_ref`; equal producer-supplied
 peer digest strings alone cannot pass that gate. Live VWA/ATA acceptance remains
 pending deployment-specific restore/parity evidence.
 
-**Scope:** Historical three-benchmark development acceptance plan, recorded on 2026-09-22. Source and component checks were partial; live host acceptance was not established. For the next WAV-only campaign, use the [operator guide](../../../README-EXPERIMENT-OPERATORS.zh-CN.md).
+**Scope:** Historical three-benchmark development acceptance plan, recorded on 2026-09-22. Source and component checks were partial; live host acceptance was not established. For the next WAV-only campaign, use the [operator guide](../../../docs/EXPERIMENT-OPERATIONS.zh-CN.md).
 
 This runbook complements `SPONSOR-DEPLOYMENT.md`. It does not authorize formal
 acquisition. Do not merge this campaign into D1/D2 or V1–V10. The manuscript

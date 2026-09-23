@@ -2,7 +2,7 @@
 
 PSS-WebTest studies recurring errors and reliability in computer-use agents and scripted Web testing. It contains benchmark integration code, native outcome analysis, and tools for recording and inspecting executions.
 
-[简体中文](README.zh-CN.md) · [Current experiment guide](README-EXPERIMENT-OPERATORS.zh-CN.md) · [Architecture](code/ARCHITECTURE.md) · [Research design](docs/RESEARCH.md) · [Reproduction](docs/REPRODUCIBILITY.md)
+[简体中文](README.zh-CN.md) · [Current experiment guide](docs/EXPERIMENT-OPERATIONS.zh-CN.md) · [Architecture](code/ARCHITECTURE.md) · [Research design](docs/RESEARCH.md) · [Reproduction](docs/REPRODUCIBILITY.md)
 
 ## Current experiment
 

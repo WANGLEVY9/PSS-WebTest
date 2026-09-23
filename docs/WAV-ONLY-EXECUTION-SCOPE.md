@@ -12,7 +12,7 @@ Date: 2026-09-22. Authority: the project owner's explicit instruction to compres
 
 ## Authority and implementation boundary
 
-The [operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md) supersedes the previous three-benchmark operator instructions for the next campaign. This amendment is an operational scope decision, **not a machine-enforced dispatcher or a new validated statistical contract**.
+The [operator guide](EXPERIMENT-OPERATIONS.zh-CN.md) supersedes the previous three-benchmark operator instructions for the next campaign. This amendment is an operational scope decision, **not a machine-enforced dispatcher or a new validated statistical contract**.
 
 The retained `active-study-design.json` pointer and `pss-manuscript-v2.1` contract still describe the historical manuscript design (600 WAV + 700 VWA + 113 ATA, 19 configurations, 12 rounds). Their 322,164 planned opportunities do not describe the new WAV-only campaign. Their arithmetic regression checks may still run, but their schedule must not be used to dispatch this campaign. Do not change only selected-task counts to pretend the old protocol now validates WAV-only collection.
 

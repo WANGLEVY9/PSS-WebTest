@@ -1,6 +1,6 @@
 # Experiment code
 
-[Project overview](../README.md) · [Architecture](ARCHITECTURE.md) · [WAV operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md) · [Reproducibility](../docs/REPRODUCIBILITY.md)
+[Project overview](../README.md) · [Architecture](ARCHITECTURE.md) · [WAV operator guide](../docs/EXPERIMENT-OPERATIONS.zh-CN.md) · [Reproducibility](../docs/REPRODUCIBILITY.md)
 
 The next experiment is the WAV-only 120-task plan in [`config/current-campaign.json`](config/current-campaign.json). It is planning metadata: the exact tasks, model API identities and full dispatcher are not yet bound. The older [`config/active-study-design.json`](config/active-study-design.json) remains for the manuscript analysis contract and must not dispatch this campaign.
 
@@ -46,4 +46,4 @@ The output directory must be new. The verifier checks source hashes before and a
 | Analyze a supplied research bundle | `npm run study:workflow -- import INPUT.json NEW_DIRECTORY` |
 | Merge Qwen diagnostic slices | `node tools/merge-wav-qwen-pair.mjs NEW_OUTPUT.json BATCH_DIR...` |
 
-For the next paid WAV run, follow the [operator guide](../README-EXPERIMENT-OPERATORS.zh-CN.md). A passing offline check does not open the execution gate.
+For the next paid WAV run, follow the [operator guide](../docs/EXPERIMENT-OPERATIONS.zh-CN.md). A passing offline check does not open the execution gate.

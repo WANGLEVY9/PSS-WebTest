@@ -2,7 +2,7 @@
 
 PSS-WebTest 研究 Computer-Use Agent 与脚本式 Web 测试在重复执行中的可靠性、反复错误和互补性。仓库包含 benchmark 接入、原生结果分析、执行记录和本地检查工具。
 
-[English](README.md) · [当前实验操作指南](README-EXPERIMENT-OPERATORS.zh-CN.md) · [代码架构](code/ARCHITECTURE.md) · [研究设计](docs/RESEARCH.md) · [复现指南](docs/REPRODUCIBILITY.md)
+[English](README.md) · [当前实验操作指南](docs/EXPERIMENT-OPERATIONS.zh-CN.md) · [代码架构](code/ARCHITECTURE.md) · [研究设计](docs/RESEARCH.md) · [复现指南](docs/REPRODUCIBILITY.md)
 
 ## 当前实验
 
